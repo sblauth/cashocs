@@ -131,7 +131,8 @@ DG0 = FunctionSpace(mesh, "DG", 0)
 # {math}`\Psi = -1`, so that {math}`\Omega = \mathrm{D}` as initial guess.
 
 psi = Function(CG1)
-psi.vector()[:] = -1.0
+psi.vector().vec().set(-1.0)
+psi.vector().apply("")
 
 # ### Definition of the Material Parameters
 #

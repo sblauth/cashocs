@@ -356,6 +356,14 @@ For the polynomial models, we also have a safeguarding procedure, which ensures 
 
 and the values specified here are also the default values for these parameters.
 
+Finally, we have the parameter
+
+.. code-block:: ini
+
+    fail_if_not_converged = False
+
+which determines, whether the line search is terminated if the state system cannot be solved at the current iterate. If this is :ini:`fail_if_not_converged = True`, then an exception is raised. Otherwise, the iterate is counted as having too high of a function value and the stepsize is "halved" and a new iterate is formed.
+
 .. _config_shape_algolbfgs:
 
 Section AlgoLBFGS
@@ -665,6 +673,16 @@ Moreover, the parameter
 
 can be used to update the local mesh size after each mesh deformation, in case this is :ini:`update_inhomogeneous = True`, so that elements which become smaller also obtain a higher stiffness and vice versa. The default is :ini:`update_inhomogeneous = False`.
 
+For the inhomogeneous mesh stiffness, we also have the parameter :ini:`inhomogeneous_exponent`, which is specified via
+
+.. code-block:: ini
+
+    inhomogeneous_exponent = 1.0
+
+This parameter can be used to specify an exponent for the inhomogeneous mesh stiffness, so that the parameters
+:math:`\mu, \lambda` and :math:`\delta` are scaled by :math:`\left( \frac{1}{\text{vol}} \right)^p`, where
+:math:`p` is specified in :ini:`inhomogeneous_exponent`. The default for this parameter is :ini:`inhomogeneous_exponent = 1.0`.
+
 There is also a different possibility to define the stiffness parameter :math:`\mu`
 using cashocs, namely to define :math:`\mu` in terms of how close a point of the
 computational domain is to a boundary. In the following we will explain this
@@ -955,7 +973,7 @@ Available options are
 (see :py:class:`MeshQuality <cashocs.MeshQuality>` for a detailed description).
 The default value is given by :ini:`measure = skewness`.
 
-Finally, the parameter :ini:`type` determines, whether the minimum quality over all
+The parameter :ini:`type` determines, whether the minimum quality over all
 elements (:ini:`type = min`) or the average quality over all elements (:ini:`type = avg`)
 shall be used. This is set via 
 
@@ -964,6 +982,14 @@ shall be used. This is set via
     type = min
 
 and defaults to :ini:`type = min`.
+
+Finally, we have the parameter :ini:`remesh_iter` in which the user can specify after how many iterations a remeshing should be performed. It is given by
+
+.. code-block:: ini
+
+    remesh_iter = 0
+
+where :ini:`remesh_iter = 0` means that no automatic remeshing is performed (this is the default), and :ini:`remesh_iter = n` means that remeshing is performed after each `n` iterations. Note that to use this parameter and avoid unexpected results, it might be beneficial to the the lower and upper mesh quality tolerances to a low value, so that the "quality based remeshing" does not interfere with the "iteration based remeshing", but both can be used in combination.
 
 .. _config_shape_output:
 
@@ -1128,7 +1154,6 @@ in the following.
       - :ini:`picard_verbose = True` enables verbose output of Picard iteration
 
 
-
 [OptimizationRoutine]
 *********************
 
@@ -1178,7 +1203,8 @@ in the following.
       - Safeguard for stepsize, upper bound
     * - :ini:`factor_low = 0.1`
       - Safeguard for stepsize, lower bound
-
+    * - :ini:`fail_if_not_converged = False`
+      - if this is :ini:`True`, then the line search fails if the state system can not be solved at the new iterate
       
 [AlgoLBFGS]
 ***********
@@ -1255,6 +1281,8 @@ in the following.
       - if :ini:`inhomogeneous = True`, uses inhomogeneous elasticity equations, weighted by the local mesh size
     * - :ini:`update_inhomogeneous = False`
       - if :ini:`update_inhomogeneous = True` and :ini:`inhomogeneous=True`, then the weighting with the local mesh size is updated as the mesh is deformed.
+    * - :ini:`inhomogeneous_exponent = 1.0`
+      - The exponent for the inhomogeneous mesh stiffness
     * - :ini:`use_distance_mu = False`
       - if :ini:`use_distance_mu = True`, the value of the second Lamé parameter is computed via the distance to the boundary
     * - :ini:`dist_min = 1.0`

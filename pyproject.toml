@@ -45,17 +45,19 @@ classifiers = [
 dependencies = [
 	"meshio >= 4.1.0",
 	"numpy",
-	"typing_extensions"
+	"typing_extensions",
+        "matplotlib",
 ]
 
 [project.urls]
-Documentation = "https://cashocs.readthedocs.io/en/latest"
+Documentation = "https://cashocs.readthedocs.io/en/stable"
 Source = "https://github.com/sblauth/cashocs"
-Tutorial = "https://cashocs.readthedocs.io/en/latest/user"
+Tutorial = "https://cashocs.readthedocs.io/en/stable/user"
 Tracker = "https://github.com/sblauth/cashocs/issues"
 
 [project.scripts]
 cashocs-convert = "cashocs._cli:convert"
+cashocs-extract_mesh = "cashocs._cli:extract_mesh"
 
 [project.optional-dependencies]
 tests = [
@@ -75,8 +77,7 @@ docs = [
     "jupytext",
     "myst-parser"
 ]
-demos = ["matplotlib"]
-all = ["cashocs[tests,docs,demos]"]
+all = ["cashocs[tests,docs]"]
 
 [tool.setuptools.packages]
 find = {}
@@ -129,10 +130,12 @@ warn_unused_ignores = true
 module = [
 	"fenics.*",
 	"ufl.*",
+    "ufl_legacy.*",
 	"dolfin.*",
 	"petsc4py",
     "mpi4py.*",
 	"meshio",
 	"h5py",
+    "matplotlib.*",
 ]
 ignore_missing_imports = true

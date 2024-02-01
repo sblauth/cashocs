@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -202,8 +202,8 @@ def test_newton_solver(setup_newton_method, ocp):
 def test_control_gd_cc(ocp_cc, cc):
     ocp_cc.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=22)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
+    assert np.all(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
+    assert np.all(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
 
 
 @pytest.fixture
@@ -218,22 +218,22 @@ def test_conjugate_gradient_solver_constrained(
 ):
     ocp_cc.solve(algorithm="ncg", rtol=1e-2, atol=0.0)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
+    assert np.all(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
+    assert np.all(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
 
 
 def test_control_lbfgs_cc(ocp_cc, cc):
     ocp_cc.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=11)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
+    assert np.all(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
+    assert np.all(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
 
 
 def test_newton_solver_constrained(setup_newton_method, ocp_cc, cc):
     ocp_cc.solve(algorithm="newton", rtol=1e-2, atol=0.0, max_iter=9)
     assert ocp_cc.solver.relative_norm <= ocp_cc.solver.rtol
-    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
-    assert np.alltrue(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
+    assert np.all(ocp_cc.db.function_db.controls[0].vector()[:] >= cc[0])
+    assert np.all(ocp_cc.db.function_db.controls[0].vector()[:] <= cc[1])
 
 
 def test_custom_supply_control(CG1, geometry, y, u, p, y_d, rng, bcs, ocp):
@@ -633,11 +633,7 @@ def test_damped_bfgs(geometry, y, p, bcs, config_ocp):
     F = y * p * geometry.dx
 
     J = cashocs.IntegralFunctional(
-        (
-            20
-            + (u0**2 - 10 * cos(2 * np.pi * u0))
-            + (u1**2 - 10 * cos(2 * np.pi * u1))
-        )
+        (20 + (u0**2 - 10 * cos(2 * np.pi * u0)) + (u1**2 - 10 * cos(2 * np.pi * u1)))
         * geometry.dx
     )
 

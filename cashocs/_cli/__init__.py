@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -18,5 +18,6 @@
 """Command line interface of cashocs."""
 
 from cashocs._cli._convert import convert
+from cashocs._cli._extract_mesh import extract_mesh
 
-__all__ = ["convert"]
+__all__ = ["convert", "extract_mesh"]

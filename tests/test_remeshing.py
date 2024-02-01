@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -97,7 +97,7 @@ def test_verification_remeshing():
 
 @pytest.mark.skipif(
     not has_gmsh,
-    reason="This test requires Gmsh and cannot be run in parallel",
+    reason="This test requires Gmsh.",
 )
 def test_remeshing():
     dir_path = str(pathlib.Path(__file__).parent)
@@ -140,16 +140,16 @@ def test_remeshing():
     )
 
     assert pathlib.Path(dir_path + "/temp").is_dir()
-    assert pathlib.Path(dir_path + "/temp/xdmf").is_dir()
+    assert pathlib.Path(dir_path + "/temp/checkpoints").is_dir()
     assert pathlib.Path(dir_path + "/temp/history.txt").is_file()
     assert pathlib.Path(dir_path + "/temp/history.json").is_file()
     assert pathlib.Path(dir_path + "/temp/optimized_mesh.msh").is_file()
-    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/temp/xdmf/adjoint_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/temp/xdmf/state_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/temp/xdmf/shape_gradient.h5").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/adjoint_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/adjoint_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/state_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/shape_gradient.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
     if MPI.rank(MPI.comm_world) == 0:

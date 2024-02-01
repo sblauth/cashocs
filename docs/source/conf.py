@@ -24,7 +24,7 @@ jupytext_process.process()
 # -- Project information -----------------------------------------------------
 
 project = "cashocs"
-copyright = "2020-2023, Sebastian Blauth"
+copyright = "2020-2024, Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
@@ -71,10 +71,10 @@ autodoc_default_options = {
 autodoc_member_order = "alphabetical"
 autodoc_mock_imports = [
     "fenics",
-    "numpy",
     "petsc4py",
     "mpi4py",
     "ufl",
+    "ufl_legacy",
     "meshio",
     "dolfin",
     "configparser",
@@ -136,6 +136,7 @@ html_theme_options = {
     ],
     "logo": {"text": "cashocs", "alt_text": "cashocs"},
     "navbar_align": "content",
+    "show_version_warning_banner": True,
 }
 
 html_sidebars = {"**": ["search-field.html", "sidebar-nav-bs", "sidebar-ethical-ads"]}

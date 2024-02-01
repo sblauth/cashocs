@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -110,7 +110,9 @@ class LineSearch(abc.ABC):
         deformation, is_remeshed = self.search(
             solver, search_direction, has_curvature_info
         )
-        if deformation is not None:
+        if deformation is not None and self.config.getboolean(
+            "ShapeGradient", "global_deformation"
+        ):
             x = fenics.as_backend_type(deformation.vector()).vec()
 
             if not is_remeshed:

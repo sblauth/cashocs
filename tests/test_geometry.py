@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -123,11 +123,11 @@ def test_regular_mesh(rng, unit_square_mesh, regular_mesh):
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert np.allclose(c_coords, u_coords)
 
-        assert np.alltrue((np.max(r_coords, axis=0) - lens) < 1e-14)
-        assert np.alltrue((np.min(r_coords, axis=0) - np.array([0, 0])) < 1e-14)
+        assert np.all((np.max(r_coords, axis=0) - lens) < 1e-14)
+        assert np.all((np.min(r_coords, axis=0) - np.array([0, 0])) < 1e-14)
 
-        assert np.alltrue(abs(np.max(s_coords, axis=0) - max_vals) < 1e-14)
-        assert np.alltrue(abs(np.min(s_coords, axis=0) - min_vals) < 1e-14)
+        assert np.all(abs(np.max(s_coords, axis=0) - max_vals) < 1e-14)
+        assert np.all(abs(np.min(s_coords, axis=0) - min_vals) < 1e-14)
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
     t_mesh, _, _, _, _, _ = cashocs.regular_box_mesh(
@@ -310,9 +310,9 @@ def test_convert_coordinate_defo_to_dof_defo():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
     coordinates_initial = mesh.coordinates().copy()
     a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
-    a_posteriori_tester = cashocs.geometry.mesh_testing.APosterioriMeshTester(mesh)
-    deformation_handler = cashocs.DeformationHandler(
-        mesh, a_priori_tester, a_posteriori_tester
+    intersection_tester = cashocs.geometry.mesh_testing.IntersectionTester(mesh)
+    deformation_handler = cashocs.geometry.DeformationHandler(
+        mesh, a_priori_tester, intersection_tester
     )
     VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
     coordinate_deformation = (
@@ -333,9 +333,9 @@ def test_convert_dof_defo_to_coordinate_defo(rng):
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
     coordinates_initial = mesh.coordinates().copy()
     a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
-    a_posteriori_tester = cashocs.geometry.mesh_testing.APosterioriMeshTester(mesh)
-    deformation_handler = cashocs.DeformationHandler(
-        mesh, a_priori_tester, a_posteriori_tester
+    intersection_tester = cashocs.geometry.mesh_testing.IntersectionTester(mesh)
+    deformation_handler = cashocs.geometry.DeformationHandler(
+        mesh, a_priori_tester, intersection_tester
     )
     VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
     defo = fenics.Function(VCG)
@@ -356,9 +356,9 @@ def test_move_mesh():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
     coordinates_initial = mesh.coordinates().copy()
     a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
-    a_posteriori_tester = cashocs.geometry.mesh_testing.APosterioriMeshTester(mesh)
-    deformation_handler = cashocs.DeformationHandler(
-        mesh, a_priori_tester, a_posteriori_tester
+    intersection_tester = cashocs.geometry.mesh_testing.IntersectionTester(mesh)
+    deformation_handler = cashocs.geometry.DeformationHandler(
+        mesh, a_priori_tester, intersection_tester
     )
 
     coordinate_deformation = coordinates_initial.copy()

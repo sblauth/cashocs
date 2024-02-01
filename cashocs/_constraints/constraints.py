@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -20,16 +20,25 @@
 from __future__ import annotations
 
 import abc
-from typing import Optional, Union
+from typing import Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
-import ufl
-import ufl.core.expr
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs._optimization import cost_functional
+
+if TYPE_CHECKING:
+    try:
+        from ufl_legacy.core import expr as ufl_expr
+    except ImportError:
+        from ufl.core import expr as ufl_expr
 
 
 class Constraint(abc.ABC):
@@ -43,7 +52,7 @@ class Constraint(abc.ABC):
 
     def __init__(
         self,
-        variable_function: Union[ufl.Form, ufl.core.expr.Expr],
+        variable_function: Union[ufl.Form, ufl_expr.Expr],
         measure: Optional[fenics.Measure] = None,
     ) -> None:
         """Initializes self.
@@ -83,7 +92,7 @@ class EqualityConstraint(Constraint):
 
     def __init__(
         self,
-        variable_function: Union[ufl.Form, ufl.core.expr.Expr],
+        variable_function: Union[ufl.Form, ufl_expr.Expr],
         target: float,
         measure: Optional[fenics.Measure] = None,
     ) -> None:
@@ -142,7 +151,7 @@ class InequalityConstraint(Constraint):
 
     def __init__(
         self,
-        variable_function: Union[ufl.Form, ufl.core.expr.Expr],
+        variable_function: Union[ufl.Form, ufl_expr.Expr],
         lower_bound: Optional[Union[float, fenics.Function]] = None,
         upper_bound: Optional[Union[float, fenics.Function]] = None,
         measure: Optional[fenics.Measure] = None,

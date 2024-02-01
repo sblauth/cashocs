@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import List, Optional, TYPE_CHECKING
 
 import fenics
 
@@ -41,6 +41,7 @@ class AdjointProblem(pde_problem.PDEProblem):
         db: database.Database,
         adjoint_form_handler: _forms.AdjointFormHandler,
         state_problem: sp.StateProblem,
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
     ) -> None:
         """Initializes self.
 
@@ -49,9 +50,11 @@ class AdjointProblem(pde_problem.PDEProblem):
             adjoint_form_handler: The form handler for the adjoint system.
             state_problem: The StateProblem object used to get the point where we
                 linearize the problem.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
 
         """
-        super().__init__(db)
+        super().__init__(db, linear_solver=linear_solver)
 
         self.adjoint_form_handler = adjoint_form_handler
         self.state_problem = state_problem
@@ -126,6 +129,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                         preconditioner_form=self.db.form_db.preconditioner_forms[
                             -1 - i
                         ],
+                        linear_solver=self.linear_solver,
                     )
 
             else:
@@ -146,6 +150,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                     b_tensors=self.b_tensors[::-1],
                     inner_is_linear=True,
                     preconditioner_forms=self.db.form_db.preconditioner_forms[::-1],
+                    linear_solver=self.linear_solver,
                 )
 
             self.has_solution = True

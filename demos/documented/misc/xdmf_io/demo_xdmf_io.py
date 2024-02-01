@@ -53,7 +53,8 @@
 # This means, that when we now use cashocs to solve the problem, the output is stored to
 # a directory, which is specified in the {ini}`result_dir` of the Output Section of the
 # config file. As we have not specified a directory, the files will be created in the
-# default location `./results`, and the XDMF files will be stored in `./results/xdmf`.
+# default location `./results`, and the XDMF files will be stored in
+# `./results/checkpoints`.
 #
 # The code for solving the problem is as follows
 
@@ -83,8 +84,8 @@ sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config=confi
 sop.solve()
 # -
 
-# After we have run this code, we can see that now a directory `./results` exists and
-# that the XDMF files are located in `./results/xdmf`, as expected.
+# After we have run this code, we can see that now a directory `./results`
+# exists and that the XDMF files are located in `./results/checkpoints`, as expected.
 #
 # ### Reading the XDMF files back into python
 #
@@ -92,7 +93,7 @@ sop.solve()
 # {py:func}`cashocs.io.read_function_from_xdmf`, which works as follows
 
 u_init = cashocs.io.read_function_from_xdmf(
-    "./results/xdmf/state_0.xdmf", "state_0", "CG", 1, step=0
+    "./results/checkpoints/state_0.xdmf", "state_0", "CG", 1, step=0
 )
 
 # The function works as follows. In the first argument, we have to specify the location
@@ -111,7 +112,7 @@ u_init = cashocs.io.read_function_from_xdmf(
 # <demo_multiple_variables>` or problems with {ref}`mixed spaces
 # <demo_monolithic_problems>`, the outputs could, e.g., have the names
 # {python}`'state_1_2.xdmf'`, so that the corresponding name would be
-# {python}`'state_1_2'`
+# {python}`'state_1_sub_2'`
 # :::
 #
 # :::{warning}
@@ -132,7 +133,7 @@ u_init = cashocs.io.read_function_from_xdmf(
 # line
 
 u_final = cashocs.io.read_function_from_xdmf(
-    "./results/xdmf/state_0.xdmf", "state_0", "CG", 1, step=11
+    "./results/checkpoints/state_0.xdmf", "state_0", "CG", 1, step=11
 )
 
 # Let us now compare these functions in python, with the help of matplotlib.
@@ -165,7 +166,7 @@ plt.tight_layout()
 # code
 
 shape_gradient = cashocs.io.read_function_from_xdmf(
-    "./results/xdmf/shape_gradient.xdmf",
+    "./results/checkpoints/shape_gradient.xdmf",
     "gradient_0",
     "CG",
     1,

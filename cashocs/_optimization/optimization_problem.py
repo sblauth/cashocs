@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -27,10 +27,15 @@ from __future__ import annotations
 import abc
 import copy
 from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
+import weakref
 
 import fenics
 import numpy as np
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _exceptions
 from cashocs import _forms
@@ -104,6 +109,14 @@ class OptimizationProblem(abc.ABC):
         temp_dict: Optional[Dict] = None,
         initial_function_values: Optional[List[float]] = None,
         preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
+        pre_callback: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ] = None,
+        post_callback: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ] = None,
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -154,6 +167,14 @@ class OptimizationProblem(abc.ABC):
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
+            adjoint_linear_solver: The linear solver (KSP) which is used to solve the
+                (linear) adjoint system.
 
         Notes:
             If one uses a single PDE constraint, the inputs can be the objects
@@ -220,6 +241,14 @@ class OptimizationProblem(abc.ABC):
             self.bcs_list,
             self.preconditioner_forms,
         )
+
+        self.linear_solver = linear_solver
+        self.adjoint_linear_solver = adjoint_linear_solver
+
+        self.db.callback.pre_callback = pre_callback
+        self.db.callback.post_callback = post_callback
+        self.db.callback.problem = weakref.proxy(self)
+
         if temp_dict is not None:
             self.db.parameter_db.temp_dict.update(temp_dict)
             self.db.parameter_db.is_remeshed = True
@@ -229,11 +258,13 @@ class OptimizationProblem(abc.ABC):
             self.db,
             self.general_form_handler.state_form_handler,
             self.initial_guess,
+            linear_solver=self.linear_solver,
         )
         self.adjoint_problem = _pde_problems.AdjointProblem(
             self.db,
             self.general_form_handler.adjoint_form_handler,
             self.state_problem,
+            linear_solver=self.adjoint_linear_solver,
         )
         self.output_manager = io.OutputManager(self.db)
 

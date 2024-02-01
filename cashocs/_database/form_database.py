@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -25,7 +25,11 @@ from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
     import fenics
-    import ufl
+
+    try:
+        import ufl_legacy as ufl
+    except ImportError:
+        import ufl
 
     from cashocs import _typing
 

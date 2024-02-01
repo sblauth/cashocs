@@ -22,7 +22,7 @@ jobs:
         rm -R /home/mambauser/cashocs
 
     - name: Checkout repository
-      uses: actions/checkout@v3.5.2 
+      uses: actions/checkout@v4.1.1 
 
     - name: Install cashocs
       shell: bash
@@ -45,18 +45,18 @@ jobs:
     steps:
     
     - name: Checkout repository
-      uses: actions/checkout@v3.5.2
+      uses: actions/checkout@v4.1.1
     
 
     - name: Get tag name
       id: tag_name
       run: |
-        echo "::set-output name=TAG_PREFIX::${GITHUB_REF#refs/tags/}"
+        echo "TAG_PREFIX=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
 
     - name: Check if release is a pre-release
       id: check_version
-      uses: nowsprinting/check-version-format-action@v3
+      uses: nowsprinting/check-version-format-action@v4
       with:
         prefix: 'v'
 
@@ -73,15 +73,17 @@ jobs:
   build_and_publish:
     name: Build and publish python package
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     needs:
       - run_tests
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3.5.2
+      uses: actions/checkout@v4.1.1
 
     - name: Set up Python 3.11
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: 3.11
 
@@ -93,6 +95,3 @@ jobs:
 
     - name: Publish distribution to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}

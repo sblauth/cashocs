@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -22,7 +22,11 @@ from __future__ import annotations
 from typing import List, Tuple, Union
 
 import fenics
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _utils
 from cashocs._database import database
@@ -66,12 +70,17 @@ class GeneralFormHandler:
         self.db = db
 
         self.config = self.db.config
-        self.state_form_handler = StateFormHandler(self.db)
-        self.adjoint_form_handler = AdjointFormHandler(self.db)
+        self.state_form_handler: StateFormHandler = StateFormHandler(self.db)
+        self.adjoint_form_handler: AdjointFormHandler = AdjointFormHandler(self.db)
 
 
 class StateFormHandler:
     """Manages weak state forms."""
+
+    state_eq_forms: List[ufl.Form]
+    linear_state_eq_forms: list[ufl.Form]
+    state_eq_forms_lhs: list[ufl.Form]
+    state_eq_forms_rhs: list[ufl.Form]
 
     def __init__(self, db: database.Database):
         """Initializes the state form handler.
@@ -83,7 +92,7 @@ class StateFormHandler:
         self.db = db
 
         self.config = self.db.config
-        self.bcs_list = self.db.form_db.bcs_list
+        self.bcs_list: List[List[fenics.DirichletBC]] = self.db.form_db.bcs_list
         (
             self.state_eq_forms,
             self.linear_state_eq_forms,
@@ -135,6 +144,12 @@ class StateFormHandler:
 
 class AdjointFormHandler:
     """Manages weak adjoint forms."""
+
+    bcs_list_ad: list[list[fenics.DirichletBC]]
+    adjoint_eq_lhs: list[ufl.Form]
+    adjoint_eq_rhs: list[ufl.Form]
+    adjoint_eq_forms: list[ufl.Form]
+    linear_adjoint_eq_forms: list[ufl.Form]
 
     def __init__(self, db: database.Database):
         """Initializes the adjoint form handler.

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -23,7 +23,13 @@ import copy
 from typing import Callable, List, Optional, TYPE_CHECKING, Union
 
 import fenics
-import ufl
+from matplotlib import colors
+import numpy as np
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _exceptions
 from cashocs import _optimization
@@ -59,9 +65,11 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
     def __init__(  # pylint: disable=unused-argument
         self,
         state_forms: list[ufl.Form] | ufl.Form,
-        bcs_list: list[list[fenics.DirichletBC]]
-        | list[fenics.DirichletBC]
-        | fenics.DirichletBC,
+        bcs_list: (
+            list[list[fenics.DirichletBC]]
+            | list[fenics.DirichletBC]
+            | fenics.DirichletBC
+        ),
         cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
         states: list[fenics.Function] | fenics.Function,
         adjoints: list[fenics.Function] | fenics.Function,
@@ -81,6 +89,10 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         ] = None,
         desired_weights: list[float] | None = None,
         preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
+        pre_callback: Optional[Callable] = None,
+        post_callback: Optional[Callable] = None,
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
     ) -> None:
         r"""Initializes the topology optimization problem.
 
@@ -136,6 +148,14 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
+            adjoint_linear_solver: The linear solver (KSP) which is used to solve the
+                (linear) adjoint system.
 
         """
         super().__init__(
@@ -151,15 +171,23 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             gradient_ksp_options=gradient_ksp_options,
             desired_weights=desired_weights,
             preconditioner_forms=preconditioner_forms,
+            pre_callback=pre_callback,
+            post_callback=post_callback,
+            linear_solver=linear_solver,
+            adjoint_linear_solver=adjoint_linear_solver,
         )
 
         self.db.parameter_db.problem_type = "topology"
         self.mesh_parametrization = None
 
-        self.levelset_function = levelset_function
-        self.topological_derivative_pos = topological_derivative_pos
-        self.topological_derivative_neg = topological_derivative_neg
-        self.update_levelset = update_levelset
+        self.levelset_function: fenics.Function = levelset_function
+        self.topological_derivative_pos: fenics.Function | ufl.Form = (
+            topological_derivative_pos
+        )
+        self.topological_derivative_neg: fenics.Function | ufl.Form = (
+            topological_derivative_neg
+        )
+        self.update_levelset: Callable = update_levelset
         self.riesz_scalar_products = riesz_scalar_products
 
         self.is_topology_problem = True
@@ -204,6 +232,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
             desired_weights=desired_weights,
+            linear_solver=linear_solver,
         )
         self._base_ocp.db.parameter_db.problem_type = "topology"
         self.db.function_db.control_spaces = (
@@ -296,8 +325,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
 
     def plot_shape(self) -> None:
         """Visualize the current shape in a plot."""
-        shape = fenics.Function(self.dg0_space)
-        _utils.interpolate_levelset_function_to_cells(
-            self.levelset_function, 1.0, 0.0, shape
+        rgbvals = np.array([[0, 107, 164], [255, 128, 14]]) / 255.0
+        cmap = colors.LinearSegmentedColormap.from_list(
+            "tab10_colorblind", rgbvals, N=256
         )
-        fenics.plot(shape)
+        fenics.plot(self.levelset_function, vmin=-1e-10, vmax=1e-10, cmap=cmap)

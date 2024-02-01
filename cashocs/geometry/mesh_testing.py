@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -107,7 +107,7 @@ class APrioriMeshTester:
         return bool((min_det >= 1 / volume_change) and (max_det <= volume_change))
 
 
-class APosterioriMeshTester:
+class IntersectionTester:
     """A class for testing the mesh after it has been modified."""
 
     def __init__(self, mesh: fenics.Mesh) -> None:

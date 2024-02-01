@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2022 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,11 @@
 
 import fenics
 import numpy as np
-import ufl.core.expr
+
+try:
+    from ufl_legacy.core import expr as ufl_expr
+except ImportError:
+    from ufl.core import expr as ufl_expr
 
 cpp_code = """
 #include <pybind11/pybind11.h>
@@ -212,8 +216,8 @@ def interpolate_levelset_function_to_cells(
 
 
 def interpolate_by_volume(
-    form_neg: ufl.core.expr.Expr,
-    form_pos: ufl.core.expr.Expr,
+    form_neg: ufl_expr.Expr,
+    form_pos: ufl_expr.Expr,
     levelset_function: fenics.Function,
     node_function: fenics.Function,
 ) -> None:
@@ -246,8 +250,8 @@ def interpolate_by_volume(
 
 
 def interpolate_by_angle(
-    form_neg: ufl.core.expr.Expr,
-    form_pos: ufl.core.expr.Expr,
+    form_neg: ufl_expr.Expr,
+    form_pos: ufl_expr.Expr,
     levelset_function: fenics.Function,
     node_function: fenics.Function,
 ) -> None:

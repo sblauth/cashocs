@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -31,8 +31,10 @@ from cashocs._utils.forms import multiplication
 from cashocs._utils.forms import summation
 from cashocs._utils.helpers import check_and_enlist_bcs
 from cashocs._utils.helpers import check_and_enlist_control_constraints
+from cashocs._utils.helpers import check_file_extension
 from cashocs._utils.helpers import create_function_list
 from cashocs._utils.helpers import enlist
+from cashocs._utils.helpers import number_of_arguments
 from cashocs._utils.helpers import optimization_algorithm_configuration
 from cashocs._utils.interpolations import interpolate_by_angle
 from cashocs._utils.interpolations import interpolate_by_volume
@@ -66,4 +68,6 @@ __all__ = [
     "interpolate_levelset_function_to_cells",
     "interpolate_by_angle",
     "interpolate_by_volume",
+    "check_file_extension",
+    "number_of_arguments",
 ]

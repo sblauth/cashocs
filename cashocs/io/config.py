@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -224,6 +224,9 @@ class Config(ConfigParser):
                     "attributes": ["less_than_one", "positive"],
                     "larger_than": ("LineSearch", "factor_low"),
                 },
+                "fail_if_not_converged": {
+                    "type": "bool",
+                },
             },
             "AlgoLBFGS": {
                 "bfgs_memory_size": {
@@ -322,6 +325,10 @@ class Config(ConfigParser):
                 "update_inhomogeneous": {
                     "type": "bool",
                 },
+                "inhomogeneous_exponent": {
+                    "type": "float",
+                    "attributes": ["non_negative"],
+                },
                 "use_distance_mu": {
                     "type": "bool",
                 },
@@ -363,6 +370,12 @@ class Config(ConfigParser):
                     "type": "list",
                 },
                 "degree_estimation": {
+                    "type": "bool",
+                },
+                "global_deformation": {
+                    "type": "bool",
+                },
+                "test_for_intersections": {
                     "type": "bool",
                 },
             },
@@ -458,6 +471,10 @@ class Config(ConfigParser):
                 "type": {
                     "type": "str",
                     "possible_options": ["min", "avg", "minimum", "average"],
+                },
+                "remesh_iter": {
+                    "type": "int",
+                    "attributes": ["non_negative"],
                 },
             },
             "TopologyOptimization": {
@@ -560,11 +577,11 @@ safeguard_stepsize = True
 polynomial_model = cubic
 factor_high = 0.5
 factor_low = 0.1
+fail_if_not_converged = False
 
 [ShapeGradient]
 lambda_lame = 0.0
 damping_factor = 0.0
-inhomogeneous = False
 mu_def = 1.0
 mu_fix = 1.0
 use_sqrt_mu = False
@@ -580,13 +597,17 @@ dist_min = 1.0
 dist_max = 1.0
 boundaries_dist = []
 smooth_mu = False
+inhomogeneous = False
 update_inhomogeneous = False
+inhomogeneous_exponent = 1.0
 fixed_dimensions = []
 shape_bdry_def = []
 shape_bdry_fix = []
 shape_bdry_fix_x = []
 shape_bdry_fix_y = []
 shape_bdry_fix_z = []
+global_deformation = False
+test_for_intersections = True
 
 [Regularization]
 factor_volume = 0.0
@@ -633,6 +654,7 @@ measure = skewness
 type = min
 volume_change = inf
 angle_change = inf
+remesh_iter = 0
 
 [TopologyOptimization]
 angle_tol = 1.0
