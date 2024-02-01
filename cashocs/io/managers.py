@@ -234,9 +234,9 @@ class ResultManager(IOManager):
 
     def post_process(self) -> None:
         """Saves the history of the optimization to a .json file."""
-        self.output_dict[
-            "initial_gradient_norm"
-        ] = self.db.parameter_db.optimization_state["gradient_norm_initial"]
+        self.output_dict["initial_gradient_norm"] = (
+            self.db.parameter_db.optimization_state["gradient_norm_initial"]
+        )
         self.output_dict["state_solves"] = self.db.parameter_db.optimization_state[
             "no_state_solves"
         ]

@@ -28,6 +28,8 @@ of the maintenance releases, please take a look at
 
 * :py:func:`cashocs.import_mesh` can now also directly import a Gmsh mesh file. Internally, the mesh is directly converted to xdmf and then read. At the moment, this only supports the conversion mode `physical`.
 
+* Add the kwargs `linear_solver` and (where applicable) `adjoint_linear_solver`. These can be used to define custom python KSP objects via petsc4py, most importantly, custom python-based preconditioners can be used with these. The feature is covered in the undocumented demo "demos/shape_optimization/python_pc".
+
 * New configuration file parameters:
 
   * Section LineSearch
