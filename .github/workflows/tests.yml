@@ -47,6 +47,7 @@ jobs:
         files: coverage.xml
 
     - name: Upload coverage to codacy
+      continue-on-error: true
       uses: codacy/codacy-coverage-reporter-action@v1
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
