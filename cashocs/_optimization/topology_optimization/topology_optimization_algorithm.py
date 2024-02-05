@@ -99,6 +99,8 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.levelset_function_prev = fenics.Function(self.cg1_space)
         self.setup_assembler()
 
+        self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
+
     def _generate_measure(self) -> fenics.Measure:
         """Generates the measure for projecting the topological derivative.
 
@@ -263,7 +265,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             _pde_problems.ControlGradientProblem, self.gradient_problem
         )
         self.assembler.assemble(self.b_tensor)
-        _utils.solve_linear_problem(
+        self.linear_solver.solve(
             A=self.riesz_matrix,
             b=self.b_tensor.vec(),
             fun=self.topological_derivative_vertex,
@@ -398,11 +400,11 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
 
             self._cashocs_problem.adjoint_problem.has_solution = False
             self.compute_gradient()
-            self.db.parameter_db.optimization_state[
-                "no_adjoint_solves"
-            ] = self._cashocs_problem.db.parameter_db.optimization_state[
-                "no_adjoint_solves"
-            ]
+            self.db.parameter_db.optimization_state["no_adjoint_solves"] = (
+                self._cashocs_problem.db.parameter_db.optimization_state[
+                    "no_adjoint_solves"
+                ]
+            )
 
             self.objective_value = (
                 self._cashocs_problem.reduced_cost_functional.evaluate()
@@ -423,11 +425,11 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
 
                 self._cashocs_problem.state_problem.has_solution = False
                 self.compute_state_variables()
-                self.db.parameter_db.optimization_state[
-                    "no_state_solves"
-                ] = self._cashocs_problem.db.parameter_db.optimization_state[
-                    "no_state_solves"
-                ]
+                self.db.parameter_db.optimization_state["no_state_solves"] = (
+                    self._cashocs_problem.db.parameter_db.optimization_state[
+                        "no_state_solves"
+                    ]
+                )
                 cost_functional_new = (
                     self._cashocs_problem.reduced_cost_functional.evaluate()
                 )
