@@ -266,6 +266,7 @@ class OptimizationProblem(abc.ABC):
             self.general_form_handler.state_form_handler,
             self.initial_guess,
             linear_solver=self.linear_solver,
+            newton_linearizations=self.newton_linearizations,
         )
         self.adjoint_problem = _pde_problems.AdjointProblem(
             self.db,
@@ -409,8 +410,8 @@ class OptimizationProblem(abc.ABC):
             parsed_newton_linearizations: List[Optional[ufl.Form]] = []
             for _ in range(self.state_dim):
                 parsed_newton_linearizations.append(None)
-            else:
-                parsed_newton_linearizations = _utils.enlist(newton_linearizations)
+        else:
+            parsed_newton_linearizations = _utils.enlist(newton_linearizations)
 
         return (
             parsed_initial_guess,
