@@ -119,9 +119,14 @@ class _NewtonSolver:
         self.b_tensor = b_tensor
         self.is_linear = is_linear
         if preconditioner_form is not None:
-            self.preconditioner_form = fenics.derivative(preconditioner_form, self.u)
+            if len(preconditioner_form.arguments()) == 1:
+                self.preconditioner_form = fenics.derivative(
+                    preconditioner_form, self.u
+                )
+            else:
+                self.preconditioner_form = preconditioner_form
         else:
-            self.preconditioner_form = preconditioner_form
+            self.preconditioner_form = None
 
         self.verbose = verbose if not self.is_linear else False
 
