@@ -93,6 +93,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         post_callback: Optional[Callable] = None,
         linear_solver: Optional[_utils.linalg.LinearSolver] = None,
         adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
     ) -> None:
         r"""Initializes the topology optimization problem.
 
@@ -156,6 +157,10 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 systems arising from the discretized PDE.
             adjoint_linear_solver: The linear solver (KSP) which is used to solve the
                 (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
 
         """
         super().__init__(
@@ -175,6 +180,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             post_callback=post_callback,
             linear_solver=linear_solver,
             adjoint_linear_solver=adjoint_linear_solver,
+            newton_linearizations=newton_linearizations,
         )
 
         self.db.parameter_db.problem_type = "topology"
