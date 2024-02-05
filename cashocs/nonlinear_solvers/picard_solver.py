@@ -99,6 +99,7 @@ def picard_iteration(
     inner_is_linear: bool = False,
     preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
     linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+    newton_linearizations: Optional[List[ufl.Form]] = None,
 ) -> None:
     """Solves a system of coupled PDEs via a Picard iteration.
 
@@ -131,6 +132,10 @@ def picard_iteration(
             matrix.
         linear_solver: The linear solver (KSP) which is used to solve the linear
             systems arising from the discretized PDE.
+        newton_linearizations: A list of UFL forms describing which (alternative)
+            linearizations should be used for the (nonlinear) equations when
+            solving them (with Newton's method). The default is `None`, so that the
+            Jacobian of the supplied state forms is used.
 
     """
     is_printing = verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0
@@ -139,6 +144,11 @@ def picard_iteration(
     bcs_list = _utils.check_and_enlist_bcs(bcs_list)
     bcs_list_hom = _create_homogenized_bcs(bcs_list)
     preconditioner_form_list = _utils.enlist(preconditioner_forms)
+
+    if newton_linearizations is None:
+        newton_linearization_list = [None] * len(u_list)
+    else:
+        newton_linearization_list = newton_linearizations
 
     comm = u_list[0].function_space().mesh().mpi_comm()
 
@@ -184,6 +194,7 @@ def picard_iteration(
                 form_list[j],
                 u_list[j],
                 bcs_list[j],
+                derivative=newton_linearization_list[j],
                 rtol=eta,
                 atol=atol * 1e-1,
                 max_iter=inner_max_iter,

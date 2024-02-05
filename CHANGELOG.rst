@@ -30,6 +30,8 @@ of the maintenance releases, please take a look at
 
 * Add the kwargs `linear_solver` and (where applicable) `adjoint_linear_solver`. These can be used to define custom python KSP objects via petsc4py, most importantly, custom python-based preconditioners can be used with these. The feature is covered in the undocumented demo "demos/shape_optimization/python_pc".
 
+* Add the kwarg `newton_linearization` to the optimization problem classes. This can be used to specify which (alternative) linearization techniques can be used for solving the nonlinear state systems.
+
 * New configuration file parameters:
 
   * Section LineSearch
