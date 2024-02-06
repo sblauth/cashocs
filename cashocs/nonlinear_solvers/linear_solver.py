@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -43,6 +43,7 @@ def linear_solve(
     preconditioner_form: ufl.Form = None,
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
+    linear_solver: Optional[_utils.linalg.LinearSolver] = None,
 ) -> fenics.Function:
     """Solves a linear problem.
 
@@ -56,6 +57,7 @@ def linear_solve(
             sub-problem.
         b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
             sub-problem.
+        linear_solver: The linear solver used to solve the (discretized) linear problem.
 
     Returns:
         The computed solution, this overwrites the input function `u`.
@@ -95,8 +97,8 @@ def linear_solve(
     else:
         P_matrix = None  # pylint: disable=invalid-name
 
-    _utils.solve_linear_problem(
-        A=A_matrix, b=b, fun=u, ksp_options=ksp_options, comm=comm, P=P_matrix
-    )
+    if linear_solver is None:
+        linear_solver = _utils.linalg.LinearSolver(comm)
+    linear_solver.solve(A=A_matrix, b=b, fun=u, ksp_options=ksp_options, P=P_matrix)
 
     return u

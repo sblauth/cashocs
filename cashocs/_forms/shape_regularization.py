@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -551,6 +551,7 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         if self.mu > 0:
             self.is_active = True
 
+        self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
         self.scale()
 
     def compute_shape_derivative(self) -> ufl.Form:
@@ -612,11 +613,10 @@ class CurvatureRegularization(ShapeRegularizationTerm):
 
         fenics.assemble(self.l_curvature, tensor=self.b_curvature)
 
-        _utils.solve_linear_problem(
+        self.linear_solver.solve(
             A=self.a_curvature_matrix.mat(),
             b=self.b_curvature.vec(),
             fun=self.kappa_curvature,
-            comm=self.db.geometry_db.mpi_comm,
         )
 
     def scale(self) -> None:

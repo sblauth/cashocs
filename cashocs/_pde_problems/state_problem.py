@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -28,6 +28,10 @@ from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
+    try:
+        import ufl_legacy as ufl
+    except ImportError:
+        import ufl
     from cashocs import _forms
     from cashocs._database import database
 
@@ -40,6 +44,8 @@ class StateProblem(pde_problem.PDEProblem):
         db: database.Database,
         state_form_handler: _forms.StateFormHandler,
         initial_guess: Optional[List[fenics.Function]],
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        newton_linearizations: Optional[List[Optional[ufl.Form]]] = None,
     ) -> None:
         """Initializes self.
 
@@ -48,12 +54,22 @@ class StateProblem(pde_problem.PDEProblem):
             state_form_handler: The form handler for the state problem.
             initial_guess: An initial guess for the state variables, used to initialize
                 them in each iteration.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
 
         """
-        super().__init__(db)
+        super().__init__(db, linear_solver=linear_solver)
 
         self.state_form_handler = state_form_handler
         self.initial_guess = initial_guess
+        if newton_linearizations is not None:
+            self.newton_linearizations = newton_linearizations
+        else:
+            self.newton_linearizations = [None] * self.db.parameter_db.state_dim
 
         self.bcs_list: List[List[fenics.DirichletBC]] = self.state_form_handler.bcs_list
         self.states = self.db.function_db.states
@@ -129,6 +145,7 @@ class StateProblem(pde_problem.PDEProblem):
                             ksp_options=self.db.parameter_db.state_ksp_options[i],
                             comm=self.db.geometry_db.mpi_comm,
                             preconditioner_form=self.db.form_db.preconditioner_forms[i],
+                            linear_solver=self.linear_solver,
                         )
 
                 else:
@@ -139,6 +156,7 @@ class StateProblem(pde_problem.PDEProblem):
                             self.state_form_handler.state_eq_forms[i],
                             self.states[i],
                             self.bcs_list[i],
+                            derivative=self.newton_linearizations[i],
                             rtol=self.newton_rtol,
                             atol=self.newton_atol,
                             max_iter=self.newton_iter,
@@ -149,6 +167,7 @@ class StateProblem(pde_problem.PDEProblem):
                             A_tensor=self.A_tensors[i],
                             b_tensor=self.b_tensors[i],
                             preconditioner_form=self.db.form_db.preconditioner_forms[i],
+                            linear_solver=self.linear_solver,
                         )
 
             else:
@@ -169,6 +188,8 @@ class StateProblem(pde_problem.PDEProblem):
                     b_tensors=self.b_tensors,
                     inner_is_linear=self.config.getboolean("StateSystem", "is_linear"),
                     preconditioner_forms=self.db.form_db.preconditioner_forms,
+                    linear_solver=self.linear_solver,
+                    newton_linearizations=self.newton_linearizations,
                 )
 
             self.has_solution = True

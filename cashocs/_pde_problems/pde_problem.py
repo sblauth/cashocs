@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -20,9 +20,11 @@
 from __future__ import annotations
 
 import abc
-from typing import List, TYPE_CHECKING, Union
+from typing import List, Optional, TYPE_CHECKING, Union
 
 import fenics
+
+from cashocs import _utils
 
 if TYPE_CHECKING:
     from cashocs._database import database
@@ -31,17 +33,29 @@ if TYPE_CHECKING:
 class PDEProblem(abc.ABC):
     """Base class for a PDE problem."""
 
-    def __init__(self, db: database.Database) -> None:
+    def __init__(
+        self,
+        db: database.Database,
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+    ) -> None:
         """Initializes self.
 
         Args:
             db: The database of the problem
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE
 
         """
         self.db = db
 
         self.config = db.config
-        self.has_solution = False
+        self.has_solution: bool = False
+        if linear_solver is None:
+            self.linear_solver = _utils.linalg.LinearSolver(
+                comm=self.db.geometry_db.mpi_comm
+            )
+        else:
+            self.linear_solver = linear_solver
 
     @abc.abstractmethod
     def solve(self) -> Union[fenics.Function, List[fenics.Function]]:

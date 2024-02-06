@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -80,16 +80,16 @@ class DescentTopologyAlgorithm(
 
         def post_callback() -> None:
             self.compute_gradient()
-            self.db.parameter_db.optimization_state[
-                "no_adjoint_solves"
-            ] = self._cashocs_problem.db.parameter_db.optimization_state[
-                "no_adjoint_solves"
-            ]
-            self.db.parameter_db.optimization_state[
-                "no_state_solves"
-            ] = self._cashocs_problem.db.parameter_db.optimization_state[
-                "no_state_solves"
-            ]
+            self.db.parameter_db.optimization_state["no_adjoint_solves"] = (
+                self._cashocs_problem.db.parameter_db.optimization_state[
+                    "no_adjoint_solves"
+                ]
+            )
+            self.db.parameter_db.optimization_state["no_state_solves"] = (
+                self._cashocs_problem.db.parameter_db.optimization_state[
+                    "no_state_solves"
+                ]
+            )
             self._cashocs_problem.db.function_db.gradient[0].vector().vec().aypx(
                 0.0, -self.projected_gradient.vector().vec()
             )

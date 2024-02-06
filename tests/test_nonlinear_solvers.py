@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -59,3 +59,51 @@ def test_newton_solver():
     )
 
     assert np.allclose(u.vector()[:], u_fen.vector()[:])
+
+
+def test_newton_linearization(config_sop):
+    config_sop.set("StateSystem", "is_linear", "False")
+    config_sop.set("StateSystem", "newton_verbose", "True")
+
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(16)
+    v_elem = VectorElement("CG", mesh.ufl_cell(), 2)
+    p_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
+    V = FunctionSpace(mesh, MixedElement([v_elem, p_elem]))
+
+    up = Function(V)
+    u, p = split(up)
+    vq = Function(V)
+    v, q = split(vq)
+
+    F = (
+        Constant(1e-2) * inner(grad(u), grad(v)) * dx
+        + dot(grad(u) * u, v) * dx
+        - p * div(v) * dx
+        - q * div(u) * dx
+    )
+    bcs = cashocs.create_dirichlet_bcs(V.sub(0), Constant((1.0, 0.0)), boundaries, 1)
+    bcs += cashocs.create_dirichlet_bcs(
+        V.sub(0), Constant((0.0, 0.0)), boundaries, [3, 4]
+    )
+
+    u_, p_ = TrialFunctions(V)
+    v_, q_ = TestFunctions(V)
+    dF = (
+        Constant(1e-2) * inner(grad(u_), grad(v_)) * dx
+        + dot(grad(u_) * u, v_) * dx
+        - p_ * div(v_) * dx
+        - q_ * div(u_) * dx
+    )
+
+    J = cashocs.IntegralFunctional(Constant(0.0) * dx)
+    sop = cashocs.ShapeOptimizationProblem(
+        F,
+        bcs,
+        J,
+        up,
+        vq,
+        boundaries,
+        config=config_sop,
+        newton_linearizations=dF,
+    )
+    sop.compute_state_variables()

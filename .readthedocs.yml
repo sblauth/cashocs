@@ -8,8 +8,10 @@ build:
 sphinx:
   configuration: docs/source/conf.py
   builder: dirhtml
+  fail_on_warning: true
 
-formats: all
+formats:
+  - pdf
 
 python:
   install:

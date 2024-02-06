@@ -56,7 +56,7 @@ jobs:
 
     - name: Check if release is a pre-release
       id: check_version
-      uses: nowsprinting/check-version-format-action@v3
+      uses: nowsprinting/check-version-format-action@v4
       with:
         prefix: 'v'
 

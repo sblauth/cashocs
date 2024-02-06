@@ -24,11 +24,11 @@ jupytext_process.process()
 # -- Project information -----------------------------------------------------
 
 project = "cashocs"
-copyright = "2020-2023, Sebastian Blauth"
+copyright = "2020-2024, Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
-release = "2.1.0-dev"
+release = "2.2.0-dev"
 
 
 # -- General configuration ---------------------------------------------------
@@ -71,7 +71,6 @@ autodoc_default_options = {
 autodoc_member_order = "alphabetical"
 autodoc_mock_imports = [
     "fenics",
-    "numpy",
     "petsc4py",
     "mpi4py",
     "ufl",

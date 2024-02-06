@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -104,12 +104,11 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         if not self.has_solution:
             for i in range(len(self.db.function_db.gradient)):
                 self.form_handler.assemblers[i].assemble(self.b_tensors[i])
-                _utils.solve_linear_problem(
+                self.linear_solver.solve(
                     A=self.form_handler.riesz_projection_matrices[i],
                     b=self.b_tensors[i].vec(),
                     fun=self.db.function_db.gradient[i],
                     ksp_options=self.riesz_ksp_options[i],
-                    comm=self.db.geometry_db.mpi_comm,
                 )
 
             self.has_solution = True
