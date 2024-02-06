@@ -32,6 +32,8 @@ of the maintenance releases, please take a look at
 
 * Add the kwarg `newton_linearization` to the optimization problem classes. This can be used to specify which (alternative) linearization techniques can be used for solving the nonlinear state systems.
 
+* The function :py:func:`cashocs.newton_solve` does not change the user-specified tolerance (in the ksp_options) anymore, unless the kwarg `inexact=True` is set. This means, that the user can use custom "inexact Newton" schemes (e.g., gain one digit in accuracy) too. The old default was to use the relative tolerance of the nonlinear iteration multiplied with a safety factor (0.1).
+
 * New configuration file parameters:
 
   * Section LineSearch
