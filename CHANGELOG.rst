@@ -22,6 +22,8 @@ of the maintenance releases, please take a look at
 
     * This section includes parameters for the new mesh quality constraints for shape optimization
 
+
+
 2.1.0 (February 6, 2024)
 ------------------------
 
