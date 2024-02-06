@@ -7,8 +7,8 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-2.1.0 (in development)
-----------------------
+2.1.0 (February 6, 2024)
+------------------------
 
 * The class :py:class:`cashocs.DeformationHandler` cannot be used anymore. Instead, use the class by calling :py:class:`cashocs.geometry.DeformationHandler`. 
 
