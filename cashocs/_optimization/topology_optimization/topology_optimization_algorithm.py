@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -24,8 +24,11 @@ from typing import Callable, cast, TYPE_CHECKING
 
 import fenics
 import numpy as np
-import ufl
-import ufl.algorithms
+
+try:
+    from ufl_legacy import algorithms as ufl_algorithms
+except ImportError:
+    from ufl import algorithms as ufl_algorithms
 
 from cashocs import _exceptions
 from cashocs import _forms
@@ -42,6 +45,8 @@ if TYPE_CHECKING:
 
 class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorithm):
     """Parent class for solution algorithms for topology optimization."""
+
+    form_handler: _forms.ControlFormHandler
 
     def __init__(
         self,
@@ -94,6 +99,8 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.levelset_function_prev = fenics.Function(self.cg1_space)
         self.setup_assembler()
 
+        self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
+
     def _generate_measure(self) -> fenics.Measure:
         """Generates the measure for projecting the topological derivative.
 
@@ -101,7 +108,6 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             The fenics measure which is used for projecting the topological derivative.
 
         """
-        self.form_handler = cast(_forms.ControlFormHandler, self.form_handler)
         is_everywhere = False
         subdomain_id_list = []
         for integral in self.form_handler.riesz_scalar_products[0].integrals():
@@ -157,10 +163,10 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             )
         except (AssertionError, ValueError):
             estimated_degree = np.maximum(
-                ufl.algorithms.estimate_total_polynomial_degree(
+                ufl_algorithms.estimate_total_polynomial_degree(
                     self.form_handler.riesz_scalar_products[0]
                 ),
-                ufl.algorithms.estimate_total_polynomial_degree(rhs),
+                ufl_algorithms.estimate_total_polynomial_degree(rhs),
             )
             self.assembler = fenics.SystemAssembler(
                 modified_scalar_product[0],
@@ -259,7 +265,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             _pde_problems.ControlGradientProblem, self.gradient_problem
         )
         self.assembler.assemble(self.b_tensor)
-        _utils.solve_linear_problem(
+        self.linear_solver.solve(
             A=self.riesz_matrix,
             b=self.b_tensor.vec(),
             fun=self.topological_derivative_vertex,
@@ -394,11 +400,11 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
 
             self._cashocs_problem.adjoint_problem.has_solution = False
             self.compute_gradient()
-            self.db.parameter_db.optimization_state[
-                "no_adjoint_solves"
-            ] = self._cashocs_problem.db.parameter_db.optimization_state[
-                "no_adjoint_solves"
-            ]
+            self.db.parameter_db.optimization_state["no_adjoint_solves"] = (
+                self._cashocs_problem.db.parameter_db.optimization_state[
+                    "no_adjoint_solves"
+                ]
+            )
 
             self.objective_value = (
                 self._cashocs_problem.reduced_cost_functional.evaluate()
@@ -419,11 +425,11 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
 
                 self._cashocs_problem.state_problem.has_solution = False
                 self.compute_state_variables()
-                self.db.parameter_db.optimization_state[
-                    "no_state_solves"
-                ] = self._cashocs_problem.db.parameter_db.optimization_state[
-                    "no_state_solves"
-                ]
+                self.db.parameter_db.optimization_state["no_state_solves"] = (
+                    self._cashocs_problem.db.parameter_db.optimization_state[
+                        "no_state_solves"
+                    ]
+                )
                 cost_functional_new = (
                     self._cashocs_problem.reduced_cost_functional.evaluate()
                 )

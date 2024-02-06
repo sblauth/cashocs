@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -27,7 +27,11 @@ from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 import fenics
 import numpy as np
 from typing_extensions import Literal
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _exceptions
 from cashocs import _utils
@@ -501,7 +505,7 @@ class SpaceMappingProblem:
         if self.converged:
             if self.save_history and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 with open("./sm_history.json", "w", encoding="utf-8") as file:
-                    json.dump(self.space_mapping_history, file)
+                    json.dump(self.space_mapping_history, file, indent=4)
             fenics.MPI.barrier(fenics.MPI.comm_world)
             output = (
                 f"\nStatistics --- "

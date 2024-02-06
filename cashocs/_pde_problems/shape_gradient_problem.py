@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -29,7 +29,11 @@ from typing import List, TYPE_CHECKING
 
 import fenics
 import numpy as np
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _loggers
 from cashocs import _utils
@@ -139,12 +143,11 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                         np.array([0.0] * len(self.form_handler.fixed_indices)),
                     )
                     self.form_handler.fe_shape_derivative_vector.apply("")
-                _utils.solve_linear_problem(
+                self.linear_solver.solve(
                     A=self.form_handler.scalar_product_matrix,
                     b=self.form_handler.fe_shape_derivative_vector.vec(),
                     fun=self.db.function_db.gradient[0],
                     ksp_options=self.ksp_options,
-                    comm=self.db.geometry_db.mpi_comm,
                 )
 
                 self.has_solution = True

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -24,8 +24,13 @@ from typing import List, Optional, Tuple, TYPE_CHECKING
 
 import fenics
 import numpy as np
-import ufl
-import ufl.algorithms
+
+try:
+    from ufl import algorithms as ufl_algorithms
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+    from ufl import algorithms as ufl_algorithms
 
 from cashocs import _exceptions
 from cashocs import _loggers
@@ -35,7 +40,10 @@ from cashocs._forms import shape_regularization
 from cashocs.geometry import boundary_distance
 
 if TYPE_CHECKING:
-    import ufl.core.expr
+    try:
+        from ufl_legacy.core import expr as ufl_expr
+    except ImportError:
+        from ufl.core import expr as ufl_expr
 
     from cashocs import _typing
     from cashocs import io
@@ -230,6 +238,15 @@ class ShapeFormHandler(form_handler.FormHandler):
     and the shape derivatives.
     """
 
+    use_fixed_dimensions: bool
+    bcs_shape: list[fenics.DirichletBC]
+    fe_shape_derivative_vector: fenics.PETScVector
+    shape_derivative: ufl.Form
+    fixed_indices: list[int]
+    assembler: fenics.SystemAssembler
+    scalar_product_matrix: fenics.PETScMatrix
+    modified_scalar_product: ufl.Form
+
     def __init__(
         self,
         optimization_problem: shape_optimization.ShapeOptimizationProblem,
@@ -269,7 +286,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         self.cg_function_space = fenics.FunctionSpace(self.db.geometry_db.mesh, "CG", 1)
         self.dg_function_space = fenics.FunctionSpace(self.db.geometry_db.mesh, "DG", 0)
-        self.mu_lame = fenics.Function(self.cg_function_space)
+        self.mu_lame: fenics.Function = fenics.Function(self.cg_function_space)
         self.volumes = fenics.Function(self.dg_function_space)
 
         self.stiffness = Stiffness(
@@ -300,13 +317,13 @@ class ShapeFormHandler(form_handler.FormHandler):
             self.fixed_indices = list(itertools.chain(*unpack_list))
 
         self.state_adjoint_ids: List[int] = []
-        self.material_derivative_coeffs: List[ufl.core.expr.Expr] = []
+        self.material_derivative_coeffs: List[ufl_expr.Expr] = []
 
         # Calculate the necessary UFL forms
         self.shape_derivative = self._compute_shape_derivative()
 
         self.bcs_shape = self._setup_bcs_shape()
-        self.riesz_scalar_product = self._compute_shape_gradient_forms()
+        self.riesz_scalar_product: ufl.Form = self._compute_shape_gradient_forms()
 
         self.modified_scalar_product, self.assembler = self.setup_assembler(
             self.riesz_scalar_product, self.shape_derivative, self.bcs_shape
@@ -391,8 +408,8 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         """
         estimated_degree = np.maximum(
-            ufl.algorithms.estimate_total_polynomial_degree(modified_scalar_product),
-            ufl.algorithms.estimate_total_polynomial_degree(shape_derivative),
+            ufl_algorithms.estimate_total_polynomial_degree(modified_scalar_product),
+            ufl_algorithms.estimate_total_polynomial_degree(shape_derivative),
         )
         assembler = fenics.SystemAssembler(
             modified_scalar_product,
@@ -405,7 +422,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         return assembler
 
-    def _check_coefficient_id(self, coeff: ufl.core.expr.Expr) -> None:
+    def _check_coefficient_id(self, coeff: ufl_expr.Expr) -> None:
         """Checks, whether the coefficient belongs to state or adjoint variables.
 
         Args:
@@ -453,7 +470,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                     coeff, fenics.dot(fenics.grad(coeff), self.test_vector_field)
                 )
 
-                material_derivative = ufl.algorithms.expand_derivatives(
+                material_derivative = ufl_algorithms.expand_derivatives(
                     material_derivative
                 )
 
@@ -550,11 +567,16 @@ class ShapeFormHandler(form_handler.FormHandler):
                 self.volumes.vector().vec().scale(1 / vol_max)
                 self.volumes.vector().apply("")
 
+                self.inhomogeneous_exponent = fenics.Constant(
+                    self.config.getfloat("ShapeGradient", "inhomogeneous_exponent")
+                )
             else:
                 self.volumes.vector().vec().set(1.0)
                 self.volumes.vector().apply("")
 
-            def eps(u: fenics.Function) -> ufl.core.expr.Expr:
+                self.inhomogeneous_exponent = fenics.Constant(1.0)
+
+            def eps(u: fenics.Function) -> ufl_expr.Expr:
                 """Computes the symmetric gradient of a vector field ``u``.
 
                 Args:
@@ -572,16 +594,16 @@ class ShapeFormHandler(form_handler.FormHandler):
             riesz_scalar_product = (
                 fenics.Constant(2)
                 * self.mu_lame
-                / self.volumes
+                / pow(self.volumes, self.inhomogeneous_exponent)
                 * fenics.inner(eps(trial), eps(test))
                 * self.dx
                 + fenics.Constant(lambda_lame)
-                / self.volumes
+                / pow(self.volumes, self.inhomogeneous_exponent)
                 * fenics.div(trial)
                 * fenics.div(test)
                 * self.dx
                 + fenics.Constant(damping_factor)
-                / self.volumes
+                / pow(self.volumes, self.inhomogeneous_exponent)
                 * fenics.inner(trial, test)
                 * self.dx
             )

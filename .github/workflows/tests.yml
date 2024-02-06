@@ -27,7 +27,7 @@ jobs:
         rm -R /home/mambauser/cashocs
 
     - name: Checkout repository
-      uses: actions/checkout@v4.1.0 
+      uses: actions/checkout@v4.1.1 
 
     - name: Install cashocs
       shell: bash
@@ -47,6 +47,7 @@ jobs:
         files: coverage.xml
 
     - name: Upload coverage to codacy
+      continue-on-error: true
       uses: codacy/codacy-coverage-reporter-action@v1
       with:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}

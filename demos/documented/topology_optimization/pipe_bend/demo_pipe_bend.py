@@ -149,7 +149,8 @@ indicator_omega = Function(DG0)
 # use {math}`\Omega = \mathrm{D}` as initial guess.
 
 psi = Function(CG1)
-psi.vector()[:] = -1.0
+psi.vector().vec().set(-1.0)
+psi.vector().apply("")
 
 # ### Definition of the State System
 #
@@ -243,7 +244,8 @@ dJ_out = Constant(alpha_in - alpha_out) * (dot(u, v) + dot(u, u)) + Constant(lam
 def update_level_set():
     cashocs.interpolate_levelset_function_to_cells(psi, alpha_in, alpha_out, alpha)
     cashocs.interpolate_levelset_function_to_cells(psi, 1.0, 0.0, indicator_omega)
-    vol.vector()[0] = assemble(indicator_omega * dx)
+    vol.vector().vec().set(assemble(indicator_omega * dx))
+    vol.vector().apply("")
 
 
 # That is, in the `update_level_set` function, first the jumping coefficient is updated

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -251,7 +251,7 @@ def check_for_physical_names(
             with open(
                 f"{ostring}_physical_groups.json", "w", encoding="utf-8"
             ) as ofile:
-                json.dump(physical_groups, ofile)
+                json.dump(physical_groups, ofile, indent=4)
 
 
 def convert(argv: Optional[List[str]] = None) -> None:

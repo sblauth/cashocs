@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -325,6 +325,10 @@ class Config(ConfigParser):
                 "update_inhomogeneous": {
                     "type": "bool",
                 },
+                "inhomogeneous_exponent": {
+                    "type": "float",
+                    "attributes": ["non_negative"],
+                },
                 "use_distance_mu": {
                     "type": "bool",
                 },
@@ -366,6 +370,12 @@ class Config(ConfigParser):
                     "type": "list",
                 },
                 "degree_estimation": {
+                    "type": "bool",
+                },
+                "global_deformation": {
+                    "type": "bool",
+                },
+                "test_for_intersections": {
                     "type": "bool",
                 },
             },
@@ -572,7 +582,6 @@ fail_if_not_converged = False
 [ShapeGradient]
 lambda_lame = 0.0
 damping_factor = 0.0
-inhomogeneous = False
 mu_def = 1.0
 mu_fix = 1.0
 use_sqrt_mu = False
@@ -588,13 +597,17 @@ dist_min = 1.0
 dist_max = 1.0
 boundaries_dist = []
 smooth_mu = False
+inhomogeneous = False
 update_inhomogeneous = False
+inhomogeneous_exponent = 1.0
 fixed_dimensions = []
 shape_bdry_def = []
 shape_bdry_fix = []
 shape_bdry_fix_x = []
 shape_bdry_fix_y = []
 shape_bdry_fix_z = []
+global_deformation = False
+test_for_intersections = True
 
 [Regularization]
 factor_volume = 0.0

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -25,7 +25,11 @@ from typing import Callable, List, Optional, TYPE_CHECKING, Union
 import fenics
 import numpy as np
 from typing_extensions import Literal
-import ufl
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 from cashocs import _utils
 from cashocs._constraints import solvers
@@ -117,8 +121,12 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         self.current_function_value = 0.0
 
-        self._pre_callback: Optional[Callable] = None
-        self._post_callback: Optional[Callable] = None
+        self._pre_callback: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ] = None
+        self._post_callback: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ] = None
 
         self.cost_functional_form_initial: List[_typing.CostFunctional] = _utils.enlist(
             cost_functional_form
@@ -221,7 +229,12 @@ class ConstrainedOptimizationProblem(abc.ABC):
         """
         self.rtol = inner_rtol or tol
 
-    def inject_pre_callback(self, function: Optional[Callable]) -> None:
+    def inject_pre_callback(
+        self,
+        function: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ],
+    ) -> None:
         """Changes the a-priori callback of the OptimizationProblem.
 
         Args:
@@ -231,7 +244,12 @@ class ConstrainedOptimizationProblem(abc.ABC):
         """
         self._pre_callback = function
 
-    def inject_post_callback(self, function: Optional[Callable]) -> None:
+    def inject_post_callback(
+        self,
+        function: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ],
+    ) -> None:
         """Changes the a-posteriori callback of the OptimizationProblem.
 
         Args:
@@ -242,7 +260,13 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self._post_callback = function
 
     def inject_pre_post_callback(
-        self, pre_function: Optional[Callable], post_function: Optional[Callable]
+        self,
+        pre_function: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ],
+        post_function: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ],
     ) -> None:
         """Changes the a-priori (pre) and a-posteriori (post) callbacks of the problem.
 

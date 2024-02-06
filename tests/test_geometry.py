@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -310,9 +310,9 @@ def test_convert_coordinate_defo_to_dof_defo():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
     coordinates_initial = mesh.coordinates().copy()
     a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
-    a_posteriori_tester = cashocs.geometry.mesh_testing.APosterioriMeshTester(mesh)
-    deformation_handler = cashocs.DeformationHandler(
-        mesh, a_priori_tester, a_posteriori_tester
+    intersection_tester = cashocs.geometry.mesh_testing.IntersectionTester(mesh)
+    deformation_handler = cashocs.geometry.DeformationHandler(
+        mesh, a_priori_tester, intersection_tester
     )
     VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
     coordinate_deformation = (
@@ -333,9 +333,9 @@ def test_convert_dof_defo_to_coordinate_defo(rng):
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
     coordinates_initial = mesh.coordinates().copy()
     a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
-    a_posteriori_tester = cashocs.geometry.mesh_testing.APosterioriMeshTester(mesh)
-    deformation_handler = cashocs.DeformationHandler(
-        mesh, a_priori_tester, a_posteriori_tester
+    intersection_tester = cashocs.geometry.mesh_testing.IntersectionTester(mesh)
+    deformation_handler = cashocs.geometry.DeformationHandler(
+        mesh, a_priori_tester, intersection_tester
     )
     VCG = fenics.VectorFunctionSpace(mesh, "CG", 1)
     defo = fenics.Function(VCG)
@@ -356,9 +356,9 @@ def test_move_mesh():
     mesh, _, _, _, _, _ = cashocs.regular_mesh(20)
     coordinates_initial = mesh.coordinates().copy()
     a_priori_tester = cashocs.geometry.mesh_testing.APrioriMeshTester(mesh)
-    a_posteriori_tester = cashocs.geometry.mesh_testing.APosterioriMeshTester(mesh)
-    deformation_handler = cashocs.DeformationHandler(
-        mesh, a_priori_tester, a_posteriori_tester
+    intersection_tester = cashocs.geometry.mesh_testing.IntersectionTester(mesh)
+    deformation_handler = cashocs.geometry.DeformationHandler(
+        mesh, a_priori_tester, intersection_tester
     )
 
     coordinate_deformation = coordinates_initial.copy()
