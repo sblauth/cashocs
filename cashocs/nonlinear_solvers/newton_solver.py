@@ -119,9 +119,14 @@ class _NewtonSolver:
         self.b_tensor = b_tensor
         self.is_linear = is_linear
         if preconditioner_form is not None:
-            self.preconditioner_form = fenics.derivative(preconditioner_form, self.u)
+            if len(preconditioner_form.arguments()) == 1:
+                self.preconditioner_form = fenics.derivative(
+                    preconditioner_form, self.u
+                )
+            else:
+                self.preconditioner_form = preconditioner_form
         else:
-            self.preconditioner_form = preconditioner_form
+            self.preconditioner_form = None
 
         self.verbose = verbose if not self.is_linear else False
 
@@ -145,7 +150,7 @@ class _NewtonSolver:
         self.iterations = 0
 
         # inexact newton parameters
-        self.eta = 1.0
+        self.eta: float | None = 1.0
         self.eta_max = 0.9999
         self.eta_a = 1.0
         self.gamma = 0.9
@@ -231,26 +236,26 @@ class _NewtonSolver:
 
     def _compute_eta_inexact(self) -> None:
         """Computes the parameter ``eta`` for the inexact Newton method."""
-        if self.inexact:
+        if self.inexact and isinstance(self.eta, float):
             if self.iterations == 1:
-                self.eta = self.eta_max
+                eta_new = self.eta_max
             elif self.gamma * pow(self.eta, 2) <= 0.1:
-                self.eta = np.minimum(self.eta_max, self.eta_a)
+                eta_new = np.minimum(self.eta_max, self.eta_a)
             else:
-                self.eta = np.minimum(
+                eta_new = np.minimum(
                     self.eta_max,
                     np.maximum(self.eta_a, self.gamma * pow(self.eta, 2)),
                 )
 
             self.eta = np.minimum(
                 self.eta_max,
-                np.maximum(self.eta, 0.5 * self.tol / self.res),
+                np.maximum(eta_new, 0.5 * self.tol / self.res),
             )
         else:
-            self.eta = self.rtol * 1e-1
+            self.eta = None
 
         if self.is_linear:
-            self.eta = self.rtol * 1e-1
+            self.eta = None
 
     def _check_for_nan_residual(self) -> None:
         """Checks, whether the residual is nan. If yes, raise a NotConvergedError."""

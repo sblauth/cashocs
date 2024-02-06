@@ -7,10 +7,23 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-2.1.0 (in development)
+2..0 (in development)
 ----------------------
 
 * Add mesh quality constraints for shape optimization: These ensure that the angles of the triangles / dihedral angles of tetrahedrons cannot fall below a specified threshold.
+
+* New configuration file parameters:
+
+  * Section ShapeGradient
+
+    * :ini:`test_for_intersections` is used to disable the (post mesh movement) check for intersections of the mesh, which ensures physically reasonable designs. This should not be set to `False`.
+
+  * Section MeshQualityConstraints
+
+    * This section includes parameters for the new mesh quality constraints for shape optimization
+
+2.1.0 (February 6, 2024)
+------------------------
 
 * The class :py:class:`cashocs.DeformationHandler` cannot be used anymore. Instead, use the class by calling :py:class:`cashocs.geometry.DeformationHandler`. 
 
@@ -34,6 +47,8 @@ of the maintenance releases, please take a look at
 
 * Add the kwarg `newton_linearization` to the optimization problem classes. This can be used to specify which (alternative) linearization techniques can be used for solving the nonlinear state systems.
 
+* The function :py:func:`cashocs.newton_solve` does not change the user-specified tolerance (in the ksp_options) anymore, unless the kwarg `inexact=True` is set. This means, that the user can use custom "inexact Newton" schemes (e.g., gain one digit in accuracy) too. The old default was to use the relative tolerance of the nonlinear iteration multiplied with a safety factor (0.1).
+
 * New configuration file parameters:
 
   * Section LineSearch
@@ -48,13 +63,6 @@ of the maintenance releases, please take a look at
 
     * :ini:`remesh_iter` is used to perform a remeshing after a certain amount of iterations.
 
-  * Section ShapeGradient
-
-    * :ini:`test_for_intersections` is used to disable the (post mesh movement) check for intersections of the mesh, which ensures physically reasonable designs. This should not be set to `False`.
-
-  * Section MeshQualityConstraints
-
-    * This section includes parameters for the new mesh quality constraints for shape optimization
 
 
 2.0.0 (May 16, 2023)
