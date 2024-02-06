@@ -673,6 +673,16 @@ Moreover, the parameter
 
 can be used to update the local mesh size after each mesh deformation, in case this is :ini:`update_inhomogeneous = True`, so that elements which become smaller also obtain a higher stiffness and vice versa. The default is :ini:`update_inhomogeneous = False`.
 
+For the inhomogeneous mesh stiffness, we also have the parameter :ini:`inhomogeneous_exponent`, which is specified via
+
+.. code-block:: ini
+
+    inhomogeneous_exponent = 1.0
+
+This parameter can be used to specify an exponent for the inhomogeneous mesh stiffness, so that the parameters
+:math:`\mu, \lambda` and :math:`\delta` are scaled by :math:`\left( \frac{1}{\text{vol}} \right)^p`, where
+:math:`p` is specified in :ini:`inhomogeneous_exponent`. The default for this parameter is :ini:`inhomogeneous_exponent = 1.0`.
+
 There is also a different possibility to define the stiffness parameter :math:`\mu`
 using cashocs, namely to define :math:`\mu` in terms of how close a point of the
 computational domain is to a boundary. In the following we will explain this
@@ -1271,6 +1281,8 @@ in the following.
       - if :ini:`inhomogeneous = True`, uses inhomogeneous elasticity equations, weighted by the local mesh size
     * - :ini:`update_inhomogeneous = False`
       - if :ini:`update_inhomogeneous = True` and :ini:`inhomogeneous=True`, then the weighting with the local mesh size is updated as the mesh is deformed.
+    * - :ini:`inhomogeneous_exponent = 1.0`
+      - The exponent for the inhomogeneous mesh stiffness
     * - :ini:`use_distance_mu = False`
       - if :ini:`use_distance_mu = True`, the value of the second Lamé parameter is computed via the distance to the boundary
     * - :ini:`dist_min = 1.0`

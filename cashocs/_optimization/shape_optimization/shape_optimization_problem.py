@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -21,9 +21,7 @@ from __future__ import annotations
 
 import functools
 import subprocess  # nosec B404
-import sys
-from types import TracebackType
-from typing import Any, Callable, Dict, List, Optional, Type, TYPE_CHECKING, Union
+from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 
 import dolfin.function.argument
 import fenics
@@ -38,6 +36,7 @@ from cashocs import _exceptions
 from cashocs import _forms
 from cashocs import _loggers
 from cashocs import _pde_problems
+from cashocs import _utils
 from cashocs import geometry
 from cashocs import io
 from cashocs._optimization import cost_functional
@@ -99,6 +98,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
         pre_callback: Optional[Callable] = None,
         post_callback: Optional[Callable] = None,
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
     ) -> None:
         """Initializes self.
 
@@ -161,6 +163,14 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 solve of the state system
             post_callback: A function (without arguments) that will be called after the
                 computation of the gradient.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
+            adjoint_linear_solver: The linear solver (KSP) which is used to solve the
+                (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
 
         """
         super().__init__(
@@ -180,6 +190,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             preconditioner_forms=preconditioner_forms,
             pre_callback=pre_callback,
             post_callback=post_callback,
+            linear_solver=linear_solver,
+            adjoint_linear_solver=adjoint_linear_solver,
+            newton_linearizations=newton_linearizations,
         )
 
         if shape_scalar_product is None:
@@ -316,7 +329,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         """Initializes self for remeshing."""
         if self.do_remesh:
             if not self.db.parameter_db.is_remeshed:
-                self._change_except_hook()
                 self.db.parameter_db.temp_dict.update(
                     {
                         "gmsh_file": self.config.get("Mesh", "gmsh_file"),
@@ -328,9 +340,6 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                         "output_dict": {},
                     }
                 )
-
-            else:
-                self._change_except_hook()
 
     def _erase_pde_memory(self) -> None:
         """Resets the memory of the PDE problems so that new solutions are computed.
@@ -436,44 +445,24 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
         self.solver = self._setup_solver()
 
-        self.solver.run()
+        try:
+            self.solver.run()
+        except BaseException as e:
+            if len(self.db.parameter_db.remesh_directory) > 0:
+                self._clear_remesh_directory()
+            raise e
         self.solver.post_processing()
 
-    def _change_except_hook(self) -> None:
-        """Ensures that temporary files are deleted when an exception occurs.
-
-        This modifies the sys.excepthook command so that it also deletes temp files
-        (only needed for remeshing)
-        """
-
-        def custom_except_hook(
-            exctype: Type[BaseException],
-            value: BaseException,
-            traceback: TracebackType,
-        ) -> Any:  # pragma: no cover
-            """A customized hook which is injected when an exception occurs.
-
-            Args:
-                exctype: The type of the exception.
-                value: The value of the exception.
-                traceback: The traceback of the exception.
-
-            """
-            _loggers.debug(
-                "An exception was raised by cashocs, "
-                "deleting the created temporary files."
+    def _clear_remesh_directory(self) -> None:
+        _loggers.debug("An exception was raised, deleting the created temporary files.")
+        if (
+            not self.config.getboolean("Debug", "remeshing")
+            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+        ):
+            subprocess.run(  # nosec B603, B607
+                ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
             )
-            if (
-                not self.config.getboolean("Debug", "remeshing")
-                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-            ):
-                subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
-                )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
-            sys.__excepthook__(exctype, value, traceback)
-
-        sys.excepthook = custom_except_hook  # type: ignore
+        fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def compute_shape_gradient(self) -> List[fenics.Function]:
         """Solves the Riesz problem to determine the shape gradient.

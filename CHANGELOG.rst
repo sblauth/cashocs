@@ -7,8 +7,14 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-2.1.0 (in development)
+2.2.0 (in development)
 ----------------------
+
+
+2.1.0 (February 6, 2024)
+------------------------
+
+* The class :py:class:`cashocs.DeformationHandler` cannot be used anymore. Instead, use the class by calling :py:class:`cashocs.geometry.DeformationHandler`. 
 
 * Add the keyword arguments :python:`pre_callback` and :python:`post_callback` to define callbacks when an optimization problem is instanciated.
 
@@ -26,11 +32,21 @@ of the maintenance releases, please take a look at
 
 * :py:func:`cashocs.import_mesh` can now also directly import a Gmsh mesh file. Internally, the mesh is directly converted to xdmf and then read. At the moment, this only supports the conversion mode `physical`.
 
+* Add the kwargs `linear_solver` and (where applicable) `adjoint_linear_solver`. These can be used to define custom python KSP objects via petsc4py, most importantly, custom python-based preconditioners can be used with these. The feature is covered in the undocumented demo "demos/shape_optimization/python_pc".
+
+* Add the kwarg `newton_linearization` to the optimization problem classes. This can be used to specify which (alternative) linearization techniques can be used for solving the nonlinear state systems.
+
+* The function :py:func:`cashocs.newton_solve` does not change the user-specified tolerance (in the ksp_options) anymore, unless the kwarg `inexact=True` is set. This means, that the user can use custom "inexact Newton" schemes (e.g., gain one digit in accuracy) too. The old default was to use the relative tolerance of the nonlinear iteration multiplied with a safety factor (0.1).
+
 * New configuration file parameters:
 
   * Section LineSearch
 
     * :ini:`fail_if_not_converged` determines, whether the line search is cancelled once the state system cannot be solved or if a new iterate is tried instead.
+
+  * Section ShapeGradient
+
+    * :ini:`inhomogeneous_exponent` is a float, which specifies an exponent for the inhomogeneous mesh stiffness
 
   * Section MeshQuality
 

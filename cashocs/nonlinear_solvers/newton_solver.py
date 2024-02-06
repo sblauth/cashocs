@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -60,7 +60,8 @@ class _NewtonSolver:
         A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
         b_tensor: Optional[fenics.PETScVector] = None,
         is_linear: bool = False,
-        preconditioner_form: ufl.Form = None,
+        preconditioner_form: Optional[ufl.Form] = None,
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -99,6 +100,8 @@ class _NewtonSolver:
             is_linear: A boolean flag, which indicates whether the problem is actually
                 linear.
             preconditioner_form: A UFL form which defines the preconditioner matrix.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE
 
         """
         self.nonlinear_form = nonlinear_form
@@ -116,9 +119,14 @@ class _NewtonSolver:
         self.b_tensor = b_tensor
         self.is_linear = is_linear
         if preconditioner_form is not None:
-            self.preconditioner_form = fenics.derivative(preconditioner_form, self.u)
+            if len(preconditioner_form.arguments()) == 1:
+                self.preconditioner_form = fenics.derivative(
+                    preconditioner_form, self.u
+                )
+            else:
+                self.preconditioner_form = preconditioner_form
         else:
-            self.preconditioner_form = preconditioner_form
+            self.preconditioner_form = None
 
         self.verbose = verbose if not self.is_linear else False
 
@@ -140,28 +148,22 @@ class _NewtonSolver:
             self.ksp_options = ksp_options
 
         self.iterations = 0
-        for bc in self.bcs:
-            bc.apply(self.u.vector())
-        # copy the boundary conditions and homogenize them for the increment
-        self.bcs_hom = [fenics.DirichletBC(bc) for bc in self.bcs]
-        for bc in self.bcs_hom:
-            bc.homogenize()
 
         # inexact newton parameters
-        self.eta = 1.0
+        self.eta: float | None = 1.0
         self.eta_max = 0.9999
         self.eta_a = 1.0
         self.gamma = 0.9
         self.lmbd = 1.0
 
         self.assembler = fenics.SystemAssembler(
-            self.derivative, -self.nonlinear_form, self.bcs_hom
+            self.derivative, self.nonlinear_form, self.bcs
         )
         self.assembler.keep_diagonal = True
 
         if self.preconditioner_form is not None:
             self.assembler_pc = fenics.SystemAssembler(
-                self.preconditioner_form, -self.nonlinear_form, self.bcs_hom
+                self.preconditioner_form, self.nonlinear_form, self.bcs
             )
             self.assembler_pc.keep_diagonal = True
 
@@ -174,11 +176,16 @@ class _NewtonSolver:
 
         self.P_fenics = fenics.PETScMatrix(self.comm)
 
+        if linear_solver is None:
+            self.linear_solver = _utils.linalg.LinearSolver(self.comm)
+        else:
+            self.linear_solver = linear_solver
+
         self.assembler_shift: Optional[fenics.SystemAssembler] = None
         self.residual_shift: Optional[fenics.PETScVector] = None
         if self.shift is not None:
             self.assembler_shift = fenics.SystemAssembler(
-                self.derivative, self.shift, self.bcs_hom
+                self.derivative, self.shift, self.bcs
             )
             self.residual_shift = fenics.PETScVector(self.comm)
 
@@ -229,26 +236,26 @@ class _NewtonSolver:
 
     def _compute_eta_inexact(self) -> None:
         """Computes the parameter ``eta`` for the inexact Newton method."""
-        if self.inexact:
+        if self.inexact and isinstance(self.eta, float):
             if self.iterations == 1:
-                self.eta = self.eta_max
+                eta_new = self.eta_max
             elif self.gamma * pow(self.eta, 2) <= 0.1:
-                self.eta = np.minimum(self.eta_max, self.eta_a)
+                eta_new = np.minimum(self.eta_max, self.eta_a)
             else:
-                self.eta = np.minimum(
+                eta_new = np.minimum(
                     self.eta_max,
                     np.maximum(self.eta_a, self.gamma * pow(self.eta, 2)),
                 )
 
             self.eta = np.minimum(
                 self.eta_max,
-                np.maximum(self.eta, 0.5 * self.tol / self.res),
+                np.maximum(eta_new, 0.5 * self.tol / self.res),
             )
         else:
-            self.eta = self.rtol * 1e-1
+            self.eta = None
 
         if self.is_linear:
-            self.eta = self.rtol * 1e-1
+            self.eta = None
 
     def _check_for_nan_residual(self) -> None:
         """Checks, whether the residual is nan. If yes, raise a NotConvergedError."""
@@ -288,27 +295,23 @@ class _NewtonSolver:
             self.u_save.vector().apply("")
 
             self._compute_eta_inexact()
-            _utils.solve_linear_problem(
+            self.linear_solver.solve(
                 A=self.A_matrix,
                 b=self.b,
                 fun=self.du,
                 ksp_options=self.ksp_options,
                 rtol=self.eta,
                 atol=self.atol / 10.0,
-                comm=self.comm,
                 P=self.P_matrix,
             )
 
             if self.is_linear:
-                self.u.vector().vec().axpy(1.0, self.du.vector().vec())
+                self.u.vector().vec().axpy(-1.0, self.du.vector().vec())
                 self.u.vector().apply("")
                 break
 
             self._backtracking_line_search()
             self._compute_residual()
-
-            for bc in self.bcs_hom:
-                bc.apply(self.residual)
 
             res_prev = self.res
             self.res = self.residual.norm(self.norm_type)
@@ -363,14 +366,14 @@ class _NewtonSolver:
     def _compute_residual(self) -> None:
         """Computes the residual of the nonlinear system."""
         self.residual = fenics.PETScVector(self.comm)
-        self.assembler.assemble(self.residual)
+        self.assembler.assemble(self.residual, self.u.vector())
         if (
             self.shift is not None
             and self.assembler_shift is not None
             and self.residual_shift is not None
         ):
-            self.assembler_shift.assemble(self.residual_shift)
-            self.residual[:] += self.residual_shift[:]
+            self.assembler_shift.assemble(self.residual_shift, self.u.vector())
+            self.residual[:] -= self.residual_shift[:]
 
         self.b = fenics.as_backend_type(self.residual).vec()
 
@@ -392,17 +395,16 @@ class _NewtonSolver:
         """Performs a backtracking line search for the damped Newton method."""
         if self.damped:
             while True:
-                self.u.vector().vec().axpy(self.lmbd, self.du.vector().vec())
+                self.u.vector().vec().axpy(-self.lmbd, self.du.vector().vec())
                 self.u.vector().apply("")
                 self._compute_residual()
-                _utils.solve_linear_problem(
+                self.linear_solver.solve(
                     A=self.A_matrix,
                     b=self.b,
                     fun=self.ddu,
                     ksp_options=self.ksp_options,
                     rtol=self.eta,
                     atol=self.atol / 10.0,
-                    comm=self.comm,
                     P=self.P_matrix,
                 )
 
@@ -421,7 +423,7 @@ class _NewtonSolver:
                     self.breakdown = True
                     break
         else:
-            self.u.vector().vec().axpy(1.0, self.du.vector().vec())
+            self.u.vector().vec().axpy(-1.0, self.du.vector().vec())
             self.u.vector().apply("")
 
 
@@ -443,7 +445,8 @@ def newton_solve(
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
     is_linear: bool = False,
-    preconditioner_form: ufl.Form = None,
+    preconditioner_form: Optional[ufl.Form] = None,
+    linear_solver: Optional[_utils.linalg.LinearSolver] = None,
 ) -> fenics.Function:
     r"""Solves a nonlinear problem with Newton\'s method.
 
@@ -479,6 +482,9 @@ def newton_solve(
             sub-problem.
         is_linear: A boolean flag, which indicates whether the problem is actually
             linear.
+        preconditioner_form: A UFL form which defines the preconditioner matrix.
+        linear_solver: The linear solver (KSP) which is used to solve the linear
+            systems arising from the discretized PDE.
 
     Returns:
         The solution of the nonlinear variational problem, if converged. This overwrites
@@ -527,6 +533,7 @@ def newton_solve(
         b_tensor=b_tensor,
         is_linear=is_linear,
         preconditioner_form=preconditioner_form,
+        linear_solver=linear_solver,
     )
 
     solution = solver.solve()

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -569,12 +569,12 @@ class _MeshHandler:
             )
 
             output_dict = solver.output_manager.output_dict
-            self.db.parameter_db.temp_dict["output_dict"][
-                "cost_function_value"
-            ] = output_dict["cost_function_value"][:]
-            self.db.parameter_db.temp_dict["output_dict"][
-                "gradient_norm"
-            ] = output_dict["gradient_norm"][:]
+            self.db.parameter_db.temp_dict["output_dict"]["cost_function_value"] = (
+                output_dict["cost_function_value"][:]
+            )
+            self.db.parameter_db.temp_dict["output_dict"]["gradient_norm"] = (
+                output_dict["gradient_norm"][:]
+            )
             self.db.parameter_db.temp_dict["output_dict"]["stepsize"] = output_dict[
                 "stepsize"
             ][:]
@@ -585,15 +585,15 @@ class _MeshHandler:
                 "angle"
             ][:]
 
-            self.db.parameter_db.temp_dict["OptimizationRoutine"][
-                "rtol"
-            ] = self.config.getfloat("OptimizationRoutine", "rtol")
-            self.db.parameter_db.temp_dict["OptimizationRoutine"][
-                "atol"
-            ] = self.config.getfloat("OptimizationRoutine", "atol")
-            self.db.parameter_db.temp_dict["OptimizationRoutine"][
-                "max_iter"
-            ] = self.config.getint("OptimizationRoutine", "max_iter")
+            self.db.parameter_db.temp_dict["OptimizationRoutine"]["rtol"] = (
+                self.config.getfloat("OptimizationRoutine", "rtol")
+            )
+            self.db.parameter_db.temp_dict["OptimizationRoutine"]["atol"] = (
+                self.config.getfloat("OptimizationRoutine", "atol")
+            )
+            self.db.parameter_db.temp_dict["OptimizationRoutine"]["max_iter"] = (
+                self.config.getint("OptimizationRoutine", "max_iter")
+            )
 
             dim = self.mesh.geometric_dimension()
 
@@ -623,12 +623,12 @@ class _MeshHandler:
             _remove_gmsh_parametrizations(new_gmsh_file)
 
             self.db.parameter_db.temp_dict["remesh_counter"] = self.remesh_counter
-            self.db.parameter_db.temp_dict[
-                "remesh_directory"
-            ] = self.db.parameter_db.remesh_directory
-            self.db.parameter_db.temp_dict[
-                "result_dir"
-            ] = solver.output_manager.result_dir
+            self.db.parameter_db.temp_dict["remesh_directory"] = (
+                self.db.parameter_db.remesh_directory
+            )
+            self.db.parameter_db.temp_dict["result_dir"] = (
+                solver.output_manager.result_dir
+            )
 
             new_xdmf_file = (
                 f"{self.db.parameter_db.remesh_directory}"
@@ -716,12 +716,12 @@ class _MeshHandler:
             new_transfer_matrix = self.db.geometry_db.transfer_matrix.matMult(
                 interpolator.transfer_matrix
             )
-            self.db.parameter_db.temp_dict[
-                "transfer_matrix"
-            ] = new_transfer_matrix.copy()
-            self.db.parameter_db.temp_dict[
-                "old_transfer_matrix"
-            ] = self.db.geometry_db.transfer_matrix.copy()
-            self.db.parameter_db.temp_dict[
-                "deformation_function"
-            ] = solver.line_search.deformation_function.copy(True)
+            self.db.parameter_db.temp_dict["transfer_matrix"] = (
+                new_transfer_matrix.copy()
+            )
+            self.db.parameter_db.temp_dict["old_transfer_matrix"] = (
+                self.db.geometry_db.transfer_matrix.copy()
+            )
+            self.db.parameter_db.temp_dict["deformation_function"] = (
+                solver.line_search.deformation_function.copy(True)
+            )

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -221,7 +221,10 @@ class ResultManager(IOManager):
             self.output_dict["MeshQuality"].append(
                 self.db.parameter_db.optimization_state["mesh_quality"]
             )
-        if self.db.parameter_db.problem_type == "topology":
+        if (
+            self.db.parameter_db.problem_type == "topology"
+            and self.db.config.getboolean("Output", "save_results")
+        ):
             self.output_dict["angle"].append(
                 self.db.parameter_db.optimization_state["angle"]
             )
@@ -231,9 +234,9 @@ class ResultManager(IOManager):
 
     def post_process(self) -> None:
         """Saves the history of the optimization to a .json file."""
-        self.output_dict[
-            "initial_gradient_norm"
-        ] = self.db.parameter_db.optimization_state["gradient_norm_initial"]
+        self.output_dict["initial_gradient_norm"] = (
+            self.db.parameter_db.optimization_state["gradient_norm_initial"]
+        )
         self.output_dict["state_solves"] = self.db.parameter_db.optimization_state[
             "no_state_solves"
         ]
