@@ -891,7 +891,8 @@ class FixedVertexConstraint(MeshConstraint):
             idx_i = self.facets[self.boundaries.where_equal(i)]
             temp_fixed_idcs += idx_i.reshape(-1).tolist()
 
-        fixed_idcs = np.unique(temp_fixed_idcs)
+        temp_fixed_idcs_arr = np.array(temp_fixed_idcs, dtype="int64")
+        fixed_idcs = np.unique(temp_fixed_idcs_arr)
 
         if len(fixed_idcs) > 0:
             fixed_idcs_global = self.global_vertex_indices[fixed_idcs]
