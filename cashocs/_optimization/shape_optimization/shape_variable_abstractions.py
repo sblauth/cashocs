@@ -422,7 +422,13 @@ class ShapeVariableAbstractions(
                 h = self.constraint_manager.evaluate_active(
                     y_j[self.constraint_manager.v2d], active_idx
                 )
-                residual = comm.allreduce(np.max(np.abs(h)), op=MPI.MAX)
+
+                if len(h) > 0:
+                    res_local = np.max(np.abs(h))
+                else:
+                    res_local = 0.0
+
+                residual = comm.allreduce(res_local, op=MPI.MAX)
                 _loggers.debug(
                     "Projection to the working set. "
                     f"Iteration: {its}  Residual: {residual:.3e}"
