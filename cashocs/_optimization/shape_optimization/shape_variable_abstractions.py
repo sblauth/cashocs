@@ -289,6 +289,10 @@ class ShapeVariableAbstractions(
         comm = self.mesh_handler.mesh.mpi_comm()
 
         def func(lambd: float) -> float:
+            _loggers.debug(
+                f"Using a stepsize of {lambd} for computing the distance to the "
+                f"constraint boundary."
+            )
             projected_step = self.project_to_working_set(
                 coords_dof,
                 search_direction_dof,
@@ -331,10 +335,6 @@ class ShapeVariableAbstractions(
         if not np.all(
             self.constraint_manager.is_feasible(trial_step[self.constraint_manager.v2d])
         ):
-            _loggers.debug(
-                "The step violates some new constraints. "
-                "Computing the maximum stepsize until the a new constraint is active."
-            )
             feasible_stepsize_local = optimize.root_scalar(
                 func, bracket=(0.0, stepsize), xtol=1e-10
             ).root
@@ -418,6 +418,31 @@ class ShapeVariableAbstractions(
             has_active_constraints = comm.allgather(has_active_constraints_local)
             has_active_constraints = np.any(has_active_constraints)
 
+            all_activate_idx = self.constraint_manager.compute_active_set(
+                y_j[self.constraint_manager.v2d]
+            )
+            no_active_equality_constraints_local = sum(
+                all_activate_idx[~self.constraint_manager.inequality_mask]
+            )
+            no_active_inequality_constraints_local = sum(
+                all_activate_idx[self.constraint_manager.inequality_mask]
+            )
+
+            no_active_equality_constraints_global = (
+                self.constraint_manager.comm.allreduce(
+                    no_active_equality_constraints_local, op=MPI.SUM
+                )
+            )
+            no_active_inequality_constraints_global = (
+                self.constraint_manager.comm.allreduce(
+                    no_active_inequality_constraints_local, op=MPI.SUM
+                )
+            )
+
+            no_violated_constraints = np.sum(
+                ~self.constraint_manager.is_feasible(y_j[self.constraint_manager.v2d])
+            )
+
             if has_active_constraints:
                 h = self.constraint_manager.evaluate_active(
                     y_j[self.constraint_manager.v2d], active_idx
@@ -430,8 +455,13 @@ class ShapeVariableAbstractions(
 
                 residual = comm.allreduce(res_local, op=MPI.MAX)
                 _loggers.debug(
-                    "Projection to the working set. "
-                    f"Iteration: {its}  Residual: {residual:.3e}"
+                    "Projection to working set. "
+                    f"Iteration: {its}  Residual: {residual:.3e}  "
+                    f"Active Equality Constraints: "
+                    f"{no_active_equality_constraints_global}  "
+                    f"Active Inequality Constraints: "
+                    f"{no_active_inequality_constraints_global}  "
+                    f"Violated Constraints: {no_violated_constraints}"
                 )
 
             if not satisfies_previous_constraints:
@@ -482,12 +512,8 @@ class ShapeVariableAbstractions(
                 y_j = y_j - update_dof
 
             else:
-                _loggers.debug(
-                    f"Projection to the working set successful after {its} iterations."
-                )
                 return y_j
 
-        _loggers.debug("Back-Projection failed.")
         return None
 
     def compute_a_priori_decreases(
