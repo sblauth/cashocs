@@ -211,5 +211,6 @@ class ArmijoLineSearch(line_search.LineSearch):
                 raise error
             else:
                 objective_step = 2.0 * abs(current_function_value)
+                self.state_problem.revert_to_checkpoint()
 
         return objective_step
