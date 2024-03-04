@@ -967,7 +967,7 @@ class FixedVertexConstraint(MeshConstraint):
             temp_fixed_idcs_y += idx_i.reshape(-1).tolist()
         for i in bdry_fix_z_list:
             idx_i = self.facets[self.boundaries.where_equal(i)]
-            temp_fixed_idcs_y += idx_i.reshape(-1).tolist()
+            temp_fixed_idcs_z += idx_i.reshape(-1).tolist()
 
         fixed_idcs_x = np.unique(temp_fixed_idcs_x)
         fixed_idcs_y = np.unique(temp_fixed_idcs_y)
