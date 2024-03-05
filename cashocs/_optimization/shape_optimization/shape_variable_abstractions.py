@@ -307,6 +307,7 @@ class ShapeVariableAbstractions(
                     )[np.logical_and(~active_idx, ~dropped_idx)]
                 )
                 value: float = comm.allreduce(rval, op=MPI.MAX)
+                _loggers.debug(f"Evaluation of func gives value: {value}")
 
                 return value
             else:
@@ -339,10 +340,9 @@ class ShapeVariableAbstractions(
                 func, bracket=(0.0, stepsize), xtol=1e-10
             ).root
 
+            # ToDo: I think the allreduce here is unnecessary
             feasible_stepsize = comm.allreduce(feasible_stepsize_local, op=MPI.MIN)
-            _loggers.debug(
-                f"Stepsize until constraint boundary: {feasible_stepsize:.6e}"
-            )
+            _loggers.debug(f"Distance to constraint boundary: {feasible_stepsize:.3e}")
             feasible_step = self.project_to_working_set(
                 coords_dof,
                 search_direction_dof,
@@ -418,30 +418,9 @@ class ShapeVariableAbstractions(
             has_active_constraints = comm.allgather(has_active_constraints_local)
             has_active_constraints = np.any(has_active_constraints)
 
-            all_activate_idx = self.constraint_manager.compute_active_set(
-                y_j[self.constraint_manager.v2d]
-            )
-            no_active_equality_constraints_local = sum(
-                all_activate_idx[~self.constraint_manager.inequality_mask]
-            )
-            no_active_inequality_constraints_local = sum(
-                all_activate_idx[self.constraint_manager.inequality_mask]
-            )
-
-            no_active_equality_constraints_global = (
-                self.constraint_manager.comm.allreduce(
-                    no_active_equality_constraints_local, op=MPI.SUM
-                )
-            )
-            no_active_inequality_constraints_global = (
-                self.constraint_manager.comm.allreduce(
-                    no_active_inequality_constraints_local, op=MPI.SUM
-                )
-            )
-
-            no_violated_constraints = np.sum(
-                ~self.constraint_manager.is_feasible(y_j[self.constraint_manager.v2d])
-            )
+            # no_violated_constraints = np.sum(
+            #     ~self.constraint_manager.is_feasible(y_j[self.constraint_manager.v2d])
+            # )
 
             if has_active_constraints:
                 h = self.constraint_manager.evaluate_active(
@@ -456,12 +435,8 @@ class ShapeVariableAbstractions(
                 residual = comm.allreduce(res_local, op=MPI.MAX)
                 _loggers.debug(
                     "Projection to working set. "
-                    f"Iteration: {its}  Residual: {residual:.3e}  "
-                    f"Active Equality Constraints: "
-                    f"{no_active_equality_constraints_global}  "
-                    f"Active Inequality Constraints: "
-                    f"{no_active_inequality_constraints_global}  "
-                    f"Violated Constraints: {no_violated_constraints}"
+                    f"Iteration: {its}  Residual: {residual:.3e}"
+                    # f"  Violated Constraints: {no_violated_constraints}"
                 )
 
             if not satisfies_previous_constraints:
