@@ -10,6 +10,8 @@ of the maintenance releases, please take a look at
 2.2.0 (in development)
 ----------------------
 
+* Increase the precision of the Gmsh output from cashocs
+
 
 2.1.0 (February 6, 2024)
 ------------------------
