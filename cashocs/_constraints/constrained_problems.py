@@ -64,7 +64,19 @@ class ConstrainedOptimizationProblem(abc.ABC):
         adjoint_ksp_options: Optional[
             Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
+        gradient_ksp_options: Optional[
+            Union[_typing.KspOption, List[_typing.KspOption]]
+        ] = None,
         preconditioner_forms: Optional[List[ufl.Form]] = None,
+        pre_callback: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ] = None,
+        post_callback: Optional[
+            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
+        ] = None,
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
     ) -> None:
         """Initializes self.
 
@@ -98,9 +110,25 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
+            gradient_ksp_options: A list of dicts corresponding to command line options
+                for PETSc, used to compute the (shape) gradient. If this is ``None``,
+                either a direct or an iterative method is used (depending on the
+                configuration, section OptimizationRoutine, key gradient_method).
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
+            adjoint_linear_solver: The linear solver (KSP) which is used to solve the
+                (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
 
         """
         self.state_forms = state_forms
@@ -117,7 +145,13 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.initial_guess = initial_guess
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
+        self.gradient_ksp_options = gradient_ksp_options
         self.preconditioner_forms = preconditioner_forms
+        self.pre_callback = pre_callback
+        self.post_callback = post_callback
+        self.linear_solver = linear_solver
+        self.adjoint_linear_solver = adjoint_linear_solver
+        self.newton_linearizations = newton_linearizations
 
         self.current_function_value = 0.0
 
@@ -305,6 +339,9 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         adjoint_ksp_options: Optional[
             Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
+        gradient_ksp_options: Optional[
+            Union[_typing.KspOption, List[_typing.KspOption]]
+        ] = None,
         control_bcs_list: Optional[
             Union[
                 fenics.DirichletBC,
@@ -313,6 +350,11 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             ]
         ] = None,
         preconditioner_forms: Optional[List[ufl.Form]] = None,
+        pre_callback: Optional[Callable] = None,
+        post_callback: Optional[Callable] = None,
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -355,11 +397,27 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
+            gradient_ksp_options: A list of dicts corresponding to command line options
+                for PETSc, used to compute the (shape) gradient. If this is ``None``,
+                either a direct or an iterative method is used (depending on the
+                configuration, section OptimizationRoutine, key gradient_method).
             control_bcs_list: A list of boundary conditions for the control variables.
                 This is passed analogously to ``bcs_list``. Default is ``None``.
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
+            adjoint_linear_solver: The linear solver (KSP) which is used to solve the
+                (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
 
         """
         super().__init__(
@@ -373,7 +431,13 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
+            gradient_ksp_options=gradient_ksp_options,
             preconditioner_forms=preconditioner_forms,
+            pre_callback=pre_callback,
+            post_callback=post_callback,
+            linear_solver=linear_solver,
+            adjoint_linear_solver=adjoint_linear_solver,
+            newton_linearizations=newton_linearizations,
         )
 
         self.controls = controls
@@ -414,8 +478,14 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
+            gradient_ksp_options=self.gradient_ksp_options,
             control_bcs_list=self.control_bcs_list,
             preconditioner_forms=self.preconditioner_forms,
+            pre_callback=self.pre_callback,
+            post_callback=self.post_callback,
+            linear_solver=self.linear_solver,
+            adjoint_linear_solver=self.adjoint_linear_solver,
+            newton_linearizations=self.newton_linearizations,
         )
 
         optimal_control_problem.inject_pre_post_callback(
@@ -447,6 +517,13 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
+            gradient_ksp_options=self.gradient_ksp_options,
+            preconditioner_forms=self.preconditioner_forms,
+            pre_callback=self.pre_callback,
+            post_callback=self.post_callback,
+            linear_solver=self.linear_solver,
+            adjoint_linear_solver=self.adjoint_linear_solver,
+            newton_linearizations=self.newton_linearizations,
         )
         temp_problem.state_problem.has_solution = True
         self.current_function_value = temp_problem.reduced_cost_functional.evaluate()
@@ -478,7 +555,15 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         adjoint_ksp_options: Optional[
             Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
+        gradient_ksp_options: Optional[
+            Union[_typing.KspOption, List[_typing.KspOption]]
+        ] = None,
         preconditioner_forms: Optional[List[ufl.Form]] = None,
+        pre_callback: Optional[Callable] = None,
+        post_callback: Optional[Callable] = None,
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
     ) -> None:
         """Initializes self.
 
@@ -520,9 +605,25 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
+            gradient_ksp_options: A list of dicts corresponding to command line options
+                for PETSc, used to compute the (shape) gradient. If this is ``None``,
+                either a direct or an iterative method is used (depending on the
+                configuration, section OptimizationRoutine, key gradient_method).
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
+            adjoint_linear_solver: The linear solver (KSP) which is used to solve the
+                (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
 
         """
         super().__init__(
@@ -536,7 +637,13 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
+            gradient_ksp_options=gradient_ksp_options,
             preconditioner_forms=preconditioner_forms,
+            pre_callback=pre_callback,
+            post_callback=post_callback,
+            linear_solver=linear_solver,
+            adjoint_linear_solver=adjoint_linear_solver,
+            newton_linearizations=newton_linearizations,
         )
 
         self.boundaries = boundaries
@@ -574,7 +681,13 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
+            gradient_ksp_options=self.gradient_ksp_options,
             preconditioner_forms=self.preconditioner_forms,
+            pre_callback=self.pre_callback,
+            post_callback=self.post_callback,
+            linear_solver=self.linear_solver,
+            adjoint_linear_solver=self.adjoint_linear_solver,
+            newton_linearizations=self.newton_linearizations,
         )
         shape_optimization_problem.inject_pre_post_callback(
             self._pre_callback, self._post_callback
@@ -604,6 +717,13 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
+            gradient_ksp_options=self.gradient_ksp_options,
+            preconditioner_forms=self.preconditioner_forms,
+            pre_callback=self.pre_callback,
+            post_callback=self.post_callback,
+            linear_solver=self.linear_solver,
+            adjoint_linear_solver=self.adjoint_linear_solver,
+            newton_linearizations=self.newton_linearizations,
         )
         temp_problem.state_problem.has_solution = True
         self.current_function_value = temp_problem.reduced_cost_functional.evaluate()
