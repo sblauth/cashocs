@@ -585,8 +585,16 @@ class XDMFFileManager(IOManager):
         mesh = function.function_space().mesh()
         comm = mesh.mpi_comm()
 
-        if function.function_space().ufl_element().family() == "Real":
-            space = fenics.FunctionSpace(mesh, "CG", 1)
+        if function.function_space().ufl_element().family() in [
+            "Real",
+            "NodalEnrichedElement",
+        ]:
+            if len(function.ufl_shape) > 0:
+                space = fenics.VectorFunctionSpace(
+                    mesh, "CG", 1, dim=function.ufl_shape[0]
+                )
+            else:
+                space = fenics.FunctionSpace(mesh, "CG", 1)
             function = fenics.interpolate(function, space)
 
         function.rename(function_name, function_name)

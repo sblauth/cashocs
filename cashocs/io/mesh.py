@@ -355,14 +355,14 @@ def create_point_representation(
     mod_line = ""
     if dim == 2:
         mod_line = (
-            f"{points[idcs[subwrite_counter]][0]:.16f} "
-            f"{points[idcs[subwrite_counter]][1]:.16f} 0\n"
+            f"{points[idcs[subwrite_counter]][0]:.16e} "
+            f"{points[idcs[subwrite_counter]][1]:.16e} 0\n"
         )
     elif dim == 3:
         mod_line = (
-            f"{points[idcs[subwrite_counter]][0]:.16f} "
-            f"{points[idcs[subwrite_counter]][1]:.16f} "
-            f"{points[idcs[subwrite_counter]][2]:.16f}\n"
+            f"{points[idcs[subwrite_counter]][0]:.16e} "
+            f"{points[idcs[subwrite_counter]][1]:.16e} "
+            f"{points[idcs[subwrite_counter]][2]:.16e}\n"
         )
 
     return mod_line
