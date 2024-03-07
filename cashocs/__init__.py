@@ -59,7 +59,6 @@ from cashocs.nonlinear_solvers import linear_solve
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 
-
 __version__ = "2.2.0-dev"
 
 __citation__ = """
