@@ -299,7 +299,7 @@ class ParameterExtraction:
         self.gradient_ksp_options = (
             coarse_model.optimal_control_problem.gradient_ksp_options
         )
-        self.control_bcs_list = coarse_model.optimal_control_problem.control_bcs_list
+        self.control_bcs_list = coarse_model.control_bcs_list
         self.preconditioner_forms = (
             coarse_model.optimal_control_problem.preconditioner_forms
         )
