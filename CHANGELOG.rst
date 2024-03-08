@@ -7,8 +7,10 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-2..0 (in development)
+2.2.0 (in development)
 ----------------------
+
+* Increase the precision of the Gmsh output from cashocs
 
 * Add mesh quality constraints for shape optimization: These ensure that the angles of the triangles / dihedral angles of tetrahedrons cannot fall below a specified threshold.
 
