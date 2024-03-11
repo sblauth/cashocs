@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import pathlib
 
 from fenics import *
