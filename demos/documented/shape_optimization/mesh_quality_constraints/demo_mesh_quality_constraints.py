@@ -209,8 +209,11 @@ config.set("MeshQualityConstraints", "min_angle", "35.0")
 # expect a minimum skewness of `0.5733` for the mesh.
 #
 # :::{warning}
-# The mesh quality constraints are at the moment only supported for the gradient descent
-# method. Neither the BFGS nor nonlinear CG methods work with them at the moment.
+# Mesh quality constraints are implemented for all available methods for shape
+# optimization, i.e., the gradient descent, nonlinear CG, and BFGS methods. However, the
+# theory only works for the gradient descent method at the moment. Numerical examples
+# suggest, that the method also works well with the NCG and BFGS methods, but there
+# is no guarantee that this works, so use this with some care only.
 # :::
 #
 # ::::{note}
