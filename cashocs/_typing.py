@@ -58,3 +58,5 @@ CostFunctional = Union[
     cost_functional.MinMaxFunctional,
     cost_functional.Functional,
 ]
+
+ShapeOptimizationProblem = shape_optimization.ShapeOptimizationProblem

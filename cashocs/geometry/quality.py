@@ -90,7 +90,6 @@ class MeshQualityCalculator:
     #include <dolfin/mesh/Vertex.h>
     #include <dolfin/mesh/MeshFunction.h>
     #include <dolfin/mesh/Cell.h>
-    #include <dolfin/mesh/Vertex.h>
 
     using namespace dolfin;
 

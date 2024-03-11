@@ -14,5 +14,6 @@ typing_extensions
 myst-parser==2.0.0
 jupytext==1.16.1
 sphinx-favicon==1.0.1
+matplotlib
 pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
 fonttools>=4.43.0 # not directly required, pinned by Snyk to avoid a vulnerability
