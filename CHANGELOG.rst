@@ -22,7 +22,7 @@ of the maintenance releases, please take a look at
 
   * Section MeshQualityConstraints
 
-    * This section includes parameters for the new mesh quality constraints for shape optimization
+    * This section includes parameters for the new mesh quality constraints for shape optimization. These are described in the documentation at https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/doc_config/#section-meshqualityconstraints
 
 
 
