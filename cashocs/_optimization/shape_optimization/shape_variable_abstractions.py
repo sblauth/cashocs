@@ -336,12 +336,10 @@ class ShapeVariableAbstractions(
         if not np.all(
             self.constraint_manager.is_feasible(trial_step[self.constraint_manager.v2d])
         ):
-            feasible_stepsize_local = optimize.root_scalar(
+            feasible_stepsize = optimize.root_scalar(
                 func, bracket=(0.0, stepsize), xtol=1e-10
             ).root
 
-            # ToDo: I think the allreduce here is unnecessary
-            feasible_stepsize = comm.allreduce(feasible_stepsize_local, op=MPI.MIN)
             _loggers.debug(f"Distance to constraint boundary: {feasible_stepsize:.3e}")
             feasible_step = self.project_to_working_set(
                 coords_dof,
