@@ -101,6 +101,12 @@ class ConstraintManager:
                 angle_constraint = mesh_constraints.DihedralAngleConstraint(
                     self.mesh, self.config, deformation_space
                 )
+            else:
+                raise _exceptions.InputError(
+                    "ConstraintManager",
+                    "mesh",
+                    "Can only use mesh quality constraints for 2D and 3D meshes.",
+                )
 
             self.constraints.append(angle_constraint)
 

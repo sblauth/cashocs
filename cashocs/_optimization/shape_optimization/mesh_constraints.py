@@ -26,6 +26,7 @@ from mpi4py import MPI
 import numpy as np
 from scipy import sparse
 
+from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import _utils
 import cashocs.io
@@ -811,7 +812,6 @@ class FixedVertexConstraint(MeshConstraint):
         self.boundaries = boundaries
         self.config = config
 
-        self.dim = self.mesh.geometry().dim()
         self.mesh.init(self.mesh.topology().dim() - 1, 0)
         self.facets = np.array(
             self.mesh.topology()(self.mesh.topology().dim() - 1, 0)()
@@ -916,6 +916,12 @@ class FixedVertexConstraint(MeshConstraint):
                     self.dim * fixed_idcs_local_owned + 2,
                 ]
             ).T.reshape(-1)
+        else:
+            raise _exceptions.InputError(
+                "FixedVertexConstraint",
+                "mesh",
+                "Can only use mesh quality constraints for 2D and 3D meshes.",
+            )
 
         if len(fixed_idcs_local) > 0:
             fixed_coordinates = (
@@ -1018,6 +1024,12 @@ class FixedVertexConstraint(MeshConstraint):
 
             partially_fixed_idcs_local = np.concatenate(
                 [fixed_idcs_local_x, fixed_idcs_local_y, fixed_idcs_local_z],
+            )
+        else:
+            raise _exceptions.InputError(
+                "FixedVertexConstraint",
+                "mesh",
+                "Can only use mesh quality constraints for 2D and 3D meshes.",
             )
 
         if len(partially_fixed_idcs_local) > 0:
@@ -1153,13 +1165,18 @@ class AngleConstraint(MeshConstraint):
 
         self.config = config
 
-        self.dim = self.mesh.geometry().dim()
         self.cells = self.mesh.cells()
 
         if self.dim == 2:
             self.no_angles = 3
         elif self.dim == 3:
             self.no_angles = 6
+        else:
+            raise _exceptions.InputError(
+                "AngleConstraint",
+                "mesh",
+                "Can only use mesh quality constraints for 2D and 3D meshes.",
+            )
 
         (
             self.min_angle,
@@ -1185,6 +1202,12 @@ class AngleConstraint(MeshConstraint):
             initial_angles = mesh_quality.tetrahedron_angles(self.mesh).reshape(
                 -1, self.no_angles
             )
+        else:
+            raise _exceptions.InputError(
+                "FixedVertexConstraint",
+                "mesh",
+                "Can only use mesh quality constraints for 2D and 3D meshes.",
+            )
         initial_angles = initial_angles[: self.ghost_offset]
 
         minimum_initial_angles = np.min(initial_angles, axis=1)
@@ -1205,6 +1228,12 @@ class AngleConstraint(MeshConstraint):
             minimum_angle = constant_min_angle
         elif feasible_angle_reduction_factor > 0.0 and constant_min_angle == 0.0:
             minimum_angle = cellwise_minimum_angle
+        else:
+            raise _exceptions.InputError(
+                "AngleConstraint",
+                "minimum_angle",
+                "Could not compute minimum angle.",
+            )
 
         constraint_tolerance = self.config.getfloat("MeshQualityConstraints", "tol")
         minimum_angle = np.maximum(2 * constraint_tolerance, minimum_angle)
