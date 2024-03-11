@@ -56,6 +56,10 @@ def compute_convergence_rates(
     return rates
 
 
+@pytest.mark.skipif(
+    MPI.size(MPI.comm_world) > 1,
+    reason="This test cannot be run in parallel.",
+)
 def test_triangle_mesh_constraints():
     cfg = cashocs.io.config.Config()
     cfg.set("MeshQualityConstraints", "min_angle", "30.0")
@@ -94,6 +98,10 @@ def test_triangle_mesh_constraints():
     assert np.min(rates[mask]) > 1.8
 
 
+@pytest.mark.skipif(
+    MPI.size(MPI.comm_world) > 1,
+    reason="This test cannot be run in parallel.",
+)
 def test_tetrahedron_mesh_constraints():
     cfg = cashocs.io.config.Config()
     cfg.set("MeshQualityConstraints", "min_angle", "30.0")
