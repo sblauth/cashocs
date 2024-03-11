@@ -21,6 +21,7 @@ import pathlib
 
 from fenics import *
 import numpy as np
+import pytest
 
 import cashocs
 from cashocs._optimization.shape_optimization.mesh_constraint_manager import (
