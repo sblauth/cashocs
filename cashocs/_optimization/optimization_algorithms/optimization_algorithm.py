@@ -96,6 +96,10 @@ class OptimizationAlgorithm(abc.ABC):
         self.converged = False
         self.converged_reason = 0
 
+        self.active_idx: np.ndarray | None = None
+        self.constraint_gradient: np.ndarray | None = None
+        self.dropped_idx: np.ndarray | None = None
+
         if self.db.parameter_db.is_remeshed:
             self.rtol = self.db.parameter_db.temp_dict["OptimizationRoutine"]["rtol"]
             self.atol = self.db.parameter_db.temp_dict["OptimizationRoutine"]["atol"]
@@ -354,3 +358,31 @@ class OptimizationAlgorithm(abc.ABC):
         """Evaluates the cost functional and performs the output operation."""
         self.objective_value = self.cost_functional.evaluate()
         self.output()
+
+    def project_search_direction(self) -> None:
+        """Projects the search direction to the tangent space of the active constraints.
+
+        If no mesh quality constraints are active, the search direction will not be
+        changed in any way. Otherwise, self.search_direction will be overwritten.
+
+        """
+        if (
+            self.constraint_manager is None
+            or not self.constraint_manager.has_constraints
+        ):
+            self.active_idx = None
+            self.constraint_gradient = None
+            self.dropped_idx = None
+        else:
+            (
+                p_dof,
+                _,
+                self.active_idx,
+                self.constraint_gradient,
+                self.dropped_idx,
+            ) = self.constraint_manager.compute_projected_search_direction(
+                self.search_direction, self
+            )
+            for i in range(len(self.db.function_db.gradient)):
+                self.search_direction[i].vector().vec().aypx(0.0, p_dof.vector().vec())
+                self.search_direction[i].vector().apply("")

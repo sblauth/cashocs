@@ -19,8 +19,6 @@
 
 from __future__ import annotations
 
-import numpy as np
-
 from cashocs._optimization.optimization_algorithms import optimization_algorithm
 
 
@@ -39,6 +37,7 @@ class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
             self.evaluate_cost_functional()
 
             self.compute_search_direction()
+            self.project_search_direction()
             self.line_search.perform(
                 self,
                 self.search_direction,
@@ -54,27 +53,8 @@ class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
 
     def compute_search_direction(self) -> None:
         """Computes the search direction for the (projected) gradient descent method."""
-        if (
-            self.constraint_manager is None
-            or not self.constraint_manager.has_constraints
-        ):
-            for i in range(len(self.db.function_db.gradient)):
-                self.search_direction[i].vector().vec().aypx(
-                    0.0, -self.db.function_db.gradient[i].vector().vec()
-                )
-                self.search_direction[i].vector().apply("")
-
-                self.active_idx: np.ndarray | None = None
-                self.constraint_gradient: np.ndarray | None = None
-                self.dropped_idx: np.ndarray | None = None
-        else:
-            (
-                p_dof,
-                _,
-                self.active_idx,
-                self.constraint_gradient,
-                self.dropped_idx,
-            ) = self.constraint_manager.compute_projected_gradient(self)
-            for i in range(len(self.db.function_db.gradient)):
-                self.search_direction[i].vector().vec().aypx(0.0, p_dof.vector().vec())
-                self.search_direction[i].vector().apply("")
+        for i in range(len(self.db.function_db.gradient)):
+            self.search_direction[i].vector().vec().aypx(
+                0.0, -self.db.function_db.gradient[i].vector().vec()
+            )
+            self.search_direction[i].vector().apply("")

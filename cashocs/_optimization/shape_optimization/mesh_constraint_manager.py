@@ -300,8 +300,54 @@ class ConstraintManager:
         )
         return result
 
-    def _compute_projected_gradient(
+    def compute_projected_search_direction(
         self,
+        search_direction: list[fenics.Function],
+        solver: optimization_algorithms.OptimizationAlgorithm,
+    ) -> tuple[
+        fenics.Function,
+        bool,
+        np.ndarray | None,
+        sparse.csr_matrix | None,
+        np.ndarray | None,
+    ]:
+        """Projects the search direction to the tangent space of the active constraints.
+
+        Args:
+            search_direction: The current search direction used in the solver.
+            solver: The solver, which is used to solve the optimization problem.
+
+        Returns:
+            A tuple `(p_dof, converged, active_idx, constraint_gradient, dropped_idx)`,
+            where `p_dof` is the projected search direction in dof-based ordering,
+            `active_idx` is the index set of the active constraints (those in the
+            current working set), `constraint_gradient` is the gradient matrix of the
+            constraints, `dropped_idx` is the index set of all dropped constraints.
+
+        """
+        coords_sequential = self.mesh.coordinates().copy().reshape(-1)
+        constraint_gradient = self._compute_gradient(coords_sequential)
+        active_idx = self.compute_active_set(coords_sequential)
+        self._compute_number_of_active_constraints(active_idx)
+
+        if self.is_necessary(active_idx):
+            return self._compute_projected_search_direction(
+                search_direction, solver, active_idx, constraint_gradient
+            )
+        else:
+            p_dof = fenics.Function(search_direction[0].function_space())
+            p_dof.vector().vec().aypx(0.0, search_direction[0].vector().vec())
+            p_dof.vector().apply("")
+            if active_idx is not None:
+                dropped_idx = np.array([False] * len(active_idx))
+            else:
+                dropped_idx = None
+
+            return p_dof, False, active_idx, constraint_gradient, dropped_idx
+
+    def _compute_projected_search_direction(
+        self,
+        search_direction: list[fenics.Function],
         solver: optimization_algorithms.OptimizationAlgorithm,
         active_idx: np.ndarray,
         constraint_gradient: sparse.csr_matrix,
@@ -320,8 +366,8 @@ class ConstraintManager:
             AT = A.copy().transpose()  # pylint: disable=invalid-name
             B = A.matMult(AT)  # pylint: disable=invalid-name
 
-            p, lambd = self._project_gradient_to_tangent_space(
-                solver.gradient, A, AT, B
+            p, lambd = self._project_search_direction_to_tangent_space(
+                search_direction, A, AT, B
             )
 
             if has_dropped_constraints:
@@ -389,61 +435,9 @@ class ConstraintManager:
 
         return p_dof, converged, active_idx, constraint_gradient, dropped_idx
 
-    def _compute_negative_gradient(
-        self, solver: optimization_algorithms.OptimizationAlgorithm
-    ) -> fenics.Function:
-        p_dof = fenics.Function(solver.db.function_db.control_spaces[0])
-        p_dof.vector().vec().aypx(0.0, -solver.gradient[0].vector().vec())
-        p_dof.vector().apply("")
-
-        return p_dof
-
-    def compute_projected_gradient(
+    def _project_search_direction_to_tangent_space(
         self,
-        solver: optimization_algorithms.OptimizationAlgorithm,
-    ) -> tuple[
-        fenics.Function,
-        bool,
-        np.ndarray | None,
-        sparse.csr_matrix | None,
-        np.ndarray | None,
-    ]:
-        """Computes the projected negative gradient direction w.r.t. constraints.
-
-        Args:
-            solver: The solver used for solving the (shape) optimization problem.
-
-        Returns:
-            A tuple `p_dof, converged, active_idx, constraint_gradient, dropped_idx`,
-            where `p_dof` is the dof-based negative projected gradient, `converged` is
-            a boolean flag which is used to indicate convergence of the method,
-            `active_idx` is a boolean array / mask used for indicating which constraints
-            are in the working set, and `dropped_idx` is a boolean array / mask for
-            indicating which constraints have been dropped during the computation of
-            the projected negative gradient.
-
-        """
-        coords_sequential = self.mesh.coordinates().copy().reshape(-1)
-        constraint_gradient = self._compute_gradient(coords_sequential)
-        active_idx = self.compute_active_set(coords_sequential)
-        self._compute_number_of_active_constraints(active_idx)
-
-        if self.is_necessary(active_idx):
-            return self._compute_projected_gradient(
-                solver, active_idx, constraint_gradient
-            )
-        else:
-            p_dof = self._compute_negative_gradient(solver)
-            if active_idx is not None:
-                dropped_idx = np.array([False] * len(active_idx))
-            else:
-                dropped_idx = None
-
-            return p_dof, False, active_idx, constraint_gradient, dropped_idx
-
-    def _project_gradient_to_tangent_space(
-        self,
-        gradient: list[fenics.Function],
+        search_direction: list[fenics.Function],
         A: PETSc.Mat,  # pylint: disable=invalid-name
         AT: PETSc.Mat,  # pylint: disable=invalid-name
         B: PETSc.Mat,  # pylint: disable=invalid-name
@@ -457,7 +451,7 @@ class ConstraintManager:
         # else:
 
         b = A.createVecLeft()
-        A.mult(-gradient[0].vector().vec(), b)
+        A.mult(search_direction[0].vector().vec(), b)
         ksp = PETSc.KSP().create(comm=self.mesh.mpi_comm())
         options: dict[str, float | int | str | None] = {
             "ksp_type": "cg",
@@ -482,7 +476,7 @@ class ConstraintManager:
 
         p = AT.createVecLeft()
         AT.mult(-lambd, p)
-        p.axpy(-1.0, gradient[0].vector().vec())
+        p.axpy(1.0, search_direction[0].vector().vec())
 
         return p, lambd
 
