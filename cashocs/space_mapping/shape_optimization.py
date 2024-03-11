@@ -100,8 +100,16 @@ class CoarseModel:
         adjoint_ksp_options: Optional[
             Union[_typing.KspOption, List[_typing.KspOption]]
         ] = None,
+        gradient_ksp_options: Optional[
+            Union[_typing.KspOption, List[_typing.KspOption]]
+        ] = None,
         desired_weights: Optional[List[float]] = None,
         preconditioner_forms: Optional[List[ufl.Form]] = None,
+        pre_callback: Optional[Callable] = None,
+        post_callback: Optional[Callable] = None,
+        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
     ):
         """Initializes self.
 
@@ -120,12 +128,28 @@ class CoarseModel:
                 default is ``None``.
             shape_scalar_product: The scalar product for the shape optimization problem
             initial_guess: The initial guess for solving a nonlinear state equation
-            ksp_options: The list of PETSc options for the state equations
-            adjoint_ksp_options: The list of PETSc options for the adjoint equations
+            ksp_options: The list of PETSc options for the state equations.
+            adjoint_ksp_options: The list of PETSc options for the adjoint equations.
+            gradient_ksp_options: A list of dicts corresponding to command line options
+                for PETSc, used to compute the (shape) gradient. If this is ``None``,
+                either a direct or an iterative method is used (depending on the
+                configuration, section OptimizationRoutine, key gradient_method).
             desired_weights: The desired weights for the cost functional
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
+            adjoint_linear_solver: The linear solver (KSP) which is used to solve the
+                (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
 
         """
         self.state_forms = state_forms
@@ -139,8 +163,14 @@ class CoarseModel:
         self.initial_guess = initial_guess
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
+        self.gradient_ksp_options = gradient_ksp_options
         self.desired_weights = desired_weights
         self.preconditioner_forms = preconditioner_forms
+        self.pre_callback = pre_callback
+        self.post_callback = post_callback
+        self.linear_solver = linear_solver
+        self.adjoint_linear_solver = adjoint_linear_solver
+        self.newton_linearizations = newton_linearizations
 
         self._pre_callback: Optional[Callable] = None
         self._post_callback: Optional[Callable] = None
@@ -160,8 +190,14 @@ class CoarseModel:
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
+            gradient_ksp_options=self.gradient_ksp_options,
             desired_weights=self.desired_weights,
             preconditioner_forms=self.preconditioner_forms,
+            pre_callback=self.pre_callback,
+            post_callback=self.post_callback,
+            linear_solver=self.linear_solver,
+            adjoint_linear_solver=self.adjoint_linear_solver,
+            newton_linearizations=self.newton_linearizations,
         )
 
         self.coordinates_optimal = self.mesh.coordinates().copy()
@@ -251,7 +287,19 @@ class ParameterExtraction:
         self.adjoint_ksp_options = (
             coarse_model.shape_optimization_problem.adjoint_ksp_options
         )
+        self.gradient_ksp_options = (
+            coarse_model.shape_optimization_problem.gradient_ksp_options
+        )
         self.preconditioner_forms = coarse_model.preconditioner_forms
+        self.pre_callback = coarse_model.pre_callback
+        self.post_callback = coarse_model.post_callback
+        self.linear_solver = coarse_model.shape_optimization_problem.linear_solver
+        self.adjoint_linear_solver = (
+            coarse_model.shape_optimization_problem.adjoint_linear_solver
+        )
+        self.newton_linearizations = (
+            coarse_model.shape_optimization_problem.newton_linearizations
+        )
 
         self.coordinates_initial = coarse_model.coordinates_initial
 
@@ -289,8 +337,14 @@ class ParameterExtraction:
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
+            gradient_ksp_options=self.gradient_ksp_options,
             desired_weights=self.desired_weights,
             preconditioner_forms=self.preconditioner_forms,
+            pre_callback=self.pre_callback,
+            post_callback=self.post_callback,
+            linear_solver=self.linear_solver,
+            adjoint_linear_solver=self.adjoint_linear_solver,
+            newton_linearizations=self.newton_linearizations,
         )
         if self.shape_optimization_problem is not None:
             self.shape_optimization_problem.inject_pre_post_callback(
