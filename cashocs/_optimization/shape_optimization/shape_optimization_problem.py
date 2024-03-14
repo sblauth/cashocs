@@ -291,6 +291,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 preconditioner_forms=preconditioner_forms,
                 pre_callback=pre_callback,
                 post_callback=post_callback,
+                linear_solver=linear_solver,
+                adjoint_linear_solver=adjoint_linear_solver,
+                newton_linearizations=newton_linearizations,
             )
 
     @__init__.register(CallableFunction)
