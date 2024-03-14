@@ -237,8 +237,14 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
+            gradient_ksp_options=gradient_ksp_options,
             desired_weights=desired_weights,
+            preconditioner_forms=preconditioner_forms,
+            pre_callback=pre_callback,
+            post_callback=post_callback,
             linear_solver=linear_solver,
+            adjoint_linear_solver=adjoint_linear_solver,
+            newton_linearizations=newton_linearizations,
         )
         self._base_ocp.db.parameter_db.problem_type = "topology"
         self.db.function_db.control_spaces = (
