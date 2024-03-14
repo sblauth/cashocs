@@ -149,6 +149,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                     fun=self.db.function_db.gradient[0],
                     ksp_options=self.ksp_options,
                 )
+                self.form_handler.apply_shape_bcs(self.db.function_db.gradient[0])
 
                 self.has_solution = True
 

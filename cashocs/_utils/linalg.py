@@ -23,8 +23,10 @@ import copy
 from typing import List, Optional, Tuple, TYPE_CHECKING, Union
 
 import fenics
+from mpi4py import MPI
 import numpy as np
 from petsc4py import PETSc
+from scipy import sparse
 
 try:
     import ufl_legacy as ufl
@@ -36,8 +38,6 @@ from cashocs import _loggers
 from cashocs._utils import forms as forms_module
 
 if TYPE_CHECKING:
-    from mpi4py import MPI
-
     from cashocs import _typing
 
 iterative_ksp_options: _typing.KspOption = {
@@ -608,3 +608,55 @@ class Interpolator:
         v.vector().apply("")
 
         return v
+
+
+def sparse2scipy(
+    csr: tuple[np.ndarray, np.ndarray, np.ndarray], shape: tuple[int, int] | None = None
+) -> sparse.csr_matrix:
+    """Converts a sparse matrix representation to a sparse scipy matrix.
+
+    Args:
+        csr: The tuple making up the CSR matrix: `rows, cols, vals`.
+        shape: The shape of the sparse matrix.
+
+    Returns:
+        The corresponding sparse scipy csr matrix.
+
+    """
+    rows = csr[0]
+    cols = csr[1]
+    vals = csr[2]
+    matrix = sparse.csr_matrix((vals, (rows, cols)), shape=shape)
+    return matrix
+
+
+def scipy2petsc(
+    scipy_matrix: sparse.csr_matrix,
+    comm: MPI.Comm,
+    local_size: int | None = None,
+) -> PETSc.Mat:
+    """Converts a sparse scipy matrix to a (sparse) PETSc matrix.
+
+    Args:
+        scipy_matrix: The sparse scipy matrix
+        comm: The MPI communicator used for distributing the mesh
+        local_size: The local size (number of rows) of the matrix, different for
+            each process. If this is `None` (the default), then PETSc.DECIDE is used.
+
+    Returns:
+        The corresponding sparse PETSc matrix.
+
+    """
+    shape = scipy_matrix.shape
+
+    no_rows_total = comm.allreduce(shape[0], op=MPI.SUM)
+    if local_size is None:
+        local_size = PETSc.DECIDE
+
+    petsc_matrix = PETSc.Mat().createAIJ(
+        comm=comm,
+        size=((shape[0], no_rows_total), (local_size, shape[1])),
+        csr=(scipy_matrix.indptr, scipy_matrix.indices, scipy_matrix.data),
+    )
+
+    return petsc_matrix

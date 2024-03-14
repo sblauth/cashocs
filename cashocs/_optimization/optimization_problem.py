@@ -51,6 +51,7 @@ if TYPE_CHECKING:
     from cashocs._optimization import line_search as ls
     from cashocs._optimization import optimization_algorithms
     from cashocs._optimization import optimization_variable_abstractions as ova
+    from cashocs._optimization.shape_optimization import mesh_constraint_manager
     from cashocs._optimization.topology_optimization import (
         topology_optimization_algorithm,
     )
@@ -274,6 +275,8 @@ class OptimizationProblem(abc.ABC):
             self.state_problem,
             linear_solver=self.adjoint_linear_solver,
         )
+        self.constraint_manager: mesh_constraint_manager.ConstraintManager | None = None
+
         self.output_manager = io.OutputManager(self.db)
 
     @abc.abstractmethod
