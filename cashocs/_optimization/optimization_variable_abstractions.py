@@ -27,6 +27,7 @@ import abc
 from typing import List, TYPE_CHECKING
 
 import fenics
+import numpy as np
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -76,7 +77,13 @@ class OptimizationVariableAbstractions(abc.ABC):
 
     @abc.abstractmethod
     def update_optimization_variables(
-        self, search_direction: List[fenics.Function], stepsize: float, beta: float
+        self,
+        search_direction: List[fenics.Function],
+        stepsize: float,
+        beta: float,
+        active_idx: np.ndarray | None = None,
+        constraint_gradient: np.ndarray | None = None,
+        dropped_idx: np.ndarray | None = None,
     ) -> float:
         """Updates the optimization variables based on a line search.
 
@@ -85,6 +92,13 @@ class OptimizationVariableAbstractions(abc.ABC):
             stepsize: The current (trial) stepsize.
             beta: The parameter for the line search, which "halves" the stepsize if the
                 test was not successful.
+            active_idx: The list of active indices of the working set. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
+            constraint_gradient: The gradient of the constraints for the mesh quality.
+                Only needed for shape optimization with mesh quality constraints.
+                Default is `None`.
+            dropped_idx: The list of indicies for dropped constraints. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
 
         Returns:
             The stepsize which was found to be acceptable.

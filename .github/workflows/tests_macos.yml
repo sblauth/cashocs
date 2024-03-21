@@ -20,7 +20,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4.1.1
+      uses: actions/checkout@v4.1.2
 
     - name: Install micromamba
       uses: mamba-org/setup-micromamba@v1
@@ -33,6 +33,7 @@ jobs:
           pytest>=7.2.0
           gmsh>=4.8
           petsc<=3.19
+          scipy
 
     - name: Install package
       run: |

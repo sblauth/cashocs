@@ -73,6 +73,7 @@ class StateProblem(pde_problem.PDEProblem):
 
         self.bcs_list: List[List[fenics.DirichletBC]] = self.state_form_handler.bcs_list
         self.states = self.db.function_db.states
+        self.states_checkpoint = [fun.copy(True) for fun in self.states]
 
         self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
         self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
@@ -127,6 +128,7 @@ class StateProblem(pde_problem.PDEProblem):
         """
         if not self.has_solution:
             self.db.callback.call_pre()
+            self._generate_checkpoint()
             if (
                 not self.config.getboolean("StateSystem", "picard_iteration")
                 or self.db.parameter_db.state_dim == 1
@@ -198,3 +200,25 @@ class StateProblem(pde_problem.PDEProblem):
             self._update_cost_functionals()
 
         return self.states
+
+    def _generate_checkpoint(self) -> None:
+        """Generates a checkpoint of the state variables."""
+        for i in range(len(self.states)):
+            self.states_checkpoint[i].vector().vec().aypx(
+                0.0, self.states[i].vector().vec()
+            )
+            self.states_checkpoint[i].vector().apply("")
+
+    def revert_to_checkpoint(self) -> None:
+        """Reverts the state variables to a checkpointed value.
+
+        This is useful when the solution of the state problem fails and another attempt
+        is made to solve it. Then, the perturbed solution of Newton's method should not
+        be the initial guess.
+
+        """
+        for i in range(len(self.states)):
+            self.states[i].vector().vec().aypx(
+                0.0, self.states_checkpoint[i].vector().vec()
+            )
+            self.states[i].vector().apply("")

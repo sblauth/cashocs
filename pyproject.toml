@@ -46,6 +46,7 @@ classifiers = [
 dependencies = [
 	"meshio >= 4.1.0",
 	"numpy",
+    "scipy",
 	"typing_extensions",
         "matplotlib",
 ]
@@ -138,5 +139,6 @@ module = [
 	"meshio",
 	"h5py",
     "matplotlib.*",
+    "scipy.*",
 ]
 ignore_missing_imports = true

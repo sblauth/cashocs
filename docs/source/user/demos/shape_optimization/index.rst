@@ -20,3 +20,4 @@ be treated with cashocs.
    demo_p_laplacian.md
    demo_space_mapping_semilinear_transmission.md
    demo_space_mapping_uniform_flow_distribution.md
+   demo_mesh_quality_constraints.md

@@ -10,6 +10,21 @@ of the maintenance releases, please take a look at
 2.2.0 (in development)
 ----------------------
 
+* Increase the precision of the Gmsh output from cashocs
+
+* Add mesh quality constraints for shape optimization: These ensure that the angles of the triangles / dihedral angles of tetrahedrons cannot fall below a specified threshold.
+
+* New configuration file parameters:
+
+  * Section ShapeGradient
+
+    * :ini:`test_for_intersections` is used to disable the (post mesh movement) check for intersections of the mesh, which ensures physically reasonable designs. This should not be set to `False`.
+
+  * Section MeshQualityConstraints
+
+    * This section includes parameters for the new mesh quality constraints for shape optimization. These are described in the documentation at https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/doc_config/#section-meshqualityconstraints
+
+
 
 2.1.0 (February 6, 2024)
 ------------------------
@@ -26,7 +41,7 @@ of the maintenance releases, please take a look at
 
 * The output routines save the xdmf files not in a folder called `xdmf` anymore, but the folder is called `checkpoints`
 
-* The output parameter `save_mesh` does now not only save the optimized mesh, but also writes a Gmsh .msh file of the current iterated mesh for each iteration. This is very useful for restarting simulations.
+* The output parameter :ini:`save_mesh` does now not only save the optimized mesh, but also writes a Gmsh .msh file of the current iterated mesh for each iteration. This is very useful for restarting simulations.
 
 * Added the function :py:func:`cashocs.io.import_function` which can be used to load a XDMF Function with a function space. This is very useful for checkpointing (first, read the saved mesh, define the function space, then call :py:func:`cashocs.io.import_function`.
 

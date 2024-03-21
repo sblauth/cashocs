@@ -23,4 +23,8 @@ from cashocs._optimization.line_search.polynomial_line_search import (
     PolynomialLineSearch,
 )
 
-__all__ = ["ArmijoLineSearch", "LineSearch", "PolynomialLineSearch"]
+__all__ = [
+    "ArmijoLineSearch",
+    "LineSearch",
+    "PolynomialLineSearch",
+]

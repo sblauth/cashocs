@@ -44,6 +44,7 @@ from cashocs._optimization import line_search as ls
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
 from cashocs._optimization import verification
+from cashocs._optimization.shape_optimization import mesh_constraint_manager
 from cashocs._optimization.shape_optimization import shape_variable_abstractions
 from cashocs.geometry import mesh_testing
 
@@ -266,8 +267,19 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self.db, self.form_handler, self.state_problem
         )
 
+        self.constraint_manager: mesh_constraint_manager.ConstraintManager = (
+            mesh_constraint_manager.ConstraintManager(
+                self.config,
+                self.mesh_handler.mesh,
+                self.boundaries,
+                self.db.function_db.control_spaces[0],
+            )
+        )
+
         self.optimization_variable_abstractions = (
-            shape_variable_abstractions.ShapeVariableAbstractions(self, self.db)
+            shape_variable_abstractions.ShapeVariableAbstractions(
+                self, self.db, self.constraint_manager
+            )
         )
 
         if bool(desired_weights is not None):
@@ -291,6 +303,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 preconditioner_forms=preconditioner_forms,
                 pre_callback=pre_callback,
                 post_callback=post_callback,
+                linear_solver=linear_solver,
+                adjoint_linear_solver=adjoint_linear_solver,
+                newton_linearizations=newton_linearizations,
             )
 
     @__init__.register(CallableFunction)
