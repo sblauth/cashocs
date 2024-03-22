@@ -335,58 +335,63 @@ def test_shape_gd():
     assert sop.solver.relative_norm < sop.solver.rtol
 
 
-def test_shape_cg_fr():
+@pytest.mark.parametrize(
+    "algorithm, expected_iterations",
+    [("gd", 26), ("ncg", 23), ("bfgs", 28)],
+)
+def test_mesh_quality_constraints_min_angle(algorithm, expected_iterations):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("AlgoCG", "cg_method", "FR")
+    config.set("MeshQualityConstraints", "min_angle", "35.0")
+    config.set("MeshQualityConstraints", "tol", "1e-2")
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=21)
+    sop.solve(algorithm=algorithm, rtol=1e-2, atol=0.0, max_iter=expected_iterations)
     assert sop.solver.relative_norm < sop.solver.rtol
 
+    mesh_quality = cashocs.compute_mesh_quality(
+        mesh, quality_type="min", quality_measure="skewness"
+    )
+    assert mesh_quality > 0.5733
 
-def test_shape_cg_pr():
+
+@pytest.mark.parametrize(
+    "algorithm, expected_iterations",
+    [("gd", 46), ("ncg", 51), ("bfgs", 56)],
+)
+def test_mesh_quality_constraints_reduction_factor(algorithm, expected_iterations):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("MeshQualityConstraints", "tol", "1e-2")
+    config.set("MeshQualityConstraints", "feasible_angle_reduction_factor", "0.66")
     config.set("AlgoCG", "cg_method", "PR")
+    # config.set("AlgoCG", "cg_periodic_restart", "True")
+    # config.set("AlgoCG", "cg_periodic_its", "10")
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=16)
+    sop.solve(algorithm=algorithm, rtol=1e-2, atol=0.0, max_iter=expected_iterations)
     assert sop.solver.relative_norm < sop.solver.rtol
 
+    mesh_quality = cashocs.compute_mesh_quality(
+        mesh, quality_type="min", quality_measure="skewness"
+    )
+    assert mesh_quality > 0.434
 
-def test_shape_cg_hs():
+
+@pytest.mark.parametrize(
+    "method, expected_iterations",
+    [("FR", 21), ("PR", 16), ("HS", 18), ("DY", 18), ("HZ", 18)],
+)
+def test_shape_cg(method, expected_iterations):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("AlgoCG", "cg_method", "HS")
+    config.set("AlgoCG", "cg_method", method)
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=18)
-    assert sop.solver.relative_norm < sop.solver.rtol
-
-
-def test_shape_cg_dy():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("AlgoCG", "cg_method", "DY")
-
-    mesh.coordinates()[:, :] = initial_coordinates
-    mesh.bounding_box_tree().build(mesh)
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=18)
-    assert sop.solver.relative_norm < sop.solver.rtol
-
-
-def test_shape_cg_hz():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("AlgoCG", "cg_method", "HZ")
-
-    mesh.coordinates()[:, :] = initial_coordinates
-    mesh.bounding_box_tree().build(mesh)
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=18)
+    sop.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=expected_iterations)
     assert sop.solver.relative_norm < sop.solver.rtol
 
 

@@ -32,6 +32,8 @@ from cashocs import _loggers
 from cashocs._optimization.line_search import line_search
 
 if TYPE_CHECKING:
+    from scipy import sparse
+
     from cashocs import _typing
     from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
@@ -101,6 +103,9 @@ class PolynomialLineSearch(line_search.LineSearch):
         solver: optimization_algorithms.OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
+        active_idx: np.ndarray | None = None,
+        constraint_gradient: sparse.csr_matrix | None = None,
+        dropped_idx: np.ndarray | None = None,
     ) -> Tuple[Optional[fenics.Function], bool]:
         """Performs the line search.
 
@@ -109,6 +114,13 @@ class PolynomialLineSearch(line_search.LineSearch):
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates whether the direction is
                 (presumably) scaled.
+            active_idx: The list of active indices of the working set. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
+            constraint_gradient: The gradient of the constraints for the mesh quality.
+                Only needed for shape optimization with mesh quality constraints.
+                Default is `None`.
+            dropped_idx: The list of indicies for dropped constraints. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
 
         Returns:
             The accepted deformation / update or None, in case the update was not
@@ -133,7 +145,12 @@ class PolynomialLineSearch(line_search.LineSearch):
                 )
             self.stepsize = (
                 self.optimization_variable_abstractions.update_optimization_variables(
-                    search_direction, self.stepsize, self.beta_armijo
+                    search_direction,
+                    self.stepsize,
+                    self.beta_armijo,
+                    active_idx,
+                    constraint_gradient,
+                    dropped_idx,
                 )
             )
             _loggers.debug(f"Using {self.stepsize:.3e} as trial stepsize")

@@ -22,7 +22,7 @@ jobs:
         rm -R /home/mambauser/cashocs
 
     - name: Checkout repository
-      uses: actions/checkout@v4.1.1 
+      uses: actions/checkout@v4.1.2 
 
     - name: Install cashocs
       shell: bash
@@ -45,7 +45,7 @@ jobs:
     steps:
     
     - name: Checkout repository
-      uses: actions/checkout@v4.1.1
+      uses: actions/checkout@v4.1.2
     
 
     - name: Get tag name
@@ -63,7 +63,7 @@ jobs:
 
     - name: Create Github release
       id: create_release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         name: cashocs ${{ steps.tag_name.outputs.TAG_PREFIX }}
         generate_release_notes: ${{ steps.check_version.outputs.is_stable == 'true' }}
@@ -80,7 +80,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4.1.1
+      uses: actions/checkout@v4.1.2
 
     - name: Set up Python 3.11
       uses: actions/setup-python@v5
