@@ -103,9 +103,9 @@ def test_triangle_mesh_constraints():
     MPI.size(MPI.comm_world) > 1,
     reason="This test cannot be run in parallel.",
 )
-def test_tetrahedron_mesh_constraints():
+def test_solid_angle_mesh_constraints():
     cfg = cashocs.io.config.Config()
-    cfg.set("MeshQualityConstraints", "min_angle", "30.0")
+    cfg.set("MeshQualityConstraints", "min_angle", "10.0")
     cfg.set("MeshQualityConstraints", "tol", "1e-2")
     cfg.set("ShapeGradient", "shape_bdry_fix", "[]")
     cfg.set("ShapeGradient", "shape_bdry_def", "[1,2,3,4,5,6]")

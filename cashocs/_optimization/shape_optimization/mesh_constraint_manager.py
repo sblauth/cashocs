@@ -98,7 +98,7 @@ class ConstraintManager:
                 )
 
             elif self.mesh.geometry().dim() == 3:
-                angle_constraint = mesh_constraints.DihedralAngleConstraint(
+                angle_constraint = mesh_constraints.SolidAngleConstraint(
                     self.mesh, self.config, deformation_space
                 )
             else:
