@@ -76,13 +76,13 @@ we can recommend the textbooks
 
 .. readme_end_disclaimer
 
-However, the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/user>`_ also gives many references either
+However, the `cashocs tutorial <https://cashocs.readthedocs.io/en/stable/user>`_ also gives many references either
 to the underlying theory of PDE constrained optimization or to relevant demos
 and documentation of FEniCS.
 
 An overview over cashocs and its capabilities can be found in `Blauth - cashocs: A Computational, Adjoint-Based
-Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_. Moreover, note that
-the full cashocs documentation is available at `<https://cashocs.readthedocs.io/en/latest>`_.
+Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_ and `Blauth - Version 2.0 - cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2023.101577>`_. Moreover, note that
+the full cashocs documentation is available at `<https://cashocs.readthedocs.io>`_.
 
 
 .. readme_start_installation
@@ -111,7 +111,7 @@ where `<ENV_NAME>` is the desired name of the new environment.
 
 .. note::
 
-    `Gmsh <https://gmsh.info/>`_ is now (starting with release 1.3.2) automatically installed with anaconda.
+    `Gmsh <https://gmsh.info/>`_ is automatically installed with anaconda.
 
 
 
@@ -125,7 +125,7 @@ Manual Installation
   version that matches the HDF5 version used in FEniCS, and `matplotlib <https://matplotlib.org/>`_.
   The version of meshio should be at least 4, but for compatibility it is recommended to use meshio 4.4.
 
-- You might also want to install `Gmsh <https://gmsh.info/>`_, version 4.8.
+- You might also want to install `Gmsh <https://gmsh.info/>`_, version 4.8 or later.
   cashocs does not necessarily need this to work properly,
   but it is required for the remeshing functionality.
 
@@ -191,8 +191,8 @@ Manual Installation
 Usage
 =====
 
-The complete cashocs documentation is available here `<https://cashocs.readthedocs.io/en/latest>`_. For a detailed
-introduction, see the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/user>`_. The python source code
+The complete cashocs documentation is available here `<https://cashocs.readthedocs.io>`_. For a detailed
+introduction, see the `cashocs tutorial <https://cashocs.readthedocs.io/en/stable/user>`_. The python source code
 for the demo programs is located inside the "demos" folder.
 
 
@@ -361,8 +361,9 @@ along with cashocs.  If not, see `<https://www.gnu.org/licenses/>`_.
 Contact / About
 ===============
 
-I'm `Sebastian Blauth <https://sblauth.github.io/>`_, a scientific employee at `Fraunhofer ITWM
-<https://www.itwm.fraunhofer.de/en.html>`_. I have developed this project as part of my PhD thesis.
+I'm `Sebastian Blauth <https://sblauth.github.io/>`_, a researcher at `Fraunhofer ITWM
+<https://www.itwm.fraunhofer.de/en.html>`_. I started developing cashocs during my PhD studies and have
+further developed and refined it as part of my employment at Fraunhofer ITWM.
 If you have any questions / suggestions / feedback, etc., you can contact me
 via `sebastian.blauth@itwm.fraunhofer.de
 <mailto:sebastian.blauth@itwm.fraunhofer.de>`_. For more information, visit my website at `<https://sblauth.github.io/>`_.

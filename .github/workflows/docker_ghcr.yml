@@ -30,7 +30,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4.1.3
+        uses: actions/checkout@v4.1.5
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
