@@ -180,7 +180,7 @@ def assemble_petsc_system(
 
 
 def setup_petsc_options(
-    ksps: List[PETSc.KSP], ksp_options: List[_typing.KspOption]
+    objs: List[PETSc.KSP | PETSc.SNES], ksp_options: List[_typing.KspOption]
 ) -> None:
     """Sets up an (iterative) linear solver.
 
@@ -188,22 +188,22 @@ def setup_petsc_options(
     to the PETSc KSP objects. Here, options[i] is applied to ksps[i].
 
     Args:
-        ksps: A list of PETSc KSP objects (linear solvers) to which the (command line)
+        objs: A list of PETSc objects (e.g. linear solvers) to which the (command line)
             options are applied to.
-        ksp_options: A list of command line options that specify the iterative solver
+        ksp_options: A list of command line options that specify the solver
             from PETSc.
 
     """
     fenics.PETScOptions.clear()
     opts = PETSc.Options()
 
-    for i in range(len(ksps)):
+    for i in range(len(objs)):
         opts.clear()
 
         for key, value in ksp_options[i].items():
             opts.setValue(key, value)
 
-        ksps[i].setFromOptions()
+        objs[i].setFromOptions()
 
 
 def setup_fieldsplit_preconditioner(
