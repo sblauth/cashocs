@@ -177,7 +177,7 @@ class LevelSetVolumeProjector:
             interval_low = iterate - self.tol_bisect
             interval_high = iterate + self.tol_bisect
             xtol *= 0.1
-            if self.evaluate(iterate, target) < self.tol_bisect:
+            if abs(self.evaluate(iterate, target)) < self.tol_bisect:
                 break
 
         self.levelset_function.vector().vec().aypx(

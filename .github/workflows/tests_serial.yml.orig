@@ -1,0 +1,52 @@
+name: Tests (ubuntu, serial)
+
+on:
+  workflow_dispatch:
+  pull_request:
+  schedule:
+    - cron: '17 22 * * *'
+    
+    
+jobs:
+  serial_tests:
+    name: Test (py=${{ matrix.python-version}}, ubuntu-latest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11"]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4.1.1
+
+    - name: Install micromamba
+      uses: mamba-org/setup-micromamba@v1
+      with:
+        environment-file: .github/micromamba/testenv.yml
+        create-args: >-
+          fenics=2019
+          meshio>=5.3.0
+          pytest>=7.2.0
+          gmsh>=4.8
+<<<<<<< HEAD
+          scipy
+          occt<=7.7.0
+=======
+          petsc<=3.19
+>>>>>>> main
+          python=${{ matrix.python-version }}
+
+    - name: Install package
+      run: |
+        pip install .[all]
+
+    - name: Run tests
+      env: 
+        OMP_NUM_THREADS: 2
+      run: |
+        python3 -m pytest -vv tests/
+ 
