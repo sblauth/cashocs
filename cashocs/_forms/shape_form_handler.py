@@ -411,6 +411,12 @@ class ShapeFormHandler(form_handler.FormHandler):
             ufl_algorithms.estimate_total_polynomial_degree(modified_scalar_product),
             ufl_algorithms.estimate_total_polynomial_degree(shape_derivative),
         )
+        fenics_quadrature_degree = fenics.parameters["form_compiler"][
+            "quadrature_degree"
+        ]
+        if fenics_quadrature_degree is not None:
+            estimated_degree = np.minimum(estimated_degree, fenics_quadrature_degree)
+
         assembler = fenics.SystemAssembler(
             modified_scalar_product,
             shape_derivative,
