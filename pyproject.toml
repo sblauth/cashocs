@@ -48,6 +48,7 @@ dependencies = [
     "scipy",
 	"typing_extensions",
         "matplotlib",
+        "scipy"
 ]
 
 [project.urls]

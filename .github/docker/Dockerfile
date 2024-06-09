@@ -14,6 +14,7 @@ RUN micromamba install -y -n base -c conda-forge \
       meshio">=5.3.0" \
       pytest">=7.2.0" \
       gmsh">=4.8" \
+      scipy \
       coverage">=7.1.0" \
       mpich \
       petsc"<=3.19" \
