@@ -31,7 +31,7 @@ jobs:
           matplotlib
           petsc<=3.19
           scipy
-          python=3.11
+          python=3.12
 
     - name: Install package
       run: |
@@ -71,7 +71,7 @@ jobs:
           matplotlib
           petsc<=3.19
           scipy
-          python=3.11
+          python=3.12
 
     - name: Install package
       run: |
