@@ -87,9 +87,6 @@ class SNESSolver:
         else:
             self.petsc_options = petsc_options  # type: ignore
 
-        self.A_tensor = A_tensor  # pylint: disable=invalid-name
-        self.b_tensor = b_tensor
-
         if preconditioner_form is not None:
             if len(preconditioner_form.arguments()) == 1:
                 self.preconditioner_form = fenics.derivative(
@@ -110,19 +107,26 @@ class SNESSolver:
         )
         self.assembler.keep_diagonal = True
 
+        if A_tensor is not None:
+            self.A_petsc = A_tensor.mat()  # pylint: disable=invalid-name
+        else:
+            self.A_petsc = fenics.PETScMatrix(self.comm).mat()
+
+        if b_tensor is not None:
+            self.residual_petsc = b_tensor.vec()
+        else:
+            self.residual_petsc = fenics.PETScVector(self.comm).vec()
+
         if self.preconditioner_form is not None:
             self.assembler_pc = fenics.SystemAssembler(
                 self.preconditioner_form, self.nonlinear_form, self.bcs
             )
             self.assembler_pc.keep_diagonal = True
-
-        self.A_fenics = (  # pylint: disable=invalid-name
-            self.A_tensor or fenics.PETScMatrix(self.comm)
-        )
-        self.residual = self.b_tensor or fenics.PETScVector(self.comm)
-        self.b = fenics.as_backend_type(self.residual).vec()
-
-        self.P_fenics = fenics.PETScMatrix(self.comm)  # pylint: disable=invalid-name
+            self.P_petsc = fenics.PETScMatrix(  # pylint: disable=invalid-name
+                self.comm
+            ).mat()
+        else:
+            self.P_petsc = None
 
     def assemble_function(
         self,
@@ -160,13 +164,13 @@ class SNESSolver:
 
         """
         self.u.vector().vec().setArray(x)
-        J = fenics.PETScMatrix(J)  # pylint: disable=invalid-name
-        P = fenics.PETScMatrix(P)  # pylint: disable=invalid-name
 
+        J = fenics.PETScMatrix(J)  # pylint: disable=invalid-name
         self.assembler.assemble(J)
         J.ident_zeros()
 
         if self.preconditioner_form is not None:
+            P = fenics.PETScMatrix(P)  # pylint: disable=invalid-name
             self.assembler_pc.assemble(P)
             P.ident_zeros()
 
@@ -174,10 +178,8 @@ class SNESSolver:
         """Solves the nonlinear problem with PETSc's SNES."""
         snes = PETSc.SNES().create()
 
-        snes.setFunction(self.assemble_function, self.residual.vec())
-        snes.setJacobian(
-            self.assemble_jacobian, self.A_fenics.mat(), self.P_fenics.mat()
-        )
+        snes.setFunction(self.assemble_function, self.residual_petsc)
+        snes.setJacobian(self.assemble_jacobian, self.A_petsc, self.P_petsc)
 
         _utils.setup_petsc_options([snes], [self.petsc_options])  # type: ignore
         snes.solve(None, self.u.vector().vec())
