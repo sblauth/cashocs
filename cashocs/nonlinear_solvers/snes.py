@@ -36,7 +36,7 @@ if TYPE_CHECKING:
     from cashocs import _typing
 
 
-default_snes_options = {
+default_snes_options: _typing.KspOption = {
     "snes_type": "newtonls",
     "snes_monitor_short": None,
 }
@@ -86,10 +86,10 @@ class SNESSolver:
         self.shift = shift
 
         if petsc_options is None:
-            self.petsc_options = copy.deepcopy(default_snes_options)
-            self.petsc_options.update(_utils.linalg.direct_ksp_options)  # type: ignore
+            self.petsc_options: _typing.KspOption = copy.deepcopy(default_snes_options)
+            self.petsc_options.update(_utils.linalg.direct_ksp_options)
         else:
-            self.petsc_options = petsc_options  # type: ignore
+            self.petsc_options = petsc_options
 
         if preconditioner_form is not None:
             if len(preconditioner_form.arguments()) == 1:
@@ -200,7 +200,10 @@ class SNESSolver:
         snes.setFunction(self.assemble_function, self.residual_petsc)
         snes.setJacobian(self.assemble_jacobian, self.A_petsc, self.P_petsc)
 
-        _utils.setup_petsc_options([snes], [self.petsc_options])  # type: ignore
+        ksp = snes.getKSP()
+        _utils.linalg.setup_fieldsplit_preconditioner(self.u, ksp, self.petsc_options)
+
+        _utils.setup_petsc_options([snes], [self.petsc_options])
         snes.solve(None, self.u.vector().vec())
 
         return self.u

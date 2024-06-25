@@ -36,13 +36,13 @@ except ImportError:
     import ufl
 
 from cashocs import _loggers
-from cashocs import _typing
 from cashocs import _utils
 from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs import _forms
+    from cashocs import _typing
     from cashocs._database import database
     from cashocs._pde_problems import adjoint_problem as ap
     from cashocs._pde_problems import state_problem as sp
