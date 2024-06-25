@@ -238,7 +238,7 @@ class _PLaplaceProjector:
         for nonlinear_form in self.form_list:
             petsc_options: _typing.KspOption = {
                 "snes_type": "newtonls",
-                # "snes_monitor_short": None,
+                "snes_linesearch_type": "basic",
                 "snes_ksp_ew": True,
             }
             petsc_options.update(self.ksp_options)

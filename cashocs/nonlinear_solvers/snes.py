@@ -30,6 +30,7 @@ try:
 except ImportError:
     import ufl
 
+from cashocs import _exceptions
 from cashocs import _utils
 
 if TYPE_CHECKING:
@@ -53,6 +54,9 @@ class SNESSolver:
         derivative: Optional[ufl.Form] = None,
         petsc_options: Optional[_typing.KspOption] = None,
         shift: Optional[ufl.Form] = None,
+        rtol: float = 1e-10,
+        atol: float = 1e-10,
+        max_iter: int = 50,
         A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
         b_tensor: Optional[fenics.PETScVector] = None,
         preconditioner_form: Optional[ufl.Form] = None,
@@ -72,6 +76,10 @@ class SNESSolver:
             petsc_options: The options for PETSc.
             shift: A shift term, if the right-hand side of the nonlinear problem is not
                 zero, but shift.
+            rtol: Relative tolerance of the solver (default is ``rtol = 1e-10``).
+            atol: Absolute tolerance of the solver (default is ``atol = 1e-10``).
+            max_iter: Maximum number of iterations carried out by the method (default is
+                ``max_iter = 50``).
             A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
                 sub-problem.
             b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
@@ -84,6 +92,10 @@ class SNESSolver:
         self.comm = self.u.function_space().mesh().mpi_comm()
         self.bcs = _utils.enlist(bcs)
         self.shift = shift
+
+        self.rtol = rtol
+        self.atol = atol
+        self.max_iter = max_iter
 
         if petsc_options is None:
             self.petsc_options: _typing.KspOption = copy.deepcopy(default_snes_options)
@@ -204,7 +216,12 @@ class SNESSolver:
         _utils.linalg.setup_fieldsplit_preconditioner(self.u, ksp, self.petsc_options)
 
         _utils.setup_petsc_options([snes], [self.petsc_options])
+        snes.setTolerances(rtol=self.rtol, atol=self.atol, max_it=self.max_iter)
         snes.solve(None, self.u.vector().vec())
+
+        converged_reason = snes.getConvergedReason()
+        if converged_reason < 0:
+            raise _exceptions.PETScSNESError(converged_reason)
 
         return self.u
 
@@ -216,6 +233,9 @@ def snes_solve(
     derivative: Optional[ufl.Form] = None,
     petsc_options: Optional[_typing.KspOption] = None,
     shift: Optional[ufl.Form] = None,
+    rtol: float = 1e-10,
+    atol: float = 1e-10,
+    max_iter: int = 50,
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
     preconditioner_form: Optional[ufl.Form] = None,
@@ -235,6 +255,10 @@ def snes_solve(
         petsc_options: The options for PETSc.
         shift: A shift term, if the right-hand side of the nonlinear problem is not
             zero, but shift.
+        rtol: Relative tolerance of the solver (default is ``rtol = 1e-10``).
+        atol: Absolute tolerance of the solver (default is ``atol = 1e-10``).
+        max_iter: Maximum number of iterations carried out by the method (default is
+            ``max_iter = 50``).
         A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
             sub-problem.
         b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
@@ -252,6 +276,9 @@ def snes_solve(
         derivative=derivative,
         petsc_options=petsc_options,
         shift=shift,
+        rtol=rtol,
+        atol=atol,
+        max_iter=max_iter,
         A_tensor=A_tensor,
         b_tensor=b_tensor,
         preconditioner_form=preconditioner_form,
