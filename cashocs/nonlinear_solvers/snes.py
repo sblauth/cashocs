@@ -52,6 +52,7 @@ class SNESSolver:
         bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
         derivative: Optional[ufl.Form] = None,
         petsc_options: Optional[_typing.KspOption] = None,
+        shift: Optional[ufl.Form] = None,
         A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
         b_tensor: Optional[fenics.PETScVector] = None,
         preconditioner_form: Optional[ufl.Form] = None,
@@ -69,6 +70,8 @@ class SNESSolver:
                 Default is None, and in this case the Jacobian is computed automatically
                 with AD.
             petsc_options: The options for PETSc.
+            shift: A shift term, if the right-hand side of the nonlinear problem is not
+                zero, but shift.
             A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
                 sub-problem.
             b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
@@ -80,6 +83,7 @@ class SNESSolver:
         self.u = u
         self.comm = self.u.function_space().mesh().mpi_comm()
         self.bcs = _utils.enlist(bcs)
+        self.shift = shift
 
         if petsc_options is None:
             self.petsc_options = copy.deepcopy(default_snes_options)
@@ -128,6 +132,14 @@ class SNESSolver:
         else:
             self.P_petsc = None
 
+        self.assembler_shift: Optional[fenics.SystemAssembler] = None
+        self.residual_shift: Optional[fenics.PETScVector] = None
+        if self.shift is not None:
+            self.assembler_shift = fenics.SystemAssembler(
+                self.derivative, self.shift, self.bcs
+            )
+            self.residual_shift = fenics.PETScVector(self.comm)
+
     def assemble_function(
         self,
         snes: PETSc.SNES,  # pylint: disable=unused-argument
@@ -146,6 +158,13 @@ class SNESSolver:
         f = fenics.PETScVector(f)
 
         self.assembler.assemble(f, self.u.vector())
+        if (
+            self.shift is not None
+            and self.assembler_shift is not None
+            and self.residual_shift is not None
+        ):
+            self.assembler_shift.assemble(self.residual_shift, self.u.vector())
+            f[:] -= self.residual_shift[:]
 
     def assemble_jacobian(
         self,
@@ -193,6 +212,7 @@ def snes_solve(
     bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
     derivative: Optional[ufl.Form] = None,
     petsc_options: Optional[_typing.KspOption] = None,
+    shift: Optional[ufl.Form] = None,
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
     preconditioner_form: Optional[ufl.Form] = None,
@@ -210,6 +230,8 @@ def snes_solve(
             Default is None, and in this case the Jacobian is computed automatically
             with AD.
         petsc_options: The options for PETSc.
+        shift: A shift term, if the right-hand side of the nonlinear problem is not
+            zero, but shift.
         A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
             sub-problem.
         b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
@@ -224,11 +246,12 @@ def snes_solve(
         nonlinear_form,
         u,
         bcs,
-        derivative,
-        petsc_options,
-        A_tensor,
-        b_tensor,
-        preconditioner_form,
+        derivative=derivative,
+        petsc_options=petsc_options,
+        shift=shift,
+        A_tensor=A_tensor,
+        b_tensor=b_tensor,
+        preconditioner_form=preconditioner_form,
     )
 
     solution = solver.solve()
