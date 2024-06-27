@@ -251,7 +251,7 @@ class OptimizationAlgorithm(abc.ABC):
 
         else:
             self.objective_value = self.cost_functional.evaluate()
-            self.gradient_norm = np.NAN
+            self.gradient_norm = np.nan
             self.relative_norm = np.nan
             # maximum iterations reached
             if self.converged_reason == -1:
