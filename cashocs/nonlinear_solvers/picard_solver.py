@@ -80,6 +80,15 @@ def _create_homogenized_bcs(
     return bcs_list_hom
 
 
+def _enlist_picard(
+    obj: Optional[List[Union[T, None]]], length: int
+) -> List[Union[T, None]]:
+    if obj is None:
+        return [None] * length
+    else:
+        return obj
+
+
 def picard_iteration(
     form_list: Union[List[ufl.form], ufl.Form],
     u_list: Union[List[fenics.Function], fenics.Function],
@@ -143,12 +152,9 @@ def picard_iteration(
     u_list = _utils.enlist(u_list)
     bcs_list = _utils.check_and_enlist_bcs(bcs_list)
     bcs_list_hom = _create_homogenized_bcs(bcs_list)
-    preconditioner_form_list = _utils.enlist(preconditioner_forms)
 
-    if newton_linearizations is None:
-        newton_linearization_list = [None] * len(u_list)
-    else:
-        newton_linearization_list = newton_linearizations
+    preconditioner_form_list = _enlist_picard(preconditioner_forms, len(u_list))
+    newton_linearization_list = _enlist_picard(newton_linearizations, len(u_list))
 
     comm = u_list[0].function_space().mesh().mpi_comm()
 

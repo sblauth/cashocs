@@ -37,8 +37,14 @@ class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
             self.evaluate_cost_functional()
 
             self.compute_search_direction()
+            self.project_search_direction()
             self.line_search.perform(
-                self, self.search_direction, self.has_curvature_info
+                self,
+                self.search_direction,
+                self.has_curvature_info,
+                self.active_idx,
+                self.constraint_gradient,
+                self.dropped_idx,
             )
 
             self.iteration += 1
@@ -46,7 +52,7 @@ class GradientDescentMethod(optimization_algorithm.OptimizationAlgorithm):
                 break
 
     def compute_search_direction(self) -> None:
-        """Computes the search direction for the gradient descent method."""
+        """Computes the search direction for the (projected) gradient descent method."""
         for i in range(len(self.db.function_db.gradient)):
             self.search_direction[i].vector().vec().aypx(
                 0.0, -self.db.function_db.gradient[i].vector().vec()
