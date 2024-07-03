@@ -228,7 +228,7 @@ Its default value is given by
 Possible options are :ini:`backend = cashocs` and :ini:`backend = petsc`. In the former case, a 
 damped, inexact Newton method which is affine co-variant is used. Its parameters are specified in the
 configuration above. In the latter case, PETSc's SNES interface for solving nonlinear equations
-is used which can be configured with the :py:`ksp_options` supplied by the user to the 
+is used which can be configured with the `ksp_options` supplied by the user to the 
 :py:class:`cashocs.OptimizationProblem`. An overview over possible PETSc command line options
 can be found at `<https://petsc.org/release/manualpages/SNES/>`_.
 
