@@ -73,7 +73,7 @@ class SNESSolver:
             derivative: The Jacobian of nonlinear_form, used for the Newton method.
                 Default is None, and in this case the Jacobian is computed automatically
                 with AD.
-            petsc_options: The options for PETSc.
+            petsc_options: The options for PETSc SNES object.
             shift: A shift term, if the right-hand side of the nonlinear problem is not
                 zero, but shift.
             rtol: Relative tolerance of the solver (default is ``rtol = 1e-10``).
@@ -257,7 +257,7 @@ def snes_solve(
         derivative: The Jacobian of nonlinear_form, used for the Newton method.
             Default is None, and in this case the Jacobian is computed automatically
             with AD.
-        petsc_options: The options for PETSc.
+        petsc_options: The options for PETSc SNES object.
         shift: A shift term, if the right-hand side of the nonlinear problem is not
             zero, but shift.
         rtol: Relative tolerance of the solver (default is ``rtol = 1e-10``).
