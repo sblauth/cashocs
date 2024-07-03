@@ -167,6 +167,7 @@ class SNESSolver:
 
         """
         self.u.vector().vec().setArray(x)
+        self.u.vector().apply("")
         f = fenics.PETScVector(f)
 
         self.assembler.assemble(f, self.u.vector())
@@ -195,6 +196,7 @@ class SNESSolver:
 
         """
         self.u.vector().vec().setArray(x)
+        self.u.vector().apply("")
 
         J = fenics.PETScMatrix(J)  # pylint: disable=invalid-name
         self.assembler.assemble(J)
