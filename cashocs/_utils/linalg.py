@@ -180,7 +180,7 @@ def assemble_petsc_system(
 
 
 def setup_petsc_options(
-    ksps: List[PETSc.KSP], ksp_options: List[_typing.KspOption]
+    objs: List[PETSc.KSP | PETSc.SNES], ksp_options: List[_typing.KspOption]
 ) -> None:
     """Sets up an (iterative) linear solver.
 
@@ -188,22 +188,22 @@ def setup_petsc_options(
     to the PETSc KSP objects. Here, options[i] is applied to ksps[i].
 
     Args:
-        ksps: A list of PETSc KSP objects (linear solvers) to which the (command line)
+        objs: A list of PETSc objects (e.g. linear solvers) to which the (command line)
             options are applied to.
-        ksp_options: A list of command line options that specify the iterative solver
+        ksp_options: A list of command line options that specify the solver
             from PETSc.
 
     """
     fenics.PETScOptions.clear()
     opts = PETSc.Options()
 
-    for i in range(len(ksps)):
+    for i in range(len(objs)):
         opts.clear()
 
         for key, value in ksp_options[i].items():
             opts.setValue(key, value)
 
-        ksps[i].setFromOptions()
+        objs[i].setFromOptions()
 
 
 def setup_fieldsplit_preconditioner(
@@ -331,6 +331,10 @@ def solve_linear_problem(
     linear_solver: Optional[LinearSolver] = None,
 ) -> PETSc.Vec:
     """Solves a finite dimensional linear problem.
+
+    An overview over possible command line options for the PETSc KSP object can
+    be found at `<https://petsc.org/release/manualpages/KSP/>`_ and options for the
+    preconditioners can be found at `<https://petsc.org/release/manualpages/PC/>`_.
 
     Args:
         A: The PETSc matrix corresponding to the left-hand side of the problem. If

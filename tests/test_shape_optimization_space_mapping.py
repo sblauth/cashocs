@@ -97,7 +97,7 @@ class FineModel(sosm.FineModel):
         bc_pressure = DirichletBC(V.sub(1), Constant(0.0), boundaries, 5)
         bcs = [bc_in] + bcs_wall + [bc_out] + [bc_pressure]
 
-        cashocs.newton_solve(F, up, bcs, verbose=False)
+        cashocs.snes_solve(F, up, bcs)
 
         J = cashocs.IntegralFunctional(
             Constant(0.5) * dot(u - u_des, u - u_des) * ds(5)

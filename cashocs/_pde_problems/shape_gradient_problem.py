@@ -42,6 +42,7 @@ from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs import _forms
+    from cashocs import _typing
     from cashocs._database import database
     from cashocs._pde_problems import adjoint_problem as ap
     from cashocs._pde_problems import state_problem as sp
@@ -235,15 +236,19 @@ class _PLaplaceProjector:
         self.solution.vector().vec().set(0.0)
         self.solution.vector().apply("")
         for nonlinear_form in self.form_list:
-            nonlinear_solvers.newton_solve(
+            petsc_options: _typing.KspOption = {
+                "snes_type": "newtonls",
+                "snes_linesearch_type": "basic",
+                "snes_ksp_ew": True,
+            }
+            petsc_options.update(self.ksp_options)
+
+            nonlinear_solvers.snes_solve(
                 nonlinear_form,
                 self.solution,
                 self.bcs_shape,
+                petsc_options=petsc_options,
                 shift=self.shape_derivative,
-                damped=False,
-                inexact=True,
-                verbose=False,
-                ksp_options=self.ksp_options,
                 A_tensor=self.A_tensor,
                 b_tensor=self.b_tensor,
             )

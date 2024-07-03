@@ -201,14 +201,10 @@ class HessianProblem:
                 rtol=self.picard_rtol,
                 atol=self.picard_atol,
                 verbose=self.picard_verbose,
-                inner_damped=False,
-                inner_inexact=False,
-                inner_verbose=False,
                 inner_max_iter=2,
                 ksp_options=self.db.parameter_db.state_ksp_options,
                 A_tensors=self.state_A_tensors,
                 b_tensors=self.state_b_tensors,
-                inner_is_linear=True,
                 preconditioner_forms=self.db.form_db.preconditioner_forms,
             )
 
@@ -220,14 +216,10 @@ class HessianProblem:
                 rtol=self.picard_rtol,
                 atol=self.picard_atol,
                 verbose=self.picard_verbose,
-                inner_damped=False,
-                inner_inexact=False,
-                inner_verbose=False,
                 inner_max_iter=2,
                 ksp_options=self.db.parameter_db.adjoint_ksp_options,
                 A_tensors=self.adjoint_A_tensors,
                 b_tensors=self.adjoint_b_tensors,
-                inner_is_linear=True,
                 preconditioner_forms=self.db.form_db.preconditioner_forms,
             )
 

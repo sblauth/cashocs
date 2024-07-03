@@ -162,6 +162,20 @@ Picard iteration, and is set as follows
 
 Its default value is :ini:`False`.
 
+The parameter :ini:`backend` specifies which solver backend should be used for solving nonlinear systems.
+Its default value is given by
+
+.. code-block:: ini
+
+    backend = cashocs
+
+Possible options are :ini:`backend = cashocs` and :ini:`backend = petsc`. In the former case, a 
+damped, inexact Newton method which is affine co-variant is used. Its parameters are specified in the
+configuration above. In the latter case, PETSc's SNES interface for solving nonlinear equations
+is used which can be configured with the `ksp_options` supplied by the user to the 
+:py:class:`cashocs.OptimizationProblem`. An overview over possible PETSc command line options
+can be found at `<https://petsc.org/release/manualpages/SNES/>`_.
+
 
 
 
@@ -646,6 +660,8 @@ in the following.
       - maximum iterations for Picard iteration
     * - :ini:`picard_verbose = False`
       - :ini:`picard_verbose = True` enables verbose output of Picard iteration
+    * - :ini:`backend = cashocs`
+      - specifies the backend for solving nonlinear equations, can be either :ini:`cashocs` or :ini:`petsc`
 
 [OptimizationRoutine]
 *********************

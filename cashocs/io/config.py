@@ -150,6 +150,10 @@ class Config(ConfigParser):
                 "picard_verbose": {
                     "type": "bool",
                 },
+                "backend": {
+                    "type": "str",
+                    "possible_options": ["cashocs", "petsc"],
+                },
             },
             "OptimizationRoutine": {
                 "algorithm": {
@@ -576,6 +580,7 @@ picard_rtol = 1e-10
 picard_atol = 1e-12
 picard_iter = 50
 picard_verbose = False
+backend = cashocs
 
 [OptimizationRoutine]
 algorithm = none
