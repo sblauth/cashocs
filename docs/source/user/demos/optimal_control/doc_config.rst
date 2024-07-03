@@ -661,7 +661,7 @@ in the following.
     * - :ini:`picard_verbose = False`
       - :ini:`picard_verbose = True` enables verbose output of Picard iteration
     * - :ini:`backend = cashocs`
-        specifies the backend for solving nonlinear equations, can be either :ini:`cashocs` or :ini:`petsc`
+      - specifies the backend for solving nonlinear equations, can be either :ini:`cashocs` or :ini:`petsc`
 
 [OptimizationRoutine]
 *********************
