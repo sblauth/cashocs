@@ -85,6 +85,7 @@ class StateProblem(pde_problem.PDEProblem):
         self.newton_inexact = self.config.getboolean("StateSystem", "newton_inexact")
         self.newton_verbose = self.config.getboolean("StateSystem", "newton_verbose")
         self.newton_iter = self.config.getint("StateSystem", "newton_iter")
+        self.backend = self.config.get("StateSystem", "backend")
 
         # pylint: disable=invalid-name
         self.A_tensors = [
@@ -155,16 +156,36 @@ class StateProblem(pde_problem.PDEProblem):
                         if self.initial_guess is not None:
                             fenics.assign(self.states[i], self.initial_guess[i])
 
-                        nonlinear_solvers.snes_solve(
-                            self.state_form_handler.state_eq_forms[i],
-                            self.states[i],
-                            self.bcs_list[i],
-                            derivative=self.newton_linearizations[i],
-                            petsc_options=self.db.parameter_db.state_ksp_options[i],
-                            A_tensor=self.A_tensors[i],
-                            b_tensor=self.b_tensors[i],
-                            preconditioner_form=self.db.form_db.preconditioner_forms[i],
-                        )
+                        pc_forms = self.db.form_db.preconditioner_forms[i]
+                        if self.backend == "petsc":
+                            nonlinear_solvers.snes_solve(
+                                self.state_form_handler.state_eq_forms[i],
+                                self.states[i],
+                                self.bcs_list[i],
+                                derivative=self.newton_linearizations[i],
+                                petsc_options=self.db.parameter_db.state_ksp_options[i],
+                                A_tensor=self.A_tensors[i],
+                                b_tensor=self.b_tensors[i],
+                                preconditioner_form=pc_forms,
+                            )
+                        else:
+                            nonlinear_solvers.newton_solve(
+                                self.state_form_handler.state_eq_forms[i],
+                                self.states[i],
+                                self.bcs_list[i],
+                                derivative=self.newton_linearizations[i],
+                                rtol=self.newton_rtol,
+                                atol=self.newton_atol,
+                                max_iter=self.newton_iter,
+                                damped=self.newton_damped,
+                                inexact=self.newton_inexact,
+                                verbose=self.newton_verbose,
+                                ksp_options=self.db.parameter_db.state_ksp_options[i],
+                                A_tensor=self.A_tensors[i],
+                                b_tensor=self.b_tensors[i],
+                                preconditioner_form=pc_forms,
+                                linear_solver=self.linear_solver,
+                            )
 
             else:
                 nonlinear_solvers.picard_iteration(

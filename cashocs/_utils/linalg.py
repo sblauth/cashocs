@@ -332,6 +332,10 @@ def solve_linear_problem(
 ) -> PETSc.Vec:
     """Solves a finite dimensional linear problem.
 
+    An overview over possible command line options for the PETSc KSP object can
+    be found at `https://petsc.org/release/manualpages/KSP/`_ and options for the
+    preconditioners can be found at `https://petsc.org/release/manualpages/PC/`_.
+
     Args:
         A: The PETSc matrix corresponding to the left-hand side of the problem. If
             this is None, then the matrix stored in the ksp object is used. Raises

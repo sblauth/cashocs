@@ -242,6 +242,9 @@ def snes_solve(
 ) -> fenics.Function:
     """Solve a nonlinear PDE problem with PETSc SNES.
 
+    An overview over possible PETSc command line options for the SNES can be found
+    at `https://petsc.org/release/manualpages/SNES/`_.
+
     Args:
         nonlinear_form: The variational form of the nonlinear problem to be solved
             by Newton's method.
