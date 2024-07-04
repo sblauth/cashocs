@@ -226,7 +226,7 @@ class SNESSolver:
             raise _exceptions.PETScSNESError(converged_reason)
 
         if hasattr(PETSc, "garbage_cleanup"):
-            snes.destory()
+            snes.destroy()
             PETSc.garbage_cleanup(comm=self.comm)
             PETSc.garbage_cleanup()
 
