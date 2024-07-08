@@ -202,7 +202,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         self.topological_derivative_is_identical = self.config.getboolean(
             "TopologyOptimization", "topological_derivative_is_identical"
         )
-        self.re_normalize_levelset = self.config.getboolean(
+        self.re_normalize_levelset: bool = self.config.getboolean(
             "TopologyOptimization", "re_normalize_levelset"
         )
         self.normalize_topological_derivative = self.config.getboolean(

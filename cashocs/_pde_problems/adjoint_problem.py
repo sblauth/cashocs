@@ -141,16 +141,11 @@ class AdjointProblem(pde_problem.PDEProblem):
                     rtol=self.picard_rtol,
                     atol=self.picard_atol,
                     verbose=self.picard_verbose,
-                    inner_damped=False,
-                    inner_inexact=False,
-                    inner_verbose=False,
                     inner_max_iter=2,
                     ksp_options=self.db.parameter_db.adjoint_ksp_options[::-1],
                     A_tensors=self.A_tensors[::-1],
                     b_tensors=self.b_tensors[::-1],
-                    inner_is_linear=True,
                     preconditioner_forms=self.db.form_db.preconditioner_forms[::-1],
-                    linear_solver=self.linear_solver,
                 )
 
             self.has_solution = True

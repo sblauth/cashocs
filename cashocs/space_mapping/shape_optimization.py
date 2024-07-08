@@ -745,6 +745,7 @@ class SpaceMappingProblem:
                         self.eps = eps_new
                         break
                     else:
+                        self.deformation_handler_fine.revert_transformation()
                         self.stepsize /= 2
 
                 else:

@@ -61,8 +61,8 @@ class NotConvergedError(CashocsException):
         return main_msg + post_msg
 
 
-class PETScKSPError(CashocsException):
-    """This exception is raised when the solution of a linear problem with PETSc fails.
+class PETScError(CashocsException):
+    """This exception is raised when the solution of a problem with PETSc fails.
 
     Also returns the PETSc error code and reason.
     """
@@ -70,7 +70,7 @@ class PETScKSPError(CashocsException):
     def __init__(
         self,
         error_code: int,
-        message: str = "PETSc linear solver did not converge.",
+        message: str = "The PETSc solver did not converge.",
     ) -> None:
         """Initializes self.
 
@@ -82,7 +82,35 @@ class PETScKSPError(CashocsException):
         super().__init__()
         self.message = message
         self.error_code = error_code
+        self.error_dict: dict[int, str] = {}
 
+    def __str__(self) -> str:
+        """Returns the string representation of the exception."""
+        return (
+            f"{self.message} ConvergedReason = "
+            f"{self.error_code} {self.error_dict[self.error_code]}"
+        )
+
+
+class PETScKSPError(PETScError):
+    """This exception is raised when the solution of a linear problem with PETSc fails.
+
+    Also returns the PETSc error code and reason.
+    """
+
+    def __init__(
+        self,
+        error_code: int,
+        message: str = "The PETSc linear solver did not converge.",
+    ) -> None:
+        """Initializes self.
+
+        Args:
+            error_code: The error code issued by PETSc.
+            message: The message, detailing why PETSc issued an error.
+
+        """
+        super().__init__(error_code, message)
         self.error_dict = {
             -2: " (ksp_diverged_null)",
             -3: " (ksp_diverged_its, reached maximum iterations)",
@@ -102,12 +130,48 @@ class PETScKSPError(CashocsException):
             "it was not possible to build / use the preconditioner)",
         }
 
-    def __str__(self) -> str:
-        """Returns the string representation of the exception."""
-        return (
-            f"{self.message} KSPConvergedReason = "
-            f"{self.error_code} {self.error_dict[self.error_code]}"
-        )
+
+class PETScSNESError(PETScError):
+    """This exception is raised if the solution of a nonlinear problem with PETSc fails.
+
+    Also returns the PETSc error code and reason.
+    """
+
+    def __init__(
+        self,
+        error_code: int,
+        message: str = "The PETSc nonlinear solver did not converge.",
+    ) -> None:
+        """Initializes self.
+
+        Args:
+            error_code: The error code issued by PETSc.
+            message: The message, detailing why PETSc issued an error.
+
+        """
+        super().__init__(error_code, message)
+        self.error_dict = {
+            -1: (
+                " (snes_diverged_function_domain, "
+                "the new x location passed to the function is not in the domain)"
+            ),
+            -2: " (snes_diverged_function_count)",
+            -3: " (snes_diverged_linear_solve, linear solve failed)",
+            -4: " (snes_diverged_fnorm_nan)",
+            -5: " (snes_diverged_max_it, maximum number of iterations exceeded)",
+            -6: " (snes_diverged_line_search, the line search failed)",
+            -7: " (snes_diverged_inner, inner solve failed)",
+            -8: (
+                " (snes_diverged_local_min, ||J^T b|| is small, "
+                "implies converged to local minimum)"
+            ),
+            -9: " (snes_diverged_dtol, ||F|| > divtol*||F_initial||)",
+            -10: (
+                " (snes_diverged_jacobian_domain, "
+                "Jacobian calculation does not make sense)"
+            ),
+            -11: " (snes_diverged_tr_delta)",
+        }
 
 
 class InputError(CashocsException):

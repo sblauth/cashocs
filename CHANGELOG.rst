@@ -10,11 +10,17 @@ of the maintenance releases, please take a look at
 2.2.0 (in development)
 ----------------------
 
+* Add a wrapper for PETSc's SNES solver for nonlinear equations. This is used internally in cashocs whenever possible. For the solution of the state system, our own Newton solver is the default for backwards compatibility. Users can use the new SNES backend by specifying :ini:`backend = petsc` in the Section StateSystem of the configuration.
+
 * Increase the precision of the Gmsh output from cashocs
 
 * Add mesh quality constraints for shape optimization: These ensure that the angles of the triangles / dihedral angles of tetrahedrons cannot fall below a specified threshold.
 
 * New configuration file parameters:
+
+  * Section StateSystem
+  
+    * :ini:`backend` specifies which backend is used for solving nonlinear equations. The default is :ini:`backend = cashocs`, which is the "old" behavior, and :ini:`backend = petsc` uses the new PETSc SNES interface.
 
   * Section ShapeGradient
 

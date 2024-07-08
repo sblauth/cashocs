@@ -84,11 +84,6 @@ class Config(ConfigParser):
 
         self.config_scheme: Dict[str, Dict[str, Dict[str, Any]]] = {
             "Mesh": {
-                "mesh_file": {
-                    "type": "str",
-                    "attributes": ["file"],
-                    "file_extension": "xdmf",
-                },
                 "gmsh_file": {
                     "type": "str",
                     "attributes": ["file"],
@@ -149,6 +144,10 @@ class Config(ConfigParser):
                 },
                 "picard_verbose": {
                     "type": "bool",
+                },
+                "backend": {
+                    "type": "str",
+                    "possible_options": ["cashocs", "petsc"],
                 },
             },
             "OptimizationRoutine": {
@@ -576,6 +575,7 @@ picard_rtol = 1e-10
 picard_atol = 1e-12
 picard_iter = 50
 picard_verbose = False
+backend = cashocs
 
 [OptimizationRoutine]
 algorithm = none

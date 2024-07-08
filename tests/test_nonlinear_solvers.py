@@ -23,6 +23,8 @@ from fenics import *
 import numpy as np
 
 import cashocs
+import cashocs._utils
+import cashocs._utils.linalg
 
 
 def test_newton_solver():
@@ -57,6 +59,40 @@ def test_newton_solver():
         damped=False,
         verbose=True,
     )
+
+    assert np.allclose(u.vector()[:], u_fen.vector()[:])
+
+
+def test_snes_solver():
+    mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
+    V = FunctionSpace(mesh, "CG", 1)
+
+    u = Function(V)
+    u_fen = Function(V)
+    v = TestFunction(V)
+
+    F = (
+        inner(grad(u), grad(v)) * dx
+        + Constant(1e2) * pow(u, 3) * v * dx
+        - Constant(1) * v * dx
+    )
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+    solve(F == 0, u, bcs)
+    u_fen.vector().vec().aypx(0.0, u.vector().vec())
+    u_fen.vector().apply("")
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+
+    petsc_options = {
+        "snes_type": "newtonls",
+        "snes_monitor": None,
+        "snes_atol": 1e-10,
+        "snes_rtol": 1e-9,
+    }
+    petsc_options.update(cashocs._utils.linalg.direct_ksp_options)
+
+    cashocs.snes_solve(F, u, bcs, petsc_options=petsc_options)
 
     assert np.allclose(u.vector()[:], u_fen.vector()[:])
 

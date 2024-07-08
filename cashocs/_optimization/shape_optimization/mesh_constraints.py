@@ -1630,6 +1630,10 @@ class AngleConstraint(MeshConstraint):
                         self.dim * bad_vertex_idcs_local_owned + 2,
                     ]
                 ).T.reshape(-1)
+            else:
+                raise _exceptions.CashocsException(
+                    "Please use a mesh of dimension 2 or 3."
+                )
 
             bad_coordinates = (
                 self.mesh.coordinates().copy().reshape(-1)[bad_vertex_idcs_local]
