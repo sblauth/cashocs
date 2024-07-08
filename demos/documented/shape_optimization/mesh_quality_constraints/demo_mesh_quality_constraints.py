@@ -51,14 +51,14 @@
 # \alpha \geq c \quad \text{ for all } \alpha \in \Omega_h,
 # $$
 #
-# where $\alpha$ is some angle (in the case of a 2D triangular mesh) or dihedral
+# where $\alpha$ is some angle (in the case of a 2D triangular mesh) or solid
 # angle (for a 3D tetrahedral mesh) and $c$ is a lower bound for this angle. Note that
 # this constraint is posed for all angles $\alpha$ in the mesh (which is denoted by
 # $\Omega_h$).
 #
 # :::{note}
 # Note that many mesh quality criteria are either explicitly or implictly dependent on
-# the (dihedral) angle of the mesh elements. For examples, we refer the reader to
+# the (solid) angle of the mesh elements. For examples, we refer the reader to
 # {py:mod}`cashocs.geometry.quality`. As a concrete example, consider the so-called
 # skewness of the mesh, which is given by
 #
@@ -80,8 +80,8 @@
 #
 # due to the fact that the above constraint implies that $\alpha \leq \pi - 2c$ for a
 # triangular mesh (the sum of all triangular angles is $\pi$). A similar observation
-# also holds true for a tetrahedral mesh (there, the sum of the dihedral angles is
-# bounded between $2\pi$ and $3\pi$).
+# also holds true for a tetrahedral mesh (there, the sum of the solid angles is
+# bounded between 0 and $2\pi$).
 #
 # For this reason, the above constraints enforce the quality in the mesh in the sense
 # that no element can become degenerate during the optimization if the constraints are
@@ -90,7 +90,7 @@
 #
 # :::{note}
 # Note that for some meshes it might not be sensible to define the lower threshold for
-# the (dihedral) angle globally, i.e., use a single value of $c$ for all cells, for
+# the (solid) angle globally, i.e., use a single value of $c$ for all cells, for
 # example when using stretched elements for resolving boundary layers. Therefore,
 # cashocs can either use a globally defined threshold $c > 0$ or a value of $c$ which
 # is different for each cell in the mesh and depends on the angles in the initial mesh.
@@ -121,6 +121,7 @@
 
 # +
 from fenics import *
+import numpy as np
 
 import cashocs
 
@@ -200,13 +201,18 @@ J = cashocs.IntegralFunctional(u * dx)
 
 # To specify the mesh quality constraints, we now modify the corresponding parameters
 # in the configuration with the following line. We only have specify the minimum angle
-# of the elements (in degrees) which is done with
+# of the elements (in radian) which is done with
 
-config.set("MeshQualityConstraints", "min_angle", "35.0")
+min_angle = 2 * np.pi * 35.0 / 360.0
+# min_angle = 35.0
+config.set("MeshQualityConstraints", "min_angle", f"{min_angle}")
 
 # A minimum angle of 35°, as specified above, leads to a minimum skewness of the mesh of
 # `0.5833` and since we consider a tolerance of `1e-2`, this means that we can
 # expect a minimum skewness of `0.5733` for the mesh.
+#
+# :::{note}
+# The min_angle must be specified in radian or steradian (for 3D problems), respectively.
 #
 # :::{warning}
 # Mesh quality constraints are implemented for all available methods for shape
@@ -238,7 +244,7 @@ config.set("MeshQualityConstraints", "min_angle", "35.0")
 # cfg.set("MeshQualityConstraints", "feasible_angle_reduction_factor", "0.5")
 # :::
 #
-# This means that all (dihedral) angles of the mesh can become half (or a factor of
+# This means that all (solid) angles of the mesh can become half (or a factor of
 # $\varphi$ in general) of the minimum angle of the respective element.
 #
 # If both a {ini}`feasible_angle_reduction_factor` and {ini}`min_angle` are specified,

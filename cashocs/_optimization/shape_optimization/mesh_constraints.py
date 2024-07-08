@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -132,7 +132,7 @@ triangle_angles(std::shared_ptr<const Mesh> mesh)
 }
 
 py::array_t<double>
-tetrahedron_angles(std::shared_ptr<const Mesh> mesh)
+tetrahedron_dihedral_angles(std::shared_ptr<const Mesh> mesh)
 {
     size_t idx = 0;
     auto n = mesh->num_cells();
@@ -307,7 +307,7 @@ triangle_angle_gradient(std::shared_ptr<const Mesh> mesh)
 }
 
 std::tuple<py::array_t<int>, py::array_t<int>, py::array_t<double>>
-tetrahedron_angle_gradient(std::shared_ptr<const Mesh> mesh)
+tetrahedron_dihedral_angle_gradient(std::shared_ptr<const Mesh> mesh)
 {
     size_t idx = 0;
     auto n = mesh->num_cells();
@@ -1037,10 +1037,10 @@ tetrahedron_solid_angle_gradient(std::shared_ptr<const Mesh> mesh)
 PYBIND11_MODULE(SIGNATURE, m)
 {
     m.def("triangle_angles", &triangle_angles);
-    m.def("tetrahedron_angles", &tetrahedron_angles);
+    m.def("tetrahedron_dihedral_angles", &tetrahedron_dihedral_angles);
     m.def("tetrahedron_solid_angles", &tetrahedron_solid_angles);
     m.def("triangle_angle_gradient", &triangle_angle_gradient);
-    m.def("tetrahedron_angle_gradient", &tetrahedron_angle_gradient);
+    m.def("tetrahedron_dihedral_angle_gradient", &tetrahedron_dihedral_angle_gradient);
     m.def("tetrahedron_solid_angle_gradient", &tetrahedron_solid_angle_gradient);
 }
 """
@@ -1538,7 +1538,6 @@ class AngleConstraint(MeshConstraint):
         self,
     ) -> tuple[np.ndarray | float | None, np.ndarray | None, np.ndarray | None]:
         constant_min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
-        constant_min_angle *= 2 * np.pi / 360.0
 
         feasible_angle_reduction_factor = self.config.getfloat(
             "MeshQualityConstraints", "feasible_angle_reduction_factor"
