@@ -95,7 +95,7 @@ J = cashocs.IntegralFunctional(
     u * dx + Constant(alpha_vol) * dx + Constant(alpha_surf) * ds
 )
 
-# The remaining two parts are specified via {download}`config.ini
+# The remaining parts are specified via {download}`config.ini
 # </../../demos/documented/shape_optimization/regularization/config.ini>`, where
 # the following lines are relevant
 #
@@ -104,10 +104,8 @@ J = cashocs.IntegralFunctional(
 # [Regularization]
 # factor_volume = 1.0
 # target_volume = 1.5
-# use_initial_volume = False
 # factor_surface = 1.0
 # target_surface = 4.5
-# use_initial_surface = False
 # factor_curvature = 1e-4
 # ```
 #
