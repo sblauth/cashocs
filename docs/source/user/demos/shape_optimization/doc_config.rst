@@ -4,9 +4,7 @@ Documentation of the Config Files for Shape Optimization Problems
 =================================================================
 
 Let us take a detailed look at the config files for shape optimization problems and
-discusss the corresponding parameters. The corresponding
-config file used for this discussion is :download:`config.ini </../../demos/documented/shape_optimization/shape_poisson/config.ini>`,
-which is the config file used for :ref:`demo_shape_poisson`.
+discusss the corresponding parameters.
 
 For shape optimization problems, the config file is a lot larger compared to the :ref:`config files
 for optimal control <config_optimal_control>`.
