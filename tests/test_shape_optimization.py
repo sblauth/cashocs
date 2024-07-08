@@ -341,7 +341,8 @@ def test_shape_gd():
 )
 def test_mesh_quality_constraints_min_angle(algorithm, expected_iterations):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("MeshQualityConstraints", "min_angle", "35.0")
+    min_angle = 2 * np.pi * 35.0 / 360.0
+    config.set("MeshQualityConstraints", "min_angle", f"{min_angle}")
     config.set("MeshQualityConstraints", "tol", "1e-2")
 
     mesh.coordinates()[:, :] = initial_coordinates
