@@ -83,8 +83,7 @@ cashocs.set_log_level(cashocs.LogLevel.INFO)
 #
 # Next, we have to load the config file which loads the user's input parameters into the
 # script. For a detailed documentation of the config files and the parameters within, we
-# refer to {ref}`config_optimal_control`. Note that the corresponding file is
-# {download}`config.ini </../../demos/documented/optimal_control/poisson/config.ini>`.
+# refer to {ref}`config_optimal_control`.
 # The config is then loaded via
 
 config = cashocs.load_config("config.ini")
