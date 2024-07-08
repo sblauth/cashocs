@@ -63,7 +63,8 @@ def compute_convergence_rates(
 )
 def test_triangle_mesh_constraints():
     cfg = cashocs.io.config.Config()
-    cfg.set("MeshQualityConstraints", "min_angle", "30.0")
+    min_angle = 2 * np.pi * 30.0 / 360.0
+    cfg.set("MeshQualityConstraints", "min_angle", f"{min_angle}")
     cfg.set("MeshQualityConstraints", "tol", "1e-2")
     cfg.set("ShapeGradient", "shape_bdry_fix", "[]")
     cfg.set("ShapeGradient", "shape_bdry_def", "[1,2,3,4]")
@@ -105,7 +106,7 @@ def test_triangle_mesh_constraints():
 )
 def test_solid_angle_mesh_constraints():
     cfg = cashocs.io.config.Config()
-    cfg.set("MeshQualityConstraints", "min_angle", "10.0")
+    cfg.set("MeshQualityConstraints", "min_angle", "0.175")
     cfg.set("MeshQualityConstraints", "tol", "1e-2")
     cfg.set("ShapeGradient", "shape_bdry_fix", "[]")
     cfg.set("ShapeGradient", "shape_bdry_def", "[1,2,3,4,5,6]")
