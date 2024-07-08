@@ -153,7 +153,6 @@ class PolynomialLineSearch(line_search.LineSearch):
                     dropped_idx,
                 )
             )
-            _loggers.debug(f"Line search - Trial stepsize {self.stepsize:.3e}")
             self.alpha_vals.append(self.stepsize)
 
             current_function_value = solver.objective_value
@@ -161,6 +160,11 @@ class PolynomialLineSearch(line_search.LineSearch):
             self.state_problem.has_solution = False
             objective_step = self.cost_functional.evaluate()
             self.f_vals.append(objective_step)
+
+            _loggers.debug(
+                f"Line search - Trial stepsize {self.stepsize:.3e} - "
+                f"Function value {objective_step:.3e}"
+            )
 
             decrease_measure = self._compute_decrease_measure(search_direction)
 

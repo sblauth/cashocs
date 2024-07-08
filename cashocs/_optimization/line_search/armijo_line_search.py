@@ -134,11 +134,14 @@ class ArmijoLineSearch(line_search.LineSearch):
                     dropped_idx,
                 )
             )
-            _loggers.debug(f"Line search - Trial stepsize {self.stepsize:.3e}")
 
             current_function_value = solver.objective_value
             objective_step = self._compute_objective_at_new_iterate(
                 current_function_value
+            )
+            _loggers.debug(
+                f"Line search - Trial stepsize {self.stepsize:.3e} - "
+                f"Function value {objective_step:.3e}"
             )
 
             decrease_measure = self._compute_decrease_measure(search_direction)
