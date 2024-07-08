@@ -84,11 +84,6 @@ class Config(ConfigParser):
 
         self.config_scheme: Dict[str, Dict[str, Dict[str, Any]]] = {
             "Mesh": {
-                "mesh_file": {
-                    "type": "str",
-                    "attributes": ["file"],
-                    "file_extension": "xdmf",
-                },
                 "gmsh_file": {
                     "type": "str",
                     "attributes": ["file"],
