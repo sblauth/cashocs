@@ -411,7 +411,7 @@ class ConstraintManager:
                 if self.comm.rank == lambda_min_rank:
                     i_min_list = np.argsort(lambd_ineq)
                     i_min_list_padded = np.where(self.inequality_mask)[0][i_min_list]
-                    mask = ~np.in1d(i_min_list_padded, undroppable_idx)
+                    mask = ~np.isin(i_min_list_padded, undroppable_idx)
                     i_min_padded = i_min_list_padded[mask][0]
 
                     active_idx[i_min_padded] = False

@@ -4,9 +4,7 @@ Documentation of the Config Files for Shape Optimization Problems
 =================================================================
 
 Let us take a detailed look at the config files for shape optimization problems and
-discusss the corresponding parameters. The corresponding
-config file used for this discussion is :download:`config.ini </../../demos/documented/shape_optimization/shape_poisson/config.ini>`,
-which is the config file used for :ref:`demo_shape_poisson`.
+discusss the corresponding parameters.
 
 For shape optimization problems, the config file is a lot larger compared to the :ref:`config files
 for optimal control <config_optimal_control>`.
@@ -217,6 +215,20 @@ boolean flag
     picard_verbose = False
 
 which is set to :ini:`picard_verbose = False` by default.
+
+The parameter :ini:`backend` specifies which solver backend should be used for solving nonlinear systems.
+Its default value is given by
+
+.. code-block:: ini
+
+    backend = cashocs
+
+Possible options are :ini:`backend = cashocs` and :ini:`backend = petsc`. In the former case, a 
+damped, inexact Newton method which is affine co-variant is used. Its parameters are specified in the
+configuration above. In the latter case, PETSc's SNES interface for solving nonlinear equations
+is used which can be configured with the `ksp_options` supplied by the user to the 
+:py:class:`cashocs.OptimizationProblem`. An overview over possible PETSc command line options
+can be found at `<https://petsc.org/release/manualpages/SNES/>`_.
 
 
 .. _config_shape_optimization_routine:
@@ -1218,6 +1230,9 @@ in the following.
       - maximum iterations for Picard iteration
     * - :ini:`picard_verbose = False`
       - :ini:`picard_verbose = True` enables verbose output of Picard iteration
+    * - :ini:`backend = cashocs`
+      - specifies the backend for solving nonlinear equations, can be either :ini:`cashocs` or :ini:`petsc`
+
 
 
 [OptimizationRoutine]
