@@ -39,7 +39,6 @@ if TYPE_CHECKING:
 
 default_snes_options: _typing.KspOption = {
     "snes_type": "newtonls",
-    "snes_monitor_short": None,
 }
 
 
