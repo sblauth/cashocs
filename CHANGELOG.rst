@@ -14,7 +14,7 @@ of the maintenance releases, please take a look at
 
 * Increase the precision of the Gmsh output from cashocs
 
-* Add mesh quality constraints for shape optimization: These ensure that the angles of the triangles / dihedral angles of tetrahedrons cannot fall below a specified threshold.
+* Add mesh quality constraints for shape optimization: These ensure that the angles of the (solid) angles of triangles and tetrahedrons cannot fall below a specified threshold.
 
 * New configuration file parameters:
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -132,7 +132,7 @@ triangle_angles(std::shared_ptr<const Mesh> mesh)
 }
 
 py::array_t<double>
-tetrahedron_angles(std::shared_ptr<const Mesh> mesh)
+tetrahedron_dihedral_angles(std::shared_ptr<const Mesh> mesh)
 {
     size_t idx = 0;
     auto n = mesh->num_cells();
@@ -154,6 +154,29 @@ tetrahedron_angles(std::shared_ptr<const Mesh> mesh)
         idx += 1;
     }
     return angles;
+}
+
+py::array_t<double>
+tetrahedron_solid_angles(std::shared_ptr<const Mesh> mesh)
+{
+    size_t idx = 0;
+    auto n = mesh->num_cells();
+    py::array_t<double> solid_angles(4*n);
+    auto buf = solid_angles.request();
+    double *ptr = (double *) buf.ptr;
+
+    std::vector<double> d_angs;
+
+    for (CellIterator cell(*mesh); !cell.end(); ++cell)
+    {
+        compute_dihedral_angles(*cell, d_angs);
+        ptr[4*idx+0] = d_angs[0] + d_angs[3] + d_angs[4] - DOLFIN_PI;
+        ptr[4*idx+1] = d_angs[0] + d_angs[1] + d_angs[2] - DOLFIN_PI;
+        ptr[4*idx+2] = d_angs[1] + d_angs[3] + d_angs[5] - DOLFIN_PI;
+        ptr[4*idx+3] = d_angs[2] + d_angs[4] + d_angs[5] - DOLFIN_PI;
+        idx += 1;
+    }
+    return solid_angles;
 }
 
 std::tuple<py::array_t<int>, py::array_t<int>, py::array_t<double>>
@@ -284,7 +307,7 @@ triangle_angle_gradient(std::shared_ptr<const Mesh> mesh)
 }
 
 std::tuple<py::array_t<int>, py::array_t<int>, py::array_t<double>>
-tetrahedron_angle_gradient(std::shared_ptr<const Mesh> mesh)
+tetrahedron_dihedral_angle_gradient(std::shared_ptr<const Mesh> mesh)
 {
     size_t idx = 0;
     auto n = mesh->num_cells();
@@ -686,12 +709,339 @@ tetrahedron_angle_gradient(std::shared_ptr<const Mesh> mesh)
     return std::make_tuple(rows, cols, vals);
 }
 
+
+
+std::tuple<py::array_t<int>, py::array_t<int>, py::array_t<double>>
+tetrahedron_solid_angle_gradient(std::shared_ptr<const Mesh> mesh)
+{
+    size_t idx = 0;
+    auto n = mesh->num_cells();
+
+    py::array_t<int> rows(48*n);
+    auto buf_rows = rows.request();
+    int *ptr_rows = (int *) buf_rows.ptr;
+
+    py::array_t<int> cols(48*n);
+    auto buf_cols = cols.request();
+    int *ptr_cols = (int *) buf_cols.ptr;
+
+    py::array_t<double> vals(48*n);
+    auto buf_vals = vals.request();
+    double *ptr_vals = (double *) buf_vals.ptr;
+
+    Eigen::Matrix3d skew_10;
+    Eigen::Matrix3d skew_20;
+    Eigen::Matrix3d skew_30;
+    Eigen::Matrix3d skew_21;
+    Eigen::Matrix3d skew_31;
+    Eigen::Matrix3d skew_32;
+
+    Eigen::RowVector3d dadk;
+    Eigen::RowVector3d dadl;
+    Eigen::RowVector3d dbdk;
+    Eigen::RowVector3d dbdl;
+    Eigen::RowVector3d dcdk;
+    Eigen::RowVector3d dcdl;
+    Eigen::RowVector3d dddk;
+    Eigen::RowVector3d dddl;
+    Eigen::RowVector3d dedk;
+    Eigen::RowVector3d dedl;
+    Eigen::RowVector3d dfdk;
+    Eigen::RowVector3d dfdl;
+
+    for (CellIterator cell(*mesh); !cell.end(); ++cell)
+    {
+        auto ents = cell->entities(0);
+        const std::size_t i0 = ents[0];
+        const std::size_t i1 = ents[1];
+        const std::size_t i2 = ents[2];
+        const std::size_t i3 = ents[3];
+
+        const Point p0 = Vertex(*mesh, i0).point();
+        const Point p1 = Vertex(*mesh, i1).point();
+        const Point p2 = Vertex(*mesh, i2).point();
+        const Point p3 = Vertex(*mesh, i3).point();
+
+        Point e10 = p1 - p0;
+        Point e20 = p2 - p0;
+        Point e30 = p3 - p0;
+        Point e21 = p2 - p1;
+        Point e31 = p3 - p1;
+        Point e32 = p3 - p2;
+
+        skew_10 <<      0.0,  e10.z(), -e10.y(),
+                   -e10.z(),      0.0,  e10.x(),
+                    e10.y(), -e10.x(),      0.0;
+
+        skew_20 <<      0.0,  e20.z(), -e20.y(),
+                   -e20.z(),      0.0,  e20.x(),
+                    e20.y(), -e20.x(),      0.0;
+
+        skew_30 <<      0.0,  e30.z(), -e30.y(),
+                   -e30.z(),      0.0,  e30.x(),
+                    e30.y(), -e30.x(),      0.0;
+
+        skew_21 <<      0.0,  e21.z(), -e21.y(),
+                   -e21.z(),      0.0,  e21.x(),
+                    e21.y(), -e21.x(),      0.0;
+
+        skew_31 <<      0.0,  e31.z(), -e31.y(),
+                   -e31.z(),      0.0,  e31.x(),
+                    e31.y(), -e31.x(),      0.0;
+
+        skew_32 <<      0.0,  e32.z(), -e32.y(),
+                   -e32.z(),      0.0,  e32.x(),
+                    e32.y(), -e32.x(),      0.0;
+
+        Point n031 = e31.cross(e10);
+        Point n021 = e21.cross(e10);
+        Point n231 = e21.cross(e31);
+        Point n230 = e20.cross(e30);
+
+        Point tpa3 = n031.cross(n031.cross(n021));
+        Point tpa2 = n021.cross(n021.cross(n031));
+        tpa3 /= (tpa3.norm() * n031.norm());
+        tpa2 /= (tpa2.norm() * n021.norm());
+        dadk << tpa3.x(), tpa3.y(), tpa3.z();
+        dadl << tpa2.x(), tpa2.y(), tpa2.z();
+
+        Point tpb0 = n021.cross(n021.cross(n231));
+        Point tpb3 = n231.cross(n231.cross(-n021));
+        tpb0 /= (tpb0.norm() * n021.norm());
+        tpb3 /= (tpb3.norm() * n231.norm());
+        dbdk << tpb0.x(), tpb0.y(), tpb0.z();
+        dbdl << tpb3.x(), tpb3.y(), tpb3.z();
+
+        Point tpc2 = n231.cross(n231.cross(-n031));
+        Point tpc0 = n031.cross(n031.cross(-n231));
+        tpc2 /= (tpc2.norm() * n231.norm());
+        tpc0 /= (tpc0.norm() * n031.norm());
+        dcdk << tpc2.x(), tpc2.y(), tpc2.z();
+        dcdl << tpc0.x(), tpc0.y(), tpc0.z();
+
+        Point tpd1 = n021.cross(n021.cross(n230));
+        Point tpd3 = n230.cross(n230.cross(n021));
+        tpd1 /= (tpd1.norm() * n021.norm());
+        tpd3 /= (tpd3.norm() * n230.norm());
+        dddk << tpd1.x(), tpd1.y(), tpd1.z();
+        dddl << tpd3.x(), tpd3.y(), tpd3.z();
+
+        Point tpe1 = n031.cross(n031.cross(-n230));
+        Point tpe2 = n230.cross(n230.cross(n031));
+        tpe1 /= (tpe1.norm() * n031.norm());
+        tpe2 /= (tpe2.norm() * n230.norm());
+        dedk << tpe1.x(), tpe1.y(), tpe1.z();
+        dedl << tpe2.x(), tpe2.y(), tpe2.z();
+
+        Point tpf0 = n230.cross(n230.cross(n231));
+        Point tpf1 = n231.cross(n231.cross(n230));
+        tpf0 /= (tpf0.norm() * n230.norm());
+        tpf1 /= (tpf1.norm() * n231.norm());
+        dfdk << tpf0.x(), tpf0.y(), tpf0.z();
+        dfdl << tpf1.x(), tpf1.y(), tpf1.z();
+
+        auto dad0 = dadk * (-skew_31) + dadl * (-skew_21);
+        auto dad1 = dadk * (skew_10 + skew_31) + dadl * (skew_10 + skew_21);
+        auto dad2 = dadl * (-skew_10);
+        auto dad3 = dadk * (-skew_10);
+
+        auto dbd0 = dbdk * skew_21;
+        auto dbd1 = dbdk * (-skew_21 - skew_10) + dbdl * (-skew_21 + skew_31);
+        auto dbd2 = dbdk * skew_10 + dbdl * (-skew_31);
+        auto dbd3 = dbdl * skew_21;
+
+        auto dcd0 = dcdl * skew_31;
+        auto dcd1 = dcdk * (-skew_31 + skew_21) + dcdl * (-skew_31 - skew_10);
+        auto dcd2 = dcdk * skew_31;
+        auto dcd3 = dcdk * (-skew_21) + dcdl * skew_10;
+
+        auto ddd0 = dddk * (-skew_20 + skew_10) + dddl * (-skew_20 + skew_30);
+        auto ddd1 = dddk * skew_20;
+        auto ddd2 = dddk * (-skew_10) + dddl * (-skew_30);
+        auto ddd3 = dddl * skew_20;
+
+        auto ded0 = dedk * (-skew_30 + skew_10) + dedl * (-skew_30 + skew_20);
+        auto ded1 = dedk * skew_30;
+        auto ded2 = dedl * skew_30;
+        auto ded3 = dedk * (-skew_10) + dedl * (-skew_20);
+
+        auto dfd0 = dfdk * skew_32;
+        auto dfd1 = dfdl * skew_32;
+        auto dfd2 = dfdk * (-skew_32 - skew_20) + dfdl * (-skew_32 - skew_21);
+        auto dfd3 = dfdk * skew_20 + dfdl * skew_21;
+
+        ptr_rows[48*idx + 0] = 4 * idx;
+        ptr_rows[48*idx + 1] = 4 * idx;
+        ptr_rows[48*idx + 2] = 4 * idx;
+        ptr_rows[48*idx + 3] = 4 * idx;
+        ptr_rows[48*idx + 4] = 4 * idx;
+        ptr_rows[48*idx + 5] = 4 * idx;
+        ptr_rows[48*idx + 6] = 4 * idx;
+        ptr_rows[48*idx + 7] = 4 * idx;
+        ptr_rows[48*idx + 8] = 4 * idx;
+        ptr_rows[48*idx + 9] = 4 * idx;
+        ptr_rows[48*idx + 10] = 4 * idx;
+        ptr_rows[48*idx + 11] = 4 * idx;
+
+        ptr_cols[48*idx + 0] = 3 * i0 + 0;
+        ptr_cols[48*idx + 1] = 3 * i0 + 1;
+        ptr_cols[48*idx + 2] = 3 * i0 + 2;
+        ptr_cols[48*idx + 3] = 3 * i1 + 0;
+        ptr_cols[48*idx + 4] = 3 * i1 + 1;
+        ptr_cols[48*idx + 5] = 3 * i1 + 2;
+        ptr_cols[48*idx + 6] = 3 * i2 + 0;
+        ptr_cols[48*idx + 7] = 3 * i2 + 1;
+        ptr_cols[48*idx + 8] = 3 * i2 + 2;
+        ptr_cols[48*idx + 9] = 3 * i3 + 0;
+        ptr_cols[48*idx + 10] = 3 * i3 + 1;
+        ptr_cols[48*idx + 11] = 3 * i3 + 2;
+
+        ptr_vals[48*idx + 0] = dad0[0] + ddd0[0] + ded0[0];
+        ptr_vals[48*idx + 1] = dad0[1] + ddd0[1] + ded0[1];
+        ptr_vals[48*idx + 2] = dad0[2] + ddd0[2] + ded0[2];
+        ptr_vals[48*idx + 3] = dad1[0] + ddd1[0] + ded1[0];
+        ptr_vals[48*idx + 4] = dad1[1] + ddd1[1] + ded1[1];
+        ptr_vals[48*idx + 5] = dad1[2] + ddd1[2] + ded1[2];
+        ptr_vals[48*idx + 6] = dad2[0] + ddd2[0] + ded2[0];
+        ptr_vals[48*idx + 7] = dad2[1] + ddd2[1] + ded2[1];
+        ptr_vals[48*idx + 8] = dad2[2] + ddd2[2] + ded2[2];
+        ptr_vals[48*idx + 9] = dad3[0] + ddd3[0] + ded3[0];
+        ptr_vals[48*idx + 10] = dad3[1] + ddd3[1] + ded3[1];
+        ptr_vals[48*idx + 11] = dad3[2] + ddd3[2] + ded3[2];
+
+
+        ptr_rows[48*idx + 12] = 4 * idx + 1;
+        ptr_rows[48*idx + 13] = 4 * idx + 1;
+        ptr_rows[48*idx + 14] = 4 * idx + 1;
+        ptr_rows[48*idx + 15] = 4 * idx + 1;
+        ptr_rows[48*idx + 16] = 4 * idx + 1;
+        ptr_rows[48*idx + 17] = 4 * idx + 1;
+        ptr_rows[48*idx + 18] = 4 * idx + 1;
+        ptr_rows[48*idx + 19] = 4 * idx + 1;
+        ptr_rows[48*idx + 20] = 4 * idx + 1;
+        ptr_rows[48*idx + 21] = 4 * idx + 1;
+        ptr_rows[48*idx + 22] = 4 * idx + 1;
+        ptr_rows[48*idx + 23] = 4 * idx + 1;
+
+        ptr_cols[48*idx + 12] = 3 * i0 + 0;
+        ptr_cols[48*idx + 13] = 3 * i0 + 1;
+        ptr_cols[48*idx + 14] = 3 * i0 + 2;
+        ptr_cols[48*idx + 15] = 3 * i1 + 0;
+        ptr_cols[48*idx + 16] = 3 * i1 + 1;
+        ptr_cols[48*idx + 17] = 3 * i1 + 2;
+        ptr_cols[48*idx + 18] = 3 * i2 + 0;
+        ptr_cols[48*idx + 19] = 3 * i2 + 1;
+        ptr_cols[48*idx + 20] = 3 * i2 + 2;
+        ptr_cols[48*idx + 21] = 3 * i3 + 0;
+        ptr_cols[48*idx + 22] = 3 * i3 + 1;
+        ptr_cols[48*idx + 23] = 3 * i3 + 2;
+
+        ptr_vals[48*idx + 12] = dad0[0] + dbd0[0] + dcd0[0];
+        ptr_vals[48*idx + 13] = dad0[1] + dbd0[1] + dcd0[1];
+        ptr_vals[48*idx + 14] = dad0[2] + dbd0[2] + dcd0[2];
+        ptr_vals[48*idx + 15] = dad1[0] + dbd1[0] + dcd1[0];
+        ptr_vals[48*idx + 16] = dad1[1] + dbd1[1] + dcd1[1];
+        ptr_vals[48*idx + 17] = dad1[2] + dbd1[2] + dcd1[2];
+        ptr_vals[48*idx + 18] = dad2[0] + dbd2[0] + dcd2[0];
+        ptr_vals[48*idx + 19] = dad2[1] + dbd2[1] + dcd2[1];
+        ptr_vals[48*idx + 20] = dad2[2] + dbd2[2] + dcd2[2];
+        ptr_vals[48*idx + 21] = dad3[0] + dbd3[0] + dcd3[0];
+        ptr_vals[48*idx + 22] = dad3[1] + dbd3[1] + dcd3[1];
+        ptr_vals[48*idx + 23] = dad3[2] + dbd3[2] + dcd3[2];
+
+
+        ptr_rows[48*idx + 24] = 4 * idx + 2;
+        ptr_rows[48*idx + 25] = 4 * idx + 2;
+        ptr_rows[48*idx + 26] = 4 * idx + 2;
+        ptr_rows[48*idx + 27] = 4 * idx + 2;
+        ptr_rows[48*idx + 28] = 4 * idx + 2;
+        ptr_rows[48*idx + 29] = 4 * idx + 2;
+        ptr_rows[48*idx + 30] = 4 * idx + 2;
+        ptr_rows[48*idx + 31] = 4 * idx + 2;
+        ptr_rows[48*idx + 32] = 4 * idx + 2;
+        ptr_rows[48*idx + 33] = 4 * idx + 2;
+        ptr_rows[48*idx + 34] = 4 * idx + 2;
+        ptr_rows[48*idx + 35] = 4 * idx + 2;
+
+        ptr_cols[48*idx + 24] = 3 * i0 + 0;
+        ptr_cols[48*idx + 25] = 3 * i0 + 1;
+        ptr_cols[48*idx + 26] = 3 * i0 + 2;
+        ptr_cols[48*idx + 27] = 3 * i1 + 0;
+        ptr_cols[48*idx + 28] = 3 * i1 + 1;
+        ptr_cols[48*idx + 29] = 3 * i1 + 2;
+        ptr_cols[48*idx + 30] = 3 * i2 + 0;
+        ptr_cols[48*idx + 31] = 3 * i2 + 1;
+        ptr_cols[48*idx + 32] = 3 * i2 + 2;
+        ptr_cols[48*idx + 33] = 3 * i3 + 0;
+        ptr_cols[48*idx + 34] = 3 * i3 + 1;
+        ptr_cols[48*idx + 35] = 3 * i3 + 2;
+
+        ptr_vals[48*idx + 24] = dbd0[0] + ddd0[0] + dfd0[0];
+        ptr_vals[48*idx + 25] = dbd0[1] + ddd0[1] + dfd0[1];
+        ptr_vals[48*idx + 26] = dbd0[2] + ddd0[2] + dfd0[2];
+        ptr_vals[48*idx + 27] = dbd1[0] + ddd1[0] + dfd1[0];
+        ptr_vals[48*idx + 28] = dbd1[1] + ddd1[1] + dfd1[1];
+        ptr_vals[48*idx + 29] = dbd1[2] + ddd1[2] + dfd1[2];
+        ptr_vals[48*idx + 30] = dbd2[0] + ddd2[0] + dfd2[0];
+        ptr_vals[48*idx + 31] = dbd2[1] + ddd2[1] + dfd2[1];
+        ptr_vals[48*idx + 32] = dbd2[2] + ddd2[2] + dfd2[2];
+        ptr_vals[48*idx + 33] = dbd3[0] + ddd3[0] + dfd3[0];
+        ptr_vals[48*idx + 34] = dbd3[1] + ddd3[1] + dfd3[1];
+        ptr_vals[48*idx + 35] = dbd3[2] + ddd3[2] + dfd3[2];
+
+
+        ptr_rows[48*idx + 36] = 4 * idx + 3;
+        ptr_rows[48*idx + 37] = 4 * idx + 3;
+        ptr_rows[48*idx + 38] = 4 * idx + 3;
+        ptr_rows[48*idx + 39] = 4 * idx + 3;
+        ptr_rows[48*idx + 40] = 4 * idx + 3;
+        ptr_rows[48*idx + 41] = 4 * idx + 3;
+        ptr_rows[48*idx + 42] = 4 * idx + 3;
+        ptr_rows[48*idx + 43] = 4 * idx + 3;
+        ptr_rows[48*idx + 44] = 4 * idx + 3;
+        ptr_rows[48*idx + 45] = 4 * idx + 3;
+        ptr_rows[48*idx + 46] = 4 * idx + 3;
+        ptr_rows[48*idx + 47] = 4 * idx + 3;
+
+        ptr_cols[48*idx + 36] = 3 * i0 + 0;
+        ptr_cols[48*idx + 37] = 3 * i0 + 1;
+        ptr_cols[48*idx + 38] = 3 * i0 + 2;
+        ptr_cols[48*idx + 39] = 3 * i1 + 0;
+        ptr_cols[48*idx + 40] = 3 * i1 + 1;
+        ptr_cols[48*idx + 41] = 3 * i1 + 2;
+        ptr_cols[48*idx + 42] = 3 * i2 + 0;
+        ptr_cols[48*idx + 43] = 3 * i2 + 1;
+        ptr_cols[48*idx + 44] = 3 * i2 + 2;
+        ptr_cols[48*idx + 45] = 3 * i3 + 0;
+        ptr_cols[48*idx + 46] = 3 * i3 + 1;
+        ptr_cols[48*idx + 47] = 3 * i3 + 2;
+
+        ptr_vals[48*idx + 36] = dcd0[0] + ded0[0] + dfd0[0];
+        ptr_vals[48*idx + 37] = dcd0[1] + ded0[1] + dfd0[1];
+        ptr_vals[48*idx + 38] = dcd0[2] + ded0[2] + dfd0[2];
+        ptr_vals[48*idx + 39] = dcd1[0] + ded1[0] + dfd1[0];
+        ptr_vals[48*idx + 40] = dcd1[1] + ded1[1] + dfd1[1];
+        ptr_vals[48*idx + 41] = dcd1[2] + ded1[2] + dfd1[2];
+        ptr_vals[48*idx + 42] = dcd2[0] + ded2[0] + dfd2[0];
+        ptr_vals[48*idx + 43] = dcd2[1] + ded2[1] + dfd2[1];
+        ptr_vals[48*idx + 44] = dcd2[2] + ded2[2] + dfd2[2];
+        ptr_vals[48*idx + 45] = dcd3[0] + ded3[0] + dfd3[0];
+        ptr_vals[48*idx + 46] = dcd3[1] + ded3[1] + dfd3[1];
+        ptr_vals[48*idx + 47] = dcd3[2] + ded3[2] + dfd3[2];
+
+        idx += 1;
+    }
+    return std::make_tuple(rows, cols, vals);
+}
+
 PYBIND11_MODULE(SIGNATURE, m)
 {
     m.def("triangle_angles", &triangle_angles);
-    m.def("tetrahedron_angles", &tetrahedron_angles);
+    m.def("tetrahedron_dihedral_angles", &tetrahedron_dihedral_angles);
+    m.def("tetrahedron_solid_angles", &tetrahedron_solid_angles);
     m.def("triangle_angle_gradient", &triangle_angle_gradient);
-    m.def("tetrahedron_angle_gradient", &tetrahedron_angle_gradient);
+    m.def("tetrahedron_dihedral_angle_gradient", &tetrahedron_dihedral_angle_gradient);
+    m.def("tetrahedron_solid_angle_gradient", &tetrahedron_solid_angle_gradient);
 }
 """
 mesh_quality = fenics.compile_cpp_code(cpp_code)
@@ -1170,7 +1520,7 @@ class AngleConstraint(MeshConstraint):
         if self.dim == 2:
             self.no_angles = 3
         elif self.dim == 3:
-            self.no_angles = 6
+            self.no_angles = 4
         else:
             raise _exceptions.InputError(
                 "AngleConstraint",
@@ -1188,7 +1538,6 @@ class AngleConstraint(MeshConstraint):
         self,
     ) -> tuple[np.ndarray | float | None, np.ndarray | None, np.ndarray | None]:
         constant_min_angle = self.config.getfloat("MeshQualityConstraints", "min_angle")
-        constant_min_angle *= 2 * np.pi / 360.0
 
         feasible_angle_reduction_factor = self.config.getfloat(
             "MeshQualityConstraints", "feasible_angle_reduction_factor"
@@ -1199,7 +1548,7 @@ class AngleConstraint(MeshConstraint):
                 -1, self.no_angles
             )
         elif self.dim == 3:
-            initial_angles = mesh_quality.tetrahedron_angles(self.mesh).reshape(
+            initial_angles = mesh_quality.tetrahedron_solid_angles(self.mesh).reshape(
                 -1, self.no_angles
             )
         else:
@@ -1388,9 +1737,9 @@ class TriangleAngleConstraint(AngleConstraint):
 
 
 class DihedralAngleConstraint(AngleConstraint):
-    r"""A mesh quality constraint for the angles of triangles in the mesh.
+    r"""A mesh quality constraint for the dihedral angles of tets in the mesh.
 
-    This ensures that the all angles :math:`\alpha` of the FEM mesh satisfy the
+    This ensures that the all dihedral angles :math:`\alpha` of the FEM mesh satisfy the
     constraint :math:`\alpha \geq \alpha_{min}`, which is equivalently rewritten as
     :math:`g(x) \leq 0` with :math:`g(x) = \alpha - \alpha_{min}`, where :math:`x` are
     the mesh coordinates.
@@ -1475,6 +1824,99 @@ class DihedralAngleConstraint(AngleConstraint):
 
         csr = rows, cols, vals
         shape = (int(6 * self.ghost_offset), self.no_vertices * self.dim)
+        gradient = _utils.linalg.sparse2scipy(csr, shape)
+
+        return gradient
+
+
+class SolidAngleConstraint(AngleConstraint):
+    r"""A mesh quality constraint for the solid angles of tets in the mesh.
+
+    This ensures that the all solid angles :math:`\alpha` of the FEM mesh satisfy the
+    constraint :math:`\alpha \geq \alpha_{min}`, which is equivalently rewritten as
+    :math:`g(x) \leq 0` with :math:`g(x) = \alpha - \alpha_{min}`, where :math:`x` are
+    the mesh coordinates.
+    """
+
+    def __init__(
+        self,
+        mesh: fenics.Mesh,
+        config: cashocs.io.Config,
+        deformation_space: fenics.FunctionSpace,
+    ) -> None:
+        """Initializes the mesh quality constraint for the triangle angles.
+
+        Args:
+            mesh: The corresponding FEM mesh.
+            config: The configuration of the optimization problem.
+            deformation_space: A space of vector CG1 elements for mesh deformations.
+
+        """
+        super().__init__(mesh, config, deformation_space)
+
+        self.no_constraints = 4 * self.ghost_offset
+        self.is_necessary = np.array([True] * self.no_constraints)
+
+    def evaluate(self, coords_seq: np.ndarray) -> np.ndarray:
+        r"""Evaluates the constaint function at the current iterate.
+
+        This computes :math:`g(x)` where the constraint is given by
+        :math:`g(x) <= 0` and :math:`x` corresponds to mesh coordinates, i.e.,
+        `coords_seq`. The constraint returns :math:`\alpha_{min} - \alpha`,
+        where :math:`\alpha` is one solid angle of a tetrahedron and
+        :math:`\alpha_{min}` is the minimum feasible solid angle in each tetrahedron.
+
+        Args:
+            coords_seq: The (flattened) list of vertex coordinates of the mesh.
+
+        Returns:
+            A numpy array containing the values of the constraint functions.
+
+        """
+        old_coords = self.mesh.coordinates().copy()
+        self.mesh.coordinates()[:, :] = coords_seq.reshape(-1, self.dim)
+        self.mesh.bounding_box_tree().build(self.mesh)
+
+        values: np.ndarray = mesh_quality.tetrahedron_solid_angles(self.mesh)
+        values = values[: 4 * self.ghost_offset]
+
+        if self.constraint_filter is not None:
+            values[self.constraint_filter] = 100.0
+
+        values = self.min_angle - values
+
+        self.mesh.coordinates()[:, :] = old_coords
+        self.mesh.bounding_box_tree().build(self.mesh)
+
+        return values
+
+    def compute_gradient(self, coords_seq: np.ndarray) -> sparse.csr_matrix:
+        """Computes the gradient of the constraint functions.
+
+        Args:
+            coords_seq: The flattened list of mesh coordinates.
+
+        Returns:
+            A sparse matrix representation of the gradient.
+
+        """
+        old_coords = self.mesh.coordinates().copy()
+        self.mesh.coordinates()[:, :] = coords_seq.reshape(-1, self.dim)
+        self.mesh.bounding_box_tree().build(self.mesh)
+
+        rows, cols, vals = mesh_quality.tetrahedron_solid_angle_gradient(self.mesh)
+        rows = rows[: 48 * self.ghost_offset]
+        cols = cols[: 48 * self.ghost_offset]
+        vals = vals[: 48 * self.ghost_offset]
+
+        self.mesh.coordinates()[:, :] = old_coords
+        self.mesh.bounding_box_tree().build(self.mesh)
+
+        cols_local = self.v2d[cols]
+        cols = self.l2g_dofs[cols_local]
+
+        csr = rows, cols, vals
+        shape = (int(4 * self.ghost_offset), self.no_vertices * self.dim)
         gradient = _utils.linalg.sparse2scipy(csr, shape)
 
         return gradient
