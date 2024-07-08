@@ -6,8 +6,6 @@ Documentation of the Config Files for Optimal Control Problems
 
 Let us take a look at how the config files are structured for optimal control
 problems.
-The corresponding config file is :download:`config.ini
-</../../demos/documented/optimal_control/poisson/config.ini>`.
 
 First of all, the config is divided into the sections: :ref:`Mesh
 <config_ocp_mesh>`, :ref:`StateSystem <config_ocp_state_system>`,
@@ -677,7 +675,7 @@ in the following.
       - relative tolerance for the optimization algorithm
     * - :ini:`atol = 0.0`
       - absolute tolerance for the optimization algorithm
-    * - :ini:`maximum iterations = 100`
+    * - :ini:`max_iter = 100`
       - maximum iterations for the optimization algorithm
     * - :ini:`gradient_method = direct`
       - specifies the solver for computing the gradient, can be either :ini:`gradient_method = direct` or :ini:`gradient_method = iterative`
