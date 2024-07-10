@@ -232,17 +232,49 @@ def setup_fieldsplit_preconditioner(
                     "problem to be solved is not a mixed one.",
                 )
 
-            pc = ksp.getPC()
-            pc.setType(PETSc.PC.Type.FIELDSPLIT)
-            idx = []
-            name = []
-            for i in range(function_space.num_sub_spaces()):
-                idx_i = PETSc.IS().createGeneral(function_space.sub(i).dofmap().dofs())
-                idx.append(idx_i)
-                name.append(f"{i:d}")
-            idx_tuples = zip(name, idx)
+            if not any(key.endswith("_fields") for key in options.keys()):
+                pc = ksp.getPC()
+                pc.setType(PETSc.PC.Type.FIELDSPLIT)
+                idx = []
+                name = []
+                for i in range(function_space.num_sub_spaces()):
+                    idx_i = PETSc.IS().createGeneral(
+                        function_space.sub(i).dofmap().dofs()
+                    )
+                    idx.append(idx_i)
+                    name.append(f"{i:d}")
+                idx_tuples = zip(name, idx)
 
-            pc.setFieldSplitIS(*idx_tuples)
+                pc.setFieldSplitIS(*idx_tuples)
+            else:
+                dof_total = function_space.dofmap().dofs()
+                offset = np.min(dof_total)
+
+                num_sub_spaces = function_space.num_sub_spaces()
+                dof_list = [
+                    np.array(function_space.sub(i).dofmap().dofs())
+                    for i in range(num_sub_spaces)
+                ]
+
+                section = PETSc.Section().create()
+                section.setNumFields(num_sub_spaces)
+
+                for i in range(num_sub_spaces):
+                    section.setFieldName(i, f"{i:d}")
+                    section.setFieldComponents(i, 1)
+                section.setChart(0, len(dof_total))
+                for field_idx, dofs in enumerate(dof_list):
+                    for i in dofs:
+                        section.setDof(i - offset, 1)
+                        section.setFieldDof(i - offset, field_idx, 1)
+                section.setUp()
+
+                dm = PETSc.DMShell().create()
+                dm.setDefaultSection(section)
+                dm.setUp()
+
+                ksp.setDM(dm)
+                ksp.setDMActive(False)
 
 
 def _initialize_comm(comm: Optional[MPI.Comm] = None) -> MPI.Comm:

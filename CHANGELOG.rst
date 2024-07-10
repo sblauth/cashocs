@@ -12,6 +12,8 @@ of the maintenance releases, please take a look at
 
 * Add a wrapper for PETSc's SNES solver for nonlinear equations. This is used internally in cashocs whenever possible. For the solution of the state system, our own Newton solver is the default for backwards compatibility. Users can use the new SNES backend by specifying :ini:`backend = petsc` in the Section StateSystem of the configuration.
 
+* Allows nesting of PETSc Fieldsplit PCs with the command line option "pc_fieldsplit_%d_fields <a,b,...>, as explained at `<https://petsc.org/main/manualpages/PC/PCFieldSplitSetFields/>`_
+
 * Increase the precision of the Gmsh output from cashocs
 
 * Add mesh quality constraints for shape optimization: These ensure that the angles of the (solid) angles of triangles and tetrahedrons cannot fall below a specified threshold.
@@ -28,7 +30,7 @@ of the maintenance releases, please take a look at
 
   * Section MeshQualityConstraints
 
-    * This section includes parameters for the new mesh quality constraints for shape optimization. These are described in the documentation at https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/doc_config/#section-meshqualityconstraints
+    * This section includes parameters for the new mesh quality constraints for shape optimization. These are described in the documentation at `<https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/doc_config/#section-meshqualityconstraints>`_
 
 
 
