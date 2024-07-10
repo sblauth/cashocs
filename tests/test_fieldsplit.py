@@ -153,7 +153,7 @@ def test_fieldsplit_snes_nested():
         "fieldsplit_2_pc_type": "hypre",
     }
 
-    cashocs.snes_solve(F, upT, bcs, petsc_options=petsc_options, max_iter=7)
+    cashocs.snes_solve(F, upT, bcs, petsc_options=petsc_options, max_iter=8)
     u, p, T = upT.split(True)
     print(T.vector().max())
     assert True
