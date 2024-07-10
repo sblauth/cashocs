@@ -154,6 +154,4 @@ def test_fieldsplit_snes_nested():
     }
 
     cashocs.snes_solve(F, upT, bcs, petsc_options=petsc_options, max_iter=8)
-    u, p, T = upT.split(True)
-    print(T.vector().max())
     assert True
