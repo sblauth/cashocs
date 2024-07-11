@@ -39,6 +39,9 @@ if TYPE_CHECKING:
 
 default_snes_options: _typing.KspOption = {
     "snes_type": "newtonls",
+    "snes_atol": 1e-10,
+    "snes_rtol": 1e-10,
+    "snes_max_it": 50,
 }
 
 
@@ -53,9 +56,9 @@ class SNESSolver:
         derivative: Optional[ufl.Form] = None,
         petsc_options: Optional[_typing.KspOption] = None,
         shift: Optional[ufl.Form] = None,
-        rtol: float = 1e-10,
-        atol: float = 1e-10,
-        max_iter: int = 50,
+        rtol: Optional[float] = None,
+        atol: Optional[float] = None,
+        max_iter: Optional[int] = None,
         A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
         b_tensor: Optional[fenics.PETScVector] = None,
         preconditioner_form: Optional[ufl.Form] = None,
@@ -75,10 +78,12 @@ class SNESSolver:
             petsc_options: The options for PETSc SNES object.
             shift: A shift term, if the right-hand side of the nonlinear problem is not
                 zero, but shift.
-            rtol: Relative tolerance of the solver (default is ``rtol = 1e-10``).
-            atol: Absolute tolerance of the solver (default is ``atol = 1e-10``).
-            max_iter: Maximum number of iterations carried out by the method (default is
-                ``max_iter = 50``).
+            rtol: Relative tolerance of the solver. Overrides the specification in the
+                petsc_options.
+            atol: Absolute tolerance of the solver. Overrides the specification in the
+                petsc_options.
+            max_iter: Maximum number of iterations carried out by the method. Overrides
+                the specification in the petsc_options.
             A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
                 sub-problem.
             b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
@@ -197,7 +202,6 @@ class SNESSolver:
 
         """
         if not self.is_preassembled:
-            print("Assembling the Jacobian for the SNES solver.")
             self.u.vector().vec().setArray(x)
             self.u.vector().apply("")
 
@@ -251,9 +255,9 @@ def snes_solve(
     derivative: Optional[ufl.Form] = None,
     petsc_options: Optional[_typing.KspOption] = None,
     shift: Optional[ufl.Form] = None,
-    rtol: float = 1e-10,
-    atol: float = 1e-10,
-    max_iter: int = 50,
+    rtol: Optional[float] = None,
+    atol: Optional[float] = None,
+    max_iter: Optional[int] = None,
     A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
     b_tensor: Optional[fenics.PETScVector] = None,
     preconditioner_form: Optional[ufl.Form] = None,
