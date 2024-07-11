@@ -530,10 +530,7 @@ class LinearSolver:
         setup_fieldsplit_preconditioner(fun, ksp, options)
         setup_petsc_options([ksp], [options])
 
-        if rtol is not None:
-            ksp.rtol = rtol
-        if atol is not None:
-            ksp.atol = atol
+        ksp.setTolerances(rtol=rtol, atol=atol)
 
         ksp.solve(b, x)
 
