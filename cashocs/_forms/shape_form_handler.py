@@ -411,6 +411,12 @@ class ShapeFormHandler(form_handler.FormHandler):
             ufl_algorithms.estimate_total_polynomial_degree(modified_scalar_product),
             ufl_algorithms.estimate_total_polynomial_degree(shape_derivative),
         )
+        fenics_quadrature_degree = fenics.parameters["form_compiler"][
+            "quadrature_degree"
+        ]
+        if fenics_quadrature_degree is not None:
+            estimated_degree = np.minimum(estimated_degree, fenics_quadrature_degree)
+
         assembler = fenics.SystemAssembler(
             modified_scalar_product,
             shape_derivative,
@@ -728,3 +734,21 @@ class ShapeFormHandler(form_handler.FormHandler):
         PDE Constrained Shape Optimization <https://doi.org/10.1515/cmam-2016-0009>`_.
         """
         self.stiffness.compute()
+
+    def apply_shape_bcs(self, function: fenics.Function) -> None:
+        """Applies the geometric boundary conditions / constraints to a function.
+
+        Args:
+            function: The function onto which the geometric constraints are imposed.
+                Must be a vector CG1 function.
+
+        """
+        for bc in self.bcs_shape:
+            bc.apply(function.vector())
+            function.vector().apply("")
+
+        if self.use_fixed_dimensions:
+            function.vector().vec()[self.fixed_indices] = np.array(
+                [0.0] * len(self.fixed_indices)
+            )
+            function.vector().apply("")

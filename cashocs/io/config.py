@@ -84,11 +84,6 @@ class Config(ConfigParser):
 
         self.config_scheme: Dict[str, Dict[str, Dict[str, Any]]] = {
             "Mesh": {
-                "mesh_file": {
-                    "type": "str",
-                    "attributes": ["file"],
-                    "file_extension": "xdmf",
-                },
                 "gmsh_file": {
                     "type": "str",
                     "attributes": ["file"],
@@ -150,6 +145,10 @@ class Config(ConfigParser):
                 "picard_verbose": {
                     "type": "bool",
                 },
+                "backend": {
+                    "type": "str",
+                    "possible_options": ["cashocs", "petsc"],
+                },
             },
             "OptimizationRoutine": {
                 "algorithm": {
@@ -202,7 +201,6 @@ class Config(ConfigParser):
                     "type": "float",
                     "attributes": ["positive"],
                 },
-                "safeguard_stepsize": {"type": "bool"},
                 "epsilon_armijo": {
                     "type": "float",
                     "attributes": ["positive", "less_than_one"],
@@ -211,18 +209,19 @@ class Config(ConfigParser):
                     "type": "float",
                     "attributes": ["positive", "larger_than_one"],
                 },
+                "safeguard_stepsize": {"type": "bool"},
                 "polynomial_model": {
                     "type": "str",
                     "possible_options": ["cubic", "quadratic"],
-                },
-                "factor_low": {
-                    "type": "float",
-                    "attributes": ["less_than_one", "positive"],
                 },
                 "factor_high": {
                     "type": "float",
                     "attributes": ["less_than_one", "positive"],
                     "larger_than": ("LineSearch", "factor_low"),
+                },
+                "factor_low": {
+                    "type": "float",
+                    "attributes": ["less_than_one", "positive"],
                 },
                 "fail_if_not_converged": {
                     "type": "bool",
@@ -298,6 +297,9 @@ class Config(ConfigParser):
                 "shape_bdry_fix_z": {
                     "type": "list",
                 },
+                "fixed_dimensions": {
+                    "type": "list",
+                },
                 "use_pull_back": {
                     "type": "bool",
                 },
@@ -365,9 +367,6 @@ class Config(ConfigParser):
                 "p_laplacian_stabilization": {
                     "type": "float",
                     "attributes": ["non_negative", "less_than_one"],
-                },
-                "fixed_dimensions": {
-                    "type": "list",
                 },
                 "degree_estimation": {
                     "type": "bool",
@@ -477,6 +476,24 @@ class Config(ConfigParser):
                     "attributes": ["non_negative"],
                 },
             },
+            "MeshQualityConstraints": {
+                "min_angle": {
+                    "type": "float",
+                    "attributes": ["non_negative"],
+                },
+                "tol": {
+                    "type": "float",
+                    "attributes": ["positive"],
+                },
+                "mode": {
+                    "type": "str",
+                    "possible_options": ["approximate"],
+                },
+                "feasible_angle_reduction_factor": {
+                    "type": "float",
+                    "attributes": ["less_than_one", "non_negative"],
+                },
+            },
             "TopologyOptimization": {
                 "angle_tol": {
                     "type": "float",
@@ -558,6 +575,7 @@ picard_rtol = 1e-10
 picard_atol = 1e-12
 picard_iter = 50
 picard_verbose = False
+backend = cashocs
 
 [OptimizationRoutine]
 algorithm = none
@@ -588,7 +606,6 @@ use_sqrt_mu = False
 use_p_laplacian = False
 p_laplacian_power = 2
 p_laplacian_stabilization = 0.0
-degree_estimation = True
 use_pull_back = True
 use_distance_mu = False
 mu_min = 1.0
@@ -606,6 +623,7 @@ shape_bdry_fix = []
 shape_bdry_fix_x = []
 shape_bdry_fix_y = []
 shape_bdry_fix_z = []
+degree_estimation = True
 global_deformation = False
 test_for_intersections = True
 
@@ -655,6 +673,12 @@ type = min
 volume_change = inf
 angle_change = inf
 remesh_iter = 0
+
+[MeshQualityConstraints]
+min_angle = 0.0
+feasible_angle_reduction_factor = 0.0
+tol = 1e-2
+mode = approximate
 
 [TopologyOptimization]
 angle_tol = 1.0

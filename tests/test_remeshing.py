@@ -55,7 +55,6 @@ def test_verification_remeshing():
 
     def mesh_parametrization(mesh_file):
         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-        config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
         config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
         config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
 
@@ -105,7 +104,6 @@ def test_remeshing():
 
     def mesh_parametrization(mesh_file):
         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-        config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
         config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
         config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
         config.set("Output", "result_dir", dir_path + "/temp/")
@@ -168,7 +166,6 @@ def test_remesh_scaling():
 
     def mesh_parametrization(mesh_file):
         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-        config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
         config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
         config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
 
@@ -208,7 +205,6 @@ def test_remeshing_disabled():
     mesh_file = f"{dir_path}/mesh/remesh/mesh.xdmf"
 
     config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-    config.set("Mesh", "mesh_file", dir_path + "/mesh/remesh/mesh.xdmf")
     config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
     config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
     config.set("Mesh", "remesh", "False")

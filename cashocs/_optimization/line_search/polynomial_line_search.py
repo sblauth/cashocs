@@ -32,6 +32,8 @@ from cashocs import _loggers
 from cashocs._optimization.line_search import line_search
 
 if TYPE_CHECKING:
+    from scipy import sparse
+
     from cashocs import _typing
     from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
@@ -101,6 +103,9 @@ class PolynomialLineSearch(line_search.LineSearch):
         solver: optimization_algorithms.OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
+        active_idx: np.ndarray | None = None,
+        constraint_gradient: sparse.csr_matrix | None = None,
+        dropped_idx: np.ndarray | None = None,
     ) -> Tuple[Optional[fenics.Function], bool]:
         """Performs the line search.
 
@@ -109,6 +114,13 @@ class PolynomialLineSearch(line_search.LineSearch):
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates whether the direction is
                 (presumably) scaled.
+            active_idx: The list of active indices of the working set. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
+            constraint_gradient: The gradient of the constraints for the mesh quality.
+                Only needed for shape optimization with mesh quality constraints.
+                Default is `None`.
+            dropped_idx: The list of indicies for dropped constraints. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
 
         Returns:
             The accepted deformation / update or None, in case the update was not
@@ -133,7 +145,12 @@ class PolynomialLineSearch(line_search.LineSearch):
                 )
             self.stepsize = (
                 self.optimization_variable_abstractions.update_optimization_variables(
-                    search_direction, self.stepsize, self.beta_armijo
+                    search_direction,
+                    self.stepsize,
+                    self.beta_armijo,
+                    active_idx,
+                    constraint_gradient,
+                    dropped_idx,
                 )
             )
             self.alpha_vals.append(self.stepsize)
@@ -144,12 +161,23 @@ class PolynomialLineSearch(line_search.LineSearch):
             objective_step = self.cost_functional.evaluate()
             self.f_vals.append(objective_step)
 
+            _loggers.debug(
+                f"Line search - Trial stepsize {self.stepsize:.3e} - "
+                f"Function value {objective_step:.3e}"
+            )
+
             decrease_measure = self._compute_decrease_measure(search_direction)
 
             if self._satisfies_armijo_condition(
                 objective_step, current_function_value, decrease_measure
             ):
+                _loggers.debug("Stepsize satisfies the Armijo decrease condition.")
                 if self.optimization_variable_abstractions.requires_remeshing():
+                    _loggers.debug(
+                        "The mesh quality was sufficient for accepting the step, "
+                        "but the mesh cannot be used anymore for computing a gradient."
+                        "Performing a remeshing operation."
+                    )
                     is_remeshed = (
                         self.optimization_variable_abstractions.mesh_handler.remesh(
                             solver
@@ -162,6 +190,9 @@ class PolynomialLineSearch(line_search.LineSearch):
                 break
 
             else:
+                _loggers.debug(
+                    "Stepsize does not satisfy the Armijo decrease condition."
+                )
                 self.stepsize = self._compute_polynomial_stepsize(
                     current_function_value,
                     decrease_measure,

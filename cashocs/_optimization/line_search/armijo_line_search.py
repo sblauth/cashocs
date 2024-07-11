@@ -29,6 +29,9 @@ from cashocs import _loggers
 from cashocs._optimization.line_search import line_search
 
 if TYPE_CHECKING:
+    import numpy as np
+    from scipy import sparse
+
     from cashocs import _typing
     from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
@@ -90,6 +93,9 @@ class ArmijoLineSearch(line_search.LineSearch):
         solver: optimization_algorithms.OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
+        active_idx: np.ndarray | None = None,
+        constraint_gradient: sparse.csr_matrix | None = None,
+        dropped_idx: np.ndarray | None = None,
     ) -> Tuple[Optional[fenics.Function], bool]:
         """Performs the line search.
 
@@ -120,7 +126,12 @@ class ArmijoLineSearch(line_search.LineSearch):
                 )
             self.stepsize = (
                 self.optimization_variable_abstractions.update_optimization_variables(
-                    search_direction, self.stepsize, self.beta_armijo
+                    search_direction,
+                    self.stepsize,
+                    self.beta_armijo,
+                    active_idx,
+                    constraint_gradient,
+                    dropped_idx,
                 )
             )
 
@@ -128,13 +139,23 @@ class ArmijoLineSearch(line_search.LineSearch):
             objective_step = self._compute_objective_at_new_iterate(
                 current_function_value
             )
+            _loggers.debug(
+                f"Line search - Trial stepsize {self.stepsize:.3e} - "
+                f"Function value {objective_step:.3e}"
+            )
 
             decrease_measure = self._compute_decrease_measure(search_direction)
 
             if self._satisfies_armijo_condition(
                 objective_step, current_function_value, decrease_measure
             ):
+                _loggers.debug("Stepsize satisfies the Armijo decrease condition.")
                 if self.optimization_variable_abstractions.requires_remeshing():
+                    _loggers.debug(
+                        "The mesh quality was sufficient for accepting the step, "
+                        "but the mesh cannot be used anymore for computing a gradient."
+                        "Performing a remeshing operation."
+                    )
                     is_remeshed = (
                         self.optimization_variable_abstractions.mesh_handler.remesh(
                             solver
@@ -147,6 +168,9 @@ class ArmijoLineSearch(line_search.LineSearch):
                 break
 
             else:
+                _loggers.debug(
+                    "Stepsize does not satisfy the Armijo decrease condition."
+                )
                 self.stepsize /= self.beta_armijo
                 self.optimization_variable_abstractions.revert_variable_update()
 
@@ -199,5 +223,6 @@ class ArmijoLineSearch(line_search.LineSearch):
                 raise error
             else:
                 objective_step = 2.0 * abs(current_function_value)
+                self.state_problem.revert_to_checkpoint()
 
         return objective_step

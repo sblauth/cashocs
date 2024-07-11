@@ -73,6 +73,7 @@ class StateProblem(pde_problem.PDEProblem):
 
         self.bcs_list: List[List[fenics.DirichletBC]] = self.state_form_handler.bcs_list
         self.states = self.db.function_db.states
+        self.states_checkpoint = [fun.copy(True) for fun in self.states]
 
         self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
         self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
@@ -84,6 +85,7 @@ class StateProblem(pde_problem.PDEProblem):
         self.newton_inexact = self.config.getboolean("StateSystem", "newton_inexact")
         self.newton_verbose = self.config.getboolean("StateSystem", "newton_verbose")
         self.newton_iter = self.config.getint("StateSystem", "newton_iter")
+        self.backend = self.config.get("StateSystem", "backend")
 
         # pylint: disable=invalid-name
         self.A_tensors = [
@@ -127,6 +129,7 @@ class StateProblem(pde_problem.PDEProblem):
         """
         if not self.has_solution:
             self.db.callback.call_pre()
+            self._generate_checkpoint()
             if (
                 not self.config.getboolean("StateSystem", "picard_iteration")
                 or self.db.parameter_db.state_dim == 1
@@ -152,23 +155,37 @@ class StateProblem(pde_problem.PDEProblem):
                     for i in range(self.db.parameter_db.state_dim):
                         if self.initial_guess is not None:
                             fenics.assign(self.states[i], self.initial_guess[i])
-                        nonlinear_solvers.newton_solve(
-                            self.state_form_handler.state_eq_forms[i],
-                            self.states[i],
-                            self.bcs_list[i],
-                            derivative=self.newton_linearizations[i],
-                            rtol=self.newton_rtol,
-                            atol=self.newton_atol,
-                            max_iter=self.newton_iter,
-                            damped=self.newton_damped,
-                            inexact=self.newton_inexact,
-                            verbose=self.newton_verbose,
-                            ksp_options=self.db.parameter_db.state_ksp_options[i],
-                            A_tensor=self.A_tensors[i],
-                            b_tensor=self.b_tensors[i],
-                            preconditioner_form=self.db.form_db.preconditioner_forms[i],
-                            linear_solver=self.linear_solver,
-                        )
+
+                        pc_forms = self.db.form_db.preconditioner_forms[i]
+                        if self.backend == "petsc":
+                            nonlinear_solvers.snes_solve(
+                                self.state_form_handler.state_eq_forms[i],
+                                self.states[i],
+                                self.bcs_list[i],
+                                derivative=self.newton_linearizations[i],
+                                petsc_options=self.db.parameter_db.state_ksp_options[i],
+                                A_tensor=self.A_tensors[i],
+                                b_tensor=self.b_tensors[i],
+                                preconditioner_form=pc_forms,
+                            )
+                        else:
+                            nonlinear_solvers.newton_solve(
+                                self.state_form_handler.state_eq_forms[i],
+                                self.states[i],
+                                self.bcs_list[i],
+                                derivative=self.newton_linearizations[i],
+                                rtol=self.newton_rtol,
+                                atol=self.newton_atol,
+                                max_iter=self.newton_iter,
+                                damped=self.newton_damped,
+                                inexact=self.newton_inexact,
+                                verbose=self.newton_verbose,
+                                ksp_options=self.db.parameter_db.state_ksp_options[i],
+                                A_tensor=self.A_tensors[i],
+                                b_tensor=self.b_tensors[i],
+                                preconditioner_form=pc_forms,
+                                linear_solver=self.linear_solver,
+                            )
 
             else:
                 nonlinear_solvers.picard_iteration(
@@ -179,16 +196,11 @@ class StateProblem(pde_problem.PDEProblem):
                     rtol=self.picard_rtol,
                     atol=self.picard_atol,
                     verbose=self.picard_verbose,
-                    inner_damped=self.newton_damped,
-                    inner_inexact=self.newton_inexact,
-                    inner_verbose=self.newton_verbose,
                     inner_max_iter=self.newton_iter,
                     ksp_options=self.db.parameter_db.state_ksp_options,
                     A_tensors=self.A_tensors,
                     b_tensors=self.b_tensors,
-                    inner_is_linear=self.config.getboolean("StateSystem", "is_linear"),
                     preconditioner_forms=self.db.form_db.preconditioner_forms,
-                    linear_solver=self.linear_solver,
                     newton_linearizations=self.newton_linearizations,
                 )
 
@@ -198,3 +210,25 @@ class StateProblem(pde_problem.PDEProblem):
             self._update_cost_functionals()
 
         return self.states
+
+    def _generate_checkpoint(self) -> None:
+        """Generates a checkpoint of the state variables."""
+        for i in range(len(self.states)):
+            self.states_checkpoint[i].vector().vec().aypx(
+                0.0, self.states[i].vector().vec()
+            )
+            self.states_checkpoint[i].vector().apply("")
+
+    def revert_to_checkpoint(self) -> None:
+        """Reverts the state variables to a checkpointed value.
+
+        This is useful when the solution of the state problem fails and another attempt
+        is made to solve it. Then, the perturbed solution of Newton's method should not
+        be the initial guess.
+
+        """
+        for i in range(len(self.states)):
+            self.states[i].vector().vec().aypx(
+                0.0, self.states_checkpoint[i].vector().vec()
+            )
+            self.states[i].vector().apply("")

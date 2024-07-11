@@ -120,10 +120,15 @@ class IntersectionTester:
         self.mesh = mesh
 
         cells = self.mesh.cells()
-        flat_cells = cells.flatten().tolist()
+        vertex_ghost_offset = self.mesh.topology().ghost_offset(0)
+        cell_ghost_offset = self.mesh.topology().ghost_offset(
+            self.mesh.topology().dim()
+        )
+
+        flat_cells = cells[:cell_ghost_offset].flatten().tolist()
         self.cell_counter: collections.Counter = collections.Counter(flat_cells)
         self.occurrences = np.array(
-            [self.cell_counter[i] for i in range(self.mesh.num_vertices())]
+            [self.cell_counter[i] for i in range(vertex_ghost_offset)]
         )
 
     def test(self) -> bool:
@@ -215,5 +220,7 @@ PYBIND11_MODULE(SIGNATURE, m)
             cells that vertex ``i`` collides with.
 
         """
+        vertex_ghost_offset = mesh.topology().ghost_offset(0)
         collisions: np.ndarray = cls._cpp_object.compute_collisions(mesh)
+        collisions = collisions[:vertex_ghost_offset]
         return collisions

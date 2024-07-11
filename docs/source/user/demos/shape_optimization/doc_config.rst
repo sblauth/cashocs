@@ -4,9 +4,7 @@ Documentation of the Config Files for Shape Optimization Problems
 =================================================================
 
 Let us take a detailed look at the config files for shape optimization problems and
-discusss the corresponding parameters. The corresponding
-config file used for this discussion is :download:`config.ini </../../demos/documented/shape_optimization/shape_poisson/config.ini>`,
-which is the config file used for :ref:`demo_shape_poisson`.
+discusss the corresponding parameters.
 
 For shape optimization problems, the config file is a lot larger compared to the :ref:`config files
 for optimal control <config_optimal_control>`.
@@ -217,6 +215,20 @@ boolean flag
     picard_verbose = False
 
 which is set to :ini:`picard_verbose = False` by default.
+
+The parameter :ini:`backend` specifies which solver backend should be used for solving nonlinear systems.
+Its default value is given by
+
+.. code-block:: ini
+
+    backend = cashocs
+
+Possible options are :ini:`backend = cashocs` and :ini:`backend = petsc`. In the former case, a 
+damped, inexact Newton method which is affine co-variant is used. Its parameters are specified in the
+configuration above. In the latter case, PETSc's SNES interface for solving nonlinear equations
+is used which can be configured with the `ksp_options` supplied by the user to the 
+:py:class:`cashocs.OptimizationProblem`. An overview over possible PETSc command line options
+can be found at `<https://petsc.org/release/manualpages/SNES/>`_.
 
 
 .. _config_shape_optimization_routine:
@@ -580,6 +592,14 @@ boundaries should not be deformable in x-direction, but can be deformed in the y
 and z-directions. Of course you can constrain a boundary to be only variable in a
 single direction by adding the markers to the remaining lists.
 
+Furthermore, we have the parameter :ini:`fixed_dimensions`, which enables us to restrict the shape gradient to specific dimensions. It is set via 
+
+.. code-block:: ini
+
+    fixed_dimensions = []
+
+In case :ini:`fixed_dimensions = []`, there is no restriction on the shape gradient. However, if :ini:`fixed_dimensions = [i]`, then the i-th component of the shape gradient is set to 0, so that we have no deformation in the i-th coordinate direction. For example, if :ini:`fixed_dimensions = [0, 2]`, we only have a deformation in the :math:`y`-component of the mesh. The default is :ini:`fixed_dimensions = []`.
+
 The next parameter is specified via
 
 .. code-block:: ini
@@ -746,14 +766,30 @@ Finally, there is the possibility to use a stabilized weak form for the :math:`p
 
 The default value of this parameter is :ini:`p_laplacian_stabilization = 0.0`. Note, that the parameter should be chosen comparatively small, i.e., significantly smaller than 1.
 
-
-Furthermore, we have the parameter :ini:`fixed_dimensions`, which enables us to restrict the shape gradient to specific dimensions. It is set via 
+Moreover, we have the parameter :ini:`degree_estimation` which is specified via
 
 .. code-block:: ini
 
-    fixed_dimensions = []
+    degree_estimation = True
 
-In case :ini:`fixed_dimensions = []`, there is no restriction on the shape gradient. However, if :ini:`fixed_dimensions = [i]`, then the i-th component of the shape gradient is set to 0, so that we have no deformation in the i-th coordinate direction. For example, if :ini:`fixed_dimensions = [0, 2]`, we only have a deformation in the :math:`y`-component of the mesh. The default is :ini:`fixed_dimensions = []`.
+This parameter enables cashocs' default estimation of the quadrature degree for the shape derivative. If this is set to `False`, an error related to FEniCS may occur - so this should be always enabled.
+
+Next, we have the parameter :ini:`global_deformation` which is set via the line
+
+.. code-block:: ini
+
+    global_deformation = False
+
+If this is set to `True`, cashocs computes the deformation from the initial to the optimized mesh (even when remeshing has been performed). This can, however, lead to some unexpected errors with PETSc, so this should be used with care.
+
+We have the parameter :ini:`test_for_intersections`, which is specified via
+
+.. code-block:: ini
+
+    test_for_intersections = True
+
+If this parameter is set to `True`, cashocs will check the deformed meshes for (self) intersections, which would generate non-physical geometries and reject them - so that all generated designs are physically meaningful. This should not be set to `False`.
+
 
 .. _config_shape_regularization:
 
@@ -991,6 +1027,48 @@ Finally, we have the parameter :ini:`remesh_iter` in which the user can specify 
 
 where :ini:`remesh_iter = 0` means that no automatic remeshing is performed (this is the default), and :ini:`remesh_iter = n` means that remeshing is performed after each `n` iterations. Note that to use this parameter and avoid unexpected results, it might be beneficial to the the lower and upper mesh quality tolerances to a low value, so that the "quality based remeshing" does not interfere with the "iteration based remeshing", but both can be used in combination.
 
+.. _config_shape_mesh_quality_constraints:
+
+Section MeshQualityConstraints
+------------------------------
+
+The parameter :ini:`min_angle` is used to define the threshold angle, i.e. the minimum (solid) angle which is feasible for the mesh. The default is given by
+
+.. code-block:: ini
+
+	min_angle = 0.0
+
+which ensures that the constraints are not active by default. Note that the initial mesh has to be feasible for the method to work, so if the minimum angle in the mesh is smaller than the :ini:`min_angle` specified in the configuration, cashocs will raise an exception. Note that the angle is specified in radian and **not** degree.
+
+To circumvent this problem for meshes with small angles (which could be used, e.g., to resolve boundary layers, the next parameter :ini:`feasible_angle_reduction_factor` is used. This parameter specifies, how much smaller the (solid) angles of the mesh are allowed to become relative to the value in the initial mesh. That means a value of :ini:`feasible_angle_reduction_factor = 0.25` ensures that no (solid) angle in a mesh element will become smaller than one quarter of the smallest angle of the element in the initial mesh. The default is given by
+
+.. code-block:: ini
+
+	feasible_angle_reduction_factor = 0.0
+
+which ensures that the constraints are not active by default.
+
+.. note::
+
+	If both the :ini:`feasible_angle_reduction_factor` and :ini:`min_angle` are given, cashocs uses the element-wise minimum of the two. In particular, this means that a strategy of using :ini:`feasible_angle_reduction_factor = 0.9999` and some value for :ini:`min_angle` can be used to constrain the (solid) angle to a specific value, wherever this is possible (and leave the angles that are below this threshold as they are).
+
+The parameter :ini:`tol` is used to define a tolerance for which constraints are treated as active or not. As we treat the constraints numerically, they can only be satisfied up to a certain tolerance, which the user can specify here. The default value of
+
+.. code-block:: ini
+
+	tol = 1e-2
+
+should work well in most situations. In some situations, the optimization could be faster with a tolerance of :ini:`tol = 1e-1` (but should never be larger) or more accurate when using, e.g., :ini:`tol = 1e-3` (lower values should most of the time not be necessary).
+
+The parameter :ini:`mode` can only be set to
+
+.. code-block:: ini
+
+	mode = approximate
+
+at the moment, which is also the default value. In the future, other options might be possible.
+
+
 .. _config_shape_output:
 
 Section Output
@@ -1152,6 +1230,9 @@ in the following.
       - maximum iterations for Picard iteration
     * - :ini:`picard_verbose = False`
       - :ini:`picard_verbose = True` enables verbose output of Picard iteration
+    * - :ini:`backend = cashocs`
+      - specifies the backend for solving nonlinear equations, can be either :ini:`cashocs` or :ini:`petsc`
+
 
 
 [OptimizationRoutine]
@@ -1303,6 +1384,12 @@ in the following.
       - The parameter :math:`p` of the :math:`p`-Laplacian
     * - :ini:`p_laplacian_stabilization = 0.0`
       - The stabilization parameter for the :math:`p`-Laplacian problem. No stabilization is used when this is :ini:`p_laplacian_stabilization = 0.0`.
+    * - :ini:`global_deformation = False`
+      - Computes the global deformation from initial to optimized mesh. This can lead to unexpected errors, use with care.
+    * - :ini:`degree_estimation = True`
+      - Estimate the required degree for quadrature of the shape derivative. This should be `True`, otherwise unexpected errors can happen.
+    * - :ini:`test_for_intersections = True`
+      - If enabled, the mesh is tested for intersections which would create non-physical meshes. This should always be enabled, otherwise the obtained results might be incorrect.
 
 
 [Regularization]
@@ -1361,9 +1448,26 @@ in the following.
       - determines which quality measure is used
     * - :ini:`type = min`
       - determines if minimal or average quality is considered
+    * - :ini:`remesh_iter`
+      - When set to a value > 0, remeshing is performed every :ini:`remesh_iter` iterations.
 
 
+[MeshQualityConstraints]
+************************
 
+.. list-table::
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Remarks
+    * - :ini:`min_angle = 0.0`
+      - The minimum feasible triangle / solid angle of the mesh cells in radian. This is constant for all cells. If this is positive, the constraints are used. If this is 0, no constraints are used.
+    * - :ini:`tol = 1e-2`
+      - The tolerance for the mesh quality constraints. If `abs(g(x)) < tol`, then the constraint is considered active
+    * - :ini:`mode = approximate`
+      - The mode for calculating the (shape) derivatives of the constraint functions. At the moment, only "approximate" is supported.
+    * - :ini:`feasible_angle_reduction_factor = 0.0`
+      - A factor in the interval [0,1) which sets the feasible reduction of the triangle / solid angles. This means, that each cell is only allowed to have angles larger than this times the initial minimum angle.
 
 [Output]
 ********

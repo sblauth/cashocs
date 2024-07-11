@@ -1,18 +1,21 @@
-numpy>=1.22.2 # not directly required, pinned by Snyk to avoid a vulnerability
+numpy>=1.22.2
 matplotlib
 scipy
-Sphinx==7.2.6
+Sphinx==7.3.7
 sphinx-argparse==0.4.0
 sphinx-copybutton==0.5.2
 meshio==5.3.5
-docutils==0.20.1
-pydata-sphinx-theme==0.15.2
-sphinx-design==0.5.0
-setuptools>=65.5.1 # not directly required, pinned by Snyk to avoid a vulnerability
-pygments>=2.7.4 # not directly required, pinned by Snyk to avoid a vulnerability
+docutils==0.21.2
+pydata-sphinx-theme==0.15.4
+sphinx-design==0.6.0
+setuptools>=65.5.1
+pygments>=2.7.4
 typing_extensions
-myst-parser==2.0.0
-jupytext==1.16.1
+myst-parser==3.0.1
+jupytext==1.16.3
 sphinx-favicon==1.0.1
-pillow>=10.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
-fonttools>=4.43.0 # not directly required, pinned by Snyk to avoid a vulnerability
+matplotlib
+pillow>=10.0.1
+fonttools>=4.43.0
+requests>=2.32.0
+zipp>=3.19.1

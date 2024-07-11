@@ -58,8 +58,9 @@ from cashocs.io import load_config
 from cashocs.nonlinear_solvers import linear_solve
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
+from cashocs.nonlinear_solvers import snes_solve
 
-__version__ = "2.1.4"
+__version__ = "2.2.0-dev"
 
 __citation__ = """
 @Article{Blauth2021cashocs,
@@ -155,4 +156,5 @@ __all__ = [
     "linear_solve",
     "TopologyOptimizationProblem",
     "interpolate_levelset_function_to_cells",
+    "snes_solve",
 ]
