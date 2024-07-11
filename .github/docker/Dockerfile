@@ -16,7 +16,6 @@ RUN micromamba install -y -n base -c conda-forge \
       gmsh">=4.8" \
       coverage">=7.1.0" \
       mpich \
-      petsc"<=3.19" \
       scipy \
       python=3.11 && \
    micromamba clean --all --yes

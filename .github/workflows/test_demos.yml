@@ -29,7 +29,6 @@ jobs:
           pytest>=7.2.0
           gmsh>=4.8
           matplotlib
-          petsc<=3.19
           scipy
           python=3.12
 
@@ -69,7 +68,6 @@ jobs:
           gmsh>=4.8
           mpich
           matplotlib
-          petsc<=3.19
           scipy
           python=3.12
 
