@@ -96,6 +96,8 @@ class SNESSolver:
         self.atol = atol
         self.max_iter = max_iter
 
+        self.is_preassembled = False
+
         if petsc_options is None:
             self.petsc_options: _typing.KspOption = copy.deepcopy(default_snes_options)
             self.petsc_options.update(_utils.linalg.direct_ksp_options)
@@ -194,17 +196,21 @@ class SNESSolver:
             P: The matrix storing the preconditioner for the Jacobian.
 
         """
-        self.u.vector().vec().setArray(x)
-        self.u.vector().apply("")
+        if not self.is_preassembled:
+            print("Assembling the Jacobian for the SNES solver.")
+            self.u.vector().vec().setArray(x)
+            self.u.vector().apply("")
 
-        J = fenics.PETScMatrix(J)  # pylint: disable=invalid-name
-        self.assembler.assemble(J)
-        J.ident_zeros()
+            J = fenics.PETScMatrix(J)  # pylint: disable=invalid-name
+            self.assembler.assemble(J)
+            J.ident_zeros()
 
-        if self.preconditioner_form is not None:
-            P = fenics.PETScMatrix(P)  # pylint: disable=invalid-name
-            self.assembler_pc.assemble(P)
-            P.ident_zeros()
+            if self.preconditioner_form is not None:
+                P = fenics.PETScMatrix(P)  # pylint: disable=invalid-name
+                self.assembler_pc.assemble(P)
+                P.ident_zeros()
+        else:
+            self.is_preassembled = False
 
     def solve(self) -> fenics.Function:
         """Solves the nonlinear problem with PETSc's SNES."""
@@ -215,6 +221,12 @@ class SNESSolver:
 
         ksp = snes.getKSP()
         _utils.linalg.setup_fieldsplit_preconditioner(self.u, ksp, self.petsc_options)
+
+        if fenics.PETScMatrix(self.A_petsc).empty():
+            self.assemble_jacobian(
+                snes, self.u.vector().vec(), self.A_petsc, self.P_petsc
+            )
+            self.is_preassembled = True
 
         _utils.setup_petsc_options([snes], [self.petsc_options])
         snes.setTolerances(rtol=self.rtol, atol=self.atol, max_it=self.max_iter)
