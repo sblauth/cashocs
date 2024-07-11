@@ -680,7 +680,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             x = fenics.as_backend_type(a[0].vector()).vec()
             y = fenics.as_backend_type(b[0].vector()).vec()
 
-            temp, _ = self.scalar_product_matrix.getVecs()
+            temp = self.scalar_product_matrix.createVecRight()
             self.scalar_product_matrix.mult(x, temp)
             result = temp.dot(y)
 

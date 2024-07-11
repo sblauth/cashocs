@@ -122,9 +122,9 @@ class LineSearch(abc.ABC):
 
             transfer_matrix = cast(PETSc.Mat, transfer_matrix)
 
-            _, temp = transfer_matrix.getVecs()
-            transfer_matrix.mult(x, temp)
-            self.global_deformation_vector.axpy(1.0, temp)
+            transfer_matrix.multAdd(
+                x, self.global_deformation_vector, self.global_deformation_vector
+            )
             self.deformation_function.vector().apply("")
 
         self.post_line_search()

@@ -482,10 +482,10 @@ class LinearSolver:
         A = setup_matrix_and_preconditioner(ksp, A, P)
 
         if b is None:
-            return A.getVecs()[0]
+            return A.createVecRight()
 
         if fun is None:
-            x, _ = A.getVecs()
+            x = A.createVecRight()
         else:
             x = fun.vector().vec()
 
