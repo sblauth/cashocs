@@ -602,9 +602,7 @@ class Interpolator:
         """
         v = fenics.Function(self.target_space)
         x = fenics.as_backend_type(u.vector()).vec()
-        _, temp = self.transfer_matrix.getVecs()
-        self.transfer_matrix.mult(x, temp)
-        v.vector().vec().aypx(0.0, temp)
+        self.transfer_matrix.mult(x, v.vector().vec())
         v.vector().apply("")
 
         return v
