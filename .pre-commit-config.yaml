@@ -1,61 +1,47 @@
-repos:
+default_language_version:
+  python: python3.11
 
+repos:
   - repo: https://github.com/regebro/pyroma
     rev: "4.2"
     hooks:
       - id: pyroma
-
-
   - repo: https://github.com/psf/black
-    rev: 24.3.0
+    rev: 24.4.2
     hooks:
       - id: black
-
-      
   - repo: https://github.com/PyCQA/isort
     rev: 5.13.2
     hooks:
       - id: isort
-
-      
   - repo: https://github.com/PyCQA/pydocstyle
     rev: 6.3.0
     hooks:
       - id: pydocstyle
         additional_dependencies: ["tomli"]
         files: cashocs/
-
-        
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.0.0
+    rev: 7.1.0
     hooks:
       - id: flake8
         files: cashocs/
-
-        
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.8
+    rev: 1.7.9
     hooks:
       - id: bandit
         files: cashocs/
-        
-        
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.1.0
+    rev: v3.2.5
     hooks:
       - id: pylint
         files: cashocs/
-
-        
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.9.0
+    rev: v1.10.1
     hooks:
       - id: mypy
         files: cashocs/
         additional_dependencies: ["numpy"]
         args: [--config-file, pyproject.toml]
-
-        
   - repo: https://github.com/PyCQA/prospector
     rev: v1.10.3
     hooks:

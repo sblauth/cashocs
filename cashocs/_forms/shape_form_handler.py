@@ -411,6 +411,12 @@ class ShapeFormHandler(form_handler.FormHandler):
             ufl_algorithms.estimate_total_polynomial_degree(modified_scalar_product),
             ufl_algorithms.estimate_total_polynomial_degree(shape_derivative),
         )
+        fenics_quadrature_degree = fenics.parameters["form_compiler"][
+            "quadrature_degree"
+        ]
+        if fenics_quadrature_degree is not None:
+            estimated_degree = np.minimum(estimated_degree, fenics_quadrature_degree)
+
         assembler = fenics.SystemAssembler(
             modified_scalar_product,
             shape_derivative,
@@ -680,7 +686,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             x = fenics.as_backend_type(a[0].vector()).vec()
             y = fenics.as_backend_type(b[0].vector()).vec()
 
-            temp, _ = self.scalar_product_matrix.getVecs()
+            temp = self.scalar_product_matrix.createVecRight()
             self.scalar_product_matrix.mult(x, temp)
             result = temp.dot(y)
 

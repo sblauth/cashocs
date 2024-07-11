@@ -285,7 +285,7 @@ class FineModel(space_mapping.FineModel):
         bc_pressure = DirichletBC(V.sub(1), Constant(0.0), boundaries, 5)
         bcs = [bc_in] + bcs_wall + [bc_out] + [bc_pressure]
 
-        cashocs.newton_solve(F, up, bcs, verbose=False)
+        cashocs.snes_solve(F, up, bcs)
         self.u, p = up.split(True)
 
         file = File(f"./pvd/u_{self.iter}.pvd")
@@ -416,9 +416,9 @@ fine_model = FineModel(mesh, Re, q_in, output_list)
 # bcs = [bc_in
 # :::
 #
-# The problem is then solved with {py:func}`<cashocs.newton_solve>`
+# The problem is then solved with {py:func}`<cashocs.snes_solve>`
 # :::{code-block} python
-# cashocs.newton_solve(F, up, bcs, verbose=False)
+# cashocs.snes_solve(F, up, bcs)
 # :::
 #
 # Finally, after having solved the problem, we first save the solution for later

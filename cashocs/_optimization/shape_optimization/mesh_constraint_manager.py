@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2023 Sebastian Blauth
+# Copyright (C) 2020-2024 Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -98,7 +98,7 @@ class ConstraintManager:
                 )
 
             elif self.mesh.geometry().dim() == 3:
-                angle_constraint = mesh_constraints.DihedralAngleConstraint(
+                angle_constraint = mesh_constraints.SolidAngleConstraint(
                     self.mesh, self.config, deformation_space
                 )
             else:
@@ -411,7 +411,7 @@ class ConstraintManager:
                 if self.comm.rank == lambda_min_rank:
                     i_min_list = np.argsort(lambd_ineq)
                     i_min_list_padded = np.where(self.inequality_mask)[0][i_min_list]
-                    mask = ~np.in1d(i_min_list_padded, undroppable_idx)
+                    mask = ~np.isin(i_min_list_padded, undroppable_idx)
                     i_min_padded = i_min_list_padded[mask][0]
 
                     active_idx[i_min_padded] = False

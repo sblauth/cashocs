@@ -46,7 +46,7 @@ classifiers = [
 dependencies = [
 	"meshio >= 4.1.0",
 	"numpy",
-    "scipy",
+        "scipy",
 	"typing_extensions",
         "matplotlib",
 ]
