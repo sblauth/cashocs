@@ -36,6 +36,7 @@ jobs:
           pytest>=7.2.0
           gmsh>=4.8
           scipy
+          scotch<7.0.0
           ${{ matrix.mpi }}
           python=${{ matrix.python-version }}
 
