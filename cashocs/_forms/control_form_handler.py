@@ -173,7 +173,7 @@ class ControlFormHandler(form_handler.FormHandler):
             x = fenics.as_backend_type(a[i].vector()).vec()
             y = fenics.as_backend_type(b[i].vector()).vec()
 
-            temp, _ = self.riesz_projection_matrices[i].getVecs()
+            temp = self.riesz_projection_matrices[i].createVecRight()
             self.riesz_projection_matrices[i].mult(x, temp)
             result += temp.dot(y)
 
