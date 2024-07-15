@@ -33,7 +33,6 @@ cashocs.set_log_level(cashocs.LogLevel.ERROR)
 
 cfg = cashocs.load_config(f"{dir_path}/config_sosm.ini")
 Re_f = 50.0
-Re_c = 0.0
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
     f"{dir_path}/sm_mesh/mesh.xdmf"
 )
@@ -131,12 +130,7 @@ u, p = split(up)
 vq = Function(V)
 v, q = split(vq)
 
-F = (
-    inner(grad(u), grad(v)) * dx
-    + Constant(Re_c) * inner(grad(u) * u, v) * dx
-    - p * div(v) * dx
-    - q * div(u) * dx
-)
+F = inner(grad(u), grad(v)) * dx - p * div(v) * dx - q * div(u) * dx
 
 bc_in = DirichletBC(V.sub(0), u_in, boundaries, 1)
 bcs_wall = cashocs.create_dirichlet_bcs(
