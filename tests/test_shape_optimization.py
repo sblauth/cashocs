@@ -358,7 +358,7 @@ def test_mesh_quality_constraints_min_angle(algorithm, expected_iterations):
 
 @pytest.mark.parametrize(
     "algorithm, expected_iterations",
-    [("gd", 42), ("ncg", 43), ("bfgs", 50)],
+    [("gd", 46), ("ncg", 51), ("bfgs", 56)],
 )
 def test_mesh_quality_constraints_reduction_factor(algorithm, expected_iterations):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
@@ -371,7 +371,7 @@ def test_mesh_quality_constraints_reduction_factor(algorithm, expected_iteration
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm=algorithm, rtol=1.5e-2, atol=0.0, max_iter=expected_iterations)
+    sop.solve(algorithm=algorithm, rtol=1e-2, atol=0.0, max_iter=expected_iterations)
     assert sop.solver.relative_norm < sop.solver.rtol
 
     mesh_quality = cashocs.compute_mesh_quality(
