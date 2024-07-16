@@ -188,8 +188,7 @@ class InequalityConstraint(Constraint):
             mesh = self.measure.ufl_domain().ufl_cargo()
             multiplier_space = fenics.FunctionSpace(mesh, "CG", 1)
             self.multiplier = fenics.Function(multiplier_space)
-            weight_space = fenics.FunctionSpace(mesh, "R", 0)
-            self.weight = fenics.Function(weight_space)
+            self.weight = fenics.Constant(0.0)
 
             self.cost_functional_terms = []
             if self.upper_bound is not None:

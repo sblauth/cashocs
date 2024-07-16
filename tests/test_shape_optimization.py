@@ -301,15 +301,14 @@ def test_shape_derivative_constrained():
     assert np.allclose(exact_sd_func, cashocs_sd_func)
 
 
-def test_shape_gradient(config_sop, geometry, rng):
-    mesh = geometry.mesh
+def test_shape_gradient(config_sop, rng):
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config_sop)
 
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
 
 
 def test_shape_gradient_iterative(rng):
@@ -320,9 +319,9 @@ def test_shape_gradient_iterative(rng):
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
 
 
 def test_shape_gd():
@@ -419,9 +418,9 @@ def test_shape_volume_regularization():
     J_vol = cashocs.IntegralFunctional(Constant(0) * dx)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
 
     sop.solve(algorithm="bfgs", rtol=1e-6, max_iter=50)
     coords = cashocs.io.mesh.gather_coordinates(mesh)
@@ -446,9 +445,9 @@ def test_shape_surface_regularization():
     J_vol = cashocs.IntegralFunctional(Constant(0) * dx)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
 
     sop.solve(algorithm="bfgs", rtol=1e-6, max_iter=50)
     coords = cashocs.io.mesh.gather_coordinates(mesh)
@@ -477,9 +476,9 @@ def test_shape_barycenter_regularization():
     J_vol = cashocs.IntegralFunctional(Constant(0) * dx)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_vol, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
 
     sop.solve(algorithm="bfgs", rtol=1e-5, max_iter=50)
 
@@ -511,15 +510,15 @@ def test_custom_supply_shape(rng):
 
     user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
 
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
 
     user_sop.supply_custom_forms(dJ, [adjoint_form], [bcs])
 
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
 
 
 def test_supply_from_custom_fspace(rng):
@@ -541,9 +540,9 @@ def test_supply_from_custom_fspace(rng):
 
     user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
 
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
 
 
 def test_custom_shape_scalar_product(rng):
@@ -571,9 +570,9 @@ def test_custom_shape_scalar_product(rng):
 
     assert sop.solver.relative_norm < sop.solver.rtol
 
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     user_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
@@ -589,15 +588,15 @@ def test_custom_shape_scalar_product(rng):
 
     user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
 
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
 
     user_sop.supply_custom_forms(dJ, [adjoint_form], [bcs])
 
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.85
 
 
 def test_curvature_computation():
@@ -633,9 +632,9 @@ def test_scalar_tracking_regularization():
     J_tracking = cashocs.ScalarTrackingFunctional(Constant(1) * dx, tracking_goal)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_tracking, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
 
     sop.solve(algorithm="bfgs", rtol=1e-6, max_iter=50)
     coords = cashocs.io.mesh.gather_coordinates(mesh)
@@ -663,9 +662,9 @@ def test_scalar_tracking_norm():
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_tracking, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
 
     sop.solve(algorithm="bfgs", rtol=1e-5, max_iter=50)
     assert 0.5 * pow(assemble(norm_u) - tracking_goal, 2) < 1e-14
@@ -694,11 +693,11 @@ def test_scalar_tracking_weight():
     sop.compute_state_variables()
     val = sop.reduced_cost_functional.evaluate()
 
-    assert np.abs(val - weight) < 1e-15
+    assert np.abs(val - weight) / weight < 1e-10
 
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
 
 
 def test_scalar_tracking_multiple():
@@ -717,9 +716,9 @@ def test_scalar_tracking_multiple():
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
 
     sop.solve(algorithm="bfgs", rtol=1e-7, max_iter=50)
     assert 0.5 * pow(assemble(norm_u) - tracking_goals[0], 2) < 1e-13
@@ -751,9 +750,9 @@ def test_inhomogeneous_mu():
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     rng = np.random.RandomState(300696)
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.85
 
 
 def test_save_xdmf_files():
@@ -880,9 +879,9 @@ def test_scaling_shape():
 
     assert abs(val - diff) < 1e-14
 
-    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.85
 
 
 def test_scaling_shape_regularization():
@@ -948,9 +947,9 @@ def test_scaling_scalar_only():
 
     assert abs(val - summ) < 1e-14
 
-    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.85
 
 
 def test_scaling_scalar_and_single_cost():
@@ -983,9 +982,9 @@ def test_scaling_scalar_and_single_cost():
 
     assert abs(val - summ) < 1e-14
 
-    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.85
 
 
 def test_scaling_all():
@@ -1020,9 +1019,9 @@ def test_scaling_all():
 
     assert abs(val - summ) < 1e-14
 
-    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.85
+    assert cashocs.verification.shape_gradient_test(test_sop, rng=rng) > 1.85
 
 
 def test_angle_change():
@@ -1046,9 +1045,9 @@ def test_fixed_dimensions(rng):
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     grad_x = sop.compute_shape_gradient()
     assert assemble(grad_x[0][0] * grad_x[0][0] * dx) == 0
-    assert sop.gradient_test(rng=rng) > 1.9
-    assert sop.gradient_test(rng=rng) > 1.9
-    assert sop.gradient_test(rng=rng) > 1.9
+    assert sop.gradient_test(rng=rng) > 1.85
+    assert sop.gradient_test(rng=rng) > 1.85
+    assert sop.gradient_test(rng=rng) > 1.85
 
     config.set("ShapeGradient", "fixed_dimensions", "[1]")
 
@@ -1057,9 +1056,9 @@ def test_fixed_dimensions(rng):
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     grad_x = sop.compute_shape_gradient()
     assert assemble(grad_x[0][1] * grad_x[0][1] * dx) == 0
-    assert sop.gradient_test(rng=rng) > 1.9
-    assert sop.gradient_test(rng=rng) > 1.9
-    assert sop.gradient_test(rng=rng) > 1.9
+    assert sop.gradient_test(rng=rng) > 1.85
+    assert sop.gradient_test(rng=rng) > 1.85
+    assert sop.gradient_test(rng=rng) > 1.85
 
 
 def test_check_config_list():

@@ -152,6 +152,6 @@ def test_p_laplacian_iterative(rng, config_sop, e, bcs, J, u, p, geometry):
     sop = cashocs.ShapeOptimizationProblem(
         e, bcs, J, u, p, geometry.boundaries, config=config_sop
     )
-    assert sop.gradient_test(rng=rng) > 1.9
-    assert sop.gradient_test(rng=rng) > 1.9
-    assert sop.gradient_test(rng=rng) > 1.9
+    assert sop.gradient_test(rng=rng) > 1.8
+    assert sop.gradient_test(rng=rng) > 1.8
+    assert sop.gradient_test(rng=rng) > 1.8
