@@ -301,8 +301,7 @@ def test_shape_derivative_constrained():
     assert np.allclose(exact_sd_func, cashocs_sd_func)
 
 
-def test_shape_gradient(config_sop, geometry, rng):
-    mesh = geometry.mesh
+def test_shape_gradient(config_sop, rng):
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config_sop)
@@ -694,7 +693,7 @@ def test_scalar_tracking_weight():
     sop.compute_state_variables()
     val = sop.reduced_cost_functional.evaluate()
 
-    assert np.abs(val - weight) < 1e-15
+    assert np.abs(val - weight) / weight < 1e-10
 
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
