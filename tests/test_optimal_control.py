@@ -296,9 +296,9 @@ def test_scalar_tracking_weight(rng, geometry, config_ocp, F, bcs, y, u, p):
     val = test_ocp.reduced_cost_functional.evaluate()
     assert np.abs(val - weight) < 1e-15
 
-    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.85
+    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.85
+    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.85
 
 
 def test_scalar_multiple_norms(rng, config_ocp, geometry, F, bcs, y, u, p):

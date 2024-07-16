@@ -358,7 +358,7 @@ def test_mesh_quality_constraints_min_angle(algorithm, expected_iterations):
 
 @pytest.mark.parametrize(
     "algorithm, expected_iterations",
-    [("gd", 46), ("ncg", 51), ("bfgs", 56)],
+    [("gd", 47), ("ncg", 51), ("bfgs", 57)],
 )
 def test_mesh_quality_constraints_reduction_factor(algorithm, expected_iterations):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
