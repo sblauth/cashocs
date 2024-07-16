@@ -100,6 +100,10 @@ favicons = [
     {"rel": "icon", "sizes": "32x32", "href": "favicon/favicon-32x32.jpg"},
 ]
 
+suppress_warnings = [
+    "autosummary.import_cycle",
+]
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
