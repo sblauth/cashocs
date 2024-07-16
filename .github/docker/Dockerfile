@@ -11,12 +11,13 @@ USER $MAMBA_USER
 
 RUN micromamba install -y -n base -c conda-forge \
       fenics=2019 \
-      meshio">=5.3.0" \
-      pytest">=7.2.0" \
+      meshio">=5.3" \
+      pytest \
       gmsh">=4.8" \
-      coverage">=7.1.0" \
+      coverage \
       mpich \
       scipy \
+      scotch"<7" \
       python=3.11 && \
    micromamba clean --all --yes
 

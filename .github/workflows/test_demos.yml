@@ -25,11 +25,12 @@ jobs:
         environment-file: .github/micromamba/testenv.yml
         create-args: >-
           fenics=2019
-          meshio>=5.3.0
-          pytest>=7.2.0
+          meshio>=5.3
+          pytest
           gmsh>=4.8
           matplotlib
           scipy
+          scotch<7
           python=3.12
 
     - name: Install package
@@ -63,12 +64,13 @@ jobs:
         environment-file: .github/micromamba/testenv.yml
         create-args: >-
           fenics=2019
-          meshio>=5.3.0
-          pytest>=7.2.0
+          meshio>=5.3
+          pytest
           gmsh>=4.8
           mpich
           matplotlib
           scipy
+          scotch<7
           python=3.12
 
     - name: Install package
