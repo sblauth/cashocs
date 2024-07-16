@@ -104,10 +104,10 @@ class FineModel(sosm.FineModel):
         self.cost_functional_value = J.evaluate()
 
         u_temp, _ = up.split(True)
-        u_temp.set_allow_extrapolation(True)
-        self.u.vector().vec().aypx(
-            0.0, interpolate(u_temp, self.V_coarse.sub(0).collapse()).vector().vec()
+        interpolator = cashocs._utils.Interpolator(
+            u_temp.function_space(), self.V_coarse.sub(0).collapse()
         )
+        self.u.vector().vec().aypx(0.0, interpolator.interpolate(u_temp).vector().vec())
         self.u.vector().apply("")
 
         if MPI.rank(MPI.comm_world) == 0:
