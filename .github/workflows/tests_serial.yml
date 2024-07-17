@@ -33,7 +33,6 @@ jobs:
           pytest
           gmsh>=4.8
           scipy
-          scotch<7
           python=${{ matrix.python-version }}
 
     - name: Install package
