@@ -17,7 +17,6 @@ RUN micromamba install -y -n base -c conda-forge \
       coverage \
       mpich \
       scipy \
-      scotch"<7" \
       python=3.11 && \
    micromamba clean --all --yes
 
