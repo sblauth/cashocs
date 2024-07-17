@@ -30,7 +30,6 @@ jobs:
           gmsh>=4.8
           matplotlib
           scipy
-          scotch<7
           python=3.12
 
     - name: Install package
@@ -70,7 +69,6 @@ jobs:
           mpich
           matplotlib
           scipy
-          scotch<7
           python=3.12
 
     - name: Install package
