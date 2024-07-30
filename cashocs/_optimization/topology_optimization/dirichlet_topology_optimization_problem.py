@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     from cashocs import _typing
 
 
-class TopologyOptimizationProblem(_optimization.OptimizationProblem):
+class DirichletTopologyOptimizationProblem(_optimization.OptimizationProblem):
     r"""A topology optimization problem.
 
     This class is used to define a topology optimization problem, and to solve
@@ -64,38 +64,39 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
     solver: topology_optimization_algorithm.TopologyOptimizationAlgorithm
 
     def __init__(  # pylint: disable=unused-argument
-        self,
-        state_forms: list[ufl.Form] | ufl.Form,
-        bcs_list: (
-            list[list[fenics.DirichletBC]]
-            | list[fenics.DirichletBC]
-            | fenics.DirichletBC
-        ),
-        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
-        states: list[fenics.Function] | fenics.Function,
-        adjoints: list[fenics.Function] | fenics.Function,
-        levelset_function: fenics.Function,
-        topological_derivative_neg: fenics.Function | ufl.Form,
-        topological_derivative_pos: fenics.Function | ufl.Form,
-        update_levelset: Callable,
-        volume_restriction: Union[float, tuple[float, float]] | None = None,
-        subdomains: fenics.MeshFunction | None=None,
-        config: io.Config | None = None,
-        riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
-        initial_guess: list[fenics.Function] | None = None,
-        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        gradient_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        desired_weights: list[float] | None = None,
-        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
-        pre_callback: Optional[Callable] = None,
-        post_callback: Optional[Callable] = None,
-        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
-        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+            self,
+            state_forms: list[ufl.Form] | ufl.Form,
+            bcs_list: (
+                    list[list[fenics.DirichletBC]]
+                    | list[fenics.DirichletBC]
+                    | fenics.DirichletBC
+            ),
+            cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+            states: list[fenics.Function] | fenics.Function,
+            adjoints: list[fenics.Function] | fenics.Function,
+            levelset_function: fenics.Function,
+            topological_derivative_neg: fenics.Function | ufl.Form,
+            topological_derivative_pos: fenics.Function | ufl.Form,
+            update_levelset: Callable,
+            volume_restriction: Union[float, tuple[float, float]] | None = None,
+            subdomains: fenics.MeshFunction | None = None,
+            config: io.Config | None = None,
+            riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
+            initial_guess: list[fenics.Function] | None = None,
+            ksp_options: Optional[
+                Union[_typing.KspOption, List[_typing.KspOption]]] = None,
+            adjoint_ksp_options: Optional[
+                Union[_typing.KspOption, List[_typing.KspOption]]
+            ] = None,
+            gradient_ksp_options: Optional[
+                Union[_typing.KspOption, List[_typing.KspOption]]
+            ] = None,
+            desired_weights: list[float] | None = None,
+            preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
+            pre_callback: Optional[Callable] = None,
+            post_callback: Optional[Callable] = None,
+            linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+            adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
     ) -> None:
         r"""Initializes the topology optimization problem.
 
@@ -193,11 +194,10 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         self.topological_derivative_neg: fenics.Function | ufl.Form = (
             topological_derivative_neg
         )
-        self.update_levelset: Callable = update_levelset
+        self.update_levelset_loc: Callable = update_levelset
         self.riesz_scalar_products = riesz_scalar_products
 
         self.is_topology_problem = True
-        self.update_levelset()
 
         self.topological_derivative_is_identical = self.config.getboolean(
             "TopologyOptimization", "topological_derivative_is_identical"
@@ -215,16 +215,21 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         self.mesh = self.levelset_function.function_space().mesh()
         self.dg0_space = fenics.FunctionSpace(self.mesh, "DG", 0)
 
-        ocp_config = copy.deepcopy(self.config)
-        ocp_config.set("Output", "verbose", "False")
-        ocp_config.set("Output", "save_txt", "False")
-        ocp_config.set("Output", "save_results", "False")
-        ocp_config.set("Output", "save_state", "False")
-        ocp_config.set("Output", "save_adjoint", "False")
-        ocp_config.set("Output", "save_gradient", "False")
-        ocp_config.set("OptimizationRoutine", "soft_exit", "True")
-        ocp_config.set("OptimizationRoutine", "rtol", "0.0")
-        ocp_config.set("OptimizationRoutine", "atol", "0.0")
+        self.ocp_config = copy.deepcopy(self.config)
+        self.ocp_config.set("Output", "verbose", "False")
+        self.ocp_config.set("Output", "save_txt", "False")
+        self.ocp_config.set("Output", "save_results", "False")
+        self.ocp_config.set("Output", "save_state", "False")
+        self.ocp_config.set("Output", "save_adjoint", "False")
+        self.ocp_config.set("Output", "save_gradient", "False")
+        self.ocp_config.set("OptimizationRoutine", "soft_exit", "True")
+        self.ocp_config.set("OptimizationRoutine", "rtol", "0.0")
+        self.ocp_config.set("OptimizationRoutine", "atol", "0.0")
+        self.initial_guess = initial_guess
+        self.ksp_options = ksp_options
+        self.asjoint_ksp_options = adjoint_ksp_options
+        self.desired_weights = desired_weights
+        self.linear_solver = linear_solver
         self._base_ocp = optimal_control_problem.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -232,13 +237,13 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             self.states,
             self.levelset_function,
             self.adjoints,
-            config=ocp_config,
+            config=self.ocp_config,
             riesz_scalar_products=self.riesz_scalar_products,
-            initial_guess=initial_guess,
-            ksp_options=ksp_options,
-            adjoint_ksp_options=adjoint_ksp_options,
-            desired_weights=desired_weights,
-            linear_solver=linear_solver,
+            initial_guess=self.initial_guess,
+            ksp_options=self.ksp_options,
+            adjoint_ksp_options=self.adjoint_ksp_options,
+            desired_weights=self.desired_weights,
+            linear_solver=self.linear_solver,
         )
         self._base_ocp.db.parameter_db.problem_type = "topology"
         self.db.function_db.control_spaces = (
@@ -253,6 +258,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         self.gradient_problem: _pde_problems.ControlGradientProblem = (
             self._base_ocp.gradient_problem
         )
+        self.update_levelset()
         self.reduced_cost_functional = self._base_ocp.reduced_cost_functional
 
         self.subdomains = subdomains
@@ -271,7 +277,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         raise NotImplementedError(
             "Gradient test is not implemented for topology optimization."
         )
-    
+
     def compute_fixed_dofs(self):
         if self.subdomains is not None:
             dofmap = self.levelset_function.function_space().dofmap()
@@ -282,13 +288,71 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             set_dof = set(self.fixed_dofs)
             self.fixed_dofs = (list(set_dof))
 
+    def update_levelset(self):
+        vertex_values_phi = self.levelset_function.compute_vertex_values()
+        c_to_f = self.mesh.topology()(self.mesh.topology().dim(), self.mesh.topology().dim() - 1)()
+        c_to_v = self.mesh.topology()(self.mesh.topology().dim(), self.mesh.topology().dim() - 2)()
+
+        boundaries_local = fenics.MeshFunction('size_t', self.mesh, dim=1)
+        subdomains_local = fenics.MeshFunction('size_t', self.mesh, dim=2)
+
+        c_to_v_reshaped = np.reshape(c_to_v, (self.mesh.num_cells(), 3))
+        vertex_values_cells = vertex_values_phi[c_to_v_reshaped]
+        vertex_values_cells_sign = np.sign(vertex_values_cells)
+        vertex_values_cells_sign_sum = np.sum(vertex_values_cells_sign, axis=1)
+        cell_ind = np.where(vertex_values_cells_sign_sum == 3)[0].tolist()
+
+        c_to_f_reshaped = np.reshape(c_to_f, (self.mesh.num_cells(), 3))
+        f_ind = c_to_f_reshaped[cell_ind]
+        f_ind_reshaped = np.reshape(f_ind, -1)
+        f_ind_reshaped_single = list(set(f_ind_reshaped))
+
+        subdomains_local.array()[cell_ind] = 6
+        boundaries_local.array()[f_ind_reshaped_single] = 6
+
+        bcs_dirichlet = _utils.create_dirichlet_bcs(self.states[0].function_space().sub(0), fenics.Constant((0., 0.)),
+                                                     boundaries_local, 6)
+        '''plot(subdomains_local)
+        pp.show()'''
+        # top.bcs_list = [bcs + bcs_dirichlet, bcs_smooth]
+        bcs_new = [self.bcs_list[0] + bcs_dirichlet]
+        
+        self._base_ocp = optimal_control_problem.OptimalControlProblem(
+            self.state_forms,
+            bcs_new,
+            self.cost_functional_list,
+            self.states,
+            self.levelset_function,
+            self.adjoints,
+            config=self.ocp_config,
+            riesz_scalar_products=self.riesz_scalar_products,
+            initial_guess=self.initial_guess,
+            ksp_options=self.ksp_options,
+            adjoint_ksp_options=self.adjoint_ksp_options,
+            desired_weights=self.desired_weights,
+            linear_solver=self.linear_solver,
+        )
+        self._base_ocp.db.parameter_db.problem_type = "topology"
+        self.db.function_db.control_spaces = (
+            self._base_ocp.db.function_db.control_spaces
+        )
+        self.db.function_db.controls = self._base_ocp.db.function_db.controls
+        self.form_handler: _forms.ControlFormHandler = self._base_ocp.form_handler
+        self.state_problem: _pde_problems.StateProblem = self._base_ocp.state_problem
+        self.adjoint_problem: _pde_problems.AdjointProblem = (
+            self._base_ocp.adjoint_problem
+        )
+        self.gradient_problem: _pde_problems.ControlGradientProblem = (
+            self._base_ocp.gradient_problem
+        )   
+    
     def solve(
-        self,
-        algorithm: str | None = None,
-        rtol: float | None = None,
-        atol: float | None = None,
-        max_iter: int | None = None,
-        angle_tol: float | None = None,
+            self,
+            algorithm: str | None = None,
+            rtol: float | None = None,
+            atol: float | None = None,
+            max_iter: int | None = None,
+            angle_tol: float | None = None,
     ) -> None:
         """Solves the optimization problem.
 
@@ -315,7 +379,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
 
         """
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
-        
+
         self.optimization_variable_abstractions = (
             topology_variable_abstractions.TopologyVariableAbstractions(self, self.db)
         )

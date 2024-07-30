@@ -3,30 +3,22 @@ from __future__ import annotations
 import abc
 import copy
 from typing import Callable, List, Optional, TYPE_CHECKING, Union
+from matplotlib import pyplot as plt
+from matplotlib import colors
+import numpy as np
+import mpi4py.MPI
 
 import fenics
-from matplotlib import colors
-import matplotlib.pyplot as pp
-import numpy as np
 
 try:
     import ufl_legacy as ufl
 except ImportError:
     import ufl
 
-from cashocs import _exceptions
-from cashocs import _optimization
 from cashocs import _utils
 from cashocs import io
 from cashocs._optimization import cost_functional
-from cashocs._optimization import line_search as ls
 from cashocs._optimization import topology_optimization
-from cashocs._optimization.optimal_control import optimal_control_problem
-from cashocs._optimization.topology_optimization import bisection
-from cashocs._optimization.topology_optimization import descent_topology_algorithm
-from cashocs._optimization.topology_optimization import topology_optimization_algorithm
-from cashocs._optimization.topology_optimization import topology_optimization_problem
-from cashocs._optimization.topology_optimization import topology_variable_abstractions
 
 if TYPE_CHECKING:
     from cashocs import _forms
@@ -309,6 +301,90 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
         self.cost_functional_form_deflation = _utils.enlist(
             self.cost_functional_form_initial
         )
+        
+        self.dx = fenics.Measure("dx", self.levelset_function.function_space().mesh())
+        self.characteristic_function_new = fenics.Function(self.dg0_space)
+
+        self.characteristic_function_list = []
+        self.levelset_function_list = []
+        self.characteristic_function_restart = []
+        self.levelset_function_list_restart = []
+        self.characteristic_function_list_final = []
+        self.levelset_function_list_final = []
+
+
+    def reset_levelsetfunction(self):
+        self.levelset_function.vector().vec().aypx(
+            0.0, self.levelset_function_init.vector().vec()
+        )
+        self.levelset_function.vector().apply("")
+
+    def save_functions(self, argument: Union[str, List[str]]):
+        arg_list = _utils.enlist(argument)
+
+        characteristic_function = fenics.Function(self.dg0_space)
+        _utils.interpolate_levelset_function_to_cells(
+            self.levelset_function, 1., 0., characteristic_function
+        )
+
+        levelset_function_temp = fenics.Function(
+            self.levelset_function.function_space()
+        )
+        levelset_function_temp.vector().vec().aypx(
+            0.0, self.levelset_function.vector().vec()
+        )
+        levelset_function_temp.vector().apply("")
+        
+        if 'solution' in arg_list:
+            self.characteristic_function_list.append(characteristic_function)
+            self.levelset_function_list.append(levelset_function_temp)
+        if 'restart' in arg_list:
+            self.levelset_function_list_restart.append(levelset_function_temp)
+            self.characteristic_function_restart.append(characteristic_function)
+        if 'final' in arg_list:
+            self.levelset_function_list_final.append(levelset_function_temp)
+            self.characteristic_function_list_final.append(characteristic_function)
+
+    def distance_shapes(self):
+        dist = []
+        for i in range(0, len(self.levelset_function_list_restart) - 1):
+            dist_loc = fenics.assemble(
+                fenics.inner(
+                    self.characteristic_function_restart[i] -
+                    self.characteristic_function_restart[-1],
+                    self.characteristic_function_restart[i] -
+                    self.characteristic_function_restart[-1]
+                )
+                * self.dx
+            )
+    
+            if dist_loc > 0.1 * self.gamma:
+                dist.append(True)
+            else:
+                dist.append(False)
+    
+        if all(flag == True for flag in dist):
+            new_shape = True
+        else:
+            new_shape = False
+            
+        return new_shape
+
+    def check_for_restart(self):
+        list_functional_values_bool = []
+        for i in range(1, len(self.cost_functional_form_deflation)):
+            val = self.cost_functional_form_deflation[i].evaluate()
+            if val < 1e-6:
+                list_functional_values_bool.append(True)
+            else:
+                list_functional_values_bool.append(False)
+
+        if all(flag == True for flag in list_functional_values_bool):
+            restart = False
+        else:
+            restart=True
+            
+        return restart
 
     def _solve_inner_problem(
         self,
@@ -331,11 +407,6 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
         """
         super()._solve_inner_problem(tol, inner_rtol, inner_atol)
 
-        self.levelset_function.vector().vec().aypx(
-            0.0, self.levelset_function_init.vector().vec()
-        )
-        self.levelset_function.vector().apply("")
-
         topology_optimization_problem_inner = (
             topology_optimization.TopologyOptimizationProblem(
                 self.state_forms,
@@ -346,7 +417,7 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
                 self.levelset_function,
                 self.topological_derivative_neg,
                 self.topological_derivative_pos,
-                self.update_levelset,
+                self.update_level_set_deflation,
                 volume_restriction=self.volume_restriction,
                 config=self.config,
                 riesz_scalar_products=self.riesz_scalar_products,
@@ -369,10 +440,7 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
             rtol=self.rtol, atol=atol, angle_tol=angle_tol
         )
 
-        topology_optimization_problem_inner.plot_shape()
-        pp.show()
-
-        topology_optimization_problem_temp = (
+        '''topology_optimization_problem_temp = (
             topology_optimization.TopologyOptimizationProblem(
                 self.state_forms,
                 self.bcs_list,
@@ -382,8 +450,8 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
                 self.levelset_function,
                 self.topological_derivative_neg,
                 self.topological_derivative_pos,
-                self.update_levelset_deflation,
-                self.volume_restriction,
+                self.update_levelset,
+                volume_restriction=self.volume_restriction,
                 config=self.config,
                 riesz_scalar_products=self.riesz_scalar_products,
                 initial_guess=self.initial_guess,
@@ -392,9 +460,16 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
                 preconditioner_forms=self.preconditioner_forms,
             )
         )
-        temp_problem.state_problem.has_solution = True
-        self.current_function_value = temp_problem.reduced_cost_functional.evaluate()
-
+        topology_optimization_problem_temp.state_problem.has_solution = True
+        self.current_function_value = \
+            topology_optimization_problem_temp.reduced_cost_functional.evaluate()'''
+        
+    def update_level_set_deflation(self):
+        self.update_levelset()
+        _utils.interpolate_levelset_function_to_cells(
+            self.levelset_function, 1., 0., self.characteristic_function_new
+        )
+        
     def solve(
         self,
         tol: float = 1e-2,
@@ -423,58 +498,92 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
 
         """
         self.tol = tol
+        self.gamma = gamma
+
+        self.reset_levelsetfunction()
+        
+        print('Iteration 0 of Deflation loop:')
 
         self._solve_inner_problem(tol, inner_rtol, inner_atol, angle_tol)
-
-        """characteristic_function = fenics.Function(self.dg0_space)
-        _utils.interpolate_levelset_function_to_cells(
-            self.levelset_function, 1., 0., characteristic_function
-        )
-
-        levelset_function_temp = fenics.Function(
-            self.levelset_function.function_space()
-        )
-        levelset_function_temp.vector().vec().aypx(
-            0.0, self.levelset_function_.vector().vec()
-        )
-        levelset_function_temp.vector().apply("")
-
-        characteristic_function_list = [characteristic_function]
-        levelset_function_list = [levelset_function_temp]
+        self.save_functions(['solution', 'restart', 'final'])
 
         num_defl = 0
         while num_defl < it_deflation:
 
-            characteristic_function_new = fenics.Function(self.dg0_space)
+            print('Iteration {it} of Deflation loop:'.format(it=num_defl+1))
 
-            for i in range(0, len(characteristic_function_list)):
+            self.characteristic_function_new = fenics.Function(self.dg0_space)
 
-                J_deflation = cost_functional.ScalarTrackingFunctional(
+            for i in range(0, len(self.characteristic_function_list)):
+
+                J_deflation = cost_functional.DeflationFunctional(
+                    gamma,
                     fenics.inner(
-                        characteristic_function_new - characteristic_function_list[i],
-                        characteristic_function_new - characteristic_function_list[i])
+                        self.characteristic_function_new - self.characteristic_function_list[i],
+                        self.characteristic_function_new - self.characteristic_function_list[i]) 
+                    * self.dx,
+                    (1 - 2 * self.characteristic_function_list[i]),
+                    delta
                 )
 
                 self.cost_functional_form_deflation.append(J_deflation)
 
+            self.reset_levelsetfunction()
             self._solve_inner_problem(tol, inner_rtol, inner_atol, angle_tol)
+            self.save_functions('solution')
 
-            characteristic_function = fenics.Function(self.dg0_space)
-            _utils.interpolate_levelset_function_to_cells(
-                self.levelset_function, 1., 0., characteristic_function
-            )
-
-            levelset_function_temp = fenics.Function(
-                self.levelset_function.function_space()
-            )
-            levelset_function_temp.vector().vec().aypx(
-                0.0, self.levelset_function_.vector().vec()
-            )
-            levelset_function_temp.vector().apply("")
-
-            characteristic_function_list.append(characteristic_function)
-            levelset_function_list.append(levelset_function_temp)
+            restart = self.check_for_restart()
 
             self.cost_functional_form_deflation = _utils.enlist(
                 self.cost_functional_form_initial
-            )"""
+            )
+
+            if restart:
+                print('Performing a Restart (At least one penalty function did '
+                      'not vanish)')
+                self._solve_inner_problem(tol, inner_rtol, inner_atol, angle_tol)
+
+            self.save_functions('restart')
+            distance = self.distance_shapes()
+            
+            if distance == True:
+                print('New local Minimizer found')
+                #self.extend_final_lists()
+                self.save_functions('final')
+            else:
+                print('Minimizer was already computed before')
+
+            num_defl += 1
+    
+    def plot_results(self):
+        rgbvals = np.array([[0, 107, 164], [255, 128, 14]]) / 255.0
+        cmap = colors.LinearSegmentedColormap.from_list(
+            "tab10_colorblind", rgbvals, N=256
+        )
+
+        for i in range(0, len(self.levelset_function_list_final)):
+            fenics.plot(self.levelset_function_list_final[i], vmin=-1e-10, vmax=1e-10,
+                 cmap=cmap)
+            plt.show()
+
+    def save_results(self):
+        result_dir = self.config.get("Output", "result_dir")
+        result_dir = result_dir.rstrip("/")
+
+        for i in range(0, len(self.levelset_function_list_final)):
+            result_dir_levelset = result_dir + "/levelset/levelset_{i}.xdmf".format(i=i)
+            result_dir_characteristic =  result_dir + "/characteristic/characteristic_{i}.xdmf".format(i=i)
+
+            file_levelset = fenics.XDMFFile(
+                mpi4py.MPI.COMM_WORLD,
+                result_dir_levelset
+            )
+            file_characteristic = fenics.XDMFFile(
+                mpi4py.MPI.COMM_WORLD,
+                result_dir_characteristic
+            )
+            file_levelset.write(self.levelset_function_list_final[i])
+            file_characteristic.write(self.characteristic_function_list_final[i])
+            
+            file_levelset.close()
+            file_characteristic.close()

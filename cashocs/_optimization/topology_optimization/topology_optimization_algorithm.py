@@ -22,6 +22,7 @@ from __future__ import annotations
 import abc
 from typing import Callable, cast, TYPE_CHECKING
 
+import cashocs
 import fenics
 import numpy as np
 
@@ -36,6 +37,8 @@ from cashocs import _pde_problems
 from cashocs import _utils
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization.topology_optimization import topology_optimization_problem
+from cashocs._utils import interpolate_levelset_function_to_cells
+from cashocs.nonlinear_solvers import linear_solve
 
 if TYPE_CHECKING:
     from cashocs._database import database
@@ -66,6 +69,13 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         super().__init__(db, optimization_problem, line_search)
 
         self.levelset_function: fenics.Function = optimization_problem.levelset_function
+        self.levelset_function_init = fenics.Function(
+            self.levelset_function.function_space()
+        )
+        self.levelset_function_init.vector().vec().aypx(
+            0.0, self.levelset_function.vector().vec()
+        )
+        self.levelset_function_init.vector().apply("")
         self.topological_derivative_neg = (
             optimization_problem.topological_derivative_neg
         )
@@ -102,6 +112,10 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
 
         self.projection = optimization_problem.projection
+        
+        self.fixed_dofs = optimization_problem.fixed_dofs
+        
+        self.dx = fenics.Measure("dx", self.mesh)
 
     def _generate_measure(self) -> fenics.Measure:
         """Generates the measure for projecting the topological derivative.
@@ -182,6 +196,11 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.fenics_matrix.ident_zeros()
         self.riesz_matrix = self.fenics_matrix.mat()
         self.b_tensor = fenics.PETScVector()
+            
+    def reset_levelset(self):
+        if len(self.fixed_dofs) > 0:
+            self.levelset_function.vector()[self.fixed_dofs] = \
+                self.levelset_function_init.vector()[self.fixed_dofs]
 
     @abc.abstractmethod
     def run(self) -> None:
@@ -292,17 +311,59 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             self._cashocs_problem.adjoint_problem.has_solution = False
         self._cashocs_problem.compute_adjoint_variables()
 
+        for i in range(0, len(self.optimization_problem.cost_functional_list)):
+                if hasattr(self.optimization_problem.cost_functional_list[i],
+                           'topological_derivative'):
+                    self.topological_derivative_pos += \
+                        self.optimization_problem.cost_functional_list[
+                            i].topological_derivative()
+                    self.topological_derivative_neg += \
+                        self.optimization_problem.cost_functional_list[
+                            i].topological_derivative()
+
         if not self.topological_derivative_is_identical:
             self.average_topological_derivative()
         else:
-            self.topological_derivative_vertex.vector().vec().aypx(
+            '''self.topological_derivative_vertex.vector().vec().aypx(
                 0.0,
                 fenics.project(self.topological_derivative_pos, self.cg1_space)
                 .vector()
                 .vec(),
             )
-            self.topological_derivative_vertex.vector().apply("")
+            self.topological_derivative_vertex.vector().apply("")'''
 
+            dg0_function = fenics.Function(self.dg0_space)
+            dg0_function.vector()[:] = fenics.project(
+                self.topological_derivative_pos, self.dg0_space
+            ).vector()[:]
+            _utils.interpolate_dg0_function_to_cg1(
+                dg0_function, self.topological_derivative_vertex
+            )
+
+            '''top = fenics.Function(self.levelset_function.function_space())
+            test = fenics.TestFunction(self.levelset_function.function_space())
+            indicator_omega = fenics.Function(self.dg0_space)
+            interpolate_levelset_function_to_cells(self.levelset_function, 1.0, 0.0,
+                                                   indicator_omega)
+            form_td = self.topological_derivative_neg * indicator_omega + self.topological_derivative_pos * (
+                    fenics.Constant(1.0) - indicator_omega
+            )
+            kappa = 0.025
+            left = top * test * self.dx + kappa * fenics.inner(fenics.grad(top),
+                                                               fenics.grad(
+                                                                   test)) * self.dx
+            right = form_td * test * self.dx
+            total = (
+                    top * test * self.dx - form_td * test * self.dx
+            )
+    
+            linear_solve(total, top, [])
+    
+            self.topological_derivative_vertex.vector().vec().aypx(
+                0.0, top.vector().vec(),
+            )
+            self.topological_derivative_vertex.vector().apply("")'''
+            
         self.project_topological_derivative()
 
         if self.normalize_topological_derivative:
@@ -386,6 +447,7 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
     def run(self) -> None:
         """Runs the optimization algorithm to solve the optimization problem."""
         self.normalize(self.levelset_function)
+        self.reset_levelset()
         self.stepsize = 1.0
         self._cashocs_problem.state_problem.has_solution = False
 
@@ -424,9 +486,11 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                 self.stepsize = float(np.minimum(1.5 * self.stepsize, 1.0))
             while True:
                 self.move_levelset(self.stepsize)
+                self.reset_levelset()
                 self.projection.project()
                 self.update_levelset()
                 self.normalize(self.levelset_function)
+                self.reset_levelset()
 
                 self._cashocs_problem.state_problem.has_solution = False
                 self.compute_state_variables()
@@ -438,7 +502,9 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                 cost_functional_new = (
                     self._cashocs_problem.reduced_cost_functional.evaluate()
                 )
+                # if cost_functional_new <= self.objective_value:
                 if cost_functional_new <= self.objective_value or self.iteration == 0:
+                # if cost_functional_new <= self.objective_value or self.ls > 4:
                     break
                 else:
                     self.stepsize *= 0.5

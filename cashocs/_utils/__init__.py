@@ -39,6 +39,7 @@ from cashocs._utils.helpers import optimization_algorithm_configuration
 from cashocs._utils.interpolations import interpolate_by_angle
 from cashocs._utils.interpolations import interpolate_by_volume
 from cashocs._utils.interpolations import interpolate_levelset_function_to_cells
+from cashocs._utils.interpolations import interpolate_dg0_function_to_cg1
 from cashocs._utils.linalg import assemble_and_solve_linear
 from cashocs._utils.linalg import assemble_petsc_system
 from cashocs._utils.linalg import Interpolator

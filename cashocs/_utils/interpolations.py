@@ -215,6 +215,30 @@ def interpolate_levelset_function_to_cells(
     )
 
 
+def interpolate_dg0_function_to_cg1(
+    cell_function: fenics.Function,
+    node_function: fenics.Function,
+) -> None:
+    """Averages a DG0 function and interpolates it into a CG1 space.
+
+    The averaging is weighted by the volume of the cells.
+
+    Args:
+        cell_function: The DG0 function.
+        node_function: The resulting piecewise continuous function.
+
+    """
+    function_space = node_function.function_space()
+    mesh = function_space.mesh()
+    dx = fenics.Measure("dx", mesh)
+
+    test = fenics.TestFunction(function_space)
+
+    arr = fenics.assemble(cell_function * test * dx)
+    vol = fenics.assemble(test * dx)
+    node_function.vector()[:] = arr[:] / vol[:]
+
+
 def interpolate_by_volume(
     form_neg: ufl_expr.Expr,
     form_pos: ufl_expr.Expr,

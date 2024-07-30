@@ -39,6 +39,7 @@ class LevelSetVolumeProjector:
         levelset_function: fenics.Function,
         volume_restriction: Union[float, tuple[float, float]] | None = None,
         db: database.Database | None = None,
+        fixed_dofs: list | None = None,
     ) -> None:
         """Initializes a class to project the levelset function.
 
@@ -100,6 +101,11 @@ class LevelSetVolumeProjector:
                 "TopologyOptimization", "tol_bisection"
             )
 
+        if fixed_dofs is not None:
+            self.fixed_dofs = fixed_dofs
+        else:
+            self.fixed_dofs = []
+
     def evaluate(self, iterate: float, target: float) -> float:
         """Computes the volume of a shape that is given by the level-set function.
 
@@ -127,6 +133,9 @@ class LevelSetVolumeProjector:
             0.0, self.levelset_function.vector().vec() + iterate
         )
         self.levelset_function_temp.vector().apply("")
+        if len(self.fixed_dofs) > 0:
+            self.levelset_function_temp.vector()[self.fixed_dofs] = \
+                self.levelset_function_temp.vector()[self.fixed_dofs] - iterate
         _utils.interpolate_levelset_function_to_cells(
             self.levelset_function_temp, 1.0, 0.0, self.indicator_omega
         )
@@ -184,5 +193,8 @@ class LevelSetVolumeProjector:
             0.0, self.levelset_function.vector().vec() + iterate
         )
         self.levelset_function.vector().apply("")
+        if len(self.fixed_dofs) > 0:
+            self.levelset_function.vector()[self.fixed_dofs] = \
+                self.levelset_function.vector()[self.fixed_dofs] - iterate
 
         return None
