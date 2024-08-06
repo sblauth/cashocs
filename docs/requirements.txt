@@ -1,7 +1,7 @@
 numpy>=1.22.2
 matplotlib
 scipy
-Sphinx==7.4.7
+Sphinx==8.0.2
 sphinx-argparse==0.5.2
 sphinx-copybutton==0.5.2
 meshio==5.3.5
