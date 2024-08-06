@@ -11,7 +11,7 @@ sphinx-design==0.6.1
 setuptools>=65.5.1
 pygments>=2.7.4
 typing_extensions
-myst-parser==3.0.1
+myst-parser==4.0.0
 jupytext==1.16.4
 sphinx-favicon==1.0.1
 matplotlib
