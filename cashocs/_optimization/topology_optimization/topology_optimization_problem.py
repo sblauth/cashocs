@@ -32,10 +32,10 @@ except ImportError:
     import ufl
 
 from cashocs import _exceptions
-from cashocs import _optimization
 from cashocs import _utils
 from cashocs import io
 from cashocs._optimization import line_search as ls
+from cashocs._optimization import optimization_problem
 from cashocs._optimization.optimal_control import optimal_control_problem
 from cashocs._optimization.topology_optimization import descent_topology_algorithm
 from cashocs._optimization.topology_optimization import topology_optimization_algorithm
@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from cashocs import _typing
 
 
-class TopologyOptimizationProblem(_optimization.OptimizationProblem):
+class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
     r"""A topology optimization problem.
 
     This class is used to define a topology optimization problem, and to solve
