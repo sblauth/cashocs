@@ -140,5 +140,6 @@ module = [
 	"h5py",
     "matplotlib.*",
     "scipy.*",
+    "cashocs_extensions.*",
 ]
 ignore_missing_imports = true
