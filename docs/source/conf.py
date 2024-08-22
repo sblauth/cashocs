@@ -79,6 +79,7 @@ autodoc_mock_imports = [
     "dolfin",
     "configparser",
     "h5py",
+    "cashocs_extensions",
 ]
 autodoc_typehints = "description"
 autoclass_content = "both"
