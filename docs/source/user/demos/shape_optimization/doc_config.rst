@@ -1027,48 +1027,6 @@ Finally, we have the parameter :ini:`remesh_iter` in which the user can specify 
 
 where :ini:`remesh_iter = 0` means that no automatic remeshing is performed (this is the default), and :ini:`remesh_iter = n` means that remeshing is performed after each `n` iterations. Note that to use this parameter and avoid unexpected results, it might be beneficial to the the lower and upper mesh quality tolerances to a low value, so that the "quality based remeshing" does not interfere with the "iteration based remeshing", but both can be used in combination.
 
-.. _config_shape_mesh_quality_constraints:
-
-Section MeshQualityConstraints
-------------------------------
-
-The parameter :ini:`min_angle` is used to define the threshold angle, i.e. the minimum (solid) angle which is feasible for the mesh. The default is given by
-
-.. code-block:: ini
-
-	min_angle = 0.0
-
-which ensures that the constraints are not active by default. Note that the initial mesh has to be feasible for the method to work, so if the minimum angle in the mesh is smaller than the :ini:`min_angle` specified in the configuration, cashocs will raise an exception. Note that the angle is specified in radian and **not** degree.
-
-To circumvent this problem for meshes with small angles (which could be used, e.g., to resolve boundary layers, the next parameter :ini:`feasible_angle_reduction_factor` is used. This parameter specifies, how much smaller the (solid) angles of the mesh are allowed to become relative to the value in the initial mesh. That means a value of :ini:`feasible_angle_reduction_factor = 0.25` ensures that no (solid) angle in a mesh element will become smaller than one quarter of the smallest angle of the element in the initial mesh. The default is given by
-
-.. code-block:: ini
-
-	feasible_angle_reduction_factor = 0.0
-
-which ensures that the constraints are not active by default.
-
-.. note::
-
-	If both the :ini:`feasible_angle_reduction_factor` and :ini:`min_angle` are given, cashocs uses the element-wise minimum of the two. In particular, this means that a strategy of using :ini:`feasible_angle_reduction_factor = 0.9999` and some value for :ini:`min_angle` can be used to constrain the (solid) angle to a specific value, wherever this is possible (and leave the angles that are below this threshold as they are).
-
-The parameter :ini:`tol` is used to define a tolerance for which constraints are treated as active or not. As we treat the constraints numerically, they can only be satisfied up to a certain tolerance, which the user can specify here. The default value of
-
-.. code-block:: ini
-
-	tol = 1e-2
-
-should work well in most situations. In some situations, the optimization could be faster with a tolerance of :ini:`tol = 1e-1` (but should never be larger) or more accurate when using, e.g., :ini:`tol = 1e-3` (lower values should most of the time not be necessary).
-
-The parameter :ini:`mode` can only be set to
-
-.. code-block:: ini
-
-	mode = approximate
-
-at the moment, which is also the default value. In the future, other options might be possible.
-
-
 .. _config_shape_output:
 
 Section Output
@@ -1450,24 +1408,6 @@ in the following.
       - determines if minimal or average quality is considered
     * - :ini:`remesh_iter`
       - When set to a value > 0, remeshing is performed every :ini:`remesh_iter` iterations.
-
-
-[MeshQualityConstraints]
-************************
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`min_angle = 0.0`
-      - The minimum feasible triangle / solid angle of the mesh cells in radian. This is constant for all cells. If this is positive, the constraints are used. If this is 0, no constraints are used.
-    * - :ini:`tol = 1e-2`
-      - The tolerance for the mesh quality constraints. If `abs(g(x)) < tol`, then the constraint is considered active
-    * - :ini:`mode = approximate`
-      - The mode for calculating the (shape) derivatives of the constraint functions. At the moment, only "approximate" is supported.
-    * - :ini:`feasible_angle_reduction_factor = 0.0`
-      - A factor in the interval [0,1) which sets the feasible reduction of the triangle / solid angles. This means, that each cell is only allowed to have angles larger than this times the initial minimum angle.
 
 [Output]
 ********
