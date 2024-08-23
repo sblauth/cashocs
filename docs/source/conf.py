@@ -24,7 +24,7 @@ jupytext_process.process()
 # -- Project information -----------------------------------------------------
 
 project = "cashocs"
-copyright = "2020-2024, Sebastian Blauth"
+copyright = "2020-2024, Fraunhofer ITWM and Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
