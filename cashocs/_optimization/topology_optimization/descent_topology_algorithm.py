@@ -76,8 +76,8 @@ class DescentTopologyAlgorithm(
 
         def pre_callback() -> None:
             self.projection.project()
-            self.update_levelset()
             self.normalize(self.levelset_function)
+            self.update_levelset()
 
         def post_callback() -> None:
             self.compute_gradient()

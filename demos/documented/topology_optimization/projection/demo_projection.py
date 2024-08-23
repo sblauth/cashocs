@@ -193,7 +193,7 @@ def update_level_set():
 
 vol_low = 0.5
 vol_up = 1.25
-vol = [vol_low, vol_up]
+vol = (vol_low, vol_up)
 
 # Now, we are able to define the
 # {py:class}`TopologyOptimizationProblem <cashocs.TopologyOptimizationProblem>`.
@@ -217,7 +217,7 @@ top = cashocs.TopologyOptimizationProblem(
 
 top.solve(algorithm="bfgs", rtol=0.0, atol=0.0, angle_tol=1.0, max_iter=100)
 
-# :::{note}
+# ::::{note}
 # In the case of an equality constraint for the volume of {math}`\Omega` we
 # have to exchange `vol` by a float describing the desired volume, in this
 # case we choose 1.0.
@@ -227,7 +227,7 @@ top.solve(algorithm="bfgs", rtol=0.0, atol=0.0, angle_tol=1.0, max_iter=100)
 #    F, bcs, J, u, v, psi, dJ_in, dJ_out, update_level_set, volume_restriction=vol, config=cfg
 # )
 # :::
-# :::
+# ::::
 
 # As before, we can visualize the result using the following code
 
