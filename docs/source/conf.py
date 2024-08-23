@@ -28,7 +28,7 @@ copyright = "2020-2024, Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
-release = "2.1.0-dev"
+release = "2.2.0-dev"
 
 
 # -- General configuration ---------------------------------------------------
@@ -79,6 +79,7 @@ autodoc_mock_imports = [
     "dolfin",
     "configparser",
     "h5py",
+    "cashocs_extensions",
 ]
 autodoc_typehints = "description"
 autoclass_content = "both"
@@ -98,6 +99,10 @@ exclude_patterns = ["_build"]
 favicons = [
     {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.jpg"},
     {"rel": "icon", "sizes": "32x32", "href": "favicon/favicon-32x32.jpg"},
+]
+
+suppress_warnings = [
+    "autosummary.import_cycle",
 ]
 
 # -- Options for HTML output -------------------------------------------------

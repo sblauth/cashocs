@@ -47,6 +47,8 @@ from cashocs._database import database
 from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
+    from cashocs_extensions import mesh_quality_constraints
+
     from cashocs import _typing
     from cashocs._optimization import line_search as ls
     from cashocs._optimization import optimization_algorithms
@@ -117,6 +119,7 @@ class OptimizationProblem(abc.ABC):
         ] = None,
         linear_solver: Optional[_utils.linalg.LinearSolver] = None,
         adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
     ) -> None:
         r"""Initializes self.
 
@@ -175,6 +178,10 @@ class OptimizationProblem(abc.ABC):
                 systems arising from the discretized PDE.
             adjoint_linear_solver: The linear solver (KSP) which is used to solve the
                 (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
 
         Notes:
             If one uses a single PDE constraint, the inputs can be the objects
@@ -212,6 +219,7 @@ class OptimizationProblem(abc.ABC):
             self.gradient_ksp_options,
             self.desired_weights,
             self.preconditioner_forms,
+            self.newton_linearizations,
         ) = self._parse_optional_inputs(
             initial_guess,
             ksp_options,
@@ -219,6 +227,7 @@ class OptimizationProblem(abc.ABC):
             gradient_ksp_options,
             desired_weights,
             preconditioner_forms,
+            newton_linearizations,
         )
 
         if initial_function_values is not None:
@@ -259,6 +268,7 @@ class OptimizationProblem(abc.ABC):
             self.general_form_handler.state_form_handler,
             self.initial_guess,
             linear_solver=self.linear_solver,
+            newton_linearizations=self.newton_linearizations,
         )
         self.adjoint_problem = _pde_problems.AdjointProblem(
             self.db,
@@ -266,6 +276,10 @@ class OptimizationProblem(abc.ABC):
             self.state_problem,
             linear_solver=self.adjoint_linear_solver,
         )
+        self.constraint_manager: mesh_quality_constraints.ConstraintManager | None = (
+            None
+        )
+
         self.output_manager = io.OutputManager(self.db)
 
     @abc.abstractmethod
@@ -326,12 +340,14 @@ class OptimizationProblem(abc.ABC):
         ],
         desired_weights: Optional[Union[List[float], float]],
         preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]],
+        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
     ) -> Tuple[
         Optional[List[fenics.Function]],
         List[_typing.KspOption],
         List[_typing.KspOption],
         Optional[List[_typing.KspOption]],
         Optional[List[float]],
+        List[Optional[ufl.Form]],
         List[Optional[ufl.Form]],
     ]:
         """Initializes the optional input parameters.
@@ -352,6 +368,10 @@ class OptimizationProblem(abc.ABC):
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
 
         """
         if initial_guess is None:
@@ -392,6 +412,13 @@ class OptimizationProblem(abc.ABC):
         else:
             parsed_preconditioner_forms = _utils.enlist(preconditioner_forms)
 
+        if newton_linearizations is None:
+            parsed_newton_linearizations: List[Optional[ufl.Form]] = []
+            for _ in range(self.state_dim):
+                parsed_newton_linearizations.append(None)
+        else:
+            parsed_newton_linearizations = _utils.enlist(newton_linearizations)
+
         return (
             parsed_initial_guess,
             parsed_ksp_options,
@@ -399,6 +426,7 @@ class OptimizationProblem(abc.ABC):
             parsed_gradient_ksp_options,
             parsed_desired_weights,
             parsed_preconditioner_forms,
+            parsed_newton_linearizations,
         )
 
     def compute_state_variables(self) -> None:

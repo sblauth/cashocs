@@ -31,7 +31,7 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _utils
-from cashocs.nonlinear_solvers import newton_solver
+from cashocs.nonlinear_solvers import snes
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -80,6 +80,15 @@ def _create_homogenized_bcs(
     return bcs_list_hom
 
 
+def _enlist_picard(
+    obj: Optional[List[Union[T, None]]], length: int
+) -> List[Union[T, None]]:
+    if obj is None:
+        return [None] * length
+    else:
+        return obj
+
+
 def picard_iteration(
     form_list: Union[List[ufl.form], ufl.Form],
     u_list: Union[List[fenics.Function], fenics.Function],
@@ -88,17 +97,13 @@ def picard_iteration(
     rtol: float = 1e-10,
     atol: float = 1e-10,
     verbose: bool = True,
-    inner_damped: bool = True,
-    inner_inexact: bool = True,
-    inner_verbose: bool = False,
     inner_max_iter: int = 25,
     ksp_options: Optional[List[_typing.KspOption]] = None,
     # pylint: disable=invalid-name
     A_tensors: Optional[List[fenics.PETScMatrix]] = None,
     b_tensors: Optional[List[fenics.PETScVector]] = None,
-    inner_is_linear: bool = False,
     preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
-    linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+    newton_linearizations: Optional[List[ufl.Form]] = None,
 ) -> None:
     """Solves a system of coupled PDEs via a Picard iteration.
 
@@ -111,12 +116,6 @@ def picard_iteration(
         atol: The absolute tolerance for the Picard iteration, default is 1e-10.
         verbose: Boolean flag, if ``True``, output is written to stdout, default is
             ``True``.
-        inner_damped: Boolean flag, if ``True``, the inner problems are solved with a
-            damped Newton method, default is ``True``
-        inner_inexact: Boolean flag, if ``True``, the inner problems are solved with an
-            inexact Newton method, default is ``True``
-        inner_verbose: Boolean flag, if ``True``, the inner problems write the history
-            to stdout, default is ``False``.
         inner_max_iter: Maximum number of iterations for the inner Newton solver;
             default is 25.
         ksp_options: List of options for the KSP objects.
@@ -124,13 +123,13 @@ def picard_iteration(
             equations.
         b_tensors: List of vectors for the left-hand sides of the inner (linearized)
             equations.
-        inner_is_linear: Boolean flag, if this is ``True``, all problems are actually
-            linear ones, and only a linear solver is used.
         preconditioner_forms: The list of forms for the preconditioner. The default
             is `None`, so that the preconditioner matrix is the same as the system
             matrix.
-        linear_solver: The linear solver (KSP) which is used to solve the linear
-            systems arising from the discretized PDE.
+        newton_linearizations: A list of UFL forms describing which (alternative)
+            linearizations should be used for the (nonlinear) equations when
+            solving them (with Newton's method). The default is `None`, so that the
+            Jacobian of the supplied state forms is used.
 
     """
     is_printing = verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0
@@ -138,7 +137,9 @@ def picard_iteration(
     u_list = _utils.enlist(u_list)
     bcs_list = _utils.check_and_enlist_bcs(bcs_list)
     bcs_list_hom = _create_homogenized_bcs(bcs_list)
-    preconditioner_form_list = _utils.enlist(preconditioner_forms)
+
+    preconditioner_form_list = _enlist_picard(preconditioner_forms, len(u_list))
+    newton_linearization_list = _enlist_picard(newton_linearizations, len(u_list))
 
     comm = u_list[0].function_space().mesh().mpi_comm()
 
@@ -180,22 +181,18 @@ def picard_iteration(
                 j, ksp_options, A_tensors, b_tensors
             )
 
-            newton_solver.newton_solve(
+            snes.snes_solve(
                 form_list[j],
                 u_list[j],
                 bcs_list[j],
+                derivative=newton_linearization_list[j],
+                petsc_options=ksp_option,
                 rtol=eta,
                 atol=atol * 1e-1,
                 max_iter=inner_max_iter,
-                damped=inner_damped,
-                inexact=inner_inexact,
-                verbose=inner_verbose,
-                ksp_options=ksp_option,
                 A_tensor=A_tensor,
                 b_tensor=b_tensor,
-                is_linear=inner_is_linear,
                 preconditioner_form=preconditioner_form_list[j],
-                linear_solver=linear_solver,
             )
 
     if is_printing:

@@ -16,7 +16,3 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 """Optimization routines."""
-
-from cashocs._optimization.optimization_problem import OptimizationProblem
-
-__all__ = ["OptimizationProblem"]

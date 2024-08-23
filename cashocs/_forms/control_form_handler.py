@@ -173,7 +173,7 @@ class ControlFormHandler(form_handler.FormHandler):
             x = fenics.as_backend_type(a[i].vector()).vec()
             y = fenics.as_backend_type(b[i].vector()).vec()
 
-            temp, _ = self.riesz_projection_matrices[i].getVecs()
+            temp = self.riesz_projection_matrices[i].createVecRight()
             self.riesz_projection_matrices[i].mult(x, temp)
             result += temp.dot(y)
 
@@ -191,6 +191,16 @@ class ControlFormHandler(form_handler.FormHandler):
             )
             for i in range(len(self.db.function_db.controls))
         ]
+
+    def apply_shape_bcs(self, function: fenics.Function) -> None:
+        """Applies the geometric boundary conditions / constraints to a function.
+
+        Args:
+            function: The function onto which the geometric constraints are imposed.
+                Must be a vector CG1 function.
+
+        """
+        pass
 
 
 class HessianFormHandler:

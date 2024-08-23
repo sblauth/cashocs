@@ -220,8 +220,8 @@ def test_extract_mesh_from_xdmf(dir_path, F, bcs, J, y, u, p, config_ocp):
     )
     mesh, _, _, _, _, _ = cashocs.import_mesh(f"{result_path}/test.xdmf")
 
-    assert mesh.num_vertices() == mesh_initial.num_vertices()
-    assert mesh.num_cells() == mesh_initial.num_cells()
+    assert mesh.num_entities_global(0) == mesh_initial.num_entities_global(0)
+    assert mesh.num_entities_global(2) == mesh_initial.num_entities_global(2)
 
     MPI.barrier(MPI.comm_world)
 

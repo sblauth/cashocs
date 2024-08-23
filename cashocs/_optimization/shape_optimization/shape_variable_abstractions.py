@@ -88,7 +88,13 @@ class ShapeVariableAbstractions(
         self.mesh_handler.revert_transformation()
 
     def update_optimization_variables(
-        self, search_direction: List[fenics.Function], stepsize: float, beta: float
+        self,
+        search_direction: List[fenics.Function],
+        stepsize: float,
+        beta: float,
+        active_idx: np.ndarray | None = None,
+        constraint_gradient: np.ndarray | None = None,
+        dropped_idx: np.ndarray | None = None,
     ) -> float:
         """Updates the optimization variables based on a line search.
 
@@ -97,6 +103,10 @@ class ShapeVariableAbstractions(
             stepsize: The current (trial) stepsize.
             beta: The parameter for the line search, which "halves" the stepsize if the
                 test was not successful.
+            active_idx: A boolean mask corresponding to the working set.
+            constraint_gradient: The gradient of (all) constraints.
+            dropped_idx: A boolean mask indicating which constraints have been recently
+                dropped from the working set.
 
         Returns:
             The stepsize which was found to be acceptable.

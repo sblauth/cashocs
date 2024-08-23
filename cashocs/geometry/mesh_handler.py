@@ -169,9 +169,10 @@ class _MeshHandler:
             self.mesh, self.mesh_quality_type, self.mesh_quality_measure
         )
 
-        check_mesh_quality_tolerance(
-            self.current_mesh_quality, self.mesh_quality_tol_upper
-        )
+        if not self.db.parameter_db.is_remeshed:
+            check_mesh_quality_tolerance(
+                self.current_mesh_quality, self.mesh_quality_tol_upper
+            )
 
         self.options_frobenius: _typing.KspOption = {
             "ksp_type": "preonly",
@@ -214,6 +215,9 @@ class _MeshHandler:
                 pathlib.Path(self.config.get("Mesh", "gmsh_file")).resolve().parent
             )
 
+        self._setup_remesh()
+
+    def _setup_remesh(self) -> None:
         self.gmsh_file: str = ""
         self.remesh_counter = 0
         if self.do_remesh and self.db.parameter_db.temp_dict:

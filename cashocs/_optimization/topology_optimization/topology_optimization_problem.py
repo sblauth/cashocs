@@ -32,10 +32,10 @@ except ImportError:
     import ufl
 
 from cashocs import _exceptions
-from cashocs import _optimization
 from cashocs import _utils
 from cashocs import io
 from cashocs._optimization import line_search as ls
+from cashocs._optimization import optimization_problem
 from cashocs._optimization.optimal_control import optimal_control_problem
 from cashocs._optimization.topology_optimization import bisection
 from cashocs._optimization.topology_optimization import descent_topology_algorithm
@@ -48,7 +48,7 @@ if TYPE_CHECKING:
     from cashocs import _typing
 
 
-class TopologyOptimizationProblem(_optimization.OptimizationProblem):
+class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
     r"""A topology optimization problem.
 
     This class is used to define a topology optimization problem, and to solve
@@ -95,6 +95,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         post_callback: Optional[Callable] = None,
         linear_solver: Optional[_utils.linalg.LinearSolver] = None,
         adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
     ) -> None:
         r"""Initializes the topology optimization problem.
 
@@ -161,6 +162,10 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 systems arising from the discretized PDE.
             adjoint_linear_solver: The linear solver (KSP) which is used to solve the
                 (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
 
         """
         super().__init__(
@@ -180,6 +185,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             post_callback=post_callback,
             linear_solver=linear_solver,
             adjoint_linear_solver=adjoint_linear_solver,
+            newton_linearizations=newton_linearizations,
         )
 
         self.db.parameter_db.problem_type = "topology"
@@ -201,7 +207,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         self.topological_derivative_is_identical = self.config.getboolean(
             "TopologyOptimization", "topological_derivative_is_identical"
         )
-        self.re_normalize_levelset = self.config.getboolean(
+        self.re_normalize_levelset: bool = self.config.getboolean(
             "TopologyOptimization", "re_normalize_levelset"
         )
         self.normalize_topological_derivative = self.config.getboolean(
@@ -236,8 +242,14 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
+            gradient_ksp_options=gradient_ksp_options,
             desired_weights=desired_weights,
+            preconditioner_forms=preconditioner_forms,
+            pre_callback=pre_callback,
+            post_callback=post_callback,
             linear_solver=linear_solver,
+            adjoint_linear_solver=adjoint_linear_solver,
+            newton_linearizations=newton_linearizations,
         )
         self._base_ocp.db.parameter_db.problem_type = "topology"
         self.db.function_db.control_spaces = (

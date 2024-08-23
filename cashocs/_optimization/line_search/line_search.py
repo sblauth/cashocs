@@ -26,9 +26,12 @@ import fenics
 import numpy as np
 from petsc4py import PETSc
 
+from cashocs import _loggers
 from cashocs import _utils
 
 if TYPE_CHECKING:
+    from scipy import sparse
+
     from cashocs import _typing
     from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
@@ -92,23 +95,38 @@ class LineSearch(abc.ABC):
         solver: optimization_algorithms.OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
+        active_idx: np.ndarray | None = None,
+        constraint_gradient: sparse.csr_matrix | None = None,
+        dropped_idx: np.ndarray | None = None,
     ) -> None:
         """Performs a line search for the new iterate.
 
         Notes:
             This is the function that should be called in the optimization algorithm,
             it consists of a call to ``self.search`` and ``self.post_line_search``
-            afterwards.
+            afterward.
 
         Args:
             solver: The optimization algorithm.
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates, whether the search direction
                 is (presumably) scaled.
+            active_idx: The list of active indices of the working set. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
+            constraint_gradient: The gradient of the constraints for the mesh quality.
+                Only needed for shape optimization with mesh quality constraints.
+                Default is `None`.
+            dropped_idx: The list of indicies for dropped constraints. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
 
         """
         deformation, is_remeshed = self.search(
-            solver, search_direction, has_curvature_info
+            solver,
+            search_direction,
+            has_curvature_info,
+            active_idx,
+            constraint_gradient,
+            dropped_idx,
         )
         if deformation is not None and self.config.getboolean(
             "ShapeGradient", "global_deformation"
@@ -122,9 +140,9 @@ class LineSearch(abc.ABC):
 
             transfer_matrix = cast(PETSc.Mat, transfer_matrix)
 
-            _, temp = transfer_matrix.getVecs()
-            transfer_matrix.mult(x, temp)
-            self.global_deformation_vector.axpy(1.0, temp)
+            transfer_matrix.multAdd(
+                x, self.global_deformation_vector, self.global_deformation_vector
+            )
             self.deformation_function.vector().apply("")
 
         self.post_line_search()
@@ -154,9 +172,17 @@ class LineSearch(abc.ABC):
         )
 
         if has_curvature_info:
+            _loggers.debug(
+                "Stepsize computation has curvature information. "
+                "Setting trial stepsize to 1.0."
+            )
             self.stepsize = 1.0
 
         if solver.is_restarted:
+            _loggers.debug(
+                "Solver has been restarted. "
+                "Using initial_stepsize from config as trial stepsize."
+            )
             self.stepsize = self.config.getfloat("LineSearch", "initial_stepsize")
 
         num_decreases = (
@@ -164,6 +190,11 @@ class LineSearch(abc.ABC):
                 search_direction, self.stepsize
             )
         )
+        if num_decreases > 0:
+            _loggers.debug(
+                "Stepsize is too large for the angle_change parameter in "
+                "section MeshQuality. Making the step smaller to be feasible."
+            )
         self.stepsize /= pow(self.beta_armijo, num_decreases)
 
         if self.safeguard_stepsize and solver.iteration == 0:
@@ -173,6 +204,9 @@ class LineSearch(abc.ABC):
             self.stepsize = float(
                 np.minimum(self.stepsize, 100.0 / (1.0 + search_direction_norm))
             )
+            _loggers.debug(
+                "Performed a safeguarding of the stepsize to avoid too large steps."
+            )
 
     @abc.abstractmethod
     def search(
@@ -180,6 +214,9 @@ class LineSearch(abc.ABC):
         solver: optimization_algorithms.OptimizationAlgorithm,
         search_direction: List[fenics.Function],
         has_curvature_info: bool,
+        active_idx: np.ndarray | None = None,
+        constraint_gradient: sparse.csr_matrix | None = None,
+        dropped_idx: np.ndarray | None = None,
     ) -> Tuple[Optional[fenics.Function], bool]:
         """Performs a line search.
 
@@ -188,6 +225,13 @@ class LineSearch(abc.ABC):
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates, whether the search direction
                 is (presumably) scaled.
+            active_idx: The list of active indices of the working set. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
+            constraint_gradient: The gradient of the constraints for the mesh quality.
+                Only needed for shape optimization with mesh quality constraints.
+                Default is `None`.
+            dropped_idx: The list of indicies for dropped constraints. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
 
         Returns:
             The accepted deformation or None, in case the deformation was not

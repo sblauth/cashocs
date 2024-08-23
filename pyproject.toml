@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cashocs"
-version = "2.1.0-dev"
+version = "2.2.0-dev"
 description = "Computational Adjoint-Based Shape Optimization and Optimal Control Software"
 readme = "README.rst"
 requires-python = ">=3.8"
@@ -38,6 +38,7 @@ classifiers = [
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3 :: Only",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Operating System :: OS Independent"
@@ -45,9 +46,9 @@ classifiers = [
 dependencies = [
 	"meshio >= 4.1.0",
 	"numpy",
+        "scipy",
 	"typing_extensions",
         "matplotlib",
-        "scipy"
 ]
 
 [project.urls]
@@ -139,5 +140,6 @@ module = [
 	"h5py",
     "matplotlib.*",
     "scipy.*",
+    "cashocs_extensions.*",
 ]
 ignore_missing_imports = true

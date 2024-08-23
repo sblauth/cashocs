@@ -47,6 +47,13 @@ from cashocs._optimization import verification
 from cashocs._optimization.shape_optimization import shape_variable_abstractions
 from cashocs.geometry import mesh_testing
 
+try:
+    from cashocs_extensions import mesh_quality_constraints
+
+    has_cashocs_extensions = True
+except ImportError:
+    has_cashocs_extensions = False
+
 if TYPE_CHECKING:
     from cashocs import _typing
 
@@ -100,6 +107,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         post_callback: Optional[Callable] = None,
         linear_solver: Optional[_utils.linalg.LinearSolver] = None,
         adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
     ) -> None:
         """Initializes self.
 
@@ -166,6 +174,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 systems arising from the discretized PDE.
             adjoint_linear_solver: The linear solver (KSP) which is used to solve the
                 (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
 
         """
         super().__init__(
@@ -187,6 +199,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             post_callback=post_callback,
             linear_solver=linear_solver,
             adjoint_linear_solver=adjoint_linear_solver,
+            newton_linearizations=newton_linearizations,
         )
 
         if shape_scalar_product is None:
@@ -260,9 +273,25 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self.db, self.form_handler, self.state_problem
         )
 
-        self.optimization_variable_abstractions = (
-            shape_variable_abstractions.ShapeVariableAbstractions(self, self.db)
-        )
+        if has_cashocs_extensions:
+            self.constraint_manager: mesh_quality_constraints.ConstraintManager = (
+                mesh_quality_constraints.ConstraintManager(
+                    self.config,
+                    self.mesh_handler.mesh,
+                    self.boundaries,
+                    self.db.function_db.control_spaces[0],
+                )
+            )
+            self.optimization_variable_abstractions = (
+                mesh_quality_constraints.ConstrainedShapeVariableAbstractions(
+                    self, self.db, self.constraint_manager
+                )
+            )
+        else:
+            self.constraint_manager = None
+            self.optimization_variable_abstractions = (
+                shape_variable_abstractions.ShapeVariableAbstractions(self, self.db)
+            )
 
         if bool(desired_weights is not None):
             self._scale_cost_functional()
@@ -285,6 +314,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 preconditioner_forms=preconditioner_forms,
                 pre_callback=pre_callback,
                 post_callback=post_callback,
+                linear_solver=linear_solver,
+                adjoint_linear_solver=adjoint_linear_solver,
+                newton_linearizations=newton_linearizations,
             )
 
     @__init__.register(CallableFunction)

@@ -23,8 +23,10 @@ import copy
 from typing import List, Optional, Tuple, TYPE_CHECKING, Union
 
 import fenics
+from mpi4py import MPI
 import numpy as np
 from petsc4py import PETSc
+from scipy import sparse
 
 try:
     import ufl_legacy as ufl
@@ -36,8 +38,6 @@ from cashocs import _loggers
 from cashocs._utils import forms as forms_module
 
 if TYPE_CHECKING:
-    from mpi4py import MPI
-
     from cashocs import _typing
 
 iterative_ksp_options: _typing.KspOption = {
@@ -180,7 +180,7 @@ def assemble_petsc_system(
 
 
 def setup_petsc_options(
-    ksps: List[PETSc.KSP], ksp_options: List[_typing.KspOption]
+    objs: List[PETSc.KSP | PETSc.SNES], ksp_options: List[_typing.KspOption]
 ) -> None:
     """Sets up an (iterative) linear solver.
 
@@ -188,22 +188,22 @@ def setup_petsc_options(
     to the PETSc KSP objects. Here, options[i] is applied to ksps[i].
 
     Args:
-        ksps: A list of PETSc KSP objects (linear solvers) to which the (command line)
+        objs: A list of PETSc objects (e.g. linear solvers) to which the (command line)
             options are applied to.
-        ksp_options: A list of command line options that specify the iterative solver
+        ksp_options: A list of command line options that specify the solver
             from PETSc.
 
     """
     fenics.PETScOptions.clear()
     opts = PETSc.Options()
 
-    for i in range(len(ksps)):
+    for i in range(len(objs)):
         opts.clear()
 
         for key, value in ksp_options[i].items():
             opts.setValue(key, value)
 
-        ksps[i].setFromOptions()
+        objs[i].setFromOptions()
 
 
 def setup_fieldsplit_preconditioner(
@@ -232,17 +232,49 @@ def setup_fieldsplit_preconditioner(
                     "problem to be solved is not a mixed one.",
                 )
 
-            pc = ksp.getPC()
-            pc.setType(PETSc.PC.Type.FIELDSPLIT)
-            idx = []
-            name = []
-            for i in range(function_space.num_sub_spaces()):
-                idx_i = PETSc.IS().createGeneral(function_space.sub(i).dofmap().dofs())
-                idx.append(idx_i)
-                name.append(f"{i:d}")
-            idx_tuples = zip(name, idx)
+            if not any(key.endswith("_fields") for key in options.keys()):
+                pc = ksp.getPC()
+                pc.setType(PETSc.PC.Type.FIELDSPLIT)
+                idx = []
+                name = []
+                for i in range(function_space.num_sub_spaces()):
+                    idx_i = PETSc.IS().createGeneral(
+                        function_space.sub(i).dofmap().dofs()
+                    )
+                    idx.append(idx_i)
+                    name.append(f"{i:d}")
+                idx_tuples = zip(name, idx)
 
-            pc.setFieldSplitIS(*idx_tuples)
+                pc.setFieldSplitIS(*idx_tuples)
+            else:
+                dof_total = function_space.dofmap().dofs()
+                offset = np.min(dof_total)
+
+                num_sub_spaces = function_space.num_sub_spaces()
+                dof_list = [
+                    np.array(function_space.sub(i).dofmap().dofs())
+                    for i in range(num_sub_spaces)
+                ]
+
+                section = PETSc.Section().create()
+                section.setNumFields(num_sub_spaces)
+
+                for i in range(num_sub_spaces):
+                    section.setFieldName(i, f"{i:d}")
+                    section.setFieldComponents(i, 1)
+                section.setChart(0, len(dof_total))
+                for field_idx, dofs in enumerate(dof_list):
+                    for i in dofs:
+                        section.setDof(i - offset, 1)
+                        section.setFieldDof(i - offset, field_idx, 1)
+                section.setUp()
+
+                dm = PETSc.DMShell().create()
+                dm.setDefaultSection(section)
+                dm.setUp()
+
+                ksp.setDM(dm)
+                ksp.setDMActive(False)
 
 
 def _initialize_comm(comm: Optional[MPI.Comm] = None) -> MPI.Comm:
@@ -331,6 +363,10 @@ def solve_linear_problem(
     linear_solver: Optional[LinearSolver] = None,
 ) -> PETSc.Vec:
     """Solves a finite dimensional linear problem.
+
+    An overview over possible command line options for the PETSc KSP object can
+    be found at `<https://petsc.org/release/manualpages/KSP/>`_ and options for the
+    preconditioners can be found at `<https://petsc.org/release/manualpages/PC/>`_.
 
     Args:
         A: The PETSc matrix corresponding to the left-hand side of the problem. If
@@ -482,10 +518,10 @@ class LinearSolver:
         A = setup_matrix_and_preconditioner(ksp, A, P)
 
         if b is None:
-            return A.getVecs()[0]
+            return A.createVecRight()
 
         if fun is None:
-            x, _ = A.getVecs()
+            x = A.createVecRight()
         else:
             x = fun.vector().vec()
 
@@ -494,10 +530,7 @@ class LinearSolver:
         setup_fieldsplit_preconditioner(fun, ksp, options)
         setup_petsc_options([ksp], [options])
 
-        if rtol is not None:
-            ksp.rtol = rtol
-        if atol is not None:
-            ksp.atol = atol
+        ksp.setTolerances(rtol=rtol, atol=atol)
 
         ksp.solve(b, x)
 
@@ -602,9 +635,59 @@ class Interpolator:
         """
         v = fenics.Function(self.target_space)
         x = fenics.as_backend_type(u.vector()).vec()
-        _, temp = self.transfer_matrix.getVecs()
-        self.transfer_matrix.mult(x, temp)
-        v.vector().vec().aypx(0.0, temp)
+        self.transfer_matrix.mult(x, v.vector().vec())
         v.vector().apply("")
 
         return v
+
+
+def sparse2scipy(
+    csr: tuple[np.ndarray, np.ndarray, np.ndarray], shape: tuple[int, int] | None = None
+) -> sparse.csr_matrix:
+    """Converts a sparse matrix representation to a sparse scipy matrix.
+
+    Args:
+        csr: The tuple making up the CSR matrix: `rows, cols, vals`.
+        shape: The shape of the sparse matrix.
+
+    Returns:
+        The corresponding sparse scipy csr matrix.
+
+    """
+    rows = csr[0]
+    cols = csr[1]
+    vals = csr[2]
+    matrix = sparse.csr_matrix((vals, (rows, cols)), shape=shape)
+    return matrix
+
+
+def scipy2petsc(
+    scipy_matrix: sparse.csr_matrix,
+    comm: MPI.Comm,
+    local_size: int | None = None,
+) -> PETSc.Mat:
+    """Converts a sparse scipy matrix to a (sparse) PETSc matrix.
+
+    Args:
+        scipy_matrix: The sparse scipy matrix
+        comm: The MPI communicator used for distributing the mesh
+        local_size: The local size (number of rows) of the matrix, different for
+            each process. If this is `None` (the default), then PETSc.DECIDE is used.
+
+    Returns:
+        The corresponding sparse PETSc matrix.
+
+    """
+    shape = scipy_matrix.shape
+
+    no_rows_total = comm.allreduce(shape[0], op=MPI.SUM)
+    if local_size is None:
+        local_size = PETSc.DECIDE
+
+    petsc_matrix = PETSc.Mat().createAIJ(
+        comm=comm,
+        size=((shape[0], no_rows_total), (local_size, shape[1])),
+        csr=(scipy_matrix.indptr, scipy_matrix.indices, scipy_matrix.data),
+    )
+
+    return petsc_matrix

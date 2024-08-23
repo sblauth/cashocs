@@ -27,7 +27,7 @@ jobs:
         rm -R /home/mambauser/cashocs
 
     - name: Checkout repository
-      uses: actions/checkout@v4.1.1 
+      uses: actions/checkout@v4.1.7 
 
     - name: Install cashocs
       shell: bash

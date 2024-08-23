@@ -301,8 +301,7 @@ def test_shape_derivative_constrained():
     assert np.allclose(exact_sd_func, cashocs_sd_func)
 
 
-def test_shape_gradient(config_sop, geometry, rng):
-    mesh = geometry.mesh
+def test_shape_gradient(config_sop, rng):
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config_sop)
@@ -335,58 +334,18 @@ def test_shape_gd():
     assert sop.solver.relative_norm < sop.solver.rtol
 
 
-def test_shape_cg_fr():
+@pytest.mark.parametrize(
+    "method, expected_iterations",
+    [("FR", 21), ("PR", 16), ("HS", 18), ("DY", 18), ("HZ", 18)],
+)
+def test_shape_cg(method, expected_iterations):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("AlgoCG", "cg_method", "FR")
+    config.set("AlgoCG", "cg_method", method)
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=21)
-    assert sop.solver.relative_norm < sop.solver.rtol
-
-
-def test_shape_cg_pr():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("AlgoCG", "cg_method", "PR")
-
-    mesh.coordinates()[:, :] = initial_coordinates
-    mesh.bounding_box_tree().build(mesh)
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=16)
-    assert sop.solver.relative_norm < sop.solver.rtol
-
-
-def test_shape_cg_hs():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("AlgoCG", "cg_method", "HS")
-
-    mesh.coordinates()[:, :] = initial_coordinates
-    mesh.bounding_box_tree().build(mesh)
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=18)
-    assert sop.solver.relative_norm < sop.solver.rtol
-
-
-def test_shape_cg_dy():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("AlgoCG", "cg_method", "DY")
-
-    mesh.coordinates()[:, :] = initial_coordinates
-    mesh.bounding_box_tree().build(mesh)
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=18)
-    assert sop.solver.relative_norm < sop.solver.rtol
-
-
-def test_shape_cg_hz():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("AlgoCG", "cg_method", "HZ")
-
-    mesh.coordinates()[:, :] = initial_coordinates
-    mesh.bounding_box_tree().build(mesh)
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=18)
+    sop.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=expected_iterations)
     assert sop.solver.relative_norm < sop.solver.rtol
 
 
