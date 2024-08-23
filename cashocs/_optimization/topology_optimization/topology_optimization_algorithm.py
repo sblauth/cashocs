@@ -425,8 +425,8 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
             while True:
                 self.move_levelset(self.stepsize)
                 self.projection.project()
-                self.update_levelset()
                 self.normalize(self.levelset_function)
+                self.update_levelset()
 
                 self._cashocs_problem.state_problem.has_solution = False
                 self.compute_state_variables()
