@@ -524,6 +524,14 @@ class Config(ConfigParser):
                 "topological_derivative_is_identical": {
                     "type": "bool",
                 },
+                "tol_bisection": {
+                    "type": "float",
+                    "attributes": ["non_negative"],
+                },
+                "max_iter_bisection": {
+                    "type": "int",
+                    "attributes": ["non_negative"],
+                },
             },
             "Output": {
                 "verbose": {
@@ -698,6 +706,8 @@ interpolation_scheme = volume
 normalize_topological_derivative = False
 re_normalize_levelset = False
 topological_derivative_is_identical = False
+tol_bisection = 1e-4
+max_iter_bisection = 100
 
 [Output]
 save_results = True

@@ -101,6 +101,8 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
 
         self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
 
+        self.projection = optimization_problem.projection
+
     def _generate_measure(self) -> fenics.Measure:
         """Generates the measure for projecting the topological derivative.
 
@@ -422,6 +424,9 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                 self.stepsize = float(np.minimum(1.5 * self.stepsize, 1.0))
             while True:
                 self.move_levelset(self.stepsize)
+                self.projection.project()
+                self.normalize(self.levelset_function)
+                self.update_levelset()
 
                 self._cashocs_problem.state_problem.has_solution = False
                 self.compute_state_variables()
