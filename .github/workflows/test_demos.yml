@@ -28,7 +28,6 @@ jobs:
           meshio>=5.3
           pytest
           gmsh>=4.8
-          scipy
           matplotlib
           scipy
           scotch<7
@@ -68,7 +67,6 @@ jobs:
           meshio>=5.3
           pytest
           gmsh>=4.8
-          scipy
           mpich
           matplotlib
           scipy
