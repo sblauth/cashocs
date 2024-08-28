@@ -7,8 +7,8 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-2.2.0 (in development)
-----------------------
+2.2.0 (August 28, 2024)
+-----------------------
 
 * Add a wrapper for PETSc's SNES solver for nonlinear equations. This is used internally in cashocs whenever possible. For the solution of the state system, our own Newton solver is the default for backwards compatibility. Users can use the new SNES backend by specifying :ini:`backend = petsc` in the Section StateSystem of the configuration.
 
