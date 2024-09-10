@@ -6,6 +6,9 @@ here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
+2.3.0 (in development)
+----------------------
+
 
 2.2.0 (August 28, 2024)
 -----------------------
@@ -16,8 +19,6 @@ of the maintenance releases, please take a look at
 
 * Increase the precision of the Gmsh output from cashocs
 
-* Add mesh quality constraints for shape optimization: These ensure that the angles of the (solid) angles of triangles and tetrahedrons cannot fall below a specified threshold.
-
 * New configuration file parameters:
 
   * Section StateSystem
@@ -27,10 +28,6 @@ of the maintenance releases, please take a look at
   * Section ShapeGradient
 
     * :ini:`test_for_intersections` is used to disable the (post mesh movement) check for intersections of the mesh, which ensures physically reasonable designs. This should not be set to `False`.
-
-  * Section MeshQualityConstraints
-
-    * This section includes parameters for the new mesh quality constraints for shape optimization. These are described in the documentation at `<https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/doc_config/#section-meshqualityconstraints>`_
 
 
 
