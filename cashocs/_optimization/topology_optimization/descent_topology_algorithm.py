@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -27,6 +27,7 @@ from cashocs._optimization.topology_optimization import topology_optimization_al
 if TYPE_CHECKING:
     from cashocs._database import database
     from cashocs._optimization import line_search as ls
+    from cashocs._optimization.topology_optimization import bisection
     from cashocs._optimization.topology_optimization import (
         topology_optimization_problem,
     )
@@ -40,6 +41,8 @@ class DescentTopologyAlgorithm(
     This can use classical solution algorithms implemented in cashocs for topology
     optimization
     """
+
+    projection: bisection.LevelSetVolumeProjector
 
     def __init__(
         self,
@@ -75,6 +78,7 @@ class DescentTopologyAlgorithm(
         self.loop_restart = False
 
         def pre_callback() -> None:
+            self.projection.project()
             self.normalize(self.levelset_function)
             self.update_levelset()
 

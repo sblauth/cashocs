@@ -11,6 +11,7 @@ be treated with cashocs.
    demo_poisson_clover.md
    demo_cantilever.md
    demo_pipe_bend.md
+   demo_projection.md
 
 
 .. note::

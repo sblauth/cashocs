@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -47,11 +47,12 @@ from cashocs._database import database
 from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
+    from cashocs_extensions import mesh_quality_constraints
+
     from cashocs import _typing
     from cashocs._optimization import line_search as ls
     from cashocs._optimization import optimization_algorithms
     from cashocs._optimization import optimization_variable_abstractions as ova
-    from cashocs._optimization.shape_optimization import mesh_constraint_manager
     from cashocs._optimization.topology_optimization import (
         topology_optimization_algorithm,
     )
@@ -275,7 +276,9 @@ class OptimizationProblem(abc.ABC):
             self.state_problem,
             linear_solver=self.adjoint_linear_solver,
         )
-        self.constraint_manager: mesh_constraint_manager.ConstraintManager | None = None
+        self.constraint_manager: mesh_quality_constraints.ConstraintManager | None = (
+            None
+        )
 
         self.output_manager = io.OutputManager(self.db)
 

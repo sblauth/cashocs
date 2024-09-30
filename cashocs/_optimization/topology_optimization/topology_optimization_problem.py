@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -32,11 +32,12 @@ except ImportError:
     import ufl
 
 from cashocs import _exceptions
-from cashocs import _optimization
 from cashocs import _utils
 from cashocs import io
 from cashocs._optimization import line_search as ls
+from cashocs._optimization import optimization_problem
 from cashocs._optimization.optimal_control import optimal_control_problem
+from cashocs._optimization.topology_optimization import bisection
 from cashocs._optimization.topology_optimization import descent_topology_algorithm
 from cashocs._optimization.topology_optimization import topology_optimization_algorithm
 from cashocs._optimization.topology_optimization import topology_variable_abstractions
@@ -47,7 +48,7 @@ if TYPE_CHECKING:
     from cashocs import _typing
 
 
-class TopologyOptimizationProblem(_optimization.OptimizationProblem):
+class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
     r"""A topology optimization problem.
 
     This class is used to define a topology optimization problem, and to solve
@@ -77,6 +78,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         topological_derivative_neg: fenics.Function | ufl.Form,
         topological_derivative_pos: fenics.Function | ufl.Form,
         update_levelset: Callable,
+        volume_restriction: Union[float, tuple[float, float]] | None = None,
         config: io.Config | None = None,
         riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
         initial_guess: list[fenics.Function] | None = None,
@@ -117,6 +119,9 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 where the levelset function is positive.
             update_levelset: A python function (without arguments) which is called to
                 update the coefficients etc. when the levelset function is changed.
+            volume_restriction: A volume restriction for the optimization problem.
+                A single floats describes an equality constraint and a tuple of floats
+                an inequality constraint.
             config: The config file for the problem, generated via
                 :py:func:`cashocs.create_config`. Alternatively, this can also be
                 ``None``, in which case the default configurations are used, except for
@@ -260,6 +265,10 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             self._base_ocp.gradient_problem
         )
         self.reduced_cost_functional = self._base_ocp.reduced_cost_functional
+
+        self.projection = bisection.LevelSetVolumeProjector(
+            self.levelset_function, volume_restriction, self.db
+        )
 
     def _erase_pde_memory(self) -> None:  # pylint: disable=useless-parent-delegation
         super()._erase_pde_memory()

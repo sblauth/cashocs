@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -44,9 +44,15 @@ from cashocs._optimization import line_search as ls
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
 from cashocs._optimization import verification
-from cashocs._optimization.shape_optimization import mesh_constraint_manager
 from cashocs._optimization.shape_optimization import shape_variable_abstractions
 from cashocs.geometry import mesh_testing
+
+try:
+    from cashocs_extensions import mesh_quality_constraints
+
+    has_cashocs_extensions = True
+except ImportError:
+    has_cashocs_extensions = False
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -267,20 +273,25 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             self.db, self.form_handler, self.state_problem
         )
 
-        self.constraint_manager: mesh_constraint_manager.ConstraintManager = (
-            mesh_constraint_manager.ConstraintManager(
-                self.config,
-                self.mesh_handler.mesh,
-                self.boundaries,
-                self.db.function_db.control_spaces[0],
+        if has_cashocs_extensions:
+            self.constraint_manager: mesh_quality_constraints.ConstraintManager = (
+                mesh_quality_constraints.ConstraintManager(
+                    self.config,
+                    self.mesh_handler.mesh,
+                    self.boundaries,
+                    self.db.function_db.control_spaces[0],
+                )
             )
-        )
-
-        self.optimization_variable_abstractions = (
-            shape_variable_abstractions.ShapeVariableAbstractions(
-                self, self.db, self.constraint_manager
+            self.optimization_variable_abstractions = (
+                mesh_quality_constraints.ConstrainedShapeVariableAbstractions(
+                    self, self.db, self.constraint_manager
+                )
             )
-        )
+        else:
+            self.constraint_manager = None
+            self.optimization_variable_abstractions = (
+                shape_variable_abstractions.ShapeVariableAbstractions(self, self.db)
+            )
 
         if bool(desired_weights is not None):
             self._scale_cost_functional()

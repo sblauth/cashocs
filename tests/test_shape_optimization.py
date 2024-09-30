@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -332,52 +332,6 @@ def test_shape_gd():
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     sop.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=32)
     assert sop.solver.relative_norm < sop.solver.rtol
-
-
-@pytest.mark.parametrize(
-    "algorithm, expected_iterations",
-    [("gd", 26), ("ncg", 23), ("bfgs", 28)],
-)
-def test_mesh_quality_constraints_min_angle(algorithm, expected_iterations):
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
-    min_angle = 2 * np.pi * 35.0 / 360.0
-    config.set("MeshQualityConstraints", "min_angle", f"{min_angle}")
-    config.set("MeshQualityConstraints", "tol", "1e-2")
-
-    mesh.coordinates()[:, :] = initial_coordinates
-    mesh.bounding_box_tree().build(mesh)
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm=algorithm, rtol=1e-2, atol=0.0, max_iter=expected_iterations)
-    assert sop.solver.relative_norm < sop.solver.rtol
-
-    mesh_quality = cashocs.compute_mesh_quality(
-        mesh, quality_type="min", quality_measure="skewness"
-    )
-    assert mesh_quality > 0.5733
-
-
-@pytest.mark.parametrize(
-    "algorithm, expected_iterations",
-    [("gd", 46), ("ncg", 51), ("bfgs", 56)],
-)
-def test_mesh_quality_constraints_reduction_factor(algorithm, expected_iterations):
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
-    config.set("MeshQualityConstraints", "tol", "1e-2")
-    config.set("MeshQualityConstraints", "feasible_angle_reduction_factor", "0.66")
-    config.set("AlgoCG", "cg_method", "PR")
-    # config.set("AlgoCG", "cg_periodic_restart", "True")
-    # config.set("AlgoCG", "cg_periodic_its", "10")
-
-    mesh.coordinates()[:, :] = initial_coordinates
-    mesh.bounding_box_tree().build(mesh)
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    sop.solve(algorithm=algorithm, rtol=1e-2, atol=0.0, max_iter=expected_iterations)
-    assert sop.solver.relative_norm < sop.solver.rtol
-
-    mesh_quality = cashocs.compute_mesh_quality(
-        mesh, quality_type="min", quality_measure="skewness"
-    )
-    assert mesh_quality > 0.434
 
 
 @pytest.mark.parametrize(

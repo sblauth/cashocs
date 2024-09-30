@@ -24,11 +24,11 @@ jupytext_process.process()
 # -- Project information -----------------------------------------------------
 
 project = "cashocs"
-copyright = "2020-2024, Sebastian Blauth"
+copyright = "2020-2024, Fraunhofer ITWM and Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
-release = "2.2.0-dev"
+release = "2.3.0-dev"
 
 
 # -- General configuration ---------------------------------------------------
@@ -79,6 +79,7 @@ autodoc_mock_imports = [
     "dolfin",
     "configparser",
     "h5py",
+    "cashocs_extensions",
 ]
 autodoc_typehints = "description"
 autoclass_content = "both"

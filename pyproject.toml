@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cashocs"
-version = "2.2.0-dev"
+version = "2.3.0-dev"
 description = "Computational Adjoint-Based Shape Optimization and Optimal Control Software"
 readme = "README.rst"
 requires-python = ">=3.8"
@@ -140,5 +140,6 @@ module = [
 	"h5py",
     "matplotlib.*",
     "scipy.*",
+    "cashocs_extensions.*",
 ]
 ignore_missing_imports = true

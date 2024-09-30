@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -60,7 +60,7 @@ from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 from cashocs.nonlinear_solvers import snes_solve
 
-__version__ = "2.2.0-dev"
+__version__ = "2.3.0-dev"
 
 __citation__ = """
 @Article{Blauth2021cashocs,
