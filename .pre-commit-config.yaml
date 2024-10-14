@@ -43,7 +43,7 @@ repos:
         additional_dependencies: ["numpy"]
         args: [--config-file, pyproject.toml]
   - repo: https://github.com/PyCQA/prospector
-    rev: v1.12.0
+    rev: v1.12.1
     hooks:
       - id: prospector
         additional_dependencies:
