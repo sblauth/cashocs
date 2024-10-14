@@ -26,26 +26,21 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4.2.1
 
-    - name: Install micromamba
-      uses: mamba-org/setup-micromamba@v1
-      with:
-        environment-file: .github/micromamba/testenv.yml
-        create-args: >-
-          fenics=2019
-          meshio>=5.3
-          pytest
-          gmsh>=4.8
-          scipy
-          scotch<7
-          ${{ matrix.mpi }}
-          python=${{ matrix.python-version }}
+    - name: Create conda environment
+      run: conda create -n cashocs -c conda-forge fenics=2019 meshio">=5.3" pytest gmsh">=4.8" scipy scotch"<7" ${{ matrix.mpi }} python=${{ matrix.python-version }}
+
+    - name: Show conda info
+      run: conda info
+
+    - name: Show list of all installed packages
+      run: conda list
 
     - name: Install package
       run: |
-        pip install .[all]
+        conda run --live-stream -n cashocs pip install .[all]
     
     - name: Run tests in parallel
       env: 
         OMP_NUM_THREADS: 1
       run: |
-        mpirun -n 2 python3 -m pytest -vv --timeout=1800 -p no:cacheprovider --randomly-seed=${{ github.run_id }} tests/
+        conda run --live-stream -n cashocs mpirun -n 2 python3 -m pytest -vv --timeout=1800 -p no:cacheprovider --randomly-seed=${{ github.run_id }} tests/

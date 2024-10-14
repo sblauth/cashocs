@@ -19,29 +19,24 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4.2.1
 
-    - name: Install micromamba
-      uses: mamba-org/setup-micromamba@v1
-      with:
-        environment-file: .github/micromamba/testenv.yml
-        create-args: >-
-          fenics=2019
-          meshio>=5.3
-          pytest
-          gmsh>=4.8
-          matplotlib
-          scipy
-          scotch<7
-          python=3.12
+    - name: Create conda environment
+      run: conda create -n cashocs -c conda-forge fenics=2019 meshio">=5.3" pytest gmsh">=4.8" matplotlib scipy scotch"<7" python=3.12
+
+    - name: Show conda info
+      run: conda info
+
+    - name: Show list of all installed packages
+      run: conda list
 
     - name: Install package
       run: |
-        pip install .[all]
+        conda run --live-stream -n cashocs pip install .[all]
     
     - name: Run demos
       env: 
         OMP_NUM_THREADS: 2
       run: |
-        python3 -m pytest -vv demos/test.py
+        conda run --live-stream -n cashocs python3 -m pytest -vv demos/test.py
 
         
         
@@ -58,27 +53,21 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4.2.1
 
-    - name: Install micromamba
-      uses: mamba-org/setup-micromamba@v1
-      with:
-        environment-file: .github/micromamba/testenv.yml
-        create-args: >-
-          fenics=2019
-          meshio>=5.3
-          pytest
-          gmsh>=4.8
-          mpich
-          matplotlib
-          scipy
-          scotch<7
-          python=3.12
+    - name: Create conda environment
+      run: conda create -n cashocs -c conda-forge fenics=2019 meshio">=5.3" pytest gmsh">=4.8" mpich matplotlib scipy scotch"<7" python=3.12
+
+    - name: Show conda info
+      run: conda info
+
+    - name: Show list of all installed packages
+      run: conda list
 
     - name: Install package
       run: |
-        pip install .[all]
+        conda run --live-stream -n cashocs pip install .[all]
         
     - name: Run demos in parallel
       env:
         OMP_NUM_THREADS: 1
       run: |
-        python3 -m pytest -vv demos/test_mpi.py
+        conda run --live-stream -n cashocs python3 -m pytest -vv demos/test_mpi.py
