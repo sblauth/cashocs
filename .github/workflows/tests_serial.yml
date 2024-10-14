@@ -26,16 +26,15 @@ jobs:
     - name: Create conda environment
       run: |
         conda create -n cashocs -c conda-forge fenics=2019 meshio">=5.3" pytest gmsh">=4.8" scipy scotch"<7" python=${{ matrix.python-version }}
+        conda list
 
     - name: Install package
       run: |
-        conda activate cashocs
-        pip install .[all]
+        conda run -n cashocs pip install .[all]
 
     - name: Run tests
       env: 
         OMP_NUM_THREADS: 2
       run: |
-        conda activate cashocs
-        python3 -m pytest -vv tests/
+        conda run -n cashocs python3 -m pytest -vv tests/
  
