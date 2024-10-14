@@ -405,7 +405,10 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
             # pylint: disable=protected-access
             self.constrained_problem._solve_inner_problem(
-                tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol
+                tol=tol,
+                inner_rtol=inner_rtol,
+                inner_atol=inner_atol,
+                iteration=self.iterations,
             )
 
             self._update_lagrange_multiplier_estimates()
@@ -491,7 +494,12 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
             self._update_cost_functional()
 
             # pylint: disable=protected-access
-            self.constrained_problem._solve_inner_problem(tol=tol)
+            self.constrained_problem._solve_inner_problem(
+                tol=tol,
+                inner_rtol=inner_rtol,
+                inner_atol=inner_atol,
+                iteration=self.iterations,
+            )
 
             self.constraint_violation = (
                 self.constrained_problem.total_constraint_violation()

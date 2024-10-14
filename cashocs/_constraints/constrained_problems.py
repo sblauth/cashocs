@@ -20,6 +20,8 @@
 from __future__ import annotations
 
 import abc
+import copy
+import pathlib
 from typing import Callable, List, Optional, TYPE_CHECKING, Union
 
 import fenics
@@ -248,6 +250,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         tol: float = 1e-2,
         inner_rtol: Optional[float] = None,
         inner_atol: Optional[float] = None,
+        iteration: int = 0,
     ) -> None:
         """Solves the inner (unconstrained) optimization problem.
 
@@ -259,6 +262,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
+            iteration: The current outer iteration count.
 
         """
         self.rtol = inner_rtol or tol
@@ -450,6 +454,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         tol: float = 1e-2,
         inner_rtol: Optional[float] = None,
         inner_atol: Optional[float] = None,
+        iteration: int = 0,
     ) -> None:
         """Solves the inner (unconstrained) optimization problem.
 
@@ -461,9 +466,16 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
+            iteration: The current outer iteration count
 
         """
-        super()._solve_inner_problem(tol, inner_rtol, inner_atol)
+        super()._solve_inner_problem(
+            tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol, iteration=iteration
+        )
+
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set("Output", "result_dir", str(output_path / f"subproblem_{iteration}"))
 
         optimal_control_problem = optimal_control.OptimalControlProblem(
             self.state_forms,
@@ -472,7 +484,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             self.states,
             self.controls,
             self.adjoints,
-            config=self.config,
+            config=config,
             riesz_scalar_products=self.riesz_scalar_products,
             control_constraints=self.control_constraints,
             initial_guess=self.initial_guess,
@@ -654,6 +666,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         tol: float = 1e-2,
         inner_rtol: Optional[float] = None,
         inner_atol: Optional[float] = None,
+        iteration: int = 0,
     ) -> None:
         """Solves the inner (unconstrained) optimization problem.
 
@@ -665,9 +678,16 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
+            iteration: The current outer iteration count.
 
         """
-        super()._solve_inner_problem(tol, inner_rtol, inner_atol)
+        super()._solve_inner_problem(
+            tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol, iteration=iteration
+        )
+
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set("Output", "result_dir", str(output_path / f"subproblem_{iteration}"))
 
         shape_optimization_problem = shape_optimization.ShapeOptimizationProblem(
             self.state_forms,
@@ -676,7 +696,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             self.states,
             self.adjoints,
             self.boundaries,
-            config=self.config,
+            config=config,
             shape_scalar_product=self.shape_scalar_product,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
