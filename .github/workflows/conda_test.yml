@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     
     steps:
-      - name: Update conda_test
+      - name: Update conda
         run: |
           conda update conda
       

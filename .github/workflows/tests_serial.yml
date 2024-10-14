@@ -23,6 +23,10 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4.2.1
 
+    - name: Create conda environment
+      run: |
+        conda create -n cashocs -c conda-forge fenics=2019 meshio">=5.3" pytest gmsh">=4.8" scipy scotch"<7" python=${{ matrix.python-version }}
+
     - name: Install micromamba
       uses: mamba-org/setup-micromamba@v1
       with:
@@ -38,11 +42,13 @@ jobs:
 
     - name: Install package
       run: |
+        conda activate cashocs
         pip install .[all]
 
     - name: Run tests
       env: 
         OMP_NUM_THREADS: 2
       run: |
+        conda activate cashocs
         python3 -m pytest -vv tests/
  
