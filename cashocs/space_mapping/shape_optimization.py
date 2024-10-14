@@ -21,7 +21,9 @@ from __future__ import annotations
 
 import abc
 import collections
+import copy
 import json
+import pathlib
 from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
@@ -158,7 +160,13 @@ class CoarseModel:
         self.states = states
         self.adjoints = adjoints
         self.boundaries = boundaries
-        self.config = config
+
+        if config is not None:
+            self.config = config
+        else:
+            self.config = io.Config()
+        self.config.validate_config()
+
         self.shape_scalar_product = shape_scalar_product
         self.initial_guess = initial_guess
         self.ksp_options = ksp_options
@@ -178,6 +186,10 @@ class CoarseModel:
         self.mesh = self.boundaries.mesh()
         self.coordinates_initial = self.mesh.coordinates().copy()
 
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set("Output", "result_dir", str(output_path / "coarse_model"))
+
         self.shape_optimization_problem = sop.ShapeOptimizationProblem(
             self.state_forms,
             self.bcs_list,
@@ -185,7 +197,7 @@ class CoarseModel:
             self.states,
             self.adjoints,
             self.boundaries,
-            config=self.config,
+            config=config,
             shape_scalar_product=self.shape_scalar_product,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
@@ -251,7 +263,12 @@ class ParameterExtraction:
 
         self.states = _utils.enlist(states)
 
-        self.config = config
+        if config is not None:
+            self.config = config
+        else:
+            self.config = io.Config()
+        self.config.validate_config()
+
         self.desired_weights = desired_weights
 
         self._pre_callback: Optional[Callable] = None
@@ -311,10 +328,11 @@ class ParameterExtraction:
 
         self.shape_optimization_problem: Optional[sop.ShapeOptimizationProblem] = None
 
-    def _solve(self) -> None:
+    def _solve(self, iteration: int = 0) -> None:
         """Solves the parameter extraction problem.
 
         Args:
+            iteration: The current iteration of the space mapping method.
             initial_guess: The initial guesses for solving the problem.
 
         """
@@ -325,6 +343,14 @@ class ParameterExtraction:
                 self.coarse_model.coordinates_optimal
             )
 
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set(
+            "Output",
+            "result_dir",
+            str(output_path / f"parameter_extraction_{iteration}"),
+        )
+
         self.shape_optimization_problem = sop.ShapeOptimizationProblem(
             self.state_forms,
             self.bcs_list,
@@ -332,7 +358,7 @@ class ParameterExtraction:
             self.states,
             self.adjoints,
             self.boundaries,
-            config=self.config,
+            config=config,
             shape_scalar_product=self.shape_scalar_product,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
@@ -542,7 +568,9 @@ class SpaceMappingProblem:
         self._compute_initial_guess()
 
         self.fine_model.solve_and_evaluate()
-        self.parameter_extraction._solve()  # pylint: disable=protected-access
+        self.parameter_extraction._solve(  # pylint: disable=protected-access
+            self.iteration
+        )
         self.p_current[0].vector().vec().aypx(
             0.0,
             self.deformation_handler_coarse.coordinate_to_dof(
@@ -581,9 +609,9 @@ class SpaceMappingProblem:
             self.stepsize = 1.0
             self.p_prev[0].vector().vec().aypx(0.0, self.p_current[0].vector().vec())
             self.p_prev[0].vector().apply("")
+            self.iteration += 1
             self._update_iterates()
 
-            self.iteration += 1
             self.current_mesh_quality = geometry.compute_mesh_quality(
                 self.fine_model.mesh
             )
@@ -698,7 +726,9 @@ class SpaceMappingProblem:
                 )
 
             self.fine_model.solve_and_evaluate()
-            self.parameter_extraction._solve()  # pylint: disable=protected-access
+            self.parameter_extraction._solve(  # pylint: disable=protected-access
+                self.iteration
+            )
             self.p_current[0].vector().vec().aypx(
                 0.0,
                 self.deformation_handler_coarse.coordinate_to_dof(
@@ -728,7 +758,7 @@ class SpaceMappingProblem:
                 if success:
                     self.fine_model.solve_and_evaluate()
                     # pylint: disable=protected-access
-                    self.parameter_extraction._solve()
+                    self.parameter_extraction._solve(self.iteration)
                     self.p_current[0].vector().vec().aypx(
                         0.0,
                         self.deformation_handler_coarse.coordinate_to_dof(

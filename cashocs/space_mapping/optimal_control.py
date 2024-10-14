@@ -21,7 +21,9 @@ from __future__ import annotations
 
 import abc
 import collections
+import copy
 import json
+import pathlib
 from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 
 import fenics
@@ -159,7 +161,13 @@ class CoarseModel:
         self.states = states
         self.controls = controls
         self.adjoints = adjoints
-        self.config = config
+
+        if config is not None:
+            self.config = config
+        else:
+            self.config = io.Config()
+        self.config.validate_config()
+
         self.riesz_scalar_products = riesz_scalar_products
         self.control_constraints = control_constraints
         self.initial_guess = initial_guess
@@ -178,6 +186,10 @@ class CoarseModel:
         self._pre_callback: Optional[Callable] = None
         self._post_callback: Optional[Callable] = None
 
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set("Output", "result_dir", str(output_path / "coarse_model"))
+
         self.optimal_control_problem = ocp.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -185,7 +197,7 @@ class CoarseModel:
             self.states,
             self.controls,
             self.adjoints,
-            config=self.config,
+            config=config,
             riesz_scalar_products=self.riesz_scalar_products,
             control_constraints=self.control_constraints,
             initial_guess=self.initial_guess,
@@ -251,7 +263,12 @@ class ParameterExtraction:
         self.states = _utils.enlist(states)
         self.controls: List[fenics.Function] = _utils.enlist(controls)
 
-        self.config = config
+        if config is not None:
+            self.config = config
+        else:
+            self.config = io.Config()
+        self.config.validate_config()
+
         self.mode = mode
         self.desired_weights = desired_weights
 
@@ -315,10 +332,13 @@ class ParameterExtraction:
 
         self.optimal_control_problem: Optional[ocp.OptimalControlProblem] = None
 
-    def _solve(self, initial_guesses: Optional[List[fenics.Function]] = None) -> None:
+    def _solve(
+        self, iteration: int, initial_guesses: Optional[List[fenics.Function]] = None
+    ) -> None:
         """Solves the parameter extraction problem.
 
         Args:
+            iteration: The current space mapping iteration.
             initial_guesses: The list of initial guesses for solving the problem.
 
         """
@@ -337,6 +357,14 @@ class ParameterExtraction:
                 "ParameterExtraction._solve", "initial_guesses", ""
             )
 
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set(
+            "Output",
+            "result_dir",
+            str(output_path / f"parameter_extraction_{iteration}"),
+        )
+
         self.optimal_control_problem = ocp.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -344,7 +372,7 @@ class ParameterExtraction:
             self.states,
             self.controls,
             self.adjoints,
-            config=self.config,
+            config=config,
             riesz_scalar_products=self.riesz_scalar_products,
             control_constraints=self.control_constraints,
             initial_guess=self.initial_guess,
@@ -513,7 +541,9 @@ class SpaceMappingProblem:
         self._compute_intial_guess()
 
         self.fine_model.solve_and_evaluate()
-        self.parameter_extraction._solve()  # pylint: disable=protected-access
+        self.parameter_extraction._solve(  # pylint: disable=protected-access
+            self.iteration
+        )
         self.eps = self._compute_eps()
 
         self.update_history()
@@ -548,9 +578,9 @@ class SpaceMappingProblem:
                 )
                 self.p_prev[i].vector().apply("")
 
+            self.iteration += 1
             self._update_iterates()
 
-            self.iteration += 1
             self.update_history()
             if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                 print(
@@ -671,10 +701,11 @@ class SpaceMappingProblem:
 
             self.fine_model.solve_and_evaluate()
             self.parameter_extraction._solve(  # pylint: disable=protected-access
+                self.iteration,
                 initial_guesses=[
                     ips.interpolate(self.x[i])
                     for i, ips in enumerate(self.ips_to_coarse)
-                ]
+                ],
             )
             self.eps = self._compute_eps()
 
@@ -694,10 +725,11 @@ class SpaceMappingProblem:
                     self.x[i].vector().apply("")
                 self.fine_model.solve_and_evaluate()
                 self.parameter_extraction._solve(  # pylint: disable=protected-access
+                    self.iteration,
                     initial_guesses=[
                         ips.interpolate(self.x[i])
                         for i, ips in enumerate(self.ips_to_coarse)
-                    ]
+                    ],
                 )
                 eps_new = self._compute_eps()
 
