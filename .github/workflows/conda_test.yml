@@ -15,15 +15,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     
     steps:
-      - name: Update conda_test
+      - name: Update conda
         run: |
           conda update conda
       
       - name: Install cashocs
-        run: conda create -n test -c conda-forge cashocs python=3.12 scotch"<7"
+        run: conda create -n cashocs -c conda-forge cashocs python=3.12 scotch"<7"
       
       - name: Test if package was installed properly
         run: |
-          conda run -n test python -c "import cashocs; cashocs.regular_mesh(16)"
-          conda run -n test mpirun -n 2 python -c "import cashocs; cashocs.regular_mesh(16)"
+          conda run -n cashocs python -c "import cashocs; cashocs.regular_mesh(16)"
+          conda run -n cashocs mpirun -n 2 python -c "import cashocs; cashocs.regular_mesh(16)"
         
