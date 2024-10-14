@@ -516,6 +516,11 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         if self.solver.iterations == 1:
             self.initial_norm = optimal_control_problem.solver.gradient_norm_initial
 
+        config = copy.deepcopy(self.config)
+        config.set("Output", "save_state", "False")
+        config.set("Output", "save_adjoint", "False")
+        config.set("Output", "save_gradient", "False")
+
         temp_problem = optimal_control.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -523,7 +528,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             self.states,
             self.controls,
             self.adjoints,
-            config=self.config,
+            config=config,
             riesz_scalar_products=self.riesz_scalar_products,
             control_constraints=self.control_constraints,
             initial_guess=self.initial_guess,
@@ -725,6 +730,11 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         if self.solver.iterations == 1:
             self.initial_norm = shape_optimization_problem.solver.gradient_norm_initial
 
+        config = copy.deepcopy(self.config)
+        config.set("Output", "save_state", "False")
+        config.set("Output", "save_adjoint", "False")
+        config.set("Output", "save_gradient", "False")
+
         temp_problem = shape_optimization.ShapeOptimizationProblem(
             self.state_forms,
             self.bcs_list,
@@ -732,7 +742,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             self.states,
             self.adjoints,
             self.boundaries,
-            config=self.config,
+            config=config,
             shape_scalar_product=self.shape_scalar_product,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
