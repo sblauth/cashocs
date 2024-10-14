@@ -483,29 +483,6 @@ class Config(ConfigParser):
                     "attributes": ["non_negative"],
                 },
             },
-            "MeshQualityConstraints": {
-                "min_angle": {
-                    "type": "float",
-                    "attributes": ["non_negative", "requires_cashocs_extensions"],
-                },
-                "tol": {
-                    "type": "float",
-                    "attributes": ["positive", "requires_cashocs_extensions"],
-                },
-                "mode": {
-                    "type": "str",
-                    "possible_options": ["approximate"],
-                    "attributes": ["requires_cashocs_extensions"],
-                },
-                "feasible_angle_reduction_factor": {
-                    "type": "float",
-                    "attributes": [
-                        "less_than_one",
-                        "non_negative",
-                        "requires_cashocs_extensions",
-                    ],
-                },
-            },
             "TopologyOptimization": {
                 "angle_tol": {
                     "type": "float",
@@ -694,12 +671,6 @@ volume_change = inf
 angle_change = inf
 remesh_iter = 0
 
-[MeshQualityConstraints]
-min_angle = 0.0
-feasible_angle_reduction_factor = 0.0
-tol = 1e-2
-mode = approximate
-
 [TopologyOptimization]
 angle_tol = 1.0
 interpolation_scheme = volume
@@ -728,8 +699,9 @@ restart = False
 
         self.read_string(self.default_config_str)
 
-        self.default_configuration = ConfigParser()
-        self.default_configuration.read_string(self.default_config_str)
+        if has_cashocs_extensions:
+            self.config_scheme.update(cashocs_extensions.config.config_scheme)
+            self.read_string(cashocs_extensions.config.default_config_str)
 
         if config_file is not None:
             file = pathlib.Path(config_file)
@@ -919,7 +891,6 @@ restart = False
             self._check_positive_attribute(section, key, key_attributes)
             self._check_less_than_one_attribute(section, key, key_attributes)
             self._check_larger_than_one_attribute(section, key, key_attributes)
-            self._check_for_required_extension_attribute(section, key, key_attributes)
 
     def _check_file_attribute(
         self, section: str, key: str, key_attributes: List[str]
@@ -1029,28 +1000,4 @@ restart = False
                 self.config_errors.append(
                     f"Key {key} in section {section} is smaller than one, "
                     f"but it must be larger.\n"
-                )
-
-    def _check_for_required_extension_attribute(
-        self, section: str, key: str, key_attributes: list[str]
-    ) -> None:
-        """Checks, whether cashocs_extensions is required to use the feature.
-
-        Args:
-            section (str): The corresponding section.
-            key (str): The corresponding key.
-            key_attributes (list[str]): The list of attributes for key.
-
-        """
-        if (
-            "requires_cashocs_extensions" in key_attributes
-            and not has_cashocs_extensions
-        ):
-            if self.get(section, key) != self.default_configuration.get(section, key):
-                self.config_errors.append(
-                    "You are trying to use a feature which requires premium cashocs "
-                    "features. The relevant feature is configured in Section "
-                    f"{section} and uses the key {key}.\n"
-                    "Please contact sebastian.blauth@itwm.fraunhofer.de for further "
-                    "information."
                 )
