@@ -214,6 +214,9 @@ class CoarseModel:
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
         )
+        self.optimal_control_problem.db.parameter_db.output_indent += (
+            self.optimal_control_problem.db.parameter_db.indent_summand
+        )
 
     def optimize(self) -> None:
         """Solves the coarse model optimization problem."""
@@ -388,6 +391,9 @@ class ParameterExtraction:
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
+        )
+        self.optimal_control_problem.db.parameter_db.output_indent += (
+            self.optimal_control_problem.db.parameter_db.indent_summand
         )
 
         self.optimal_control_problem.inject_pre_post_callback(

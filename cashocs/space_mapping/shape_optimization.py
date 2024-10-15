@@ -212,6 +212,9 @@ class CoarseModel:
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
         )
+        self.shape_optimization_problem.db.parameter_db.output_indent += (
+            self.shape_optimization_problem.db.parameter_db.indent_summand
+        )
 
         self.coordinates_optimal = self.mesh.coordinates().copy()
 
@@ -374,6 +377,9 @@ class ParameterExtraction:
             newton_linearizations=self.newton_linearizations,
         )
         if self.shape_optimization_problem is not None:
+            self.shape_optimization_problem.db.parameter_db.output_indent += (
+                self.shape_optimization_problem.db.parameter_db.indent_summand
+            )
             self.shape_optimization_problem.inject_pre_post_callback(
                 self._pre_callback, self._post_callback
             )

@@ -526,6 +526,10 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             newton_linearizations=self.newton_linearizations,
         )
 
+        optimal_control_problem.db.parameter_db.output_indent = (
+            self.db.parameter_db.output_indent + self.db.parameter_db.indent_summand
+        )
+
         optimal_control_problem.inject_pre_post_callback(
             self._pre_callback, self._post_callback
         )
@@ -752,6 +756,10 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
         )
+        shape_optimization_problem.db.parameter_db.output_indent = (
+            self.db.parameter_db.output_indent + self.db.parameter_db.indent_summand
+        )
+
         shape_optimization_problem.inject_pre_post_callback(
             self._pre_callback, self._post_callback
         )

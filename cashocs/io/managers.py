@@ -47,12 +47,13 @@ output_mapping = {
 }
 
 
-def generate_summary_str(db: database.Database, precision: int) -> str:
+def generate_summary_str(db: database.Database, precision: int, indent: int = 0) -> str:
     """Generates a string for the summary of the optimization.
 
     Args:
         db: The database of the problem.
         precision: The precision used for displaying the numbers.
+        indent: The amount of whitespaces used to indent the output. Default is 0.
 
     Returns:
         The summary string.
@@ -85,15 +86,16 @@ def generate_summary_str(db: database.Database, precision: int) -> str:
             f"{optimization_state['no_adjoint_solves']:4d}\n"
         )
 
-    return "".join(summary_str_list)
+    return "".join([" " * indent + s for s in summary_str_list])
 
 
-def generate_output_str(db: database.Database, precision: int) -> str:
+def generate_output_str(db: database.Database, precision: int, indent: int = 0) -> str:
     """Generates the string which can be written to console and file.
 
     Args:
         db: The database of the problem.
         precision: The precision used for displaying the numbers.
+        indent: The amount of whitespaces used to indent the output. Default is 0.
 
     Returns:
         The output string, which is used later.
@@ -137,8 +139,8 @@ def generate_output_str(db: database.Database, precision: int) -> str:
     if iteration == 0:
         output_str_list.append("\n")
 
-    info_str = "".join(info_str_list)
-    output_str = "".join(output_str_list)
+    info_str = "".join([" " * indent + s for s in info_str_list])
+    output_str = "".join(" " * indent + s for s in output_str_list)
 
     return info_str + output_str
 
@@ -242,13 +244,23 @@ class ConsoleManager(IOManager):
     def output(self) -> None:
         """Prints the output string to the console."""
         if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(generate_output_str(self.db, self.precision), flush=True)
+            print(
+                generate_output_str(
+                    self.db, self.precision, indent=self.db.parameter_db.output_indent
+                ),
+                flush=True,
+            )
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def output_summary(self) -> None:
         """Prints the summary in the console."""
         if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(generate_summary_str(self.db, self.precision), flush=True)
+            print(
+                generate_summary_str(
+                    self.db, self.precision, indent=self.db.parameter_db.output_indent
+                ),
+                flush=True,
+            )
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
