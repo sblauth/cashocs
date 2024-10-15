@@ -34,13 +34,14 @@ except ImportError:
     import ufl
 
 from cashocs import _utils
+from cashocs import io
 from cashocs._constraints import solvers
+from cashocs._database import database
 from cashocs._optimization import optimal_control
 from cashocs._optimization import shape_optimization
 
 if TYPE_CHECKING:
     from cashocs import _typing
-    from cashocs import io
 
 
 class ConstrainedOptimizationProblem(abc.ABC):
@@ -133,10 +134,10 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 Jacobian of the supplied state forms is used.
 
         """
-        self.state_forms = state_forms
-        self.bcs_list = bcs_list
-        self.states = states
-        self.adjoints = adjoints
+        self.state_forms = _utils.enlist(state_forms)
+        self.bcs_list = _utils.check_and_enlist_bcs(bcs_list)
+        self.states = _utils.enlist(states)
+        self.adjoints = _utils.enlist(adjoints)
 
         if config is not None:
             self.config = config
@@ -176,6 +177,21 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.constraint_violation_prev = 0.0
 
         self.cost_functional_shift = 0.0
+
+        self.db = database.Database(
+            self.config,
+            self.states,
+            self.adjoints,
+            self.ksp_options,  # type: ignore
+            self.adjoint_ksp_options,  # type: ignore
+            self.gradient_ksp_options,  # type: ignore
+            self.cost_functional_form_initial,
+            self.state_forms,
+            self.bcs_list,
+            self.preconditioner_forms,  # type: ignore
+        )
+
+        self.output_manager = io.OutputManager(self.db)
 
     def solve(
         self,
@@ -444,10 +460,19 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             newton_linearizations=newton_linearizations,
         )
 
-        self.controls = controls
+        self.controls = _utils.enlist(controls)
         self.riesz_scalar_products = riesz_scalar_products
         self.control_bcs_list = control_bcs_list
         self.control_constraints = control_constraints
+
+        self.db.function_db.controls = self.controls
+        self.db.function_db.control_spaces = [
+            x.function_space() for x in self.db.function_db.controls
+        ]
+        self.db.function_db.gradient = _utils.create_function_list(
+            self.db.function_db.control_spaces
+        )
+        self.db.parameter_db.problem_type = "control"
 
     def _solve_inner_problem(
         self,
@@ -665,6 +690,18 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
 
         self.boundaries = boundaries
         self.shape_scalar_product = shape_scalar_product
+
+        if shape_scalar_product is None:
+            deformation_space: fenics.FunctionSpace = fenics.VectorFunctionSpace(
+                self.db.geometry_db.mesh, "CG", 1
+            )
+        else:
+            deformation_space = shape_scalar_product.arguments()[0].ufl_function_space()
+        self.db.function_db.control_spaces = [deformation_space]
+        self.db.function_db.gradient = [
+            fenics.Function(self.db.function_db.control_spaces[0])
+        ]
+        self.db.parameter_db.problem_type = "shape"
 
     def _solve_inner_problem(
         self,
