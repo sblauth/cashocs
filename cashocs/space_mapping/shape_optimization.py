@@ -37,13 +37,14 @@ except ImportError:
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import geometry
-from cashocs import io
 from cashocs._database import database
 from cashocs._optimization.shape_optimization import shape_optimization_problem as sop
 from cashocs.geometry import mesh_testing
+from cashocs.io import output
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs import io
 
 
 class FineModel(abc.ABC):
@@ -460,7 +461,7 @@ class SpaceMappingProblem:
             self.coarse_model.preconditioner_forms,  # type: ignore
         )
 
-        self.output_manager = io.OutputManager(self.db)
+        self.output_manager = output.OutputManager(self.db)
 
         self.coordinates_initial = self.coarse_model.coordinates_initial
 

@@ -34,14 +34,15 @@ except ImportError:
     import ufl
 
 from cashocs import _utils
-from cashocs import io
 from cashocs._constraints import solvers
 from cashocs._database import database
 from cashocs._optimization import optimal_control
 from cashocs._optimization import shape_optimization
+from cashocs.io import output
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs import io
 
 
 class ConstrainedOptimizationProblem(abc.ABC):
@@ -191,7 +192,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
             self.preconditioner_forms,  # type: ignore
         )
 
-        self.output_manager = io.OutputManager(self.db)
+        self.output_manager = output.OutputManager(self.db)
 
     def solve(
         self,
