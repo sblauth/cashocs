@@ -9,6 +9,8 @@ of the maintenance releases, please take a look at
 2.3.0 (in development)
 ----------------------
 
+* Properly handle the output for nested problems in the context of space mapping and additional constraints. The output config is applied to all problems and the sub- and main problems all write their history to files and console.
+
 
 2.2.0 (August 28, 2024)
 -----------------------
