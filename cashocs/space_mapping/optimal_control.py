@@ -22,9 +22,8 @@ from __future__ import annotations
 import abc
 import collections
 import copy
-import json
 import pathlib
-from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import Callable, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -37,11 +36,12 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _utils
+from cashocs import io
+from cashocs._database import database
 from cashocs._optimization.optimal_control import optimal_control_problem as ocp
 
 if TYPE_CHECKING:
     from cashocs import _typing
-    from cashocs import io
 
 
 class FineModel(abc.ABC):
@@ -461,6 +461,26 @@ class SpaceMappingProblem:
         self.verbose = verbose
         self.save_history = save_history
 
+        config = copy.deepcopy(self.coarse_model.config)
+        config.set("Output", "save_state", "False")
+        config.set("Output", "save_adjoint", "False")
+        config.set("Output", "save_gradient", "False")
+
+        self.db = database.Database(
+            config,
+            _utils.enlist(self.coarse_model.states),
+            _utils.enlist(self.coarse_model.adjoints),
+            self.coarse_model.ksp_options,  # type: ignore
+            self.coarse_model.adjoint_ksp_options,  # type: ignore
+            self.coarse_model.gradient_ksp_options,  # type: ignore
+            self.coarse_model.cost_functional_form,  # type: ignore
+            _utils.enlist(self.coarse_model.state_forms),
+            _utils.check_and_enlist_bcs(self.coarse_model.bcs_list),
+            self.coarse_model.preconditioner_forms,  # type: ignore
+        )
+
+        self.output_manager = io.OutputManager(self.db)
+
         self.eps = 1.0
         self.converged = False
         self.iteration = 0
@@ -502,20 +522,6 @@ class SpaceMappingProblem:
         self.history_rho: collections.deque = collections.deque()
         self.history_alpha: collections.deque = collections.deque()
 
-        self.space_mapping_history: Dict[str, List[float]] = {
-            "cost_function_value": [],
-            "eps": [],
-            "stepsize": [],
-        }
-
-    def update_history(self) -> None:
-        """Updates the space mapping history."""
-        self.space_mapping_history["cost_function_value"].append(
-            self.fine_model.cost_functional_value
-        )
-        self.space_mapping_history["eps"].append(self.eps)
-        self.space_mapping_history["stepsize"].append(self.stepsize)
-
     def _compute_intial_guess(self) -> None:
         """Compute initial guess for the space mapping by solving the coarse problem."""
         self.coarse_model.optimize()
@@ -531,10 +537,21 @@ class SpaceMappingProblem:
     def test_for_nonconvergence(self) -> None:
         """Tests, whether maximum number of iterations are exceeded."""
         if self.iteration >= self.max_iter:
+            self.output_manager.post_process()
             raise _exceptions.NotConvergedError(
                 "Space Mapping",
                 "Maximum number of iterations exceeded.",
             )
+
+    def output(self) -> None:
+        """Uses the output manager to save / show the current results."""
+        optimization_state = self.db.parameter_db.optimization_state
+        optimization_state["iteration"] = self.iteration
+        optimization_state["objective_value"] = self.fine_model.cost_functional_value
+        optimization_state["gradient_norm"] = self.eps
+        optimization_state["stepsize"] = self.stepsize
+
+        self.output_manager.output()
 
     def solve(self) -> None:
         """Solves the space mapping problem."""
@@ -546,16 +563,7 @@ class SpaceMappingProblem:
         )
         self.eps = self._compute_eps()
 
-        self.update_history()
-        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(
-                f"Space Mapping - Iteration {self.iteration:3d}:    "
-                f"Cost functional value = "
-                f"{self.fine_model.cost_functional_value:.3e}    "
-                f"eps = {self.eps:.3e}\n",
-                flush=True,
-            )
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        self.output()
 
         while not self.converged:
             for i in range(len(self.dir_prev)):
@@ -581,17 +589,7 @@ class SpaceMappingProblem:
             self.iteration += 1
             self._update_iterates()
 
-            self.update_history()
-            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print(
-                    f"Space Mapping - Iteration {self.iteration:3d}:    "
-                    f"Cost functional value = "
-                    f"{self.fine_model.cost_functional_value:.3e}    "
-                    f"eps = {self.eps:.3e}"
-                    f"    step size = {self.stepsize:.3e}",
-                    flush=True,
-                )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            self.output()
 
             if self.eps <= self.tol:
                 self.converged = True
@@ -603,18 +601,8 @@ class SpaceMappingProblem:
             self._update_bfgs_approximation()
 
         if self.converged:
-            if self.save_history and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                with open("./sm_history.json", "w", encoding="utf-8") as file:
-                    json.dump(self.space_mapping_history, file, indent=4)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
-            output = (
-                f"\nStatistics --- "
-                f"Space mapping iterations: {self.iteration:4d} --- "
-                f"Final objective value: {self.fine_model.cost_functional_value:.3e}\n"
-            )
-            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print(output, flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            self.output_manager.output_summary()
+            self.output_manager.post_process()
 
     def _update_broyden_approximation(self) -> None:
         """Updates the approximation of the mapping function with Broyden's method."""
