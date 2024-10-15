@@ -66,6 +66,7 @@ class ConstrainedSolver(abc.ABC):
 
         self.constraints = self.constrained_problem.constraint_list
         self.constraint_dim = self.constrained_problem.constraint_dim
+        self.output_manager = constrained_problem.output_manager
         self.iterations = 0
 
         if mu_0 is not None:
@@ -130,28 +131,19 @@ class ConstrainedSolver(abc.ABC):
         """
         pass
 
-    def print_results(self) -> None:
+    def output(self) -> None:
         """Prints the results of the current iteration to the console."""
-        if (self.iterations - 1) % 10 == 0:
-            info_str = (
-                f"\n{self.solver_name}:  iter,  "
-                f"cost function,  "
-                f"constr. violation,  "
-                f"      mu\n\n"
-            )
-        else:
-            info_str = ""
+        db = self.constrained_problem.db
+        optimization_state = db.parameter_db.optimization_state
 
-        val_str = (
-            f"{self.solver_name}:  {self.iterations:4d},  "
-            f"{self.constrained_problem.current_function_value:>13.3e},  "
-            f"{self.constraint_violation:>17.3e},  "
-            f"{self.mu:.2e}"
+        optimization_state["iteration"] = self.iterations - 1
+        optimization_state["objective_value"] = (
+            self.constrained_problem.current_function_value
         )
+        optimization_state["constraint_violation"] = self.constraint_violation
+        optimization_state["mu"] = self.mu
 
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(info_str + val_str, flush=True)
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        self.output_manager.output()
 
 
 class AugmentedLagrangianMethod(ConstrainedSolver):
@@ -405,7 +397,10 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
             # pylint: disable=protected-access
             self.constrained_problem._solve_inner_problem(
-                tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol
+                tol=tol,
+                inner_rtol=inner_rtol,
+                inner_atol=inner_atol,
+                iteration=self.iterations,
             )
 
             self._update_lagrange_multiplier_estimates()
@@ -415,7 +410,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 self.constrained_problem.total_constraint_violation()
             )
 
-            self.print_results()
+            self.output()
 
             if self.constraint_violation > self.gamma * self.constraint_violation_prev:
                 self.mu *= self.beta
@@ -424,12 +419,17 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                     print(f"{self.solver_name} converged successfully.\n", flush=True)
                 fenics.MPI.barrier(fenics.MPI.comm_world)
+
+                self.output_manager.output_summary()
+                self.output_manager.post_process()
                 break
 
             if self.iterations >= max_iter:
                 if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                     print(f"{self.solver_name} did not converge.\n", flush=True)
                 fenics.MPI.barrier(fenics.MPI.comm_world)
+
+                self.output_manager.post_process()
                 break
 
 
@@ -491,25 +491,35 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
             self._update_cost_functional()
 
             # pylint: disable=protected-access
-            self.constrained_problem._solve_inner_problem(tol=tol)
+            self.constrained_problem._solve_inner_problem(
+                tol=tol,
+                inner_rtol=inner_rtol,
+                inner_atol=inner_atol,
+                iteration=self.iterations,
+            )
 
             self.constraint_violation = (
                 self.constrained_problem.total_constraint_violation()
             )
             self.mu *= self.beta
 
-            self.print_results()
+            self.output()
 
             if self.constraint_violation <= convergence_tol:
                 if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                     print(f"{self.solver_name} converged successfully.\n", flush=True)
                 fenics.MPI.barrier(fenics.MPI.comm_world)
+
+                self.output_manager.output_summary()
+                self.output_manager.post_process()
                 break
 
             if self.iterations >= max_iter:
                 if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
                     print(f"{self.solver_name} did not converge.\n", flush=True)
                 fenics.MPI.barrier(fenics.MPI.comm_world)
+
+                self.output_manager.post_process()
                 break
 
     def _update_cost_functional(self) -> None:

@@ -35,8 +35,8 @@ from cashocs import _exceptions
 from cashocs import _loggers
 from cashocs import _utils
 from cashocs._cli._convert import convert as cli_convert
-from cashocs.geometry import measure as measure_module
-from cashocs.geometry import mesh as mesh_module
+from cashocs.geometry.measure import NamedMeasure
+from cashocs.geometry.mesh import _get_mesh_stats
 
 if TYPE_CHECKING:
     from mpi4py import MPI
@@ -148,7 +148,7 @@ def _import_gmsh_mesh(
     return mesh_tuple
 
 
-@mesh_module._get_mesh_stats(mode="import")  # pylint:disable=protected-access
+@_get_mesh_stats(mode="import")  # pylint:disable=protected-access
 def _import_xdmf_mesh(
     mesh_file: str, comm: Optional[MPI.Comm] = None
 ) -> _typing.MeshTuple:
@@ -236,13 +236,13 @@ def _import_xdmf_mesh(
     subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
     boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
 
-    dx = measure_module.NamedMeasure(
+    dx = NamedMeasure(
         "dx", domain=mesh, subdomain_data=subdomains, physical_groups=physical_groups
     )
-    ds = measure_module.NamedMeasure(
+    ds = NamedMeasure(
         "ds", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
-    d_interior_facet = measure_module.NamedMeasure(
+    d_interior_facet = NamedMeasure(
         "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
 

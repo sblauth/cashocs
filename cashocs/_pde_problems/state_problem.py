@@ -100,9 +100,15 @@ class StateProblem(pde_problem.PDEProblem):
 
         self._number_of_solves = 0
         if self.db.parameter_db.temp_dict:
-            self.number_of_solves = self.db.parameter_db.temp_dict["output_dict"].get(
-                "state_solves", 0
-            )
+            if (
+                "no_state_solves"
+                in self.db.parameter_db.temp_dict["output_dict"].keys()
+            ):
+                self.number_of_solves: int = self.db.parameter_db.temp_dict[
+                    "output_dict"
+                ]["no_state_solves"][-1]
+            else:
+                self.number_of_solves = 0
         else:
             self.number_of_solves = 0
 

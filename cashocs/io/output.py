@@ -86,7 +86,8 @@ class OutputManager:
         self.output_dict = result_manager.output_dict
         self.managers.append(result_manager)
 
-        self.managers.append(managers.MeshManager(self.db, self.result_dir))
+        if save_mesh:
+            self.managers.append(managers.MeshManager(self.db, self.result_dir))
         self.managers.append(managers.TempFileManager(self.db, self.result_dir))
 
     def output(self) -> None:

@@ -21,8 +21,9 @@ from __future__ import annotations
 
 import abc
 import collections
-import json
-from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
+import copy
+import pathlib
+from typing import Callable, List, Optional, TYPE_CHECKING, Union
 
 import fenics
 import numpy as np
@@ -36,8 +37,10 @@ except ImportError:
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import geometry
+from cashocs._database import database
 from cashocs._optimization.shape_optimization import shape_optimization_problem as sop
 from cashocs.geometry import mesh_testing
+from cashocs.io import output
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -158,7 +161,13 @@ class CoarseModel:
         self.states = states
         self.adjoints = adjoints
         self.boundaries = boundaries
-        self.config = config
+
+        if config is not None:
+            self.config = config
+        else:
+            self.config = io.Config()
+        self.config.validate_config()
+
         self.shape_scalar_product = shape_scalar_product
         self.initial_guess = initial_guess
         self.ksp_options = ksp_options
@@ -178,6 +187,10 @@ class CoarseModel:
         self.mesh = self.boundaries.mesh()
         self.coordinates_initial = self.mesh.coordinates().copy()
 
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set("Output", "result_dir", str(output_path / "coarse_model"))
+
         self.shape_optimization_problem = sop.ShapeOptimizationProblem(
             self.state_forms,
             self.bcs_list,
@@ -185,7 +198,7 @@ class CoarseModel:
             self.states,
             self.adjoints,
             self.boundaries,
-            config=self.config,
+            config=config,
             shape_scalar_product=self.shape_scalar_product,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
@@ -198,6 +211,9 @@ class CoarseModel:
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
+        )
+        self.shape_optimization_problem.db.parameter_db.output_indent += (
+            self.shape_optimization_problem.db.parameter_db.indent_summand
         )
 
         self.coordinates_optimal = self.mesh.coordinates().copy()
@@ -251,7 +267,12 @@ class ParameterExtraction:
 
         self.states = _utils.enlist(states)
 
-        self.config = config
+        if config is not None:
+            self.config = config
+        else:
+            self.config = io.Config()
+        self.config.validate_config()
+
         self.desired_weights = desired_weights
 
         self._pre_callback: Optional[Callable] = None
@@ -311,10 +332,11 @@ class ParameterExtraction:
 
         self.shape_optimization_problem: Optional[sop.ShapeOptimizationProblem] = None
 
-    def _solve(self) -> None:
+    def _solve(self, iteration: int = 0) -> None:
         """Solves the parameter extraction problem.
 
         Args:
+            iteration: The current iteration of the space mapping method.
             initial_guess: The initial guesses for solving the problem.
 
         """
@@ -325,6 +347,14 @@ class ParameterExtraction:
                 self.coarse_model.coordinates_optimal
             )
 
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set(
+            "Output",
+            "result_dir",
+            str(output_path / f"parameter_extraction_{iteration}"),
+        )
+
         self.shape_optimization_problem = sop.ShapeOptimizationProblem(
             self.state_forms,
             self.bcs_list,
@@ -332,7 +362,7 @@ class ParameterExtraction:
             self.states,
             self.adjoints,
             self.boundaries,
-            config=self.config,
+            config=config,
             shape_scalar_product=self.shape_scalar_product,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
@@ -347,6 +377,9 @@ class ParameterExtraction:
             newton_linearizations=self.newton_linearizations,
         )
         if self.shape_optimization_problem is not None:
+            self.shape_optimization_problem.db.parameter_db.output_indent += (
+                self.shape_optimization_problem.db.parameter_db.indent_summand
+            )
             self.shape_optimization_problem.inject_pre_post_callback(
                 self._pre_callback, self._post_callback
             )
@@ -416,6 +449,26 @@ class SpaceMappingProblem:
         self.verbose = verbose
         self.save_history = save_history
 
+        config = copy.deepcopy(self.coarse_model.config)
+        config.set("Output", "save_state", "False")
+        config.set("Output", "save_adjoint", "False")
+        config.set("Output", "save_gradient", "False")
+
+        self.db = database.Database(
+            config,
+            _utils.enlist(self.coarse_model.states),
+            _utils.enlist(self.coarse_model.adjoints),
+            self.coarse_model.ksp_options,  # type: ignore
+            self.coarse_model.adjoint_ksp_options,  # type: ignore
+            self.coarse_model.gradient_ksp_options,  # type: ignore
+            self.coarse_model.cost_functional_form,  # type: ignore
+            _utils.enlist(self.coarse_model.state_forms),
+            _utils.check_and_enlist_bcs(self.coarse_model.bcs_list),
+            self.coarse_model.preconditioner_forms,  # type: ignore
+        )
+
+        self.output_manager = output.OutputManager(self.db)
+
         self.coordinates_initial = self.coarse_model.coordinates_initial
 
         self.eps = 1.0
@@ -460,25 +513,10 @@ class SpaceMappingProblem:
         self.history_rho: collections.deque = collections.deque()
         self.history_alpha: collections.deque = collections.deque()
 
-        self.space_mapping_history: Dict[str, List[float]] = {
-            "cost_function_value": [],
-            "eps": [],
-            "stepsize": [],
-            "MeshQuality": [],
-        }
-
-    def update_history(self) -> None:
-        """Updates the space mapping history."""
-        self.space_mapping_history["cost_function_value"].append(
-            self.fine_model.cost_functional_value
-        )
-        self.space_mapping_history["eps"].append(self.eps)
-        self.space_mapping_history["stepsize"].append(self.stepsize)
-        self.space_mapping_history["MeshQuality"].append(self.current_mesh_quality)
-
     def test_for_nonconvergence(self) -> None:
         """Tests, whether maximum number of iterations are exceeded."""
         if self.iteration >= self.max_iter:
+            self.output_manager.post_process()
             raise _exceptions.NotConvergedError(
                 "Space Mapping",
                 "Maximum number of iterations exceeded.",
@@ -537,12 +575,25 @@ class SpaceMappingProblem:
         self.current_mesh_quality = geometry.compute_mesh_quality(self.fine_model.mesh)
         self.norm_z_star = np.sqrt(self._scalar_product(self.z_star, self.z_star))
 
+    def output(self) -> None:
+        """Uses the output manager to save / show the current results."""
+        optimization_state = self.db.parameter_db.optimization_state
+        optimization_state["iteration"] = self.iteration
+        optimization_state["objective_value"] = self.fine_model.cost_functional_value
+        optimization_state["gradient_norm"] = self.eps
+        optimization_state["mesh_quality"] = self.current_mesh_quality
+        optimization_state["stepsize"] = self.stepsize
+
+        self.output_manager.output()
+
     def solve(self) -> None:
         """Solves the problem with the space mapping method."""
         self._compute_initial_guess()
 
         self.fine_model.solve_and_evaluate()
-        self.parameter_extraction._solve()  # pylint: disable=protected-access
+        self.parameter_extraction._solve(  # pylint: disable=protected-access
+            self.iteration
+        )
         self.p_current[0].vector().vec().aypx(
             0.0,
             self.deformation_handler_coarse.coordinate_to_dof(
@@ -555,17 +606,7 @@ class SpaceMappingProblem:
         self.p_current[0].vector().apply("")
         self.eps = self._compute_eps()
 
-        self.update_history()
-        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(
-                f"Space Mapping - Iteration {self.iteration:3d}:"
-                f"    Cost functional value = "
-                f"{self.fine_model.cost_functional_value:.3e}"
-                f"    eps = {self.eps:.3e}"
-                f"    Mesh Quality = {self.current_mesh_quality:1.2f}\n",
-                flush=True,
-            )
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        self.output()
 
         while not self.converged:
             self.dir_prev[0].vector().vec().aypx(
@@ -581,24 +622,13 @@ class SpaceMappingProblem:
             self.stepsize = 1.0
             self.p_prev[0].vector().vec().aypx(0.0, self.p_current[0].vector().vec())
             self.p_prev[0].vector().apply("")
+            self.iteration += 1
             self._update_iterates()
 
-            self.iteration += 1
             self.current_mesh_quality = geometry.compute_mesh_quality(
                 self.fine_model.mesh
             )
-            self.update_history()
-            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print(
-                    f"Space Mapping - Iteration {self.iteration:3d}:"
-                    f"    Cost functional value = "
-                    f"{self.fine_model.cost_functional_value:.3e}"
-                    f"    eps = {self.eps:.3e}"
-                    f"    Mesh Quality = {self.current_mesh_quality:1.2f}"
-                    f"    step size = {self.stepsize:.3e}",
-                    flush=True,
-                )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            self.output()
 
             if self.eps <= self.tol:
                 self.converged = True
@@ -609,18 +639,8 @@ class SpaceMappingProblem:
             self._update_bfgs_approximation()
 
         if self.converged:
-            if self.save_history and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                with open("./sm_history.json", "w", encoding="utf-8") as file:
-                    json.dump(self.space_mapping_history, file, indent=4)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
-            output = (
-                f"\nStatistics --- "
-                f"Space mapping iterations: {self.iteration:4d} --- "
-                f"Final objective value: {self.fine_model.cost_functional_value:.3e}\n"
-            )
-            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print(output, flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            self.output_manager.output_summary()
+            self.output_manager.post_process()
 
     def _update_broyden_approximation(self) -> None:
         """Updates the approximation of the mapping function with Broyden's method."""
@@ -698,7 +718,9 @@ class SpaceMappingProblem:
                 )
 
             self.fine_model.solve_and_evaluate()
-            self.parameter_extraction._solve()  # pylint: disable=protected-access
+            self.parameter_extraction._solve(  # pylint: disable=protected-access
+                self.iteration
+            )
             self.p_current[0].vector().vec().aypx(
                 0.0,
                 self.deformation_handler_coarse.coordinate_to_dof(
@@ -728,7 +750,7 @@ class SpaceMappingProblem:
                 if success:
                     self.fine_model.solve_and_evaluate()
                     # pylint: disable=protected-access
-                    self.parameter_extraction._solve()
+                    self.parameter_extraction._solve(self.iteration)
                     self.p_current[0].vector().vec().aypx(
                         0.0,
                         self.deformation_handler_coarse.coordinate_to_dof(

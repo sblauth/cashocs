@@ -562,32 +562,8 @@ class _MeshHandler:
 
             # save the output dict (without the last entries since they are "remeshed")
             self.db.parameter_db.temp_dict["output_dict"] = {}
-            self.db.parameter_db.temp_dict["output_dict"][
-                "state_solves"
-            ] = solver.state_problem.number_of_solves
-            self.db.parameter_db.temp_dict["output_dict"][
-                "adjoint_solves"
-            ] = solver.adjoint_problem.number_of_solves
-            self.db.parameter_db.temp_dict["output_dict"]["iterations"] = (
-                solver.iteration + 1
-            )
-
-            output_dict = solver.output_manager.output_dict
-            self.db.parameter_db.temp_dict["output_dict"]["cost_function_value"] = (
-                output_dict["cost_function_value"][:]
-            )
-            self.db.parameter_db.temp_dict["output_dict"]["gradient_norm"] = (
-                output_dict["gradient_norm"][:]
-            )
-            self.db.parameter_db.temp_dict["output_dict"]["stepsize"] = output_dict[
-                "stepsize"
-            ][:]
-            self.db.parameter_db.temp_dict["output_dict"]["MeshQuality"] = output_dict[
-                "MeshQuality"
-            ][:]
-            self.db.parameter_db.temp_dict["output_dict"]["angle"] = output_dict[
-                "angle"
-            ][:]
+            for key, value in solver.output_manager.output_dict.items():
+                self.db.parameter_db.temp_dict["output_dict"][key] = value
 
             self.db.parameter_db.temp_dict["OptimizationRoutine"]["rtol"] = (
                 self.config.getfloat("OptimizationRoutine", "rtol")
