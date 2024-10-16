@@ -25,8 +25,8 @@ from typing import TYPE_CHECKING
 import fenics
 import numpy as np
 
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -153,7 +153,7 @@ class IntersectionTester:
         list_self_intersections = fenics.MPI.comm_world.allgather(self_intersections)
 
         if any(list_self_intersections):
-            _loggers.debug("Mesh transformation rejected due to a posteriori check.")
+            log.debug("Mesh transformation rejected due to a posteriori check.")
             return False
         else:
             return True

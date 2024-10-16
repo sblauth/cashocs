@@ -25,7 +25,7 @@ import pathlib
 from typing import Any, Dict, List, Optional
 
 from cashocs import _exceptions
-from cashocs import _loggers
+from cashocs import log
 
 try:
     import cashocs_extensions  # pylint: disable=unused-import # noqa: F401
@@ -708,7 +708,7 @@ restart = False
             if file.is_file():
                 self.read(config_file)
             else:
-                _loggers.warning(
+                log.warning(
                     f"Could not find the specified config file {config_file}. "
                     "Using cashocs default config instead."
                 )

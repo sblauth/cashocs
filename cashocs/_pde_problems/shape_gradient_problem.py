@@ -35,8 +35,8 @@ try:
 except ImportError:
     import ufl
 
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
@@ -92,7 +92,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             self.config.getboolean("ShapeGradient", "use_p_laplacian")
             and self.form_handler.use_fixed_dimensions
         ):
-            _loggers.warning(
+            log.warning(
                 "Incompatible config settings: "
                 "use_p_laplacian and fixed_dimensions are incompatible. "
                 "Falling back to use_p_laplacian=False."

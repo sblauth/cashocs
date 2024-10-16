@@ -18,11 +18,11 @@
 import fenics
 
 import cashocs
-from cashocs._loggers import critical
-from cashocs._loggers import debug
-from cashocs._loggers import error
-from cashocs._loggers import info
-from cashocs._loggers import warning
+from cashocs.log import critical
+from cashocs.log import debug
+from cashocs.log import error
+from cashocs.log import info
+from cashocs.log import warning
 
 
 def issue_messages():

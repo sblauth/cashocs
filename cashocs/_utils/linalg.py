@@ -34,7 +34,7 @@ except ImportError:
     import ufl
 
 from cashocs import _exceptions
-from cashocs import _loggers
+from cashocs import log
 from cashocs._utils import forms as forms_module
 
 if TYPE_CHECKING:
@@ -391,7 +391,7 @@ def solve_linear_problem(
         The solution vector.
 
     """
-    _loggers.warning(
+    log.warning(
         "The function cashocs._utils.linalg.solve_linear_problem is "
         "deprecated and will be removed in a future version. Please use"
         "the solve method of cashocs._utils.linalg.LinearSolver instead."

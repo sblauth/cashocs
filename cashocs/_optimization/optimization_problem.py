@@ -39,10 +39,10 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _forms
-from cashocs import _loggers
 from cashocs import _pde_problems
 from cashocs import _utils
 from cashocs import io
+from cashocs import log
 from cashocs._database import database
 from cashocs._optimization import cost_functional
 
@@ -502,7 +502,7 @@ class OptimizationProblem(abc.ABC):
     def _check_for_custom_forms(self) -> None:
         """Checks, whether custom user forms are used and if they are compatible."""
         if self.has_custom_adjoint and not self.has_custom_derivative:
-            _loggers.warning(
+            log.warning(
                 "You only supplied the adjoint system. "
                 "This might lead to unexpected results.\n"
                 "Consider also supplying the (shape) derivative "
@@ -511,7 +511,7 @@ class OptimizationProblem(abc.ABC):
             )
 
         elif not self.has_custom_adjoint and self.has_custom_derivative:
-            _loggers.warning(
+            log.warning(
                 "You only supplied the derivative of the reduced cost functional. "
                 "This might lead to unexpected results.\n"
                 "Consider also supplying the adjoint system, "
@@ -721,7 +721,7 @@ class OptimizationProblem(abc.ABC):
 
             if abs(val) <= 1e-15:
                 val = 1.0
-                _loggers.info(
+                log.info(
                     f"Term {i:d} of the cost functional vanishes "
                     f"for the initial iteration. Multiplying this term with the "
                     f"factor you supplied in desired weights."
@@ -731,7 +731,7 @@ class OptimizationProblem(abc.ABC):
 
     def _scale_cost_functional(self) -> None:
         """Scales the terms of the cost functional."""
-        _loggers.info(
+        log.info(
             "You are using the automatic scaling functionality of cashocs."
             "This may lead to unexpected results if you try to scale the cost "
             "functional yourself or if you supply custom forms."

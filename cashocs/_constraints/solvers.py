@@ -25,8 +25,8 @@ from typing import List, Optional, TYPE_CHECKING, Union
 import fenics
 import numpy as np
 
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 from cashocs._constraints import constraints
 from cashocs._optimization import cost_functional
 
@@ -390,8 +390,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         while True:
             self.iterations += 1
 
-            _loggers.debug(f"mu = {self.mu}")
-            _loggers.debug(f"lambda = {self.lmbd}")
+            log.debug(f"mu = {self.mu}")
+            log.debug(f"lambda = {self.lmbd}")
 
             self._update_cost_functional()
 
@@ -486,7 +486,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         while True:
             self.iterations += 1
 
-            _loggers.debug(f"mu = {self.mu}")
+            log.debug(f"mu = {self.mu}")
 
             self._update_cost_functional()
 

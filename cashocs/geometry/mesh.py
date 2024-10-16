@@ -30,7 +30,7 @@ from typing_extensions import Literal
 from typing_extensions import TYPE_CHECKING
 
 from cashocs import _exceptions
-from cashocs import _loggers
+from cashocs import log
 from cashocs.geometry import measure
 
 if TYPE_CHECKING:
@@ -81,19 +81,17 @@ def _get_mesh_stats(
             worded = "imported" if mode.casefold() == "import" else "generated"
             mpi_size = fenics.MPI.size(fenics.MPI.comm_world)
             start_time = time.time()
-            _loggers.info(f"{word.capitalize()} mesh.")
+            log.info(f"{word.capitalize()} mesh.")
 
             value = func(*args, **kwargs)
             dim = value[0].geometry().dim()
 
             end_time = time.time()
-            _loggers.info(
-                f"Done {word} mesh. Elapsed time: {end_time - start_time:.2f} s."
-            )
-            _loggers.info(
+            log.info(f"Done {word} mesh. Elapsed time: {end_time - start_time:.2f} s.")
+            log.info(
                 f"Successfully {worded} {dim}-dimensional mesh on {mpi_size} CPU(s)."
             )
-            _loggers.info(
+            log.info(
                 f"Mesh contains {value[0].num_entities_global(0):,} vertices and "
                 f"{value[0].num_entities_global(dim):,} cells of type "
                 f"{value[0].ufl_cell().cellname()}.\n"

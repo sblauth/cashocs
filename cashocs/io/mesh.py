@@ -32,8 +32,8 @@ import h5py
 import numpy as np
 
 from cashocs import _exceptions
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 from cashocs._cli._convert import convert as cli_convert
 from cashocs.geometry.measure import NamedMeasure
 from cashocs.geometry.mesh import _get_mesh_stats
@@ -662,7 +662,7 @@ def extract_mesh_from_xdmf(
 
     end_time = time.time()
     if not quiet:
-        _loggers.info(
+        log.info(
             f"Successfully extracted the desired mesh {outputfile} from {xdmffile}"
             f" in {end_time - start_time:.2f} s"
         )
