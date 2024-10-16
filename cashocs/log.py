@@ -261,6 +261,15 @@ class Logger:
         self._logfiles[filename] = h
         return h
 
+    def add_handler(self, handler: logging.Handler) -> None:
+        """Adds an additional handler to the logger.
+
+        Args:
+            handler (logging.Handler): The handler that should be added to the logger.
+
+        """
+        self._log.addHandler(handler)
+
     def add_timestamp(self) -> None:
         """This function adds a time stamp to the logged events."""
         self._use_timestamp = True
