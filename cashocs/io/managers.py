@@ -28,6 +28,7 @@ from typing import cast, List, TYPE_CHECKING, Union
 
 import fenics
 
+from cashocs import log
 from cashocs.io import mesh as iomesh
 
 if TYPE_CHECKING:
@@ -47,13 +48,12 @@ output_mapping = {
 }
 
 
-def generate_summary_str(db: database.Database, precision: int, indent: int = 0) -> str:
+def generate_summary_str(db: database.Database, precision: int) -> str:
     """Generates a string for the summary of the optimization.
 
     Args:
         db: The database of the problem.
         precision: The precision used for displaying the numbers.
-        indent: The amount of whitespaces used to indent the output. Default is 0.
 
     Returns:
         The summary string.
@@ -86,16 +86,15 @@ def generate_summary_str(db: database.Database, precision: int, indent: int = 0)
             f"{optimization_state['no_adjoint_solves']:4d}\n"
         )
 
-    return "".join([" " * indent + s for s in summary_str_list])
+    return "".join(summary_str_list)
 
 
-def generate_output_str(db: database.Database, precision: int, indent: int = 0) -> str:
+def generate_output_str(db: database.Database, precision: int) -> str:
     """Generates the string which can be written to console and file.
 
     Args:
         db: The database of the problem.
         precision: The precision used for displaying the numbers.
-        indent: The amount of whitespaces used to indent the output. Default is 0.
 
     Returns:
         The output string, which is used later.
@@ -139,8 +138,8 @@ def generate_output_str(db: database.Database, precision: int, indent: int = 0) 
     if iteration == 0:
         output_str_list.append("\n")
 
-    info_str = "".join([" " * indent + s for s in info_str_list])
-    output_str = "".join(" " * indent + s for s in output_str_list)
+    info_str = "".join(info_str_list)
+    output_str = "".join(output_str_list)
 
     return info_str + output_str
 
@@ -230,38 +229,41 @@ class ResultManager(IOManager):
 class ConsoleManager(IOManager):
     """Management of the console output."""
 
-    def __init__(self, db: database.Database, result_dir: str) -> None:
+    def __init__(
+        self, db: database.Database, result_dir: str, verbose: bool = False
+    ) -> None:
         """Initializes self.
 
         Args:
             db: The database of the problem.
             result_dir: The directory, where the results are written to.
+            verbose: Boolean which indicates whether the logging setup (False) or the
+                old setup with print (True) should be used. Default is `False`.
 
         """
         super().__init__(db, result_dir)
+        self.verbose = verbose
         self.precision = self.config.getint("Output", "precision")
 
     def output(self) -> None:
         """Prints the output string to the console."""
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(
-                generate_output_str(
-                    self.db, self.precision, indent=self.db.parameter_db.output_indent
-                ),
-                flush=True,
-            )
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        message = generate_output_str(self.db, self.precision)
+        if self.verbose:
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(message, flush=True)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+        else:
+            log.info(message)
 
     def output_summary(self) -> None:
         """Prints the summary in the console."""
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(
-                generate_summary_str(
-                    self.db, self.precision, indent=self.db.parameter_db.output_indent
-                ),
-                flush=True,
-            )
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        message = generate_summary_str(self.db, self.precision)
+        if self.verbose:
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(message, flush=True)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+        else:
+            log.info(message)
 
 
 class FileManager(IOManager):

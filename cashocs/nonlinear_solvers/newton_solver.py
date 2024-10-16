@@ -33,6 +33,7 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _utils
+from cashocs import log
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -196,26 +197,24 @@ class _NewtonSolver:
 
     def _print_output(self) -> None:
         """Prints the output of the current iteration to the console."""
-        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            prefix = "Newton solver:  "
-
-            if self.iterations % 10 == 0:
-                info_str = (
-                    f"\n{prefix}iter,  "
-                    f"abs. residual (abs. tol),  "
-                    f"rel. residual (rel. tol)\n\n"
-                )
-            else:
-                info_str = ""
-
-            print_str = (
-                f"{prefix}{self.iterations:4d},  "
-                f"{self.res:>13.3e} ({self.atol:.2e}),  "
-                f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
+        if self.iterations % 10 == 0:
+            info_str = (
+                "\niter,  abs. residual (abs. tol),  rel. residual (rel. tol)\n\n"
             )
+        else:
+            info_str = ""
 
-            print(info_str + print_str, flush=True)
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        print_str = (
+            f"{self.iterations:4d},  "
+            f"{self.res:>13.3e} ({self.atol:.2e}),  "
+            f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
+        )
+        if self.verbose:
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(info_str + print_str, flush=True)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+        else:
+            log.info(info_str + print_str)
 
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
@@ -269,6 +268,7 @@ class _NewtonSolver:
             A solution of the nonlinear problem.
 
         """
+        log.begin("Solving the nonlinear PDE system with Newton's method.")
         self._compute_residual()
 
         self.res_0 = self.residual.norm(self.norm_type)
@@ -323,6 +323,8 @@ class _NewtonSolver:
                 break
 
         self._check_if_successful()
+
+        log.end()
 
         return self.u
 

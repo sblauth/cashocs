@@ -75,8 +75,9 @@ class OutputManager:
             checkpoints_path.mkdir(parents=True, exist_ok=True)
 
         self.managers: List[managers.IOManager] = []
-        if verbose:
-            self.managers.append(managers.ConsoleManager(self.db, self.result_dir))
+        self.managers.append(
+            managers.ConsoleManager(self.db, self.result_dir, verbose=verbose)
+        )
         if save_txt:
             self.managers.append(managers.FileManager(self.db, self.result_dir))
         if save_state or save_adjoint or save_gradient:

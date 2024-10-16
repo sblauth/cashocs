@@ -124,6 +124,8 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         self.adjoint_problem.solve()
 
         if not self.has_solution:
+            log.begin("Computing the gradient deformation.", level=log.DEBUG)
+
             self.form_handler.shape_regularization.update_geometric_quantities()
 
             if (
@@ -159,6 +161,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             self.gradient_norm_squared = self.form_handler.scalar_product(
                 self.db.function_db.gradient, self.db.function_db.gradient
             )
+            log.end()
 
         return self.db.function_db.gradient
 
@@ -233,6 +236,8 @@ class _PLaplaceProjector:
 
     def solve(self) -> None:
         """Solves the p-Laplace problem for computing the shape gradient."""
+        log.begin("Computing the gradient deformation with the p-Laplace approach.")
+
         self.solution.vector().vec().set(0.0)
         self.solution.vector().apply("")
         for nonlinear_form in self.form_list:
@@ -252,3 +257,5 @@ class _PLaplaceProjector:
                 A_tensor=self.A_tensor,
                 b_tensor=self.b_tensor,
             )
+
+        log.end()

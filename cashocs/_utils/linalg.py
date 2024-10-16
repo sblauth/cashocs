@@ -130,6 +130,7 @@ def assemble_petsc_system(
         allows for well-posed problems on the boundary etc.
 
     """
+    log.begin("Assembling the forms into a linear system.", level=log.DEBUG)
     mod_lhs_form = forms_module.bilinear_boundary_form_modification([lhs_form])[0]
     if A_tensor is None:
         A_tensor = fenics.PETScMatrix()
@@ -175,6 +176,8 @@ def assemble_petsc_system(
 
     A = A_tensor.mat()  # pylint: disable=invalid-name
     b = b_tensor.vec()
+
+    log.end()
 
     return A, b, P
 
@@ -513,6 +516,7 @@ class LinearSolver:
             The solution vector.
 
         """
+        log.begin("Solving a linear system with PETSc.", level=log.DEBUG)
         ksp = PETSc.KSP().create(self.comm)
 
         A = setup_matrix_and_preconditioner(ksp, A, P)
@@ -545,6 +549,7 @@ class LinearSolver:
         if fun is not None:
             fun.vector().apply("")
 
+        log.end()
         return x
 
 
