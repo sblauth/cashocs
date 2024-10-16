@@ -114,7 +114,7 @@ exclude_lines = [
     "raise _exceptions.InputError",
     "raise _exceptions.CashocsException",
     "raise _exceptions.CashocsDebugException",
-    "_loggers.warning",
+    "log.warning",
     "abstractmethod",
 ]
 
