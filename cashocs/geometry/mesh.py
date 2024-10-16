@@ -21,7 +21,6 @@ from __future__ import annotations
 
 import collections
 import functools
-import time
 from typing import Any, Callable, List, Optional
 
 import fenics
@@ -30,7 +29,7 @@ from typing_extensions import Literal
 from typing_extensions import TYPE_CHECKING
 
 from cashocs import _exceptions
-from cashocs import _loggers
+from cashocs import log
 from cashocs.geometry import measure
 
 if TYPE_CHECKING:
@@ -42,7 +41,7 @@ if TYPE_CHECKING:
 def _get_mesh_stats(
     mode: Literal["import", "generate"] = "import"
 ) -> Callable[..., Callable[..., _typing.MeshTuple]]:
-    """A decorator for mesh importing / generating function which prints stats.
+    """A decorator for mesh importing / generating function which logs stats.
 
     Args:
         mode: A string indicating whether the mesh is being generated or imported.
@@ -80,24 +79,20 @@ def _get_mesh_stats(
             word = "importing" if mode.casefold() == "import" else "generating"
             worded = "imported" if mode.casefold() == "import" else "generated"
             mpi_size = fenics.MPI.size(fenics.MPI.comm_world)
-            start_time = time.time()
-            _loggers.info(f"{word.capitalize()} mesh.")
+            log.begin(f"{word.capitalize()} mesh.", level=log.INFO)
 
             value = func(*args, **kwargs)
             dim = value[0].geometry().dim()
 
-            end_time = time.time()
-            _loggers.info(
-                f"Done {word} mesh. Elapsed time: {end_time - start_time:.2f} s."
-            )
-            _loggers.info(
+            log.info(
                 f"Successfully {worded} {dim}-dimensional mesh on {mpi_size} CPU(s)."
             )
-            _loggers.info(
+            log.info(
                 f"Mesh contains {value[0].num_entities_global(0):,} vertices and "
                 f"{value[0].num_entities_global(dim):,} cells of type "
-                f"{value[0].ufl_cell().cellname()}.\n"
+                f"{value[0].ufl_cell().cellname()}."
             )
+            log.end()
             return value
 
         return wrapper_stats

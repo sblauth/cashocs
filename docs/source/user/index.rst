@@ -38,6 +38,9 @@ Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx
     the introductory tutorials for shape optimization problems, i.e.,
     :ref:`demo_shape_poisson` and :ref:`config_shape_optimization`.
 
+    For a short introduction to the logging mechanisms in cashocs, we refer the reader 
+    to :ref:`demo_logging`.
+    
     Moreover, we note that some of cashocs functionality is explained only for optimal control, but not
     for shape optimization problems. This includes the contents of :ref:`demo_monolithic_problems`,
     :ref:`demo_picard_iteration`, :ref:`demo_heat_equation`, :ref:`demo_nonlinear_pdes`, 

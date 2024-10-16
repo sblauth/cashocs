@@ -7,4 +7,5 @@ In this part of the tutorial, we showcase several other features of cashocs, whi
    :maxdepth: 1
    :caption: List of all miscellaneous tutorials:
    
+   demo_logging.md
    demo_xdmf_io.md

@@ -29,7 +29,7 @@ import cashocs.space_mapping.shape_optimization as sosm
 
 dir_path = str(pathlib.Path(__file__).parent)
 
-cashocs.set_log_level(cashocs.LogLevel.ERROR)
+cashocs.set_log_level(cashocs.log.ERROR)
 
 cfg = cashocs.load_config(f"{dir_path}/config_sosm.ini")
 Re_f = 50.0

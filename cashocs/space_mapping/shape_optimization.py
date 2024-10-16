@@ -37,6 +37,7 @@ except ImportError:
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import geometry
+from cashocs import log
 from cashocs._database import database
 from cashocs._optimization.shape_optimization import shape_optimization_problem as sop
 from cashocs.geometry import mesh_testing
@@ -212,9 +213,6 @@ class CoarseModel:
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
         )
-        self.shape_optimization_problem.db.parameter_db.output_indent += (
-            self.shape_optimization_problem.db.parameter_db.indent_summand
-        )
 
         self.coordinates_optimal = self.mesh.coordinates().copy()
 
@@ -377,9 +375,6 @@ class ParameterExtraction:
             newton_linearizations=self.newton_linearizations,
         )
         if self.shape_optimization_problem is not None:
-            self.shape_optimization_problem.db.parameter_db.output_indent += (
-                self.shape_optimization_problem.db.parameter_db.indent_summand
-            )
             self.shape_optimization_problem.inject_pre_post_callback(
                 self._pre_callback, self._post_callback
             )
@@ -588,9 +583,13 @@ class SpaceMappingProblem:
 
     def solve(self) -> None:
         """Solves the problem with the space mapping method."""
+        log.begin("Solving the space mapping problem.")
         self._compute_initial_guess()
 
+        log.begin("Simulating the fine model.")
         self.fine_model.solve_and_evaluate()
+        log.end()
+
         self.parameter_extraction._solve(  # pylint: disable=protected-access
             self.iteration
         )
@@ -641,6 +640,7 @@ class SpaceMappingProblem:
         if self.converged:
             self.output_manager.output_summary()
             self.output_manager.post_process()
+            log.end()
 
     def _update_broyden_approximation(self) -> None:
         """Updates the approximation of the mapping function with Broyden's method."""
@@ -717,7 +717,10 @@ class SpaceMappingProblem:
                     "possible due to intersections"
                 )
 
+            log.begin("Simulating the fine model.")
             self.fine_model.solve_and_evaluate()
+            log.end()
+
             self.parameter_extraction._solve(  # pylint: disable=protected-access
                 self.iteration
             )
@@ -748,7 +751,10 @@ class SpaceMappingProblem:
                 self.transformation.vector().apply("")
                 success = self.deformation_handler_fine.move_mesh(self.transformation)
                 if success:
+                    log.begin("Simulating the fine model.")
                     self.fine_model.solve_and_evaluate()
+                    log.end()
+
                     # pylint: disable=protected-access
                     self.parameter_extraction._solve(self.iteration)
                     self.p_current[0].vector().vec().aypx(

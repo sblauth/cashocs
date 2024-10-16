@@ -34,6 +34,7 @@ except ImportError:
     import ufl
 
 from cashocs import _utils
+from cashocs import log
 from cashocs._constraints import solvers
 from cashocs._database import database
 from cashocs._optimization import optimal_control
@@ -231,10 +232,16 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         """
         if method.casefold() in ["augmented lagrangian", "al"]:
+            log.begin(
+                "Solving the constrained problem with an augmented Lagrangian method."
+            )
             self.solver = solvers.AugmentedLagrangianMethod(
                 self, mu_0=mu_0, lambda_0=lambda_0
             )
         elif method.casefold() in ["quadratic penalty", "qp"]:
+            log.begin(
+                "Solving the constrained problem with a quadratic penalty method."
+            )
             self.solver = solvers.QuadraticPenaltyMethod(
                 self, mu_0=mu_0, lambda_0=lambda_0
             )
@@ -246,6 +253,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
             inner_atol=inner_atol,
             constraint_tol=constraint_tol,
         )
+        log.end()
 
     def total_constraint_violation(self) -> float:
         """Computes the total constraint violation.
@@ -526,10 +534,6 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             newton_linearizations=self.newton_linearizations,
         )
 
-        optimal_control_problem.db.parameter_db.output_indent = (
-            self.db.parameter_db.output_indent + self.db.parameter_db.indent_summand
-        )
-
         optimal_control_problem.inject_pre_post_callback(
             self._pre_callback, self._post_callback
         )
@@ -755,9 +759,6 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
-        )
-        shape_optimization_problem.db.parameter_db.output_indent = (
-            self.db.parameter_db.output_indent + self.db.parameter_db.indent_summand
         )
 
         shape_optimization_problem.inject_pre_post_callback(

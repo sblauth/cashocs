@@ -135,7 +135,7 @@ space_mapping = cashocs.space_mapping.shape_optimization
 # and, further, we decrease the verbosity of cashocs so that we can see only the output
 # of the space mapping routine
 
-cashocs.set_log_level(cashocs.LogLevel.ERROR)
+cashocs.set_log_level(cashocs.log.ERROR)
 
 # Finally, we define the path to the current directory (where the script is located) via
 

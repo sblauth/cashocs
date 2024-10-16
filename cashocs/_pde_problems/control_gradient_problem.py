@@ -30,6 +30,7 @@ import fenics
 
 from cashocs import _forms
 from cashocs import _utils
+from cashocs import log
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
@@ -102,6 +103,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         self.adjoint_problem.solve()
 
         if not self.has_solution:
+            log.begin("Computing the gradient.", level=log.DEBUG)
             for i in range(len(self.db.function_db.gradient)):
                 self.form_handler.assemblers[i].assemble(self.b_tensors[i])
                 self.linear_solver.solve(
@@ -118,5 +120,6 @@ class ControlGradientProblem(pde_problem.PDEProblem):
             )
 
             self.db.callback.call_post()
+            log.end()
 
         return self.db.function_db.gradient

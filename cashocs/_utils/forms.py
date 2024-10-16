@@ -29,7 +29,7 @@ except ImportError:
     import ufl
 
 from cashocs import _exceptions
-from cashocs import _loggers
+from cashocs import log
 
 T = TypeVar("T")
 
@@ -55,7 +55,7 @@ def summation(x: List[T]) -> Union[T, fenics.Constant]:
     """
     if len(x) == 0:
         y = fenics.Constant(0.0)
-        _loggers.warning("Empty list handed to summation, returning 0.")
+        log.warning("Empty list handed to summation, returning 0.")
     else:
         y = x[0]
 
@@ -79,7 +79,7 @@ def multiplication(x: List[T]) -> Union[T, fenics.Constant]:
     """
     if len(x) == 0:
         y = fenics.Constant(1.0)
-        _loggers.warning("Empty list handed to multiplication, returning 1.")
+        log.warning("Empty list handed to multiplication, returning 1.")
     else:
         y = x[0]
 

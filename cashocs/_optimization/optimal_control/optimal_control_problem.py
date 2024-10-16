@@ -34,6 +34,7 @@ from cashocs import _forms
 from cashocs import _pde_problems
 from cashocs import _utils
 from cashocs import io
+from cashocs import log
 from cashocs._optimization import cost_functional
 from cashocs._optimization import line_search as ls
 from cashocs._optimization import optimal_control
@@ -404,6 +405,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 + \texttt{rtol} || \nabla J(u_0) ||
 
         """
+        log.begin("Solving the optimal control problem.", level=log.INFO)
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
         self._setup_control_bcs()
@@ -411,6 +413,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.solver = self._setup_solver()
         self.solver.run()
         self.solver.post_processing()
+        log.end()
 
     def compute_gradient(self) -> List[fenics.Function]:
         """Solves the Riesz problem to determine the gradient.

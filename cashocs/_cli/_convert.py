@@ -32,8 +32,8 @@ import meshio
 import numpy as np
 
 from cashocs import _exceptions
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 
 
 def _generate_parser() -> argparse.ArgumentParser:
@@ -315,7 +315,7 @@ def convert(argv: Optional[List[str]] = None) -> None:
     end_time = time.time()
 
     if not quiet:
-        _loggers.info(
+        log.info(
             f"Successfully converted {inputfile} to {outputfile} "
             f"in {end_time - start_time:.2f} s"
         )

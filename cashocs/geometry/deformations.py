@@ -25,7 +25,7 @@ import fenics
 import numpy as np
 
 from cashocs import _exceptions
-from cashocs import _loggers
+from cashocs import log
 from cashocs.geometry import measure
 
 if TYPE_CHECKING:
@@ -128,7 +128,7 @@ class DeformationHandler:
             else:
                 dof_transformation = transformation
             if not self.a_priori_tester.test(dof_transformation, float("inf")):
-                _loggers.debug(
+                log.debug(
                     "Mesh transformation rejected due to a priori check.\n"
                     "Reason: Transformation would result in inverted mesh elements."
                 )

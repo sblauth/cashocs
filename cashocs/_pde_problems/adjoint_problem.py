@@ -24,6 +24,7 @@ from typing import List, Optional, TYPE_CHECKING
 import fenics
 
 from cashocs import _utils
+from cashocs import log
 from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
@@ -119,6 +120,7 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.state_problem.solve()
 
         if not self.has_solution:
+            log.begin("Solving the adjoint system.", level=log.DEBUG)
             if (
                 not self.config.getboolean("StateSystem", "picard_iteration")
                 or self.db.parameter_db.state_dim == 1
@@ -157,5 +159,6 @@ class AdjointProblem(pde_problem.PDEProblem):
 
             self.has_solution = True
             self.number_of_solves += 1
+            log.end()
 
         return self.adjoints

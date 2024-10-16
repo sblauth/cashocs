@@ -24,6 +24,7 @@ optimization problems, in particular, shape optimization and optimal control pro
 The documentation for cashocs can be found `here <https://cashocs.readthedocs.io/>`_.
 """
 
+from cashocs import log
 from cashocs import space_mapping
 from cashocs._constraints.constrained_problems import ConstrainedOptimalControlProblem
 from cashocs._constraints.constrained_problems import (
@@ -31,8 +32,6 @@ from cashocs._constraints.constrained_problems import (
 )
 from cashocs._constraints.constraints import EqualityConstraint
 from cashocs._constraints.constraints import InequalityConstraint
-from cashocs._loggers import LogLevel
-from cashocs._loggers import set_log_level
 from cashocs._optimization import verification
 from cashocs._optimization.cost_functional import Functional
 from cashocs._optimization.cost_functional import IntegralFunctional
@@ -55,6 +54,8 @@ from cashocs.geometry import regular_mesh
 from cashocs.io import convert
 from cashocs.io import import_mesh
 from cashocs.io import load_config
+from cashocs.log import LogLevel
+from cashocs.log import set_log_level
 from cashocs.nonlinear_solvers import linear_solve
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
@@ -157,4 +158,5 @@ __all__ = [
     "TopologyOptimizationProblem",
     "interpolate_levelset_function_to_cells",
     "snes_solve",
+    "log",
 ]

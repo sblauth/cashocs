@@ -73,8 +73,6 @@ class ParameterDatabase:
         self.optimization_state: Dict = {"stepsize": 1.0}
         self.remesh_directory: str = ""
         self.gmsh_file_path: str = ""
-        self.output_indent = 0
-        self.indent_summand = 4
 
     @property
     def problem_type(self) -> str:

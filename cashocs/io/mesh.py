@@ -24,7 +24,6 @@ import json
 import pathlib
 import subprocess  # nosec B404
 import tempfile
-import time
 from typing import Dict, Optional, TYPE_CHECKING
 
 import fenics
@@ -32,8 +31,8 @@ import h5py
 import numpy as np
 
 from cashocs import _exceptions
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 from cashocs._cli._convert import convert as cli_convert
 from cashocs.geometry.measure import NamedMeasure
 from cashocs.geometry.mesh import _get_mesh_stats
@@ -594,7 +593,7 @@ def extract_mesh_from_xdmf(
     iteration: int = 0,
     outputfile: Optional[str] = None,
     original_gmsh_file: Optional[str] = None,
-    quiet: bool = False,
+    quiet: bool = False,  # pylint: disable= unused-argument
 ) -> None:
     """Extracts a Gmsh mesh file from an XDMF state file.
 
@@ -613,7 +612,7 @@ def extract_mesh_from_xdmf(
             `False`.
 
     """
-    start_time = time.time()
+    log.begin("Extracting the mesh from the XDMF file", level=log.DEBUG)
 
     _utils.check_file_extension(xdmffile, "xdmf")
     if outputfile is None:
@@ -660,9 +659,4 @@ def extract_mesh_from_xdmf(
     else:
         write_out_mesh(mesh, original_gmsh_file, outputfile)
 
-    end_time = time.time()
-    if not quiet:
-        _loggers.info(
-            f"Successfully extracted the desired mesh {outputfile} from {xdmffile}"
-            f" in {end_time - start_time:.2f} s"
-        )
+    log.end()

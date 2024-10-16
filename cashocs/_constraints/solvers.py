@@ -25,8 +25,8 @@ from typing import List, Optional, TYPE_CHECKING, Union
 import fenics
 import numpy as np
 
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 from cashocs._constraints import constraints
 from cashocs._optimization import cost_functional
 
@@ -390,8 +390,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         while True:
             self.iterations += 1
 
-            _loggers.debug(f"mu = {self.mu}")
-            _loggers.debug(f"lambda = {self.lmbd}")
+            log.debug(f"mu = {self.mu}")
+            log.debug(f"lambda = {self.lmbd}")
 
             self._update_cost_functional()
 
@@ -416,19 +416,11 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 self.mu *= self.beta
 
             if self.constraint_violation <= convergence_tol:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(f"{self.solver_name} converged successfully.\n", flush=True)
-                fenics.MPI.barrier(fenics.MPI.comm_world)
-
                 self.output_manager.output_summary()
                 self.output_manager.post_process()
                 break
 
             if self.iterations >= max_iter:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(f"{self.solver_name} did not converge.\n", flush=True)
-                fenics.MPI.barrier(fenics.MPI.comm_world)
-
                 self.output_manager.post_process()
                 break
 
@@ -486,7 +478,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         while True:
             self.iterations += 1
 
-            _loggers.debug(f"mu = {self.mu}")
+            log.debug(f"mu = {self.mu}")
 
             self._update_cost_functional()
 
@@ -506,19 +498,11 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
             self.output()
 
             if self.constraint_violation <= convergence_tol:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(f"{self.solver_name} converged successfully.\n", flush=True)
-                fenics.MPI.barrier(fenics.MPI.comm_world)
-
                 self.output_manager.output_summary()
                 self.output_manager.post_process()
                 break
 
             if self.iterations >= max_iter:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(f"{self.solver_name} did not converge.\n", flush=True)
-                fenics.MPI.barrier(fenics.MPI.comm_world)
-
                 self.output_manager.post_process()
                 break
 

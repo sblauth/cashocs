@@ -147,7 +147,7 @@ import cashocs
 # space mapping module, set up the log level, and define the current working directory
 
 space_mapping = cashocs.space_mapping.shape_optimization
-cashocs.set_log_level(cashocs.LogLevel.ERROR)
+cashocs.set_log_level(cashocs.log.ERROR)
 dir = os.path.dirname(os.path.realpath(__file__))
 
 # We then define the Reynolds number $\mathrm{Re} = 100$ and load the configuration file

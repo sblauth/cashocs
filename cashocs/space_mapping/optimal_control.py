@@ -36,6 +36,7 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _utils
+from cashocs import log
 from cashocs._database import database
 from cashocs._optimization.optimal_control import optimal_control_problem as ocp
 from cashocs.io import output
@@ -214,9 +215,6 @@ class CoarseModel:
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
         )
-        self.optimal_control_problem.db.parameter_db.output_indent += (
-            self.optimal_control_problem.db.parameter_db.indent_summand
-        )
 
     def optimize(self) -> None:
         """Solves the coarse model optimization problem."""
@@ -392,9 +390,6 @@ class ParameterExtraction:
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
         )
-        self.optimal_control_problem.db.parameter_db.output_indent += (
-            self.optimal_control_problem.db.parameter_db.indent_summand
-        )
 
         self.optimal_control_problem.inject_pre_post_callback(
             self._pre_callback, self._post_callback
@@ -562,9 +557,13 @@ class SpaceMappingProblem:
 
     def solve(self) -> None:
         """Solves the space mapping problem."""
+        log.begin("Solving the space mapping problem.")
         self._compute_intial_guess()
 
+        log.begin("Simulating the fine model.")
         self.fine_model.solve_and_evaluate()
+        log.end()
+
         self.parameter_extraction._solve(  # pylint: disable=protected-access
             self.iteration
         )
@@ -610,6 +609,7 @@ class SpaceMappingProblem:
         if self.converged:
             self.output_manager.output_summary()
             self.output_manager.post_process()
+            log.end()
 
     def _update_broyden_approximation(self) -> None:
         """Updates the approximation of the mapping function with Broyden's method."""
@@ -694,7 +694,10 @@ class SpaceMappingProblem:
                 )
                 self.x[i].vector().apply("")
 
+            log.begin("Simulating the fine model.")
             self.fine_model.solve_and_evaluate()
+            log.end()
+
             self.parameter_extraction._solve(  # pylint: disable=protected-access
                 self.iteration,
                 initial_guesses=[
@@ -718,7 +721,11 @@ class SpaceMappingProblem:
                         self.ips_to_fine[i].interpolate(self.h[i]).vector().vec(),
                     )
                     self.x[i].vector().apply("")
+
+                log.begin("Simulating the fine model.")
                 self.fine_model.solve_and_evaluate()
+                log.end()
+
                 self.parameter_extraction._solve(  # pylint: disable=protected-access
                     self.iteration,
                     initial_guesses=[
