@@ -24,6 +24,7 @@ optimization problems, in particular, shape optimization and optimal control pro
 The documentation for cashocs can be found `here <https://cashocs.readthedocs.io/>`_.
 """
 
+from cashocs import log
 from cashocs import space_mapping
 from cashocs._constraints.constrained_problems import ConstrainedOptimalControlProblem
 from cashocs._constraints.constrained_problems import (
@@ -157,4 +158,5 @@ __all__ = [
     "TopologyOptimizationProblem",
     "interpolate_levelset_function_to_cells",
     "snes_solve",
+    "log",
 ]

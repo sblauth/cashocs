@@ -731,7 +731,7 @@ class OptimizationProblem(abc.ABC):
 
     def _scale_cost_functional(self) -> None:
         """Scales the terms of the cost functional."""
-        log.info(
+        log.warning(
             "You are using the automatic scaling functionality of cashocs."
             "This may lead to unexpected results if you try to scale the cost "
             "functional yourself or if you supply custom forms."

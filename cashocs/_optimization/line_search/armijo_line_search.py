@@ -114,6 +114,7 @@ class ArmijoLineSearch(line_search.LineSearch):
         self.initialize_stepsize(solver, search_direction, has_curvature_info)
         is_remeshed = False
 
+        log.begin("Armijo line search.", level=log.DEBUG)
         while True:
             if self._check_for_nonconvergence(solver):
                 return (None, False)
@@ -140,7 +141,7 @@ class ArmijoLineSearch(line_search.LineSearch):
                 current_function_value
             )
             log.debug(
-                f"Line search - Trial stepsize {self.stepsize:.3e} - "
+                f"Trial stepsize {self.stepsize:.3e} - "
                 f"Function value {objective_step:.3e}"
             )
 
@@ -172,6 +173,7 @@ class ArmijoLineSearch(line_search.LineSearch):
                 self.stepsize /= self.beta_armijo
                 self.optimization_variable_abstractions.revert_variable_update()
 
+        log.end()
         solver.stepsize = self.stepsize
 
         if not has_curvature_info:

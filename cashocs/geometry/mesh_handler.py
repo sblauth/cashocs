@@ -683,9 +683,9 @@ class _MeshHandler:
         """
         if self.config.getboolean("ShapeGradient", "global_deformation"):
             pre_log_level = (
-                log._cashocs_logger.level  # pylint: disable=protected-access
+                log.cashocs_logger._handler.level  # pylint: disable=protected-access
             )
-            log.set_log_level(log.LogLevel.WARNING)
+            log.set_log_level(log.WARNING)
             mesh, _, _, _, _, _ = import_mesh(xdmf_filename)
             log.set_log_level(pre_log_level)
 

@@ -34,7 +34,7 @@ def issue_messages():
 
 
 def test_set_log_level(caplog):
-    cashocs.set_log_level(cashocs.LogLevel.DEBUG)
+    cashocs.set_log_level(cashocs.log.DEBUG)
     issue_messages()
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert "abc" in caplog.text
@@ -45,7 +45,7 @@ def test_set_log_level(caplog):
     fenics.MPI.barrier(fenics.MPI.comm_world)
     caplog.clear()
 
-    cashocs.set_log_level(cashocs.LogLevel.INFO)
+    cashocs.set_log_level(cashocs.log.INFO)
 
     issue_messages()
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
@@ -57,7 +57,7 @@ def test_set_log_level(caplog):
     fenics.MPI.barrier(fenics.MPI.comm_world)
     caplog.clear()
 
-    cashocs.set_log_level(cashocs.LogLevel.WARNING)
+    cashocs.set_log_level(cashocs.log.WARNING)
     issue_messages()
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert not "abc" in caplog.text
@@ -68,7 +68,7 @@ def test_set_log_level(caplog):
     fenics.MPI.barrier(fenics.MPI.comm_world)
     caplog.clear()
 
-    cashocs.set_log_level(cashocs.LogLevel.ERROR)
+    cashocs.set_log_level(cashocs.log.ERROR)
     issue_messages()
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert not "abc" in caplog.text
@@ -79,7 +79,7 @@ def test_set_log_level(caplog):
     fenics.MPI.barrier(fenics.MPI.comm_world)
     caplog.clear()
 
-    cashocs.set_log_level(cashocs.LogLevel.CRITICAL)
+    cashocs.set_log_level(cashocs.log.CRITICAL)
     issue_messages()
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         assert not "abc" in caplog.text

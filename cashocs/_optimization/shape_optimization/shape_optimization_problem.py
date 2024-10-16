@@ -467,6 +467,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 + \texttt{rtol} || \nabla J(u_0) ||
 
         """
+        log.begin("Solving the shape optimization problem.", level=log.INFO)
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
         self.solver = self._setup_solver()
@@ -478,6 +479,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 self._clear_remesh_directory()
             raise e
         self.solver.post_processing()
+        log.end()
 
     def _clear_remesh_directory(self) -> None:
         log.debug("An exception was raised, deleting the created temporary files.")

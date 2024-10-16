@@ -291,6 +291,7 @@ class HessianProblem:
 
     def cg(self) -> None:
         """Solves the (truncated) Newton step with a CG method."""
+        log.begin("Solving the Newton system with a CG method.")
         for j in range(len(self.residual)):
             self.residual[j].vector().vec().aypx(
                 0.0, -self.db.function_db.gradient[j].vector().vec()
@@ -335,9 +336,11 @@ class HessianProblem:
                 self.p[j].vector().apply("")
 
             rsold = rsnew
+        log.end()
 
     def cr(self) -> None:
         """Solves the (truncated) Newton step with a CR method."""
+        log.begin("Solving the Newton system with a CR method.")
         for j in range(len(self.residual)):
             self.residual[j].vector().vec().aypx(
                 0.0, -self.db.function_db.gradient[j].vector().vec()
@@ -417,3 +420,4 @@ class HessianProblem:
                 self.q[j].vector().apply("")
 
             rar = rar_new
+        log.end()

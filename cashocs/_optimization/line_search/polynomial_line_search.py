@@ -133,6 +133,7 @@ class PolynomialLineSearch(line_search.LineSearch):
         self.alpha_vals.clear()
 
         is_remeshed = False
+        log.begin("Polynomial line search.", level=log.DEBUG)
         while True:
             if self._check_for_nonconvergence(solver):
                 return (None, False)
@@ -200,6 +201,7 @@ class PolynomialLineSearch(line_search.LineSearch):
                 self.optimization_variable_abstractions.revert_variable_update()
 
         solver.stepsize = self.stepsize
+        log.end()
 
         if not has_curvature_info:
             self.stepsize /= self.factor_high

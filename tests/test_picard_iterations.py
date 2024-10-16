@@ -28,7 +28,7 @@ import pytest
 
 import cashocs
 
-set_log_level(LogLevel.CRITICAL)
+set_log_level(cashocs.log.CRITICAL)
 
 
 @pytest.fixture
