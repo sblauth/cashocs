@@ -116,8 +116,8 @@ class Logger:
     def begin(self, message: str, level: int = logging.INFO) -> None:
         """This signals the beginning of a (timed) block of logs.
 
-        This is closed with a suitable call to :py:`log.end` with which each call to
-        :py:`log.begin` has to be accompanied by.
+        This is closed with a suitable call to :py:func:`cashocs.log.end` with which
+        each call to :py:func:`cashocs.log.begin` has to be accompanied by.
 
         Args:
             message (str): The message indicating what block is started.
@@ -135,7 +135,7 @@ class Logger:
         self._add_indent()
 
     def end(self) -> None:
-        """This signals the end of a block started with :py:`log.begin`."""
+        """This signals the end of a block started with :py:func:`cashocs.log.begin`."""
         elapsed_time = self._pop_time()
         message = self._pop_message()
         level = self._pop_level()
@@ -171,8 +171,8 @@ class Logger:
         """Generate a timedelta between the start and end time.
 
         Returns:
-            datetime.timedelta: The timedelta between the :py:`log.begin` and
-            :py:`log.end` calls.
+            datetime.timedelta: The timedelta between the :py:func:`cashocs.log.begin`
+            and :py:func:`cashocs.log.end` calls.
 
         """
         start_time = self._time_stack.pop()
@@ -270,11 +270,11 @@ class Logger:
         """
         self._log.addHandler(handler)
 
-    def add_timestamp(self) -> None:
+    def add_timestamps(self) -> None:
         """This function adds a time stamp to the logged events."""
         self._use_timestamp = True
 
-    def remove_timestamp(self) -> None:
+    def remove_timestamps(self) -> None:
         """This method removes the time stamp from the logged events."""
         self._use_timestamp = False
 
@@ -292,8 +292,9 @@ end = cashocs_logger.end
 
 set_log_level = cashocs_logger.set_log_level
 add_logfile = cashocs_logger.add_logfile
-add_timestamp = cashocs_logger.add_timestamp
-remove_timestamp = cashocs_logger.remove_timestamp
+add_timestamps = cashocs_logger.add_timestamps
+remove_timestamps = cashocs_logger.remove_timestamps
+add_handler = cashocs_logger.add_handler
 
 
 class LogLevel:

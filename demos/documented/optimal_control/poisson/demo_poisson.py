@@ -70,15 +70,15 @@ import cashocs
 # Afterwards, we can specify the so-called log level of cashocs. This is done in the
 # line
 
-cashocs.set_log_level(cashocs.log.INFO)
+cashocs.log.set_log_level(cashocs.log.INFO)
 
 # :::{hint}
 # There are a total of five levels of verbosity, given by
 # {py:class}`cashocs.log.DEBUG`, {py:class}`cashocs.log.INFO`,
 # {py:class}`cashocs.log.WARNING`, {py:class}`cashocs.log.ERROR`,
 # and {py:class}`cashocs.log.CRITICAL`. The default value is {python}`INFO`, which
-# would also be selected if the {py:func}`cashocs.set_log_level` method would not have
-# been called.
+# would also be selected if the {py:func}`cashocs.log.set_log_level` method would not
+# have been called.
 # :::
 #
 # Next, we have to load the config file which loads the user's input parameters into the
