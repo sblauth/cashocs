@@ -22,11 +22,11 @@ from __future__ import annotations
 import abc
 from typing import TYPE_CHECKING
 
-import fenics
 import numpy as np
 
 from cashocs import _exceptions
 from cashocs import _utils
+from cashocs import log
 
 if TYPE_CHECKING:
     from cashocs import _pde_problems
@@ -243,9 +243,7 @@ class OptimizationAlgorithm(abc.ABC):
 
         """
         if self.soft_exit:
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print(message, flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            log.error(message)
         else:
             raise _exceptions.NotConvergedError("Optimization Algorithm", message)
 

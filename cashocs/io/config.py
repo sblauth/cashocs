@@ -682,8 +682,8 @@ max_iter_bisection = 100
 
 [Output]
 save_results = True
-verbose = True
-save_txt = True
+verbose = False
+save_txt = False
 save_state = False
 save_adjoint = False
 save_gradient = False

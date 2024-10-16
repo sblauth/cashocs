@@ -273,9 +273,13 @@ class _NewtonSolver:
 
         self.res_0 = self.residual.norm(self.norm_type)
         if self.res_0 == 0.0:  # pragma: no cover
-            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print("Residual vanishes, input is already a solution.", flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            message = "Residual vanishes, input is already a solution."
+            if self.verbose:
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(message, flush=True)
+                fenics.MPI.barrier(fenics.MPI.comm_world)
+            else:
+                log.info(message)
             return self.u
 
         self.res = self.res_0
@@ -331,13 +335,15 @@ class _NewtonSolver:
     def _check_for_convergence(self) -> bool:
         """Checks, whether the desired convergence tolerance has been reached."""
         if self.res <= self.tol:
-            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print(
-                    f"\nNewton Solver converged "
-                    f"after {self.iterations:d} iterations.\n",
-                    flush=True,
-                )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            convergence_message = (
+                f"Newton Solver converged after {self.iterations:d} iterations."
+            )
+            if self.verbose:
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(convergence_message, flush=True)
+                fenics.MPI.barrier(fenics.MPI.comm_world)
+            else:
+                log.info(convergence_message)
             return True
 
         else:

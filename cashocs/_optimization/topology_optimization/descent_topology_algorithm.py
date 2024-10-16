@@ -22,6 +22,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from cashocs import _exceptions
+from cashocs import log
 from cashocs._optimization.topology_optimization import topology_optimization_algorithm
 
 if TYPE_CHECKING:
@@ -123,12 +124,14 @@ class DescentTopologyAlgorithm(
             if self.iteration >= self.max_iter:
                 self._cashocs_problem.db.function_db.gradient[0].vector().vec().set(0.0)
                 self._cashocs_problem.db.function_db.gradient[0].vector().apply("")
+
+                exit_message = "Maximum number of iterations reached."
                 if self.config.getboolean("OptimizationRoutine", "soft_exit"):
-                    print("Maximum number of iterations reached.")
+                    log.error(exit_message)
                 else:
                     raise _exceptions.NotConvergedError(
                         "Topology Optimization Algorithm",
-                        "Maximum number of iterations reached.",
+                        exit_message,
                     )
 
         self._cashocs_problem.inject_pre_callback(pre_callback)

@@ -31,6 +31,7 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _utils
+from cashocs import log
 from cashocs.nonlinear_solvers import snes
 
 if TYPE_CHECKING:
@@ -132,7 +133,6 @@ def picard_iteration(
             Jacobian of the supplied state forms is used.
 
     """
-    is_printing = verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0
     form_list = _utils.enlist(form_list)
     u_list = _utils.enlist(u_list)
     bcs_list = _utils.check_and_enlist_bcs(bcs_list)
@@ -156,14 +156,19 @@ def picard_iteration(
         if i == 0:
             res_0 = res
             tol = atol + rtol * res_0
-        if is_printing:
-            if i % 10 == 0:
-                info_str = f"\n{prefix}iter,  abs. residual,  rel. residual\n\n"
-            else:
-                info_str = ""
-            val_str = f"{prefix}{i:4d},  {res:>13.3e},  {res/res_0:>13.3e}"
 
-            print(info_str + val_str, flush=True)
+        if i % 10 == 0:
+            info_str = f"\n{prefix}iter,  abs. residual,  rel. residual\n\n"
+        else:
+            info_str = ""
+        val_str = f"{prefix}{i:4d},  {res:>13.3e},  {res/res_0:>13.3e}"
+        if verbose:
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(info_str + val_str, flush=True)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+        else:
+            log.info(info_str + val_str)
+
         if res <= tol:
             break
 
@@ -194,9 +199,6 @@ def picard_iteration(
                 b_tensor=b_tensor,
                 preconditioner_form=preconditioner_form_list[j],
             )
-
-    if is_printing:
-        print("", flush=True)
 
 
 def _compute_residual(
