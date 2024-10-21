@@ -32,6 +32,7 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _utils
+from cashocs import log
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -172,6 +173,7 @@ class SNESSolver:
             f: The vector in which the function evaluation is stored.
 
         """
+        log.begin("Assembling the residual for Newton's method.", level=log.DEBUG)
         self.u.vector().vec().setArray(x)
         self.u.vector().apply("")
         f = fenics.PETScVector(f)
@@ -184,6 +186,7 @@ class SNESSolver:
         ):
             self.assembler_shift.assemble(self.residual_shift, self.u.vector())
             f[:] -= self.residual_shift[:]
+        log.end()
 
     def assemble_jacobian(
         self,
@@ -202,6 +205,7 @@ class SNESSolver:
 
         """
         if not self.is_preassembled:
+            log.begin("Assembling the Jacobian for Newton's method.", level=log.DEBUG)
             self.u.vector().vec().setArray(x)
             self.u.vector().apply("")
 
@@ -213,6 +217,7 @@ class SNESSolver:
                 P = fenics.PETScMatrix(P)  # pylint: disable=invalid-name
                 self.assembler_pc.assemble(P)
                 P.ident_zeros()
+            log.end()
         else:
             self.is_preassembled = False
 
