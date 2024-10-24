@@ -20,7 +20,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4.2.1
+      uses: actions/checkout@v4.2.2
 
     - name: Create conda environment
       run: conda create -n cashocs -c conda-forge python=${{ matrix.python-version }} fenics=2019 meshio">=5.3" pytest gmsh">=4.8" scipy scotch"<7"
