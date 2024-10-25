@@ -36,7 +36,7 @@ class Logger:
 
         """
         h = logging.StreamHandler()
-        h.setLevel(logging.WARNING)
+        h.setLevel(logging.INFO)
         self._handler = h
 
         self._log = logging.getLogger(name)
