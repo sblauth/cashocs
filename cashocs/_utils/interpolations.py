@@ -132,10 +132,11 @@ double interpolate_levelset_to_elements(
 
     std::vector<unsigned int> cells = mesh->cells();
     int meshdim = mesh->geometry().dim();
+    auto ghost_offset = mesh->topology().ghost_offset(meshdim);
 
     if (meshdim == 2){
         int index = 0;
-        for (int i=0; i<cells.size(); i+=3){
+        for (int i=0; i<ghost_offset*3; i+=3){
             psi0 = vertex_values[cells[i]];
             psi1 = vertex_values[cells[i+1]];
             psi2 = vertex_values[cells[i+2]];
@@ -155,7 +156,7 @@ double interpolate_levelset_to_elements(
     }
     else if (meshdim == 3){
         int index = 0;
-        for (int i=0; i<cells.size(); i+=4){
+        for (int i=0; i<ghost_offset*4; i+=4){
             psi0 = vertex_values[cells[i]];
             psi1 = vertex_values[cells[i+1]];
             psi2 = vertex_values[cells[i+2]];
@@ -246,7 +247,8 @@ def interpolate_by_volume(
     )
     arr = fenics.assemble(form_td * test * dx)
     vol = fenics.assemble(test * dx)
-    node_function.vector()[:] = arr[:] / vol[:]
+    node_function.vector().set_local(arr[:] / vol[:])
+    node_function.vector().apply("")
 
 
 def interpolate_by_angle(
@@ -439,3 +441,4 @@ PYBIND11_MODULE(SIGNATURE, m)
     values /= weights
     d2v = fenics.dof_to_vertex_map(cg1_space)
     node_function.vector()[:] = values[d2v]
+    node_function.vector().apply("")

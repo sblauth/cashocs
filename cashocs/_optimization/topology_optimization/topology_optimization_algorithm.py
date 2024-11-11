@@ -90,6 +90,16 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self._cashocs_problem.db.parameter_db.problem_type = "topology"
 
         self.mesh = optimization_problem.mesh
+
+        mpi_comm = self.mesh.mpi_comm()
+        if self.interpolation_scheme == "angle" and mpi_comm.Get_size() > 1:
+            raise _exceptions.InputError(
+                "TopologyOptimizationProblem",
+                "TopologyOptimization.interpolation_scheme",
+                "The angle weighted interpolation option is not supported in parallel. "
+                "Please use interpolation_scheme = volume in your config file.",
+            )
+
         self.cg1_space = fenics.FunctionSpace(self.mesh, "CG", 1)
         self.dg0_space = optimization_problem.dg0_space
         self.topological_derivative_vertex: fenics.Function = fenics.Function(
