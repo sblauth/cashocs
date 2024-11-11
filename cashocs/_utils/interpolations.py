@@ -247,7 +247,8 @@ def interpolate_by_volume(
     )
     arr = fenics.assemble(form_td * test * dx)
     vol = fenics.assemble(test * dx)
-    node_function.vector()[:] = arr[:] / vol[:]
+    node_function.vector().set_local(arr[:] / vol[:])
+    node_function.vector().apply("")
 
 
 def interpolate_by_angle(
@@ -440,3 +441,4 @@ PYBIND11_MODULE(SIGNATURE, m)
     values /= weights
     d2v = fenics.dof_to_vertex_map(cg1_space)
     node_function.vector()[:] = values[d2v]
+    node_function.vector().apply("")
