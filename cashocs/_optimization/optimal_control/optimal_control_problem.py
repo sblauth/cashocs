@@ -262,6 +262,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 self, self.box_constraints, self.db
             )
         )
+        self._silent = False
 
         if bool(desired_weights is not None):
             self._scale_cost_functional()
@@ -405,7 +406,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 + \texttt{rtol} || \nabla J(u_0) ||
 
         """
-        log.begin("Solving the optimal control problem.", level=log.INFO)
+        if not self._silent:
+            log.begin("Solving the optimal control problem.", level=log.INFO)
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
         self._setup_control_bcs()
@@ -413,7 +415,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         self.solver = self._setup_solver()
         self.solver.run()
         self.solver.post_processing()
-        log.end()
+        if not self._silent:
+            log.end()
 
     def compute_gradient(self) -> List[fenics.Function]:
         """Solves the Riesz problem to determine the gradient.
