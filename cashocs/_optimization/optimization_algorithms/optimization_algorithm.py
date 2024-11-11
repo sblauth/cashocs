@@ -244,6 +244,7 @@ class OptimizationAlgorithm(abc.ABC):
         """
         if self.soft_exit:
             log.error(message)
+            log.end()
         else:
             raise _exceptions.NotConvergedError("Optimization Algorithm", message)
 

@@ -75,6 +75,9 @@ class DescentTopologyAlgorithm(
         self._cashocs_problem.config.set("OptimizationRoutine", "rtol", "0.0")
         self._cashocs_problem.config.set("OptimizationRoutine", "atol", "0.0")
 
+        self._cashocs_problem._silent = True
+        self._cashocs_problem.output_manager._silent = True
+
         self.successful = False
         self.loop_restart = False
 

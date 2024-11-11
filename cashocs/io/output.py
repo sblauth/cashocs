@@ -44,6 +44,8 @@ class OutputManager:
         self.result_dir = self.config.get("Output", "result_dir")
         self.result_dir = self.result_dir.rstrip("/")
 
+        self._silent = False
+
         self.time_suffix = self.config.getboolean("Output", "time_suffix")
         if self.time_suffix:
             dt_current_time = dt.now()
@@ -93,15 +95,18 @@ class OutputManager:
 
     def output(self) -> None:
         """Writes the desired output to files and console."""
-        for manager in self.managers:
-            manager.output()
+        if not self._silent:
+            for manager in self.managers:
+                manager.output()
 
     def output_summary(self) -> None:
         """Writes the summary to files and console."""
-        for manager in self.managers:
-            manager.output_summary()
+        if not self._silent:
+            for manager in self.managers:
+                manager.output_summary()
 
     def post_process(self) -> None:
         """Performs a postprocessing of the output."""
-        for manager in self.managers:
-            manager.post_process()
+        if not self._silent:
+            for manager in self.managers:
+                manager.post_process()
