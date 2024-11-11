@@ -244,7 +244,6 @@ class OptimizationAlgorithm(abc.ABC):
         """
         if self.soft_exit:
             log.error(message)
-            log.end()
         else:
             raise _exceptions.NotConvergedError("Optimization Algorithm", message)
 
@@ -269,6 +268,7 @@ class OptimizationAlgorithm(abc.ABC):
             elif self.converged_reason == -2:
                 self.iteration -= 1
                 self.post_process()
+                log.end()
                 self._exit("Armijo rule failed.")
 
             # Mesh Quality is too low
