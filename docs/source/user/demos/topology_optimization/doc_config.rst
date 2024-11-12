@@ -1,7 +1,7 @@
 .. _config_topology_optimization:
 
 Documentation of the Config Files for Topology Optimization Problems
-=================================================================
+====================================================================
 
 Let us take a detailed look at the config files for topology optimization problems and
 discusss the corresponding parameters. Note that the settings are mostly the same as
@@ -88,7 +88,7 @@ determines how many iterations of the bisection approach are carried out in the 
 :ini:`max_iter_bisection = 100`.
 
 
-.. _config_shape_summary:
+.. _config_topology_summary:
 
 Summary
 -------
@@ -98,7 +98,7 @@ in the following.
 
 
 [TopologyOptimization]
-******
+**********************
 
 .. list-table::
     :header-rows: 1
