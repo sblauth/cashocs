@@ -13,6 +13,10 @@ of the maintenance releases, please take a look at
 
 * Properly handle the output for nested problems in the context of space mapping and additional constraints. The output config is applied to all problems and the sub- and main problems all write their history to files and console.
 
+* Topology optimization problems now work as expected in parallel, with the exception that there is no support for angle-weighted interpolation of the topological derivative. Now, a corresponding exception is raised by cashocs.
+
+* Add additional documentation for the configuration parameters for topology optimization which can be found at `<https://cashocs.readthedocs.io/en/stable/user/demos/topology_optimization/doc_config/>`.
+
 
 2.2.0 (August 28, 2024)
 -----------------------
