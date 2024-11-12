@@ -268,6 +268,7 @@ class OptimizationAlgorithm(abc.ABC):
             elif self.converged_reason == -2:
                 self.iteration -= 1
                 self.post_process()
+                log.end()
                 self._exit("Armijo rule failed.")
 
             # Mesh Quality is too low
