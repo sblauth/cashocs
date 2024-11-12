@@ -6,8 +6,8 @@ here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
-2.3.0 (in development)
-----------------------
+2.3.0 (November 12, 2024)
+-------------------------
 
 * The handling of the terminal output (and some other outputs) has changed significantly and now uses the python logging library. This allows for a greater flexibility and automatically times operations. The downside of this is, that the configuration has to change. Particularly, the :ini:`verbose` and :ini:`save_txt` parameters are now deprecated and will be removed in the future. These are kept for backwards compatibility reasons, but their default value is set to `False` to use the new logging-based approach. Moreover, almost any place where a flag such as a keyword argument :python:`verbose` or :python:`quiet` is used, is deprecated and will be removed in the future. Here, too, the logging-based approach is used by default now. If your applications are too verbose for you now, you can call :python:`cashocs.log.set_log_level(cashocs.log.WARNING)` to increase the log level. A brief documentation of the logging capabilities can be found at `<https://cashocs.readthedocs.io/en/stable/user/demos/misc/demo_logging/>`_.
 
