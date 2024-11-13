@@ -57,9 +57,10 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
     """
     temp_location = f"{mesh_file[:-4]}_temp.msh"
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        with open(mesh_file, "r", encoding="utf-8") as in_file, open(
-            temp_location, "w", encoding="utf-8"
-        ) as temp_file:
+        with (
+            open(mesh_file, "r", encoding="utf-8") as in_file,
+            open(temp_location, "w", encoding="utf-8") as temp_file,
+        ):
             parametrizations_section = False
 
             for line in in_file:
