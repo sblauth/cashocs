@@ -410,9 +410,10 @@ def parse_file(
         dim: The dimensionality of the mesh
 
     """
-    with open(original_msh_file, "r", encoding="utf-8") as old_file, open(
-        out_msh_file, "w", encoding="utf-8"
-    ) as new_file:
+    with (
+        open(original_msh_file, "r", encoding="utf-8") as old_file,
+        open(out_msh_file, "w", encoding="utf-8") as new_file,
+    ):
         node_section = False
         info_section = False
         subnode_counter = 0
