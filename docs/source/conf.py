@@ -28,7 +28,7 @@ copyright = "2020-2024, Fraunhofer ITWM and Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
-release = "2.3.0"
+release = "2.3.1"
 
 
 # -- General configuration ---------------------------------------------------
