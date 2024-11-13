@@ -18,7 +18,7 @@ RUN micromamba install -y -n base -c conda-forge \
       mpich \
       scipy \
       scotch"<7" \
-      python=3.11 && \
+      python=3.12 && \
    micromamba clean --all --yes
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
