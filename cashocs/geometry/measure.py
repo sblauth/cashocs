@@ -76,7 +76,7 @@ class _EmptyMeasure(ufl.Measure):
 
 
 def generate_measure(
-    idx: List[int], measure: fenics.Measure
+    idx: List[Union[int, str]], measure: fenics.Measure
 ) -> Union[fenics.Measure, _EmptyMeasure]:
     """Generates a measure based on indices.
 
@@ -195,8 +195,8 @@ class NamedMeasure(ufl.Measure):
                 rule=rule,
             )
 
-        elif isinstance(subdomain_id, (list)) and all(
-            isinstance(x, int) for x in subdomain_id
+        elif isinstance(subdomain_id, list) and all(
+            isinstance(x, (int, str)) for x in subdomain_id
         ):
             return generate_measure(subdomain_id, self)
 
