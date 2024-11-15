@@ -26,7 +26,7 @@ jobs:
     - name: Create conda environment
       uses: conda-incubator/setup-miniconda@v3
       with:
-        environment_file: .github/conda/mpich.yml
+        environment-file: .github/conda/mpich.yml
         miniforge-version: latest
         python-version: ${{ matrix.python-version }}
         activate-environment: test
