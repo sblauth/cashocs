@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: bash -l {0}
+        shell: bash -el {0}
     strategy:
       fail-fast: false
       matrix:
@@ -24,7 +24,13 @@ jobs:
       uses: actions/checkout@v4.2.2
 
     - name: Create conda environment
-      run: conda create -n cashocs -c conda-forge fenics=2019 meshio">=5.3" pytest gmsh">=4.8" scipy scotch"<7" python=${{ matrix.python-version }}
+      uses: conda-incubator/setup-miniconda@v3
+      with:
+        environment_file: .github/conda/mpich.yml
+        miniforge-version: latest
+        python-version: ${{ matrix.python-version }}
+        activate-environment: test
+        auto-activate-base: false
 
     - name: Show conda info
       run: conda info
@@ -34,11 +40,11 @@ jobs:
 
     - name: Install package
       run: |
-        conda run --live-stream -n cashocs pip install .[all]
+        pip install .[all]
 
     - name: Run tests
       env: 
         OMP_NUM_THREADS: 2
       run: |
-        conda run --live-stream -n cashocs python3 -m pytest -vv tests/
+        python3 -m pytest -vv tests/
  
