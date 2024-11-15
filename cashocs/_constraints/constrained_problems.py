@@ -20,6 +20,8 @@
 from __future__ import annotations
 
 import abc
+import copy
+import pathlib
 from typing import Callable, List, Optional, TYPE_CHECKING, Union
 
 import fenics
@@ -32,9 +34,12 @@ except ImportError:
     import ufl
 
 from cashocs import _utils
+from cashocs import log
 from cashocs._constraints import solvers
+from cashocs._database import database
 from cashocs._optimization import optimal_control
 from cashocs._optimization import shape_optimization
+from cashocs.io import output
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -131,10 +136,10 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 Jacobian of the supplied state forms is used.
 
         """
-        self.state_forms = state_forms
-        self.bcs_list = bcs_list
-        self.states = states
-        self.adjoints = adjoints
+        self.state_forms = _utils.enlist(state_forms)
+        self.bcs_list = _utils.check_and_enlist_bcs(bcs_list)
+        self.states = _utils.enlist(states)
+        self.adjoints = _utils.enlist(adjoints)
 
         if config is not None:
             self.config = config
@@ -175,6 +180,21 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         self.cost_functional_shift = 0.0
 
+        self.db = database.Database(
+            self.config,
+            self.states,
+            self.adjoints,
+            self.ksp_options,  # type: ignore
+            self.adjoint_ksp_options,  # type: ignore
+            self.gradient_ksp_options,  # type: ignore
+            self.cost_functional_form_initial,
+            self.state_forms,
+            self.bcs_list,
+            self.preconditioner_forms,  # type: ignore
+        )
+
+        self.output_manager = output.OutputManager(self.db)
+
     def solve(
         self,
         method: Literal[
@@ -212,10 +232,16 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         """
         if method.casefold() in ["augmented lagrangian", "al"]:
+            log.begin(
+                "Solving the constrained problem with an augmented Lagrangian method."
+            )
             self.solver = solvers.AugmentedLagrangianMethod(
                 self, mu_0=mu_0, lambda_0=lambda_0
             )
         elif method.casefold() in ["quadratic penalty", "qp"]:
+            log.begin(
+                "Solving the constrained problem with a quadratic penalty method."
+            )
             self.solver = solvers.QuadraticPenaltyMethod(
                 self, mu_0=mu_0, lambda_0=lambda_0
             )
@@ -227,6 +253,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
             inner_atol=inner_atol,
             constraint_tol=constraint_tol,
         )
+        log.end()
 
     def total_constraint_violation(self) -> float:
         """Computes the total constraint violation.
@@ -248,6 +275,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         tol: float = 1e-2,
         inner_rtol: Optional[float] = None,
         inner_atol: Optional[float] = None,
+        iteration: int = 0,
     ) -> None:
         """Solves the inner (unconstrained) optimization problem.
 
@@ -259,6 +287,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
+            iteration: The current outer iteration count.
 
         """
         self.rtol = inner_rtol or tol
@@ -440,16 +469,26 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             newton_linearizations=newton_linearizations,
         )
 
-        self.controls = controls
+        self.controls = _utils.enlist(controls)
         self.riesz_scalar_products = riesz_scalar_products
         self.control_bcs_list = control_bcs_list
         self.control_constraints = control_constraints
+
+        self.db.function_db.controls = self.controls
+        self.db.function_db.control_spaces = [
+            x.function_space() for x in self.db.function_db.controls
+        ]
+        self.db.function_db.gradient = _utils.create_function_list(
+            self.db.function_db.control_spaces
+        )
+        self.db.parameter_db.problem_type = "control"
 
     def _solve_inner_problem(
         self,
         tol: float = 1e-2,
         inner_rtol: Optional[float] = None,
         inner_atol: Optional[float] = None,
+        iteration: int = 0,
     ) -> None:
         """Solves the inner (unconstrained) optimization problem.
 
@@ -461,9 +500,16 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
+            iteration: The current outer iteration count
 
         """
-        super()._solve_inner_problem(tol, inner_rtol, inner_atol)
+        super()._solve_inner_problem(
+            tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol, iteration=iteration
+        )
+
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set("Output", "result_dir", str(output_path / f"subproblem_{iteration}"))
 
         optimal_control_problem = optimal_control.OptimalControlProblem(
             self.state_forms,
@@ -472,7 +518,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             self.states,
             self.controls,
             self.adjoints,
-            config=self.config,
+            config=config,
             riesz_scalar_products=self.riesz_scalar_products,
             control_constraints=self.control_constraints,
             initial_guess=self.initial_guess,
@@ -504,6 +550,11 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         if self.solver.iterations == 1:
             self.initial_norm = optimal_control_problem.solver.gradient_norm_initial
 
+        config = copy.deepcopy(self.config)
+        config.set("Output", "save_state", "False")
+        config.set("Output", "save_adjoint", "False")
+        config.set("Output", "save_gradient", "False")
+
         temp_problem = optimal_control.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -511,7 +562,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             self.states,
             self.controls,
             self.adjoints,
-            config=self.config,
+            config=config,
             riesz_scalar_products=self.riesz_scalar_products,
             control_constraints=self.control_constraints,
             initial_guess=self.initial_guess,
@@ -649,11 +700,24 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         self.boundaries = boundaries
         self.shape_scalar_product = shape_scalar_product
 
+        if shape_scalar_product is None:
+            deformation_space: fenics.FunctionSpace = fenics.VectorFunctionSpace(
+                self.db.geometry_db.mesh, "CG", 1
+            )
+        else:
+            deformation_space = shape_scalar_product.arguments()[0].ufl_function_space()
+        self.db.function_db.control_spaces = [deformation_space]
+        self.db.function_db.gradient = [
+            fenics.Function(self.db.function_db.control_spaces[0])
+        ]
+        self.db.parameter_db.problem_type = "shape"
+
     def _solve_inner_problem(
         self,
         tol: float = 1e-2,
         inner_rtol: Optional[float] = None,
         inner_atol: Optional[float] = None,
+        iteration: int = 0,
     ) -> None:
         """Solves the inner (unconstrained) optimization problem.
 
@@ -665,9 +729,16 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
+            iteration: The current outer iteration count.
 
         """
-        super()._solve_inner_problem(tol, inner_rtol, inner_atol)
+        super()._solve_inner_problem(
+            tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol, iteration=iteration
+        )
+
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set("Output", "result_dir", str(output_path / f"subproblem_{iteration}"))
 
         shape_optimization_problem = shape_optimization.ShapeOptimizationProblem(
             self.state_forms,
@@ -676,7 +747,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             self.states,
             self.adjoints,
             self.boundaries,
-            config=self.config,
+            config=config,
             shape_scalar_product=self.shape_scalar_product,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
@@ -689,6 +760,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
         )
+
         shape_optimization_problem.inject_pre_post_callback(
             self._pre_callback, self._post_callback
         )
@@ -705,6 +777,11 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         if self.solver.iterations == 1:
             self.initial_norm = shape_optimization_problem.solver.gradient_norm_initial
 
+        config = copy.deepcopy(self.config)
+        config.set("Output", "save_state", "False")
+        config.set("Output", "save_adjoint", "False")
+        config.set("Output", "save_gradient", "False")
+
         temp_problem = shape_optimization.ShapeOptimizationProblem(
             self.state_forms,
             self.bcs_list,
@@ -712,7 +789,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             self.states,
             self.adjoints,
             self.boundaries,
-            config=self.config,
+            config=config,
             shape_scalar_product=self.shape_scalar_product,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,

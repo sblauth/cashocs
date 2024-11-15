@@ -24,6 +24,7 @@ from typing import List, Optional, TYPE_CHECKING
 import fenics
 
 from cashocs import _utils
+from cashocs import log
 from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
@@ -100,9 +101,15 @@ class StateProblem(pde_problem.PDEProblem):
 
         self._number_of_solves = 0
         if self.db.parameter_db.temp_dict:
-            self.number_of_solves = self.db.parameter_db.temp_dict["output_dict"].get(
-                "state_solves", 0
-            )
+            if (
+                "no_state_solves"
+                in self.db.parameter_db.temp_dict["output_dict"].keys()
+            ):
+                self.number_of_solves: int = self.db.parameter_db.temp_dict[
+                    "output_dict"
+                ]["no_state_solves"][-1]
+            else:
+                self.number_of_solves = 0
         else:
             self.number_of_solves = 0
 
@@ -128,6 +135,8 @@ class StateProblem(pde_problem.PDEProblem):
 
         """
         if not self.has_solution:
+            log.begin("Solving the state system.", level=log.DEBUG)
+
             self.db.callback.call_pre()
             self._generate_checkpoint()
             if (
@@ -206,6 +215,7 @@ class StateProblem(pde_problem.PDEProblem):
 
             self.has_solution = True
             self.number_of_solves += 1
+            log.end()
 
             self._update_cost_functionals()
 

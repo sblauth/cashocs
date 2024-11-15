@@ -62,7 +62,7 @@ import cashocs
 # As for the case of optimal control problems, we can specify the verbosity of cashocs
 # with the line
 
-cashocs.set_log_level(cashocs.LogLevel.INFO)
+cashocs.set_log_level(cashocs.log.INFO)
 
 # which is documented at {py:func}`cashocs.set_log_level` (cf. {ref}`demo_poisson`).
 #

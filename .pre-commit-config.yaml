@@ -7,7 +7,7 @@ repos:
     hooks:
       - id: pyroma
   - repo: https://github.com/psf/black
-    rev: 24.8.0
+    rev: 24.10.0
     hooks:
       - id: black
   - repo: https://github.com/PyCQA/isort
@@ -26,24 +26,24 @@ repos:
       - id: flake8
         files: cashocs/
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.9
+    rev: 1.7.10
     hooks:
       - id: bandit
         files: cashocs/
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.2.7
+    rev: v3.3.1
     hooks:
       - id: pylint
         files: cashocs/
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.11.2
+    rev: v1.13.0
     hooks:
       - id: mypy
         files: cashocs/
         additional_dependencies: ["numpy"]
         args: [--config-file, pyproject.toml]
   - repo: https://github.com/PyCQA/prospector
-    rev: v1.10.3
+    rev: v1.13.0
     hooks:
       - id: prospector
         additional_dependencies:

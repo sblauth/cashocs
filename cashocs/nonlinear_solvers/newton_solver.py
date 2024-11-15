@@ -33,6 +33,7 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _utils
+from cashocs import log
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -196,29 +197,28 @@ class _NewtonSolver:
 
     def _print_output(self) -> None:
         """Prints the output of the current iteration to the console."""
-        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            prefix = "Newton solver:  "
-
-            if self.iterations % 10 == 0:
-                info_str = (
-                    f"\n{prefix}iter,  "
-                    f"abs. residual (abs. tol),  "
-                    f"rel. residual (rel. tol)\n\n"
-                )
-            else:
-                info_str = ""
-
-            print_str = (
-                f"{prefix}{self.iterations:4d},  "
-                f"{self.res:>13.3e} ({self.atol:.2e}),  "
-                f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
+        if self.iterations % 10 == 0:
+            info_str = (
+                "\niter,  abs. residual (abs. tol),  rel. residual (rel. tol)\n\n"
             )
+        else:
+            info_str = ""
 
-            print(info_str + print_str, flush=True)
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        print_str = (
+            f"{self.iterations:4d},  "
+            f"{self.res:>13.3e} ({self.atol:.2e}),  "
+            f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
+        )
+        if self.verbose:
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(info_str + print_str, flush=True)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+        else:
+            log.info(info_str + print_str)
 
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
+        log.begin("Assembling the Jacobian for Newton's method.", level=log.DEBUG)
         self.assembler.assemble(self.A_fenics)
         self.A_fenics.ident_zeros()
         self.A_matrix = fenics.as_backend_type(  # pylint: disable=invalid-name
@@ -233,6 +233,8 @@ class _NewtonSolver:
             ).mat()
         else:
             self.P_matrix = None
+
+        log.end()
 
     def _compute_eta_inexact(self) -> None:
         """Computes the parameter ``eta`` for the inexact Newton method."""
@@ -269,13 +271,18 @@ class _NewtonSolver:
             A solution of the nonlinear problem.
 
         """
+        log.begin("Solving the nonlinear PDE system with Newton's method.")
         self._compute_residual()
 
         self.res_0 = self.residual.norm(self.norm_type)
         if self.res_0 == 0.0:  # pragma: no cover
-            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print("Residual vanishes, input is already a solution.", flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            message = "Residual vanishes, input is already a solution."
+            if self.verbose:
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(message, flush=True)
+                fenics.MPI.barrier(fenics.MPI.comm_world)
+            else:
+                log.info(message)
             return self.u
 
         self.res = self.res_0
@@ -324,18 +331,22 @@ class _NewtonSolver:
 
         self._check_if_successful()
 
+        log.end()
+
         return self.u
 
     def _check_for_convergence(self) -> bool:
         """Checks, whether the desired convergence tolerance has been reached."""
         if self.res <= self.tol:
-            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print(
-                    f"\nNewton Solver converged "
-                    f"after {self.iterations:d} iterations.\n",
-                    flush=True,
-                )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            convergence_message = (
+                f"Newton Solver converged after {self.iterations:d} iterations."
+            )
+            if self.verbose:
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(convergence_message, flush=True)
+                fenics.MPI.barrier(fenics.MPI.comm_world)
+            else:
+                log.info(convergence_message)
             return True
 
         else:
@@ -365,6 +376,7 @@ class _NewtonSolver:
 
     def _compute_residual(self) -> None:
         """Computes the residual of the nonlinear system."""
+        log.begin("Assembling the residual for Newton's method.", level=log.DEBUG)
         self.residual = fenics.PETScVector(self.comm)
         self.assembler.assemble(self.residual, self.u.vector())
         if (
@@ -376,6 +388,7 @@ class _NewtonSolver:
             self.residual[:] -= self.residual_shift[:]
 
         self.b = fenics.as_backend_type(self.residual).vec()
+        log.end()
 
     def _compute_convergence_tolerance(self) -> float:
         """Computes the tolerance for the Newton solver.

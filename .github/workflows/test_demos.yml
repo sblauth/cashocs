@@ -11,26 +11,29 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: bash -l {0}
+        shell: bash -el {0}
     strategy:
       fail-fast: false
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4.2.0
+      uses: actions/checkout@v4.2.2
 
-    - name: Install micromamba
-      uses: mamba-org/setup-micromamba@v1
+    - name: Create conda environment
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        environment-file: .github/micromamba/testenv.yml
-        create-args: >-
-          fenics=2019
-          meshio>=5.3
-          pytest
-          gmsh>=4.8
-          matplotlib
-          scipy
-          python=3.12
+        environment-file: .github/conda/mpich.yml
+        miniforge-version: latest
+        python-version: 3.12
+        activate-environment: test
+        auto-activate-base: false
+        conda-remove-defaults: true
+
+    - name: Show conda info
+      run: conda info
+
+    - name: Show list of all installed packages
+      run: conda list
 
     - name: Install package
       run: |
@@ -49,27 +52,29 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: bash -l {0}
+        shell: bash -el {0}
     strategy:
       fail-fast: false
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4.2.0
+      uses: actions/checkout@v4.2.2
 
-    - name: Install micromamba
-      uses: mamba-org/setup-micromamba@v1
+    - name: Create conda environment
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        environment-file: .github/micromamba/testenv.yml
-        create-args: >-
-          fenics=2019
-          meshio>=5.3
-          pytest
-          gmsh>=4.8
-          mpich
-          matplotlib
-          scipy
-          python=3.12
+        environment-file: .github/conda/mpich.yml
+        miniforge-version: latest
+        python-version: 3.12
+        activate-environment: test
+        auto-activate-base: false
+        conda-remove-defaults: true
+
+    - name: Show conda info
+      run: conda info
+
+    - name: Show list of all installed packages
+      run: conda list
 
     - name: Install package
       run: |

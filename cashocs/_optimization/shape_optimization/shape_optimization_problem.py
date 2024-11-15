@@ -34,11 +34,11 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _forms
-from cashocs import _loggers
 from cashocs import _pde_problems
 from cashocs import _utils
 from cashocs import geometry
 from cashocs import io
+from cashocs import log
 from cashocs._optimization import cost_functional
 from cashocs._optimization import line_search as ls
 from cashocs._optimization import optimization_algorithms
@@ -231,7 +231,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         if self.uses_custom_scalar_product and self.config.getboolean(
             "ShapeGradient", "use_p_laplacian"
         ):
-            _loggers.warning(
+            log.warning(
                 (
                     "You have supplied a custom scalar product and set the parameter "
                     "``use_p_laplacian`` in the config file."
@@ -467,6 +467,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 + \texttt{rtol} || \nabla J(u_0) ||
 
         """
+        log.begin("Solving the shape optimization problem.", level=log.INFO)
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
         self.solver = self._setup_solver()
@@ -478,9 +479,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 self._clear_remesh_directory()
             raise e
         self.solver.post_processing()
+        log.end()
 
     def _clear_remesh_directory(self) -> None:
-        _loggers.debug("An exception was raised, deleting the created temporary files.")
+        log.debug("An exception was raised, deleting the created temporary files.")
         if (
             not self.config.getboolean("Debug", "remeshing")
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0

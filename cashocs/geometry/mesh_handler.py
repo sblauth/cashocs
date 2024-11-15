@@ -30,9 +30,9 @@ import fenics
 import numpy as np
 
 from cashocs import _exceptions
-from cashocs import _loggers
 from cashocs import _utils
 from cashocs import io
+from cashocs import log
 from cashocs._optimization import line_search as ls
 from cashocs.geometry import deformations
 from cashocs.geometry import quality
@@ -57,9 +57,10 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
     """
     temp_location = f"{mesh_file[:-4]}_temp.msh"
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        with open(mesh_file, "r", encoding="utf-8") as in_file, open(
-            temp_location, "w", encoding="utf-8"
-        ) as temp_file:
+        with (
+            open(mesh_file, "r", encoding="utf-8") as in_file,
+            open(temp_location, "w", encoding="utf-8") as temp_file,
+        ):
             parametrizations_section = False
 
             for line in in_file:
@@ -156,7 +157,7 @@ class _MeshHandler:
         )
 
         if self.mesh_quality_tol_lower > 0.9 * self.mesh_quality_tol_upper:
-            _loggers.warning(
+            log.warning(
                 "You are using a lower remesh tolerance (tol_lower) close to the upper "
                 "one (tol_upper). This may slow down the optimization considerably."
             )
@@ -302,7 +303,7 @@ class _MeshHandler:
             raise _exceptions.CashocsException("Not a valid mesh transformation")
 
         if not self.a_priori_tester.test(transformation, self.volume_change):
-            _loggers.debug("Mesh transformation rejected due to a priori check.")
+            log.debug("Mesh transformation rejected due to a priori check.")
             return False
         else:
             success_flag = self.deformation_handler.move_mesh(
@@ -562,32 +563,8 @@ class _MeshHandler:
 
             # save the output dict (without the last entries since they are "remeshed")
             self.db.parameter_db.temp_dict["output_dict"] = {}
-            self.db.parameter_db.temp_dict["output_dict"][
-                "state_solves"
-            ] = solver.state_problem.number_of_solves
-            self.db.parameter_db.temp_dict["output_dict"][
-                "adjoint_solves"
-            ] = solver.adjoint_problem.number_of_solves
-            self.db.parameter_db.temp_dict["output_dict"]["iterations"] = (
-                solver.iteration + 1
-            )
-
-            output_dict = solver.output_manager.output_dict
-            self.db.parameter_db.temp_dict["output_dict"]["cost_function_value"] = (
-                output_dict["cost_function_value"][:]
-            )
-            self.db.parameter_db.temp_dict["output_dict"]["gradient_norm"] = (
-                output_dict["gradient_norm"][:]
-            )
-            self.db.parameter_db.temp_dict["output_dict"]["stepsize"] = output_dict[
-                "stepsize"
-            ][:]
-            self.db.parameter_db.temp_dict["output_dict"]["MeshQuality"] = output_dict[
-                "MeshQuality"
-            ][:]
-            self.db.parameter_db.temp_dict["output_dict"]["angle"] = output_dict[
-                "angle"
-            ][:]
+            for key, value in solver.output_manager.output_dict.items():
+                self.db.parameter_db.temp_dict["output_dict"][key] = value
 
             self.db.parameter_db.temp_dict["OptimizationRoutine"]["rtol"] = (
                 self.config.getfloat("OptimizationRoutine", "rtol")
@@ -676,7 +653,7 @@ class _MeshHandler:
         mesh_quality_tol_upper = self.db.config.getfloat("MeshQuality", "tol_upper")
 
         if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
-            _loggers.warning(
+            log.warning(
                 "You are using a lower remesh tolerance (tol_lower) close to "
                 "the upper one (tol_upper). This may slow down the "
                 "optimization considerably."
@@ -707,11 +684,11 @@ class _MeshHandler:
         """
         if self.config.getboolean("ShapeGradient", "global_deformation"):
             pre_log_level = (
-                _loggers._cashocs_logger.level  # pylint: disable=protected-access
+                log.cashocs_logger._handler.level  # pylint: disable=protected-access
             )
-            _loggers.set_log_level(_loggers.LogLevel.WARNING)
+            log.set_log_level(log.WARNING)
             mesh, _, _, _, _, _ = import_mesh(xdmf_filename)
-            _loggers.set_log_level(pre_log_level)
+            log.set_log_level(pre_log_level)
 
             deformation_space = fenics.VectorFunctionSpace(mesh, "CG", 1)
             interpolator = _utils.Interpolator(

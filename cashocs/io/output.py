@@ -44,6 +44,8 @@ class OutputManager:
         self.result_dir = self.config.get("Output", "result_dir")
         self.result_dir = self.result_dir.rstrip("/")
 
+        self._silent = False
+
         self.time_suffix = self.config.getboolean("Output", "time_suffix")
         if self.time_suffix:
             dt_current_time = dt.now()
@@ -75,8 +77,9 @@ class OutputManager:
             checkpoints_path.mkdir(parents=True, exist_ok=True)
 
         self.managers: List[managers.IOManager] = []
-        if verbose:
-            self.managers.append(managers.ConsoleManager(self.db, self.result_dir))
+        self.managers.append(
+            managers.ConsoleManager(self.db, self.result_dir, verbose=verbose)
+        )
         if save_txt:
             self.managers.append(managers.FileManager(self.db, self.result_dir))
         if save_state or save_adjoint or save_gradient:
@@ -86,20 +89,24 @@ class OutputManager:
         self.output_dict = result_manager.output_dict
         self.managers.append(result_manager)
 
-        self.managers.append(managers.MeshManager(self.db, self.result_dir))
+        if save_mesh:
+            self.managers.append(managers.MeshManager(self.db, self.result_dir))
         self.managers.append(managers.TempFileManager(self.db, self.result_dir))
 
     def output(self) -> None:
         """Writes the desired output to files and console."""
-        for manager in self.managers:
-            manager.output()
+        if not self._silent:
+            for manager in self.managers:
+                manager.output()
 
     def output_summary(self) -> None:
         """Writes the summary to files and console."""
-        for manager in self.managers:
-            manager.output_summary()
+        if not self._silent:
+            for manager in self.managers:
+                manager.output_summary()
 
     def post_process(self) -> None:
         """Performs a postprocessing of the output."""
-        for manager in self.managers:
-            manager.post_process()
+        if not self._silent:
+            for manager in self.managers:
+                manager.post_process()

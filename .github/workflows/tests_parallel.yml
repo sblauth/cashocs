@@ -12,32 +12,32 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        shell: bash -l {0}
+        shell: bash -el {0}
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
         mpi: [mpich, openmpi]
-        exclude:
-          - python-version: "3.8"
-            mpi: openmpi
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4.2.0
+      uses: actions/checkout@v4.2.2
 
-    - name: Install micromamba
-      uses: mamba-org/setup-micromamba@v1
+    - name: Create conda environment
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        environment-file: .github/micromamba/testenv.yml
-        create-args: >-
-          fenics=2019
-          meshio>=5.3
-          pytest
-          gmsh>=4.8
-          scipy
-          ${{ matrix.mpi }}
-          python=${{ matrix.python-version }}
+        environment-file: .github/conda/${{ matrix.mpi }}.yml
+        miniforge-version: latest
+        python-version: ${{ matrix.python-version }}
+        activate-environment: test
+        auto-activate-base: false
+        conda-remove-defaults: true
+
+    - name: Show conda info
+      run: conda info
+
+    - name: Show list of all installed packages
+      run: conda list
 
     - name: Install package
       run: |

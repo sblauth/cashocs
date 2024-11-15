@@ -22,7 +22,7 @@ jobs:
         rm -R /home/mambauser/cashocs
 
     - name: Checkout repository
-      uses: actions/checkout@v4.2.0 
+      uses: actions/checkout@v4.2.2 
 
     - name: Install cashocs
       shell: bash
@@ -45,7 +45,7 @@ jobs:
     steps:
     
     - name: Checkout repository
-      uses: actions/checkout@v4.2.0
+      uses: actions/checkout@v4.2.2
     
 
     - name: Get tag name
@@ -80,7 +80,7 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4.2.0
+      uses: actions/checkout@v4.2.2
 
     - name: Set up Python 3.11
       uses: actions/setup-python@v5

@@ -34,8 +34,8 @@ try:
 except ImportError:
     import ufl
 
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 
 if TYPE_CHECKING:
     try:
@@ -198,7 +198,7 @@ class VolumeRegularization(ShapeRegularizationTerm):
                 value = 0.5 * pow(volume - self.target_volume, 2)
 
                 if abs(value) < 1e-15:
-                    _loggers.info(
+                    log.info(
                         "The volume regularization vanishes for the initial "
                         "iteration. Multiplying this term with the factor you "
                         "supplied as weight."
@@ -293,7 +293,7 @@ class SurfaceRegularization(ShapeRegularizationTerm):
                 value = 0.5 * pow(surface - self.target_surface, 2)
 
                 if abs(value) < 1e-15:
-                    _loggers.info(
+                    log.info(
                         "The surface regularization vanishes for the initial "
                         "iteration. Multiplying this term with the factor you "
                         "supplied as weight."
@@ -472,7 +472,7 @@ class BarycenterRegularization(ShapeRegularizationTerm):
                 )
 
                 if abs(value) < 1e-15:
-                    _loggers.info(
+                    log.info(
                         "The barycenter regularization vanishes for the initial "
                         "iteration. Multiplying this term with the factor you "
                         "supplied as weight."
@@ -629,7 +629,7 @@ class CurvatureRegularization(ShapeRegularizationTerm):
                 )
 
                 if abs(value) < 1e-15:
-                    _loggers.info(
+                    log.info(
                         "The curvature regularization vanishes for the initial "
                         "iteration. Multiplying this term with the factor you "
                         "supplied as weight."

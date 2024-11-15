@@ -33,8 +33,8 @@ except ImportError:
     from ufl import algorithms as ufl_algorithms
 
 from cashocs import _exceptions
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 from cashocs._forms import form_handler
 from cashocs._forms import shape_regularization
 from cashocs.geometry import boundary_distance
@@ -453,7 +453,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             self._check_coefficient_id(coeff)
 
         if len(self.material_derivative_coeffs) > 0:
-            _loggers.warning(
+            log.warning(
                 "Shape derivative might be wrong, if differential operators "
                 "act on variables other than states and adjoints."
             )

@@ -27,7 +27,7 @@ jobs:
         rm -R /home/mambauser/cashocs
 
     - name: Checkout repository
-      uses: actions/checkout@v4.2.0 
+      uses: actions/checkout@v4.2.2 
 
     - name: Install cashocs
       shell: bash
@@ -42,9 +42,10 @@ jobs:
         python3 -m pytest -vv --cov=cashocs --cov-report=xml tests/
 
     - name: Upload coverage to codecov.io
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v5
       with:
         files: coverage.xml
+        token: ${{ secrets.CODECOV_TOKEN }}
 
     - name: Upload coverage to codacy
       continue-on-error: true

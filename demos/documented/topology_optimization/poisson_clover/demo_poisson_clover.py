@@ -135,7 +135,7 @@ import cashocs
 
 # Next, as before, we can specify the verbosity of cashocs with the line
 
-cashocs.set_log_level(cashocs.LogLevel.INFO)
+cashocs.set_log_level(cashocs.log.INFO)
 
 # As with the other problem types, the solution algorithms of cashocs can be adapted
 # with the help of configuration files, which is loaded with the

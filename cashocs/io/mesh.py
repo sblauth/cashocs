@@ -24,7 +24,6 @@ import json
 import pathlib
 import subprocess  # nosec B404
 import tempfile
-import time
 from typing import Dict, Optional, TYPE_CHECKING
 
 import fenics
@@ -32,11 +31,11 @@ import h5py
 import numpy as np
 
 from cashocs import _exceptions
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 from cashocs._cli._convert import convert as cli_convert
-from cashocs.geometry import measure as measure_module
-from cashocs.geometry import mesh as mesh_module
+from cashocs.geometry.measure import NamedMeasure
+from cashocs.geometry.mesh import _get_mesh_stats
 
 if TYPE_CHECKING:
     from mpi4py import MPI
@@ -148,7 +147,7 @@ def _import_gmsh_mesh(
     return mesh_tuple
 
 
-@mesh_module._get_mesh_stats(mode="import")  # pylint:disable=protected-access
+@_get_mesh_stats(mode="import")  # pylint:disable=protected-access
 def _import_xdmf_mesh(
     mesh_file: str, comm: Optional[MPI.Comm] = None
 ) -> _typing.MeshTuple:
@@ -236,13 +235,13 @@ def _import_xdmf_mesh(
     subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
     boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
 
-    dx = measure_module.NamedMeasure(
+    dx = NamedMeasure(
         "dx", domain=mesh, subdomain_data=subdomains, physical_groups=physical_groups
     )
-    ds = measure_module.NamedMeasure(
+    ds = NamedMeasure(
         "ds", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
-    d_interior_facet = measure_module.NamedMeasure(
+    d_interior_facet = NamedMeasure(
         "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
 
@@ -411,9 +410,10 @@ def parse_file(
         dim: The dimensionality of the mesh
 
     """
-    with open(original_msh_file, "r", encoding="utf-8") as old_file, open(
-        out_msh_file, "w", encoding="utf-8"
-    ) as new_file:
+    with (
+        open(original_msh_file, "r", encoding="utf-8") as old_file,
+        open(out_msh_file, "w", encoding="utf-8") as new_file,
+    ):
         node_section = False
         info_section = False
         subnode_counter = 0
@@ -594,7 +594,7 @@ def extract_mesh_from_xdmf(
     iteration: int = 0,
     outputfile: Optional[str] = None,
     original_gmsh_file: Optional[str] = None,
-    quiet: bool = False,
+    quiet: bool = False,  # pylint: disable= unused-argument
 ) -> None:
     """Extracts a Gmsh mesh file from an XDMF state file.
 
@@ -613,7 +613,7 @@ def extract_mesh_from_xdmf(
             `False`.
 
     """
-    start_time = time.time()
+    log.begin("Extracting the mesh from the XDMF file", level=log.DEBUG)
 
     _utils.check_file_extension(xdmffile, "xdmf")
     if outputfile is None:
@@ -660,9 +660,4 @@ def extract_mesh_from_xdmf(
     else:
         write_out_mesh(mesh, original_gmsh_file, outputfile)
 
-    end_time = time.time()
-    if not quiet:
-        _loggers.info(
-            f"Successfully extracted the desired mesh {outputfile} from {xdmffile}"
-            f" in {end_time - start_time:.2f} s"
-        )
+    log.end()

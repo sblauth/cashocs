@@ -24,8 +24,8 @@ from typing import List, Optional, TYPE_CHECKING
 import fenics
 import numpy as np
 
-from cashocs import _loggers
 from cashocs import io
+from cashocs import log
 
 if TYPE_CHECKING:
     from cashocs._optimization import optimal_control
@@ -149,9 +149,7 @@ def control_gradient_test(
         residuals.append(res)
 
     if np.min(residuals) < 1e-14:
-        _loggers.warning(
-            "The Taylor remainder is close to 0, results may be inaccurate."
-        )
+        log.warning("The Taylor remainder is close to 0, results may be inaccurate.")
 
     rates = compute_convergence_rates(epsilons, residuals)
 
@@ -242,16 +240,14 @@ def shape_gradient_test(
             residuals.append(res)
             sop.mesh_handler.revert_transformation()
         else:
-            _loggers.warning(
+            log.warning(
                 "Deformation did not yield a valid finite element mesh. "
                 "Results of the test are probably not accurate."
             )
             residuals.append(float("inf"))
 
     if np.min(residuals) < 1e-14:
-        _loggers.warning(
-            "The Taylor remainder is close to 0, results may be inaccurate."
-        )
+        log.warning("The Taylor remainder is close to 0, results may be inaccurate.")
 
     rates = compute_convergence_rates(epsilons, residuals)
     result: float = np.min(rates)

@@ -34,6 +34,7 @@ except ImportError:
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import io
+from cashocs import log
 from cashocs._optimization import line_search as ls
 from cashocs._optimization import optimization_problem
 from cashocs._optimization.optimal_control import optimal_control_problem
@@ -311,6 +312,7 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
                 the value provided in the config file is used. Default is ``None``.
 
         """
+        log.begin("Solving the topology optimization problem.", level=log.INFO)
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
 
         self.optimization_variable_abstractions = (
@@ -343,6 +345,7 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
 
         self.solver.run()
         self.solver.post_processing()
+        log.end()
 
     def plot_shape(self) -> None:
         """Visualize the current shape in a plot."""
