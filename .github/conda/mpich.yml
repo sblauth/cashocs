@@ -4,9 +4,9 @@ channels:
 dependencies:
   - numpy
   - fenics=2019
-  - meshio">=5.3"
+  - meshio>=5.3
   - pytest
-  - gmsh">=4.8"
+  - gmsh>=4.8
   - scipy
-  - scotch"<7"
+  - scotch<7
   - mpich
