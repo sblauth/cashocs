@@ -1,0 +1,13 @@
+name: test
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - fenics=2019
+  - meshio>=5.3
+  - pytest
+  - matplotlib
+  - gmsh>=4.8
+  - scipy
+  - scotch<7
+  - openmpi
