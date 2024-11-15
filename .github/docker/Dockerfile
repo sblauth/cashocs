@@ -3,7 +3,7 @@ FROM mambaorg/micromamba:1-jammy AS test-env
 USER root
 
 RUN apt-get update --fix-missing && \
-    apt-get install -y libgl1-mesa-dev ffmpeg libsm6 libxext6 curl && \
+    apt-get install -y libgl1-mesa-dev ffmpeg libsm6 libxext6 curl git && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
