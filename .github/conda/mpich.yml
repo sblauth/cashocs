@@ -9,5 +9,4 @@ dependencies:
   - matplotlib
   - gmsh>=4.8
   - scipy
-  - scotch<7
   - mpich
