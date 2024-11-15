@@ -31,6 +31,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
         activate-environment: test
         auto-activate-base: false
+        conda-remove-defaults: true
 
     - name: Show conda info
       run: conda info
