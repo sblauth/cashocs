@@ -223,6 +223,7 @@ class SNESSolver:
 
     def solve(self) -> fenics.Function:
         """Solves the nonlinear problem with PETSc's SNES."""
+        log.begin("Solving the nonlinear PDE system with PETSc SNES.")
         snes = PETSc.SNES().create()
 
         snes.setFunction(self.assemble_function, self.residual_petsc)
@@ -249,6 +250,8 @@ class SNESSolver:
             snes.destroy()
             PETSc.garbage_cleanup(comm=self.comm)
             PETSc.garbage_cleanup()
+
+        log.end()
 
         return self.u
 
