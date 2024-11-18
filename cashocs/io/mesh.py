@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import configparser
+import gc
 import json
 import pathlib
 import subprocess  # nosec B404
@@ -96,6 +97,8 @@ def import_mesh(mesh_file: str, comm: Optional[MPI.Comm] = None) -> _typing.Mesh
             "mesh_file",
             "Only XDMF (.xdmf) or Gmsh (.msh) meshes are supported.",
         )
+
+    gc.collect()
 
     return mesh_tuple
 
