@@ -26,12 +26,12 @@ repos:
       - id: flake8
         files: cashocs/
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.10
+    rev: 1.8.0
     hooks:
       - id: bandit
         files: cashocs/
   - repo: https://github.com/PyCQA/pylint
-    rev: v3.3.1
+    rev: v3.3.2
     hooks:
       - id: pylint
         files: cashocs/
