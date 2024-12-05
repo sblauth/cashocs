@@ -235,6 +235,7 @@ class SNESSolver:
             self.assemble_jacobian(
                 snes, self.u.vector().vec(), self.A_petsc, self.P_petsc
             )
+            self.assemble_function(snes, self.u.vector().vec(), self.residual_petsc)
             self.is_preassembled = True
 
         _utils.setup_petsc_options([snes], [self.petsc_options])
