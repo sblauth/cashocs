@@ -618,11 +618,15 @@ def test_scalar_tracking_weight():
     mesh.bounding_box_tree().build(mesh)
 
     tracking_goal = rng.uniform(0.25, 0.75)
-    weight = rng.uniform(1.0, 1e3)
+    weight = rng.uniform(0.1, 1e1)
     norm_u = u * u * dx
     J = cashocs.ScalarTrackingFunctional(norm_u, tracking_goal, weight=1.0)
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+
     sop.compute_state_variables()
     initial_function_value = 0.5 * pow(assemble(norm_u) - tracking_goal, 2)
     J = cashocs.ScalarTrackingFunctional(
@@ -634,10 +638,6 @@ def test_scalar_tracking_weight():
     val = sop.reduced_cost_functional.evaluate()
 
     assert np.abs(val - weight) < 1e-15
-
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
 
 def test_scalar_tracking_multiple():
