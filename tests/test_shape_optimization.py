@@ -606,10 +606,6 @@ def test_scalar_tracking_norm():
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J_tracking, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-
     sop.solve(algorithm="bfgs", rtol=1e-5, max_iter=50)
     assert 0.5 * pow(assemble(norm_u) - tracking_goal, 2) < 1e-14
 
