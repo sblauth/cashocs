@@ -8,8 +8,8 @@ on:
     
 jobs:
   serial_tests:
-    name: Test (py=${{ matrix.python-version}}, macos-12)
-    runs-on: macos-12
+    name: Test (py=${{ matrix.python-version}}, macos-13)
+    runs-on: macos-13
     defaults:
       run:
         shell: bash -el {0}
