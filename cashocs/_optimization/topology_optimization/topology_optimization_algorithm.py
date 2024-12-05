@@ -448,7 +448,9 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                 cost_functional_new = (
                     self._cashocs_problem.reduced_cost_functional.evaluate()
                 )
-                if cost_functional_new <= self.objective_value:
+                if cost_functional_new <= self.objective_value or (
+                    self.projection.volume_restriction is not None and k == 0
+                ):
                     break
                 else:
                     self.stepsize *= 0.5
