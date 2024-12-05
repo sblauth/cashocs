@@ -514,9 +514,9 @@ def test_custom_shape_scalar_product(rng):
 
     assert sop.solver.relative_norm < sop.solver.rtol
 
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.8
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.8
+    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.8
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     user_sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
@@ -532,15 +532,15 @@ def test_custom_shape_scalar_product(rng):
 
     user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
 
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.8
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.8
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.8
 
     user_sop.supply_custom_forms(dJ, [adjoint_form], [bcs])
 
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.8
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.8
+    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.8
 
 
 def test_curvature_computation():

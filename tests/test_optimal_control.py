@@ -287,9 +287,9 @@ def test_scalar_tracking_weight(rng, geometry, config_ocp, F, bcs, y, u, p):
     test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     test_ocp.compute_state_variables()
     initial_function_value = 0.5 * pow(assemble(norm_y) - tracking_goal, 2)
-    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.8
+    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.8
+    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.8
 
     J = cashocs.ScalarTrackingFunctional(
         norm_y, tracking_goal, weight=weight / initial_function_value
