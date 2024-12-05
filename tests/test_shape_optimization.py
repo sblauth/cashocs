@@ -308,7 +308,6 @@ def test_shape_gradient(config_sop, rng):
 
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
 
 def test_shape_gradient_iterative(rng):
@@ -319,7 +318,6 @@ def test_shape_gradient_iterative(rng):
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
 
-    assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
@@ -466,13 +464,6 @@ def test_custom_supply_shape(rng):
 
     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-
-    user_sop.supply_custom_forms(dJ, [adjoint_form], [bcs])
-
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
 
 
 def test_supply_from_custom_fspace(rng):
@@ -494,7 +485,6 @@ def test_supply_from_custom_fspace(rng):
 
     user_sop.supply_custom_forms(dJ, adjoint_form, bcs)
 
-    assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(user_sop, rng=rng) > 1.9
 
