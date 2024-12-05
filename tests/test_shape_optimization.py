@@ -623,12 +623,13 @@ def test_scalar_tracking_weight():
     J = cashocs.ScalarTrackingFunctional(norm_u, tracking_goal, weight=1.0)
 
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    sop.compute_state_variables()
+    initial_function_value = 0.5 * pow(assemble(norm_u) - tracking_goal, 2)
+
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
-    sop.compute_state_variables()
-    initial_function_value = 0.5 * pow(assemble(norm_u) - tracking_goal, 2)
     J = cashocs.ScalarTrackingFunctional(
         norm_u, tracking_goal, weight=weight / initial_function_value
     )
