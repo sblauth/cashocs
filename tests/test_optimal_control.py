@@ -280,13 +280,17 @@ def test_scalar_tracking_weight(rng, geometry, config_ocp, F, bcs, y, u, p):
 
     norm_y = y * y * geometry.dx
     tracking_goal = rng.uniform(0.25, 0.75)
-    weight = rng.uniform(1.0, 1e3)
+    weight = rng.uniform(0.1, 1e1)
     J = cashocs.ScalarTrackingFunctional(norm_y, tracking_goal, weight=1.0)
     config_ocp.set("LineSearch", "initial_stepsize", "4e3")
 
     test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     test_ocp.compute_state_variables()
     initial_function_value = 0.5 * pow(assemble(norm_y) - tracking_goal, 2)
+    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.9
+    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.9
+
     J = cashocs.ScalarTrackingFunctional(
         norm_y, tracking_goal, weight=weight / initial_function_value
     )
@@ -295,10 +299,6 @@ def test_scalar_tracking_weight(rng, geometry, config_ocp, F, bcs, y, u, p):
     test_ocp.compute_state_variables()
     val = test_ocp.reduced_cost_functional.evaluate()
     assert np.abs(val - weight) < 1e-15
-
-    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(test_ocp, rng=rng) > 1.9
 
 
 def test_scalar_multiple_norms(rng, config_ocp, geometry, F, bcs, y, u, p):

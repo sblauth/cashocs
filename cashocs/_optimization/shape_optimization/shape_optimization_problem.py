@@ -20,6 +20,7 @@
 from __future__ import annotations
 
 import functools
+import gc
 import subprocess  # nosec B404
 from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
 
@@ -335,6 +336,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.mesh_name = mesh_name
 
         arguments = self.mesh_parametrization(self.mesh_name)
+        gc.collect()
         if len(arguments) == 2:
             args, kwargs = arguments
         elif len(arguments) == 1:
