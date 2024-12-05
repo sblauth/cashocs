@@ -60,6 +60,7 @@ from cashocs.nonlinear_solvers import linear_solve
 from cashocs.nonlinear_solvers import newton_solve
 from cashocs.nonlinear_solvers import picard_iteration
 from cashocs.nonlinear_solvers import snes_solve
+from cashocs.nonlinear_solvers import ts_solve
 
 __version__ = "2.4.0-dev"
 
@@ -158,5 +159,6 @@ __all__ = [
     "TopologyOptimizationProblem",
     "interpolate_levelset_function_to_cells",
     "snes_solve",
+    "ts_solve",
     "log",
 ]
