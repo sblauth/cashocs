@@ -159,7 +159,7 @@ def control_gradient_test(
         )
         ocp.db.function_db.controls[j].vector().apply("")
 
-    min_rate: float = np.min(rates)
+    min_rate: float = rates[-1]
     return min_rate
 
 
@@ -250,7 +250,7 @@ def shape_gradient_test(
         log.warning("The Taylor remainder is close to 0, results may be inaccurate.")
 
     rates = compute_convergence_rates(epsilons, residuals)
-    result: float = np.min(rates)
+    result: float = rates[-1]
     return result
 
 

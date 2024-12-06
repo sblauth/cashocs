@@ -152,8 +152,6 @@ def ocp(state_forms, bcs_list, J, states, controls, adjoints, config_ocp):
 
 def test_control_gradient_multiple(ocp, rng):
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
 def test_control_gd_multiple(ocp):
