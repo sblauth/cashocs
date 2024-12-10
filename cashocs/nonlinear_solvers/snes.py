@@ -174,7 +174,7 @@ class SNESSolver:
 
         """
         log.begin("Assembling the residual for Newton's method.", level=log.DEBUG)
-        self.u.vector().vec().setArray(x)
+        self.u.vector().vec().aypx(0.0, x)
         self.u.vector().apply("")
         f = fenics.PETScVector(f)
 
@@ -206,7 +206,7 @@ class SNESSolver:
         """
         if not self.is_preassembled:
             log.begin("Assembling the Jacobian for Newton's method.", level=log.DEBUG)
-            self.u.vector().vec().setArray(x)
+            self.u.vector().vec().aypx(0.0, x)
             self.u.vector().apply("")
 
             J = fenics.PETScMatrix(J)  # pylint: disable=invalid-name
@@ -241,7 +241,15 @@ class SNESSolver:
 
         _utils.setup_petsc_options([snes], [self.petsc_options])
         snes.setTolerances(rtol=self.rtol, atol=self.atol, max_it=self.max_iter)
-        snes.solve(None, self.u.vector().vec())
+
+        x = fenics.Function(self.u.function_space())
+        x.vector().vec().aypx(0.0, self.u.vector().vec())
+        x.vector().apply("")
+
+        snes.solve(None, x.vector().vec())
+
+        self.u.vector().vec().setArray(x.vector().vec())
+        self.u.vector().apply("")
 
         converged_reason = snes.getConvergedReason()
         if converged_reason < 0:
