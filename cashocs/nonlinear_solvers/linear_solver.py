@@ -53,6 +53,8 @@ def linear_solve(
         bcs: The boundary conditions for the problem
         ksp_options: The options for the PETSc KSP solver, optional. Default is `None`,
             where the linear solver MUMPS is used
+        preconditioner_form: The UFL form for defining the preconditioner. Must be a
+            bilinear form.
         A_tensor: A fenics.PETScMatrix for storing the left-hand side of the linear
             sub-problem.
         b_tensor: A fenics.PETScVector for storing the right-hand side of the linear

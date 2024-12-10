@@ -544,7 +544,7 @@ class ShapeFormHandler(form_handler.FormHandler):
     def _compute_shape_gradient_forms(self) -> ufl.Form:
         """Calculates the necessary left-hand-sides for the shape gradient problem.
 
-        Returns
+        Returns:
             The left-hand side for the shape gradient problem
 
         """

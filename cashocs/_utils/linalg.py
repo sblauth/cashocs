@@ -119,6 +119,8 @@ def assemble_petsc_system(
         bcs: A list of Dirichlet boundary conditions.
         A_tensor: A matrix into which the result is assembled. Default is ``None``.
         b_tensor: A vector into which the result is assembled. Default is ``None``.
+        preconditioner_form: The UFL form for assembling the preconditioner. Must
+            be a bilinear form.
 
     Returns:
         A tuple (A, b), where A is the matrix of the linear system, and b is the vector
@@ -389,6 +391,9 @@ def solve_linear_problem(
             solving the linear problem. Overrides the specification in the ksp object
             and ksp_options.
         comm: The MPI communicator for the problem.
+        P: The PETSc matrix corresponding to the preconditioner. If this is None, then
+            the left-hand-side matrix A is used to build the preconditioner.
+        linear_solver: The LinearSolver that should be used to solve the problem.
 
     Returns:
         The solution vector.
@@ -439,6 +444,9 @@ def assemble_and_solve_linear(
             solving the linear problem. Overrides the specification in the ksp object
             and ksp_options.
         comm: The MPI communicator for solving the problem.
+        preconditioner_form: The UFL for assembling the preconditioner. Must be a
+            bilinear form.
+        linear_solver: The LinearSolver used to solve the problem.
 
     Returns:
         A PETSc vector containing the solution x.
@@ -511,6 +519,7 @@ class LinearSolver:
             atol: The absolute tolerance used in case an iterative solver is used for
                 solving the linear problem. Overrides the specification in the ksp
                 object and ksp_options.
+            P: The PETSc matrix corresponding to the preconditioner.
 
         Returns:
             The solution vector.
