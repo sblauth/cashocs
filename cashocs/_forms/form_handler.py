@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import List, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 
@@ -34,8 +34,8 @@ if TYPE_CHECKING:
 
 
 def _get_subdx(
-    function_space: fenics.FunctionSpace, index: int, ls: List
-) -> Union[None, List[int]]:
+    function_space: fenics.FunctionSpace, index: int, ls: list
+) -> None | list[int]:
     """Computes the sub-indices for mixed function spaces based on the id of a subspace.
 
     Args:
@@ -90,7 +90,7 @@ class FormHandler(abc.ABC):
 
     @abc.abstractmethod
     def scalar_product(
-        self, a: List[fenics.Function], b: List[fenics.Function]
+        self, a: list[fenics.Function], b: list[fenics.Function]
     ) -> float:
         """Computes the scalar product between a and b.
 

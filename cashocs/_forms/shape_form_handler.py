@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import itertools
-from typing import List, Optional, Tuple, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -60,8 +60,8 @@ class Stiffness:
         config: io.Config,
         mesh: fenics.Mesh,
         boundaries: fenics.MeshFunction,
-        shape_bdry_def: List[int | str],
-        shape_bdry_fix: List[int | str],
+        shape_bdry_def: list[int | str],
+        shape_bdry_fix: list[int | str],
     ):
         """Class for managing the stiffness parameter for shape optimization.
 
@@ -70,8 +70,8 @@ class Stiffness:
             config: The config file for the problem
             mesh: The underlying mesh
             boundaries: The boundaries of the mesh
-            shape_bdry_def: List of indices of the deformable boundary
-            shape_bdry_fix: List of indices of the fixed boundary
+            shape_bdry_def: list of indices of the deformable boundary
+            shape_bdry_fix: list of indices of the fixed boundary
 
         """
         self.mu_lame = mu_lame
@@ -316,8 +316,8 @@ class ShapeFormHandler(form_handler.FormHandler):
             ]
             self.fixed_indices = list(itertools.chain(*unpack_list))
 
-        self.state_adjoint_ids: List[int] = []
-        self.material_derivative_coeffs: List[ufl_expr.Expr] = []
+        self.state_adjoint_ids: list[int] = []
+        self.material_derivative_coeffs: list[ufl_expr.Expr] = []
 
         # Calculate the necessary UFL forms
         self.shape_derivative = self._compute_shape_derivative()
@@ -361,8 +361,8 @@ class ShapeFormHandler(form_handler.FormHandler):
         self,
         scalar_product: ufl.Form,
         shape_derivative: ufl.Form,
-        bcs: Optional[List[fenics.DirichletBC]],
-    ) -> Tuple[ufl.Form, fenics.SystemAssembler]:
+        bcs: list[fenics.DirichletBC] | None,
+    ) -> tuple[ufl.Form, fenics.SystemAssembler]:
         """Sets up the assembler for assembling the shape gradient projection.
 
         Args:
@@ -394,7 +394,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         self,
         modified_scalar_product: ufl.Form,
         shape_derivative: ufl.Form,
-        bcs: Optional[List[fenics.DirichletBC]],
+        bcs: list[fenics.DirichletBC] | None,
     ) -> fenics.SystemAssembler:
         """Set up the assembler in a fail-safe manner.
 
@@ -504,7 +504,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
     def _setup_bcs_shape(
         self,
-    ) -> List[fenics.DirichletBC]:
+    ) -> list[fenics.DirichletBC]:
         """Defines the boundary conditions for the shape deformation.
 
         Returns:
@@ -659,7 +659,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         self._project_scalar_product()
 
     def scalar_product(
-        self, a: List[fenics.Function], b: List[fenics.Function]
+        self, a: list[fenics.Function], b: list[fenics.Function]
     ) -> float:
         """Computes the scalar product between two deformation functions a and b.
 

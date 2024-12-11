@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 
@@ -36,7 +36,7 @@ class PDEProblem(abc.ABC):
     def __init__(
         self,
         db: database.Database,
-        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
     ) -> None:
         """Initializes self.
 
@@ -58,7 +58,7 @@ class PDEProblem(abc.ABC):
             self.linear_solver = linear_solver
 
     @abc.abstractmethod
-    def solve(self) -> Union[fenics.Function, List[fenics.Function]]:
+    def solve(self) -> fenics.Function | list[fenics.Function]:
         """Solves the PDE.
 
         Returns:
