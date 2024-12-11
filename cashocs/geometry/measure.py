@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import fenics
 from typing_extensions import Literal
@@ -76,8 +76,8 @@ class _EmptyMeasure(ufl.Measure):
 
 
 def generate_measure(
-    idx: List[Union[int, str]], measure: fenics.Measure
-) -> Union[fenics.Measure, _EmptyMeasure]:
+    idx: list[int | str], measure: fenics.Measure
+) -> fenics.Measure | _EmptyMeasure:
     """Generates a measure based on indices.
 
     Generates a :py:class:`fenics.MeasureSum` or
@@ -123,11 +123,11 @@ class NamedMeasure(ufl.Measure):
     def __init__(
         self,
         integral_type: Literal["dx", "ds", "dS"],
-        domain: Optional[fenics.Mesh] = None,
+        domain: fenics.Mesh | None = None,
         subdomain_id: str = "everywhere",
-        metadata: Optional[Dict] = None,
-        subdomain_data: Optional[fenics.MeshFunction] = None,
-        physical_groups: Optional[Dict[str, Dict[str, int]]] = None,
+        metadata: dict | None = None,
+        subdomain_data: fenics.MeshFunction | None = None,
+        physical_groups: dict[str, dict[str, int]] | None = None,
     ) -> None:
         """See base class."""
         super().__init__(
@@ -151,7 +151,7 @@ class NamedMeasure(ufl.Measure):
         degree: Any = None,
         scheme: Any = None,
         rule: Any = None,
-    ) -> Optional[ufl.Measure]:
+    ) -> ufl.Measure | None:
         """See base class.
 
         This implementation also allows strings for subdomain id.

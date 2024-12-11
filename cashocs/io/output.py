@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from datetime import datetime as dt
 import pathlib
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from cashocs.io import managers
 
@@ -76,7 +76,7 @@ class OutputManager:
         if not checkpoints_path.is_dir() and save_checkpoints:
             checkpoints_path.mkdir(parents=True, exist_ok=True)
 
-        self.managers: List[managers.IOManager] = []
+        self.managers: list[managers.IOManager] = []
         self.managers.append(
             managers.ConsoleManager(self.db, self.result_dir, verbose=verbose)
         )

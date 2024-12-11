@@ -24,7 +24,7 @@ import json
 import os
 import shutil
 import subprocess  # nosec B404
-from typing import cast, List, TYPE_CHECKING, Union
+from typing import cast, TYPE_CHECKING
 
 import fenics
 
@@ -365,10 +365,10 @@ class XDMFFileManager(IOManager):
 
         self.is_initialized = False
 
-        self.state_xdmf_list: List[Union[str, List[str]]] = []
-        self.control_xdmf_list: List[Union[str, List[str]]] = []
-        self.adjoint_xdmf_list: List[Union[str, List[str]]] = []
-        self.gradient_xdmf_list: List[Union[str, List[str]]] = []
+        self.state_xdmf_list: list[str | list[str]] = []
+        self.control_xdmf_list: list[str | list[str]] = []
+        self.adjoint_xdmf_list: list[str | list[str]] = []
+        self.gradient_xdmf_list: list[str | list[str]] = []
 
     def _initialize_states_xdmf(self) -> None:
         """Initializes the list of xdmf files for the state variables."""
@@ -429,7 +429,7 @@ class XDMFFileManager(IOManager):
 
     def _generate_xdmf_file_strings(
         self, space: fenics.FunctionSpace, name: str
-    ) -> Union[str, List[str]]:
+    ) -> str | list[str]:
         """Generate the strings (paths) to the xdmf files for visualization.
 
         Args:
