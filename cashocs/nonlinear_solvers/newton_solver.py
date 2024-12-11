@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import copy
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -46,9 +46,9 @@ class _NewtonSolver:
         self,
         nonlinear_form: ufl.Form,
         u: fenics.Function,
-        bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
-        derivative: Optional[ufl.Form] = None,
-        shift: Optional[ufl.Form] = None,
+        bcs: fenics.DirichletBC | list[fenics.DirichletBC],
+        derivative: ufl.Form | None = None,
+        shift: ufl.Form | None = None,
         rtol: float = 1e-10,
         atol: float = 1e-10,
         max_iter: int = 50,
@@ -57,12 +57,12 @@ class _NewtonSolver:
         damped: bool = True,
         inexact: bool = True,
         verbose: bool = True,
-        ksp_options: Optional[_typing.KspOption] = None,
-        A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
-        b_tensor: Optional[fenics.PETScVector] = None,
+        ksp_options: _typing.KspOption | None = None,
+        A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
+        b_tensor: fenics.PETScVector | None = None,
         is_linear: bool = False,
-        preconditioner_form: Optional[ufl.Form] = None,
-        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        preconditioner_form: ufl.Form | None = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
     ) -> None:
         r"""Initializes self.
 
@@ -182,8 +182,8 @@ class _NewtonSolver:
         else:
             self.linear_solver = linear_solver
 
-        self.assembler_shift: Optional[fenics.SystemAssembler] = None
-        self.residual_shift: Optional[fenics.PETScVector] = None
+        self.assembler_shift: fenics.SystemAssembler | None = None
+        self.residual_shift: fenics.PETScVector | None = None
         if self.shift is not None:
             self.assembler_shift = fenics.SystemAssembler(
                 self.derivative, self.shift, self.bcs
@@ -443,9 +443,9 @@ class _NewtonSolver:
 def newton_solve(
     nonlinear_form: ufl.Form,
     u: fenics.Function,
-    bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
-    derivative: Optional[ufl.Form] = None,
-    shift: Optional[ufl.Form] = None,
+    bcs: fenics.DirichletBC | list[fenics.DirichletBC],
+    derivative: ufl.Form | None = None,
+    shift: ufl.Form | None = None,
     rtol: float = 1e-10,
     atol: float = 1e-10,
     max_iter: int = 50,
@@ -454,12 +454,12 @@ def newton_solve(
     damped: bool = True,
     inexact: bool = True,
     verbose: bool = True,
-    ksp_options: Optional[_typing.KspOption] = None,
-    A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
-    b_tensor: Optional[fenics.PETScVector] = None,
+    ksp_options: _typing.KspOption | None = None,
+    A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
+    b_tensor: fenics.PETScVector | None = None,
     is_linear: bool = False,
-    preconditioner_form: Optional[ufl.Form] = None,
-    linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+    preconditioner_form: ufl.Form | None = None,
+    linear_solver: _utils.linalg.LinearSolver | None = None,
 ) -> fenics.Function:
     r"""Solves a nonlinear problem with Newton\'s method.
 

@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -38,12 +38,12 @@ if TYPE_CHECKING:
 def linear_solve(
     linear_form: ufl.Form,
     u: fenics.Function,
-    bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
-    ksp_options: Optional[_typing.KspOption] = None,
+    bcs: fenics.DirichletBC | list[fenics.DirichletBC],
+    ksp_options: _typing.KspOption | None = None,
     preconditioner_form: ufl.Form = None,
-    A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
-    b_tensor: Optional[fenics.PETScVector] = None,
-    linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+    A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
+    b_tensor: fenics.PETScVector | None = None,
+    linear_solver: _utils.linalg.LinearSolver | None = None,
 ) -> fenics.Function:
     """Solves a linear problem.
 
