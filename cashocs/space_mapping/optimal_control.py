@@ -23,7 +23,7 @@ import abc
 import collections
 import copy
 import pathlib
-from typing import Callable, List, Optional, TYPE_CHECKING, Union
+from typing import Callable, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -55,7 +55,7 @@ class FineModel(abc.ABC):
 
     """
 
-    controls: List[fenics.Function]
+    controls: list[fenics.Function]
     cost_functional_value: float
 
     def __init__(self) -> None:
@@ -77,41 +77,36 @@ class CoarseModel:
 
     def __init__(
         self,
-        state_forms: Union[List[ufl.Form], ufl.Form],
-        bcs_list: Union[
-            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
-        ],
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[List[fenics.Function], fenics.Function],
-        controls: Union[List[fenics.Function], fenics.Function],
-        adjoints: Union[List[fenics.Function], fenics.Function],
-        config: Optional[io.Config] = None,
-        riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
-        control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        gradient_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        desired_weights: Optional[List[float]] = None,
-        control_bcs_list: Optional[
-            Union[
-                List[List[fenics.DirichletBC]],
-                List[fenics.DirichletBC],
-                fenics.DirichletBC,
-            ]
-        ] = None,
-        preconditioner_forms: Optional[List[ufl.Form]] = None,
-        pre_callback: Optional[Callable] = None,
-        post_callback: Optional[Callable] = None,
-        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
-        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
-        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
+        state_forms: list[ufl.Form] | ufl.Form,
+        bcs_list: (
+            fenics.DirichletBC
+            | list[fenics.DirichletBC]
+            | list[list[fenics.DirichletBC]]
+        ),
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: list[fenics.Function] | fenics.Function,
+        controls: list[fenics.Function] | fenics.Function,
+        adjoints: list[fenics.Function] | fenics.Function,
+        config: io.Config | None = None,
+        riesz_scalar_products: ufl.Form | list[ufl.Form] | None = None,
+        control_constraints: list[list[float | fenics.Function]] | None = None,
+        initial_guess: list[fenics.Function] | None = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        desired_weights: list[float] | None = None,
+        control_bcs_list: (
+            list[list[fenics.DirichletBC]]
+            | list[fenics.DirichletBC]
+            | fenics.DirichletBC
+            | None
+        ) = None,
+        preconditioner_forms: list[ufl.Form] | None = None,
+        pre_callback: Callable | None = None,
+        post_callback: Callable | None = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -185,8 +180,8 @@ class CoarseModel:
         self.adjoint_linear_solver = adjoint_linear_solver
         self.newton_linearizations = newton_linearizations
 
-        self._pre_callback: Optional[Callable] = None
-        self._post_callback: Optional[Callable] = None
+        self._pre_callback: Callable | None = None
+        self._post_callback: Callable | None = None
 
         config = copy.deepcopy(self.config)
         output_path = pathlib.Path(self.config.get("Output", "result_dir"))
@@ -230,13 +225,11 @@ class ParameterExtraction:
     def __init__(
         self,
         coarse_model: CoarseModel,
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[List[fenics.Function], fenics.Function],
-        controls: Union[List[fenics.Function], fenics.Function],
-        config: Optional[io.Config] = None,
-        desired_weights: Optional[List[float]] = None,
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: list[fenics.Function] | fenics.Function,
+        controls: list[fenics.Function] | fenics.Function,
+        config: io.Config | None = None,
+        desired_weights: list[float] | None = None,
         mode: str = "initial",
     ) -> None:
         """Initializes self.
@@ -263,7 +256,7 @@ class ParameterExtraction:
         self.cost_functional_form = cost_functional_form
 
         self.states = _utils.enlist(states)
-        self.controls: List[fenics.Function] = _utils.enlist(controls)
+        self.controls: list[fenics.Function] = _utils.enlist(controls)
 
         if config is not None:
             self.config = config
@@ -274,8 +267,8 @@ class ParameterExtraction:
         self.mode = mode
         self.desired_weights = desired_weights
 
-        self._pre_callback: Optional[Callable] = None
-        self._post_callback: Optional[Callable] = None
+        self._pre_callback: Callable | None = None
+        self._post_callback: Callable | None = None
 
         self.adjoints = _utils.create_function_list(
             coarse_model.optimal_control_problem.db.function_db.adjoint_spaces
@@ -332,10 +325,10 @@ class ParameterExtraction:
             coarse_model.optimal_control_problem.newton_linearizations
         )
 
-        self.optimal_control_problem: Optional[ocp.OptimalControlProblem] = None
+        self.optimal_control_problem: ocp.OptimalControlProblem | None = None
 
     def _solve(
-        self, iteration: int, initial_guesses: Optional[List[fenics.Function]] = None
+        self, iteration: int, initial_guesses: list[fenics.Function] | None = None
     ) -> None:
         """Solves the parameter extraction problem.
 
@@ -491,7 +484,7 @@ class SpaceMappingProblem:
         self.z_star = self.coarse_model.optimal_control_problem.db.function_db.controls
         self.norm_z_star = 1.0
 
-        self.x: List[fenics.Function] = _utils.enlist(self.fine_model.controls)
+        self.x: list[fenics.Function] = _utils.enlist(self.fine_model.controls)
 
         control_spaces_fine = [xx.function_space() for xx in self.x]
         control_spaces_coarse = (
@@ -748,7 +741,7 @@ class SpaceMappingProblem:
                     )
 
     def _scalar_product(
-        self, a: List[fenics.Function], b: List[fenics.Function]
+        self, a: list[fenics.Function], b: list[fenics.Function]
     ) -> float:
         """Computes the scalar product between ``a`` and ``b``.
 
@@ -765,7 +758,7 @@ class SpaceMappingProblem:
         )
 
     def _compute_search_direction(
-        self, q: List[fenics.Function], out: List[fenics.Function]
+        self, q: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         """Computes the search direction for a given rhs ``q``, saved to ``out``.
 
@@ -790,7 +783,7 @@ class SpaceMappingProblem:
             )
 
     def _compute_steepest_descent_application(
-        self, q: List[fenics.Function], out: List[fenics.Function]
+        self, q: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         """Computes the search direction for the steepest descent method.
 
@@ -804,7 +797,7 @@ class SpaceMappingProblem:
             out[i].vector().apply("")
 
     def _compute_broyden_application(
-        self, q: List[fenics.Function], out: List[fenics.Function]
+        self, q: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         """Computes the search direction for Broyden's method.
 
@@ -834,7 +827,7 @@ class SpaceMappingProblem:
                 out[j].vector().apply("")
 
     def _compute_bfgs_application(
-        self, q: List[fenics.Function], out: List[fenics.Function]
+        self, q: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         """Computes the search direction for the LBFGS method.
 
@@ -880,7 +873,7 @@ class SpaceMappingProblem:
                     out[j].vector().apply("")
 
     def _compute_ncg_direction(
-        self, q: List[fenics.Function], out: List[fenics.Function]
+        self, q: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         """Computes the search direction for the NCG methods.
 
@@ -948,7 +941,7 @@ class SpaceMappingProblem:
 
         return eps
 
-    def inject_pre_callback(self, function: Optional[Callable]) -> None:
+    def inject_pre_callback(self, function: Callable | None) -> None:
         """Changes the a-priori callback of the OptimizationProblem.
 
         Args:
@@ -960,7 +953,7 @@ class SpaceMappingProblem:
         # pylint: disable=protected-access
         self.parameter_extraction._pre_callback = function
 
-    def inject_post_callback(self, function: Optional[Callable]) -> None:
+    def inject_post_callback(self, function: Callable | None) -> None:
         """Changes the a-posteriori callback of the OptimizationProblem.
 
         Args:
@@ -973,7 +966,7 @@ class SpaceMappingProblem:
         self.parameter_extraction._post_callback = function
 
     def inject_pre_post_callback(
-        self, pre_function: Optional[Callable], post_function: Optional[Callable]
+        self, pre_function: Callable | None, post_function: Callable | None
     ) -> None:
         """Changes the a-priori (pre) and a-posteriori (post) callbacks of the problem.
 
