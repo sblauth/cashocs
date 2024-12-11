@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -33,8 +33,8 @@ if TYPE_CHECKING:
 
 
 def _initialize_control_variable(
-    ocp: optimal_control.OptimalControlProblem, u: Optional[List[fenics.Function]]
-) -> List[fenics.Function]:
+    ocp: optimal_control.OptimalControlProblem, u: list[fenics.Function] | None
+) -> list[fenics.Function]:
     """Initializes the control variable, so that it can be restored later.
 
     Args:
@@ -69,9 +69,9 @@ def _initialize_control_variable(
 
 def control_gradient_test(
     ocp: optimal_control.OptimalControlProblem,
-    u: Optional[List[fenics.Function]] = None,
-    h: Optional[List[fenics.Function]] = None,
-    rng: Optional[np.random.RandomState] = None,
+    u: list[fenics.Function] | None = None,
+    h: list[fenics.Function] | None = None,
+    rng: np.random.RandomState | None = None,
 ) -> float:
     """Performs a Taylor test to verify that the computed gradient is correct.
 
@@ -165,8 +165,8 @@ def control_gradient_test(
 
 def shape_gradient_test(
     sop: shape_optimization.ShapeOptimizationProblem,
-    h: Optional[List[fenics.Function]] = None,
-    rng: Optional[np.random.RandomState] = None,
+    h: list[fenics.Function] | None = None,
+    rng: np.random.RandomState | None = None,
 ) -> float:
     """Performs a Taylor test to verify that the computed shape gradient is correct.
 
@@ -255,8 +255,8 @@ def shape_gradient_test(
 
 
 def compute_convergence_rates(
-    epsilons: List[float], residuals: List[float], verbose: bool = True
-) -> List[float]:
+    epsilons: list[float], residuals: list[float], verbose: bool = True
+) -> list[float]:
     """Computes the convergence rate of the Taylor test.
 
     Args:
@@ -268,7 +268,7 @@ def compute_convergence_rates(
         The computed convergence rates
 
     """
-    rates: List[float] = []
+    rates: list[float] = []
     for i in range(1, len(epsilons)):
         rate: float = np.log(residuals[i] / residuals[i - 1]) / np.log(
             epsilons[i] / epsilons[i - 1]

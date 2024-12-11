@@ -19,10 +19,9 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 import fenics
-from typing_extensions import TYPE_CHECKING
 
 from cashocs import _exceptions
 from cashocs import log
@@ -91,12 +90,12 @@ class ArmijoLineSearch(line_search.LineSearch):
     def search(
         self,
         solver: optimization_algorithms.OptimizationAlgorithm,
-        search_direction: List[fenics.Function],
+        search_direction: list[fenics.Function],
         has_curvature_info: bool,
         active_idx: np.ndarray | None = None,
         constraint_gradient: sparse.csr_matrix | None = None,
         dropped_idx: np.ndarray | None = None,
-    ) -> Tuple[Optional[fenics.Function], bool]:
+    ) -> tuple[fenics.Function | None, bool]:
         """Performs the line search.
 
         Args:
@@ -192,7 +191,7 @@ class ArmijoLineSearch(line_search.LineSearch):
             return (None, False)
 
     def _compute_decrease_measure(
-        self, search_direction: List[fenics.Function]
+        self, search_direction: list[fenics.Function]
     ) -> float:
         """Computes the decrease measure for use in the Armijo line search.
 

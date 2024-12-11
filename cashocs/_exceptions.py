@@ -19,8 +19,6 @@
 
 from __future__ import annotations
 
-from typing import List, Optional
-
 
 class CashocsException(Exception):
     """Base class for exceptions raised by cashocs."""
@@ -42,7 +40,7 @@ class NotConvergedError(CashocsException):
     optimization problem.
     """
 
-    def __init__(self, solver: str, message: Optional[str] = None) -> None:
+    def __init__(self, solver: str, message: str | None = None) -> None:
         """Initializes self.
 
         Args:
@@ -177,7 +175,7 @@ class PETScSNESError(PETScError):
 class InputError(CashocsException):
     """This gets raised when the user input to a public API method is wrong."""
 
-    def __init__(self, obj: str, param: str, message: Optional[str] = None) -> None:
+    def __init__(self, obj: str, param: str, message: str | None = None) -> None:
         """Initializes self.
 
         Args:
@@ -206,7 +204,7 @@ class ConfigError(CashocsException):
 
     pre_message = "You have some error(s) in your config file.\n"
 
-    def __init__(self, config_errors: List[str]) -> None:
+    def __init__(self, config_errors: list[str]) -> None:
         """Initializes self.
 
         Args:

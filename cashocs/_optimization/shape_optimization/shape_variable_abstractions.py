@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import cast, List, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -54,7 +54,7 @@ class ShapeVariableAbstractions(
         self.mesh_handler = optimization_problem.mesh_handler
 
     def compute_decrease_measure(
-        self, search_direction: List[fenics.Function]
+        self, search_direction: list[fenics.Function]
     ) -> float:
         """Computes the measure of decrease needed for the Armijo test.
 
@@ -89,7 +89,7 @@ class ShapeVariableAbstractions(
 
     def update_optimization_variables(
         self,
-        search_direction: List[fenics.Function],
+        search_direction: list[fenics.Function],
         stepsize: float,
         beta: float,
         active_idx: np.ndarray | None = None,
@@ -133,7 +133,7 @@ class ShapeVariableAbstractions(
         return stepsize
 
     def compute_a_priori_decreases(
-        self, search_direction: List[fenics.Function], stepsize: float
+        self, search_direction: list[fenics.Function], stepsize: float
     ) -> int:
         """Computes the number of times the stepsize has to be "halved" a priori.
 
@@ -172,7 +172,7 @@ class ShapeVariableAbstractions(
         return requires_remeshing
 
     def project_ncg_search_direction(
-        self, search_direction: List[fenics.Function]
+        self, search_direction: list[fenics.Function]
     ) -> None:
         """Restricts the search direction to the inactive set.
 

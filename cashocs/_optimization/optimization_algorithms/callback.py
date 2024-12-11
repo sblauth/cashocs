@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, Optional, TYPE_CHECKING, Union
+from typing import Callable, TYPE_CHECKING
 
 from cashocs import _exceptions
 from cashocs import _utils
@@ -33,13 +33,13 @@ class Callback:
 
     def __init__(self) -> None:
         """Initializes the callbacks."""
-        self.pre_callback: Optional[
-            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
-        ] = None
-        self.post_callback: Optional[
-            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
-        ] = None
-        self.problem: Optional[_typing.OptimizationProblem] = None
+        self.pre_callback: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ) = None
+        self.post_callback: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ) = None
+        self.problem: _typing.OptimizationProblem | None = None
 
     def call_pre(self) -> None:
         """Calls the callback intended before solving the state system."""
