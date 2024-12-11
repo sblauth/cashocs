@@ -49,3 +49,11 @@ repos:
         additional_dependencies:
           - ".[with_mypy,with_bandit,with_pyroma]"
         files: cashocs/
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.8.2
+    hooks:
+      # Run the linter.
+      - id: ruff
+        files: cashocs/
