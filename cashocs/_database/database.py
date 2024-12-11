@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 
@@ -45,15 +45,15 @@ class Database:
     def __init__(
         self,
         config: io.Config,
-        states: List[fenics.Function],
-        adjoints: List[fenics.Function],
-        state_ksp_options: List[_typing.KspOption],
-        adjoint_ksp_options: List[_typing.KspOption],
-        gradient_ksp_options: Optional[List[_typing.KspOption]],
-        cost_functional_list: List[_typing.CostFunctional],
-        state_forms: List[ufl.Form],
-        bcs_list: List[List[fenics.DirichletBC]],
-        preconditioner_forms: List[ufl.Form],
+        states: list[fenics.Function],
+        adjoints: list[fenics.Function],
+        state_ksp_options: list[_typing.KspOption],
+        adjoint_ksp_options: list[_typing.KspOption],
+        gradient_ksp_options: list[_typing.KspOption] | None,
+        cost_functional_list: list[_typing.CostFunctional],
+        state_forms: list[ufl.Form],
+        bcs_list: list[list[fenics.DirichletBC]],
+        preconditioner_forms: list[ufl.Form],
     ) -> None:
         """Initialize the database.
 

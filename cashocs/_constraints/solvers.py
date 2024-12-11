@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -48,8 +48,8 @@ class ConstrainedSolver(abc.ABC):
     def __init__(
         self,
         constrained_problem: constrained_problems.ConstrainedOptimizationProblem,
-        mu_0: Optional[float] = None,
-        lambda_0: Optional[Union[List[float], float]] = None,
+        mu_0: float | None = None,
+        lambda_0: list[float] | float | None = None,
     ) -> None:
         """Initializes self.
 
@@ -109,9 +109,9 @@ class ConstrainedSolver(abc.ABC):
         self,
         tol: float = 1e-2,
         max_iter: int = 25,
-        inner_rtol: Optional[float] = None,
-        inner_atol: Optional[float] = None,
-        constraint_tol: Optional[float] = None,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
+        constraint_tol: float | None = None,
     ) -> None:
         """Solves the constrained problem.
 
@@ -152,8 +152,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
     def __init__(
         self,
         constrained_problem: constrained_problems.ConstrainedOptimizationProblem,
-        mu_0: Optional[float] = None,
-        lambda_0: Optional[List[float]] = None,
+        mu_0: float | None = None,
+        lambda_0: list[float] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -172,11 +172,11 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         self.A_tensors = [fenics.PETScMatrix() for _ in range(self.constraint_dim)]
         self.b_tensors = [fenics.PETScVector() for _ in range(self.constraint_dim)]
         self.solver_name = "Augmented Lagrangian"
-        self.inner_cost_functional_form: List[_typing.CostFunctional] = []
+        self.inner_cost_functional_form: list[_typing.CostFunctional] = []
 
     def _project_pointwise_multiplier(
         self,
-        project_terms: Union[ufl_expr.Expr, List[ufl_expr.Expr]],
+        project_terms: ufl_expr.Expr | list[ufl_expr.Expr],
         measure: fenics.Measure,
         multiplier: fenics.Function,
         A_tensor: fenics.PETScMatrix,  # pylint: disable=invalid-name
@@ -364,9 +364,9 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         self,
         tol: float = 1e-2,
         max_iter: int = 10,
-        inner_rtol: Optional[float] = None,
-        inner_atol: Optional[float] = None,
-        constraint_tol: Optional[float] = None,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
+        constraint_tol: float | None = None,
     ) -> None:
         """Solves the constrained problem.
 
@@ -431,8 +431,8 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
     def __init__(
         self,
         constrained_problem: constrained_problems.ConstrainedOptimizationProblem,
-        mu_0: Optional[float] = None,
-        lambda_0: Optional[list[float]] = None,
+        mu_0: float | None = None,
+        lambda_0: list[float] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -452,9 +452,9 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         self,
         tol: float = 1e-2,
         max_iter: int = 25,
-        inner_rtol: Optional[float] = None,
-        inner_atol: Optional[float] = None,
-        constraint_tol: Optional[float] = None,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
+        constraint_tol: float | None = None,
     ) -> None:
         """Solves the constrained problem.
 
