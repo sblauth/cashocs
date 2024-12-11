@@ -154,6 +154,7 @@ class OptimizationVariableAbstractions(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
     def compute_active_sets(self) -> None:
         """Computes the active sets of the problem."""
         pass

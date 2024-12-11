@@ -91,10 +91,6 @@ class ReducedCostFunctional:
 class Functional(abc.ABC):
     """Base class for all cost functionals."""
 
-    def __init__(self) -> None:
-        """Initialize the functional."""
-        pass
-
     @abc.abstractmethod
     def evaluate(self) -> float:
         """Evaluates the functional.

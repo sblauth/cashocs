@@ -104,6 +104,7 @@ class FormHandler(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
     def update_scalar_product(self) -> None:
         """Updates the scalar product."""
         pass

@@ -58,10 +58,6 @@ class FineModel(abc.ABC):
     controls: list[fenics.Function]
     cost_functional_value: float
 
-    def __init__(self) -> None:
-        """Initializes self."""
-        pass
-
     @abc.abstractmethod
     def solve_and_evaluate(self) -> None:
         """Solves and evaluates the fine model.

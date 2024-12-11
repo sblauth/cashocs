@@ -107,6 +107,7 @@ class ShapeRegularizationTerm(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
     def update(self) -> None:
         """Updates the internal parameters of the regularization term."""
         pass
@@ -640,6 +641,10 @@ class CurvatureRegularization(ShapeRegularizationTerm):
                 self.mu = self.db.parameter_db.temp_dict["Regularization"][
                     "mu_curvature"
                 ]
+
+    def update(self) -> None:
+        """Updates the internal parameters of the regularization term."""
+        pass
 
 
 class ShapeRegularization:

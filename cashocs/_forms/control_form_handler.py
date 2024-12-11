@@ -202,6 +202,10 @@ class ControlFormHandler(form_handler.FormHandler):
         """
         pass
 
+    def update_scalar_product(self) -> None:
+        """Updates the scalar product."""
+        pass
+
 
 class HessianFormHandler:
     """Form handler for second order forms and hessians."""

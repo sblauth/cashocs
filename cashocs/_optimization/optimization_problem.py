@@ -464,7 +464,7 @@ class OptimizationProblem(abc.ABC):
         mod_bcs_list: list
         if adjoint_bcs_list == [] or adjoint_bcs_list is None:
             mod_bcs_list = []
-            for i in range(self.state_dim):
+            for _ in range(self.state_dim):
                 mod_bcs_list.append([])
         else:
             mod_bcs_list = _utils.check_and_enlist_bcs(adjoint_bcs_list)

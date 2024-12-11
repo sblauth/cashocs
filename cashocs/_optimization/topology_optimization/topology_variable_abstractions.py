@@ -168,3 +168,7 @@ class TopologyVariableAbstractions(
             search_direction: The current search direction (will be overwritten).
 
         """
+
+    def compute_active_sets(self) -> None:
+        """Computes the active sets of the problem."""
+        pass

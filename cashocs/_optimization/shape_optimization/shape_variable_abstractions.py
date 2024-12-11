@@ -181,3 +181,7 @@ class ShapeVariableAbstractions(
 
         """
         pass
+
+    def compute_active_sets(self) -> None:
+        """Computes the active sets of the problem."""
+        pass
