@@ -23,7 +23,7 @@ from __future__ import annotations
 import pathlib
 import subprocess  # nosec B404
 import tempfile
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import weakref
 
 import fenics
@@ -58,7 +58,7 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
     temp_location = f"{mesh_file[:-4]}_temp.msh"
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         with (
-            open(mesh_file, "r", encoding="utf-8") as in_file,
+            open(mesh_file, encoding="utf-8") as in_file,
             open(temp_location, "w", encoding="utf-8") as temp_file,
         ):
             parametrizations_section = False
@@ -341,7 +341,7 @@ class _MeshHandler:
             )
 
     def compute_decreases(
-        self, search_direction: List[fenics.Function], stepsize: float
+        self, search_direction: list[fenics.Function], stepsize: float
     ) -> int:
         """Estimates the number of Armijo decreases for a certain mesh quality.
 
@@ -410,7 +410,7 @@ class _MeshHandler:
                 file.write("\n")
 
                 geo_file = self.db.parameter_db.temp_dict["geo_file"]
-                with open(geo_file, "r", encoding="utf-8") as f:
+                with open(geo_file, encoding="utf-8") as f:
                     for line in f:
                         if line[0].islower():
                             file.write(line)

@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import configparser
 import copy
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -112,7 +112,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 self.config,
             )
 
-    def solve(self) -> List[fenics.Function]:
+    def solve(self) -> list[fenics.Function]:
         """Solves the Riesz projection problem to obtain the shape gradient.
 
         Returns:
@@ -173,9 +173,9 @@ class _PLaplaceProjector:
         self,
         db: database.Database,
         gradient_problem: ShapeGradientProblem,
-        gradient: List[fenics.Function],
+        gradient: list[fenics.Function],
         shape_derivative: ufl.Form,
-        bcs_shape: List[fenics.DirichletBC],
+        bcs_shape: list[fenics.DirichletBC],
         config: configparser.ConfigParser,
     ) -> None:
         """Initializes self.

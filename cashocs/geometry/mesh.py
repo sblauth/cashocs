@@ -21,12 +21,11 @@ from __future__ import annotations
 
 import collections
 import functools
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, TYPE_CHECKING
 
 import fenics
 import numpy as np
 from typing_extensions import Literal
-from typing_extensions import TYPE_CHECKING
 
 from cashocs import _exceptions
 from cashocs import log
@@ -105,8 +104,8 @@ def interval_mesh(
     n: int = 10,
     start: float = 0.0,
     end: float = 1.0,
-    partitions: Optional[List[float]] = None,
-    comm: Optional[MPI.Comm] = None,
+    partitions: list[float] | None = None,
+    comm: MPI.Comm | None = None,
 ) -> _typing.MeshTuple:
     r"""Creates an 1D interval mesh starting at x=0 to x=length.
 
@@ -195,9 +194,9 @@ def regular_mesh(
     n: int = 10,
     length_x: float = 1.0,
     length_y: float = 1.0,
-    length_z: Optional[float] = None,
+    length_z: float | None = None,
     diagonal: Literal["left", "right", "left/right", "right/left", "crossed"] = "right",
-    comm: Optional[MPI.Comm] = None,
+    comm: MPI.Comm | None = None,
 ) -> _typing.MeshTuple:
     r"""Creates a mesh corresponding to a rectangle or cube.
 
@@ -338,12 +337,12 @@ def regular_box_mesh(
     n: int = 10,
     start_x: float = 0.0,
     start_y: float = 0.0,
-    start_z: Optional[float] = None,
+    start_z: float | None = None,
     end_x: float = 1.0,
     end_y: float = 1.0,
-    end_z: Optional[float] = None,
+    end_z: float | None = None,
     diagonal: Literal["right", "left", "left/right", "right/left", "crossed"] = "right",
-    comm: Optional[MPI.Comm] = None,
+    comm: MPI.Comm | None = None,
 ) -> _typing.MeshTuple:
     r"""Creates a mesh corresponding to a rectangle or cube.
 
@@ -487,7 +486,7 @@ def regular_box_mesh(
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
 
-def _check_sizes(sizes: List[float]) -> None:
+def _check_sizes(sizes: list[float]) -> None:
     for size in sizes:
         if size <= 0:
             raise _exceptions.InputError(

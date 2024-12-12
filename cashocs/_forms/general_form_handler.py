@@ -19,8 +19,6 @@
 
 from __future__ import annotations
 
-from typing import List, Tuple, Union
-
 import fenics
 
 try:
@@ -33,8 +31,8 @@ from cashocs._database import database
 
 
 def _get_subdx(
-    function_space: fenics.FunctionSpace, index: int, ls: List
-) -> Union[None, List[int]]:
+    function_space: fenics.FunctionSpace, index: int, ls: list
+) -> None | list[int]:
     """Computes the sub-indices for mixed function spaces based on the id of a subspace.
 
     Args:
@@ -77,7 +75,7 @@ class GeneralFormHandler:
 class StateFormHandler:
     """Manages weak state forms."""
 
-    state_eq_forms: List[ufl.Form]
+    state_eq_forms: list[ufl.Form]
     linear_state_eq_forms: list[ufl.Form]
     state_eq_forms_lhs: list[ufl.Form]
     state_eq_forms_rhs: list[ufl.Form]
@@ -92,7 +90,7 @@ class StateFormHandler:
         self.db = db
 
         self.config = self.db.config
-        self.bcs_list: List[List[fenics.DirichletBC]] = self.db.form_db.bcs_list
+        self.bcs_list: list[list[fenics.DirichletBC]] = self.db.form_db.bcs_list
         (
             self.state_eq_forms,
             self.linear_state_eq_forms,
@@ -102,7 +100,7 @@ class StateFormHandler:
 
     def _compute_state_equations(
         self,
-    ) -> Tuple[List[ufl.Form], List[ufl.Form], List[ufl.Form], List[ufl.Form]]:
+    ) -> tuple[list[ufl.Form], list[ufl.Form], list[ufl.Form], list[ufl.Form]]:
         """Calculates the weak form of the state equation for the use with fenics."""
         state_eq_forms = [
             fenics.derivative(
@@ -113,8 +111,8 @@ class StateFormHandler:
             for i in range(self.db.parameter_db.state_dim)
         ]
         linear_state_eq_forms = []
-        state_eq_forms_lhs: List[ufl.Form] = []
-        state_eq_forms_rhs: List[ufl.Form] = []
+        state_eq_forms_lhs: list[ufl.Form] = []
+        state_eq_forms_rhs: list[ufl.Form] = []
 
         if self.config.getboolean("StateSystem", "is_linear"):
             linear_state_eq_forms = [
@@ -169,7 +167,7 @@ class AdjointFormHandler:
             self.adjoint_eq_rhs,
         ) = self._compute_adjoint_equations()
 
-    def _compute_adjoint_boundary_conditions(self) -> List[List[fenics.DirichletBC]]:
+    def _compute_adjoint_boundary_conditions(self) -> list[list[fenics.DirichletBC]]:
         """Computes the boundary conditions for the adjoint systems."""
         if self.db.parameter_db.state_adjoint_equal_spaces:
             bcs_list_ad = [
@@ -188,7 +186,7 @@ class AdjointFormHandler:
             for i in range(self.db.parameter_db.state_dim):
                 for j, bc in enumerate(self.db.form_db.bcs_list[i]):
                     idx = bc.function_space().id()
-                    subdx: List[int] = []
+                    subdx: list[int] = []
                     _get_subdx(self.db.function_db.state_spaces[i], idx, ls=subdx)
                     adjoint_space = self.db.function_db.adjoint_spaces[i]
                     for num in subdx:
@@ -217,7 +215,7 @@ class AdjointFormHandler:
 
     def _compute_adjoint_equations(
         self,
-    ) -> Tuple[List[ufl.Form], List[ufl.Form], List[ufl.Form], List[ufl.Form]]:
+    ) -> tuple[list[ufl.Form], list[ufl.Form], list[ufl.Form], list[ufl.Form]]:
         """Calculates the weak form of the adjoint equation for use with fenics."""
         adjoint_eq_forms = [
             self.db.form_db.lagrangian.derivative(

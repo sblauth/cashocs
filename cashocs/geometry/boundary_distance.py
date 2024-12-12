@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 import copy
-from typing import List, Optional, Union
 
 import fenics
 import numpy as np
@@ -31,8 +30,8 @@ from cashocs.geometry import measure
 
 def compute_boundary_distance(
     mesh: fenics.Mesh,
-    boundaries: Optional[fenics.MeshFunction] = None,
-    boundary_idcs: Optional[List[Union[int, str]]] = None,
+    boundaries: fenics.MeshFunction | None = None,
+    boundary_idcs: list[int | str] | None = None,
     tol: float = 1e-1,
     max_iter: int = 10,
 ) -> fenics.Function:

@@ -19,8 +19,6 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, Union
-
 import fenics
 import numpy as np
 
@@ -33,8 +31,8 @@ class BoxConstraints:
 
     def __init__(
         self,
-        controls: List[fenics.Function],
-        control_constraints: Optional[List[List[Union[float, fenics.Function]]]],
+        controls: list[fenics.Function],
+        control_constraints: list[list[float | fenics.Function]] | None,
     ) -> None:
         """Initializes the box constraints.
 
@@ -45,7 +43,7 @@ class BoxConstraints:
         """
         self.controls = controls
 
-        self.require_control_constraints: List[bool] = [False] * len(self.controls)
+        self.require_control_constraints: list[bool] = [False] * len(self.controls)
         self.control_constraints = self._parse_control_constraints(control_constraints)
         self._validate_control_constraints()
 
@@ -57,8 +55,8 @@ class BoxConstraints:
             self.display_box_constraints = True
 
     def _parse_control_constraints(
-        self, control_constraints: Optional[List[List[Union[float, fenics.Function]]]]
-    ) -> List[List[fenics.Function]]:
+        self, control_constraints: list[list[float | fenics.Function]] | None
+    ) -> list[list[fenics.Function]]:
         """Checks, whether the given control constraints are feasible.
 
         Args:
@@ -68,7 +66,7 @@ class BoxConstraints:
             The (wrapped) list of control constraints.
 
         """
-        temp_control_constraints: List[List[Union[fenics.Function, float]]]
+        temp_control_constraints: list[list[fenics.Function | float]]
         if control_constraints is None:
             temp_control_constraints = []
             for control in self.controls:
@@ -85,7 +83,7 @@ class BoxConstraints:
             )
 
         # recast floats into functions for compatibility
-        formatted_control_constraints: List[List[fenics.Function]] = []
+        formatted_control_constraints: list[list[fenics.Function]] = []
         for idx, pair in enumerate(temp_control_constraints):
             if isinstance(pair[0], fenics.Function):
                 lower_bound = pair[0]
@@ -188,16 +186,16 @@ class Restrictor:
 
     def __init__(
         self,
-        controls: List[fenics.Function],
-        control_constraints: List[List[fenics.Function]],
-        require_control_constraints: List[bool],
+        controls: list[fenics.Function],
+        control_constraints: list[list[fenics.Function]],
+        require_control_constraints: list[bool],
     ) -> None:
         """Initializes self.
 
         Args:
-            controls: List of control variables.
+            controls: list of control variables.
             control_constraints: The list of control constraints.
-            require_control_constraints: List of booleans indicating which components
+            require_control_constraints: list of booleans indicating which components
                 use the box constraints.
 
         """
@@ -209,10 +207,10 @@ class Restrictor:
             [x.function_space() for x in self.controls]
         )
 
-        self.idx_active_lower: List = []
-        self.idx_active_upper: List = []
-        self.idx_active: List = []
-        self.idx_inactive: List = []
+        self.idx_active_lower: list = []
+        self.idx_active_upper: list = []
+        self.idx_active: list = []
+        self.idx_inactive: list = []
 
     def compute_active_sets(self) -> None:
         """Computes the indices corresponding to active and inactive sets."""
@@ -224,30 +222,26 @@ class Restrictor:
         for j in range(len(self.controls)):
             if self.require_control_constraints[j]:
                 self.idx_active_lower.append(
-                    np.nonzero(
-                        (
-                            self.controls[j].vector()[:]
-                            <= self.control_constraints[j][0].vector()[:]
-                        )
-                    )[0]
+                    np.flatnonzero(
+                        self.controls[j].vector()[:]
+                        <= self.control_constraints[j][0].vector()[:]
+                    )
                 )
                 self.idx_active_upper.append(
-                    np.nonzero(
-                        (
-                            self.controls[j].vector()[:]
-                            >= self.control_constraints[j][1].vector()[:]
-                        )
-                    )[0]
+                    np.flatnonzero(
+                        self.controls[j].vector()[:]
+                        >= self.control_constraints[j][1].vector()[:]
+                    )
                 )
                 self.idx_inactive.append(
-                    np.nonzero(
+                    np.flatnonzero(
                         np.logical_and(
                             self.controls[j].vector()[:]
                             > self.control_constraints[j][0].vector()[:],
                             self.controls[j].vector()[:]
                             < self.control_constraints[j][1].vector()[:],
                         )
-                    )[0]
+                    )
                 )
             else:
                 self.idx_active_lower.append([])
@@ -261,8 +255,8 @@ class Restrictor:
             self.idx_active.append(temp_active)
 
     def restrict_to_inactive_set(
-        self, a: List[fenics.Function], b: List[fenics.Function]
-    ) -> List[fenics.Function]:
+        self, a: list[fenics.Function], b: list[fenics.Function]
+    ) -> list[fenics.Function]:
         """Restricts a function to the inactive set.
 
         Restricts a control type function ``a`` onto the inactive set,
@@ -296,8 +290,8 @@ class Restrictor:
         return b
 
     def restrict_to_active_set(
-        self, a: List[fenics.Function], b: List[fenics.Function]
-    ) -> List[fenics.Function]:
+        self, a: list[fenics.Function], b: list[fenics.Function]
+    ) -> list[fenics.Function]:
         """Restricts a function to the active set.
 
         Restricts a control type function ``a`` onto the active set,
@@ -330,8 +324,8 @@ class Restrictor:
         return b
 
     def project_to_admissible_set(
-        self, a: List[fenics.Function]
-    ) -> List[fenics.Function]:
+        self, a: list[fenics.Function]
+    ) -> list[fenics.Function]:
         """Project a function to the set of admissible controls.
 
         Projects a control type function ``a`` onto the set of admissible controls

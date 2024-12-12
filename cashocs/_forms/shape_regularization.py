@@ -25,7 +25,7 @@ and barycenter, and desired ones.
 from __future__ import annotations
 
 import abc
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 
@@ -107,6 +107,7 @@ class ShapeRegularizationTerm(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
     def update(self) -> None:
         """Updates the internal parameters of the regularization term."""
         pass
@@ -484,7 +485,7 @@ class BarycenterRegularization(ShapeRegularizationTerm):
                     "mu_barycenter"
                 ]
 
-    def _compute_barycenter_list(self) -> List[float]:
+    def _compute_barycenter_list(self) -> list[float]:
         """Computes the list of barycenters for the geometry.
 
         Returns:
@@ -640,6 +641,10 @@ class CurvatureRegularization(ShapeRegularizationTerm):
                 self.mu = self.db.parameter_db.temp_dict["Regularization"][
                     "mu_curvature"
                 ]
+
+    def update(self) -> None:
+        """Updates the internal parameters of the regularization term."""
+        pass
 
 
 class ShapeRegularization:

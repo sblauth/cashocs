@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import collections
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 
@@ -173,7 +173,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
             self.search_direction[j].vector().vec().scale(factor)
             self.search_direction[j].vector().apply("")
 
-    def compute_search_direction(self, grad: List[fenics.Function]) -> None:
+    def compute_search_direction(self, grad: list[fenics.Function]) -> None:
         """Computes the search direction for the BFGS method with a double loop.
 
         Args:
@@ -329,7 +329,7 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
                 self.history_rho.clear()
 
     def _compute_approximate_inverse_hessian_application(
-        self, y: List[fenics.Function], res: List[fenics.Function]
+        self, y: list[fenics.Function], res: list[fenics.Function]
     ) -> None:
         """Computes the application of the approximate inverse Hessian to y.
 

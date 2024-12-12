@@ -19,8 +19,6 @@
 
 from __future__ import annotations
 
-from typing import List
-
 import fenics
 
 from cashocs import _utils
@@ -31,8 +29,8 @@ class FunctionDatabase:
 
     def __init__(
         self,
-        states: List[fenics.Function],
-        adjoints: List[fenics.Function],
+        states: list[fenics.Function],
+        adjoints: list[fenics.Function],
     ) -> None:
         """Initializes the database.
 
@@ -68,7 +66,7 @@ class FunctionDatabase:
         self.states_prime = _utils.create_function_list(self.state_spaces)
         self.adjoints_prime = _utils.create_function_list(self.adjoint_spaces)
 
-        self.control_spaces: List[fenics.FunctionSpace] = []
-        self.gradient: List[fenics.Function] = []
+        self.control_spaces: list[fenics.FunctionSpace] = []
+        self.gradient: list[fenics.Function] = []
 
-        self.controls: List[fenics.Function] = []
+        self.controls: list[fenics.Function] = []

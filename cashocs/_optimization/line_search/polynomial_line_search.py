@@ -21,11 +21,10 @@
 from __future__ import annotations
 
 import collections
-from typing import Deque, List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
-from typing_extensions import TYPE_CHECKING
 
 from cashocs import _exceptions
 from cashocs import log
@@ -64,8 +63,8 @@ class PolynomialLineSearch(line_search.LineSearch):
         self.polynomial_model = self.config.get(
             "LineSearch", "polynomial_model"
         ).casefold()
-        self.f_vals: Deque[float] = collections.deque()
-        self.alpha_vals: Deque[float] = collections.deque()
+        self.f_vals: collections.deque[float] = collections.deque()
+        self.alpha_vals: collections.deque[float] = collections.deque()
 
     def _check_for_nonconvergence(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -101,12 +100,12 @@ class PolynomialLineSearch(line_search.LineSearch):
     def search(
         self,
         solver: optimization_algorithms.OptimizationAlgorithm,
-        search_direction: List[fenics.Function],
+        search_direction: list[fenics.Function],
         has_curvature_info: bool,
         active_idx: np.ndarray | None = None,
         constraint_gradient: sparse.csr_matrix | None = None,
         dropped_idx: np.ndarray | None = None,
-    ) -> Tuple[Optional[fenics.Function], bool]:
+    ) -> tuple[fenics.Function | None, bool]:
         """Performs the line search.
 
         Args:
@@ -215,8 +214,8 @@ class PolynomialLineSearch(line_search.LineSearch):
         self,
         f_current: float,
         decrease_measure: float,
-        f_vals: Deque[float],
-        alpha_vals: Deque[float],
+        f_vals: collections.deque[float],
+        alpha_vals: collections.deque[float],
     ) -> float:
         """Computes a stepsize based on polynomial models.
 
@@ -260,8 +259,8 @@ class PolynomialLineSearch(line_search.LineSearch):
         self,
         f_current: float,
         decrease_measure: float,
-        f_vals: Deque[float],
-        alpha_vals: Deque[float],
+        f_vals: collections.deque[float],
+        alpha_vals: collections.deque[float],
     ) -> float:
         """Computes a trial stepsize based on a quadratic model.
 
@@ -284,8 +283,8 @@ class PolynomialLineSearch(line_search.LineSearch):
         self,
         f_current: float,
         decrease_measure: float,
-        f_vals: Deque[float],
-        alpha_vals: Deque[float],
+        f_vals: collections.deque[float],
+        alpha_vals: collections.deque[float],
     ) -> float:
         """Computes a trial stepsize based on a cubic model.
 
@@ -324,7 +323,7 @@ class PolynomialLineSearch(line_search.LineSearch):
         return float(stepsize)
 
     def _compute_decrease_measure(
-        self, search_direction: List[fenics.Function]
+        self, search_direction: list[fenics.Function]
     ) -> float:
         """Computes the decrease measure for use in the Armijo line search.
 

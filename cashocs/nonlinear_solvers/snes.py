@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import copy
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 from petsc4py import PETSc
@@ -53,16 +53,16 @@ class SNESSolver:
         self,
         nonlinear_form: ufl.Form,
         u: fenics.Function,
-        bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
-        derivative: Optional[ufl.Form] = None,
-        petsc_options: Optional[_typing.KspOption] = None,
-        shift: Optional[ufl.Form] = None,
-        rtol: Optional[float] = None,
-        atol: Optional[float] = None,
-        max_iter: Optional[int] = None,
-        A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
-        b_tensor: Optional[fenics.PETScVector] = None,
-        preconditioner_form: Optional[ufl.Form] = None,
+        bcs: fenics.DirichletBC | list[fenics.DirichletBC],
+        derivative: ufl.Form | None = None,
+        petsc_options: _typing.KspOption | None = None,
+        shift: ufl.Form | None = None,
+        rtol: float | None = None,
+        atol: float | None = None,
+        max_iter: int | None = None,
+        A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
+        b_tensor: fenics.PETScVector | None = None,
+        preconditioner_form: ufl.Form | None = None,
     ) -> None:
         """Initialize the SNES solver.
 
@@ -151,8 +151,8 @@ class SNESSolver:
         else:
             self.P_petsc = None
 
-        self.assembler_shift: Optional[fenics.SystemAssembler] = None
-        self.residual_shift: Optional[fenics.PETScVector] = None
+        self.assembler_shift: fenics.SystemAssembler | None = None
+        self.residual_shift: fenics.PETScVector | None = None
         if self.shift is not None:
             self.assembler_shift = fenics.SystemAssembler(
                 self.derivative, self.shift, self.bcs
@@ -223,6 +223,7 @@ class SNESSolver:
 
     def solve(self) -> fenics.Function:
         """Solves the nonlinear problem with PETSc's SNES."""
+        log.begin("Solving the nonlinear PDE system with PETSc SNES.")
         snes = PETSc.SNES().create()
 
         snes.setFunction(self.assemble_function, self.residual_petsc)
@@ -259,22 +260,24 @@ class SNESSolver:
             PETSc.garbage_cleanup(comm=self.comm)
             PETSc.garbage_cleanup()
 
+        log.end()
+
         return self.u
 
 
 def snes_solve(
     nonlinear_form: ufl.Form,
     u: fenics.Function,
-    bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
-    derivative: Optional[ufl.Form] = None,
-    petsc_options: Optional[_typing.KspOption] = None,
-    shift: Optional[ufl.Form] = None,
-    rtol: Optional[float] = None,
-    atol: Optional[float] = None,
-    max_iter: Optional[int] = None,
-    A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
-    b_tensor: Optional[fenics.PETScVector] = None,
-    preconditioner_form: Optional[ufl.Form] = None,
+    bcs: fenics.DirichletBC | list[fenics.DirichletBC],
+    derivative: ufl.Form | None = None,
+    petsc_options: _typing.KspOption | None = None,
+    shift: ufl.Form | None = None,
+    rtol: float | None = None,
+    atol: float | None = None,
+    max_iter: int | None = None,
+    A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
+    b_tensor: fenics.PETScVector | None = None,
+    preconditioner_form: ufl.Form | None = None,
 ) -> fenics.Function:
     """Solve a nonlinear PDE problem with PETSc SNES.
 

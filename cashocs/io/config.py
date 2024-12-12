@@ -22,7 +22,7 @@ from __future__ import annotations
 from configparser import ConfigParser
 import json
 import pathlib
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from cashocs import _exceptions
 from cashocs import log
@@ -79,7 +79,7 @@ def _check_for_config_list(string: str) -> bool:
 class Config(ConfigParser):
     """Class for handling the config in cashocs."""
 
-    def __init__(self, config_file: Optional[str] = None) -> None:
+    def __init__(self, config_file: str | None = None) -> None:
         """Initializes self.
 
         Args:
@@ -87,9 +87,9 @@ class Config(ConfigParser):
 
         """
         super().__init__()
-        self.config_errors: List[str] = []
+        self.config_errors: list[str] = []
 
-        self.config_scheme: Dict[str, Dict[str, Dict[str, Any]]] = {
+        self.config_scheme: dict[str, dict[str, dict[str, Any]]] = {
             "Mesh": {
                 "gmsh_file": {
                     "type": "str",
@@ -713,7 +713,7 @@ restart = False
                     "Using cashocs default config instead."
                 )
 
-    def getlist(self, section: str, option: str, **kwargs: Any) -> List:
+    def getlist(self, section: str, option: str, **kwargs: Any) -> list:
         """Extracts a list from a config file.
 
         Args:
@@ -729,7 +729,7 @@ restart = False
         if (
             self.config_scheme[section][option]["type"] == "list"
         ) and _check_for_config_list(self.get(section, option)):
-            py_list: List = json.loads(self.get(section, option, **kwargs))
+            py_list: list = json.loads(self.get(section, option, **kwargs))
             return py_list
         else:
             raise _exceptions.InputError(
@@ -893,7 +893,7 @@ restart = False
             self._check_larger_than_one_attribute(section, key, key_attributes)
 
     def _check_file_attribute(
-        self, section: str, key: str, key_attributes: List[str]
+        self, section: str, key: str, key_attributes: list[str]
     ) -> None:
         """Checks, whether a file specified in key exists.
 
@@ -932,7 +932,7 @@ restart = False
             )
 
     def _check_non_negative_attribute(
-        self, section: str, key: str, key_attributes: List[str]
+        self, section: str, key: str, key_attributes: list[str]
     ) -> None:
         """Checks, whether key is nonnegative.
 
@@ -949,7 +949,7 @@ restart = False
                 )
 
     def _check_positive_attribute(
-        self, section: str, key: str, key_attributes: List[str]
+        self, section: str, key: str, key_attributes: list[str]
     ) -> None:
         """Checks, whether key is positive.
 
@@ -967,7 +967,7 @@ restart = False
                 )
 
     def _check_less_than_one_attribute(
-        self, section: str, key: str, key_attributes: List[str]
+        self, section: str, key: str, key_attributes: list[str]
     ) -> None:
         """Checks, whether key is less than one.
 
@@ -985,7 +985,7 @@ restart = False
                 )
 
     def _check_larger_than_one_attribute(
-        self, section: str, key: str, key_attributes: List[str]
+        self, section: str, key: str, key_attributes: list[str]
     ) -> None:
         """Checks, whether key is larger than one.
 

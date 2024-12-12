@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -69,21 +69,21 @@ class ControlFormHandler(form_handler.FormHandler):
         self.riesz_scalar_products = optimization_problem.riesz_scalar_products
         self.control_bcs_list = optimization_problem.control_bcs_list
 
-        self.gradient_forms_rhs: List[ufl.Form] = []
+        self.gradient_forms_rhs: list[ufl.Form] = []
         self._compute_gradient_equations()
 
-        self.modified_scalar_product: Optional[List[ufl.Form]] = None
-        self.assemblers: List[fenics.SystemAssembler] = []
-        self.riesz_projection_matrices: List[PETSc.Mat] = []
+        self.modified_scalar_product: list[ufl.Form] | None = None
+        self.assemblers: list[fenics.SystemAssembler] = []
+        self.riesz_projection_matrices: list[PETSc.Mat] = []
         self.setup_assemblers(
             self.riesz_scalar_products, self.gradient_forms_rhs, self.control_bcs_list
         )
 
     def setup_assemblers(
         self,
-        scalar_product_forms: List[ufl.Form],
-        derivatives: List[ufl.Form],
-        bcs: Union[List[List[fenics.DirichletBC]], List[None]],
+        scalar_product_forms: list[ufl.Form],
+        derivatives: list[ufl.Form],
+        bcs: list[list[fenics.DirichletBC]] | list[None],
     ) -> None:
         """Sets up the assemblers and matrices for the projection of the gradient.
 
@@ -155,7 +155,7 @@ class ControlFormHandler(form_handler.FormHandler):
                         )
 
     def scalar_product(
-        self, a: List[fenics.Function], b: List[fenics.Function]
+        self, a: list[fenics.Function], b: list[fenics.Function]
     ) -> float:
         """Computes the scalar product between control type functions a and b.
 
@@ -202,6 +202,10 @@ class ControlFormHandler(form_handler.FormHandler):
         """
         pass
 
+    def update_scalar_product(self) -> None:
+        """Updates the scalar product."""
+        pass
+
 
 class HessianFormHandler:
     """Form handler for second order forms and hessians."""
@@ -217,10 +221,10 @@ class HessianFormHandler:
 
         self.config = self.db.config
 
-        self.w_1: List[ufl.Form] = []
-        self.w_2: List[ufl.Form] = []
-        self.w_3: List[ufl.Form] = []
-        self.hessian_rhs: List[ufl.Form] = []
+        self.w_1: list[ufl.Form] = []
+        self.w_2: list[ufl.Form] = []
+        self.w_3: list[ufl.Form] = []
+        self.hessian_rhs: list[ufl.Form] = []
         self.test_directions: list[fenics.Function] = _utils.create_function_list(
             [c.function_space() for c in self.db.function_db.controls]
         )
@@ -229,19 +233,19 @@ class HessianFormHandler:
             for c in self.db.function_db.controls
         ]
 
-        self.sensitivity_eqs_temp: List[ufl.Form] = []
-        self.sensitivity_eqs_lhs: List[ufl.Form] = []
-        self.sensitivity_eqs_picard: List[ufl.Form] = []
-        self.sensitivity_eqs_rhs: List[ufl.Form] = []
-        self.lagrangian_y: List[ufl.Form] = []
-        self.lagrangian_u: List[ufl.Form] = []
-        self.lagrangian_yy: List[List[ufl.Form]] = []
-        self.lagrangian_yu: List[List[ufl.Form]] = []
-        self.lagrangian_uy: List[List[ufl.Form]] = []
-        self.lagrangian_uu: List[List[ufl.Form]] = []
-        self.adjoint_sensitivity_eqs_lhs: List[ufl.Form] = []
-        self.adjoint_sensitivity_eqs_picard: List[ufl.Form] = []
-        self.adjoint_sensitivity_eqs_rhs: List[ufl.Form] = []
+        self.sensitivity_eqs_temp: list[ufl.Form] = []
+        self.sensitivity_eqs_lhs: list[ufl.Form] = []
+        self.sensitivity_eqs_picard: list[ufl.Form] = []
+        self.sensitivity_eqs_rhs: list[ufl.Form] = []
+        self.lagrangian_y: list[ufl.Form] = []
+        self.lagrangian_u: list[ufl.Form] = []
+        self.lagrangian_yy: list[list[ufl.Form]] = []
+        self.lagrangian_yu: list[list[ufl.Form]] = []
+        self.lagrangian_uy: list[list[ufl.Form]] = []
+        self.lagrangian_uu: list[list[ufl.Form]] = []
+        self.adjoint_sensitivity_eqs_lhs: list[ufl.Form] = []
+        self.adjoint_sensitivity_eqs_picard: list[ufl.Form] = []
+        self.adjoint_sensitivity_eqs_rhs: list[ufl.Form] = []
 
         opt_algo = _utils.optimization_algorithm_configuration(self.config)
         if opt_algo.casefold() == "newton":

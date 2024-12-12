@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cashocs"
-version = "2.3.3"
+version = "2.4.0-dev"
 description = "Computational Adjoint-Based Shape Optimization and Optimal Control Software"
 readme = "README.rst"
 requires-python = ">=3.9"
@@ -142,3 +142,21 @@ module = [
     "cashocs_extensions.*",
 ]
 ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+  "F", # pyflakes
+  "E", # pycodestyle error
+  "W", # pycodestyle warning
+  "D", # pydocstyle
+  "C90", # mccabe
+  "UP", # pyupgrade
+  "B", # flake8bugbear
+  "NPY" # numpy
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Any, List, Optional, Tuple, TypeVar, Union
+from typing import Any, TypeVar
 
 import fenics
 
@@ -34,7 +34,7 @@ from cashocs import log
 T = TypeVar("T")
 
 
-def summation(x: List[T]) -> Union[T, fenics.Constant]:
+def summation(x: list[T]) -> T | fenics.Constant:
     """Sums elements of a list in a UFL friendly fashion.
 
     This can be used to sum, e.g., UFL forms, or UFL expressions that can be used in UFL
@@ -65,7 +65,7 @@ def summation(x: List[T]) -> Union[T, fenics.Constant]:
     return y
 
 
-def multiplication(x: List[T]) -> Union[T, fenics.Constant]:
+def multiplication(x: list[T]) -> T | fenics.Constant:
     """Multiplies the elements of a list in a UFL friendly fashion.
 
     Used to build the product of certain UFL expressions to construct a UFL form.
@@ -89,9 +89,7 @@ def multiplication(x: List[T]) -> Union[T, fenics.Constant]:
     return y
 
 
-def max_(
-    a: Union[float, fenics.Function], b: Union[float, fenics.Function]
-) -> ufl.core.expr.Expr:
+def max_(a: float | fenics.Function, b: float | fenics.Function) -> ufl.core.expr.Expr:
     """Computes the maximum of a and b.
 
     Args:
@@ -105,9 +103,7 @@ def max_(
     return (a + b + abs(a - b)) / fenics.Constant(2.0)
 
 
-def min_(
-    a: Union[float, fenics.Function], b: Union[float, fenics.Function]
-) -> ufl.core.expr.Expr:
+def min_(a: float | fenics.Function, b: float | fenics.Function) -> ufl.core.expr.Expr:
     """Computes the minimum of a and b.
 
     Args:
@@ -125,10 +121,10 @@ def moreau_yosida_regularization(
     term: ufl.core.expr.Expr,
     gamma: float,
     measure: fenics.Measure,
-    lower_threshold: Optional[Union[float, fenics.Function]] = None,
-    upper_threshold: Optional[Union[float, fenics.Function]] = None,
-    shift_lower: Optional[Union[float, fenics.Function]] = None,
-    shift_upper: Optional[Union[float, fenics.Function]] = None,
+    lower_threshold: float | fenics.Function | None = None,
+    upper_threshold: float | fenics.Function | None = None,
+    shift_lower: float | fenics.Function | None = None,
+    shift_upper: float | fenics.Function | None = None,
 ) -> ufl.Form:
     r"""Implements a Moreau-Yosida regularization of an inequality constraint.
 
@@ -212,13 +208,11 @@ def moreau_yosida_regularization(
 
 def create_dirichlet_bcs(
     function_space: fenics.FunctionSpace,
-    value: Union[
-        fenics.Constant, fenics.Expression, fenics.Function, float, Tuple[float]
-    ],
+    value: fenics.Constant | fenics.Expression | fenics.Function | float | tuple[float],
     boundaries: fenics.MeshFunction,
-    idcs: Union[List[Union[int, str]], int, str],
+    idcs: list[int | str] | int | str,
     **kwargs: Any,
-) -> List[fenics.DirichletBC]:
+) -> list[fenics.DirichletBC]:
     """Create several Dirichlet boundary conditions at once.
 
     Wraps multiple Dirichlet boundary conditions into a list, in case
@@ -289,7 +283,7 @@ def create_dirichlet_bcs(
     return bcs_list
 
 
-def bilinear_boundary_form_modification(forms: List[ufl.Form]) -> List[ufl.Form]:
+def bilinear_boundary_form_modification(forms: list[ufl.Form]) -> list[ufl.Form]:
     """Modifies a bilinear form for the case it is given on the boundary only.
 
     This avoids a bug in fenics.SystemAssembler where the matrices' sparsity pattern
