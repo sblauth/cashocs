@@ -375,9 +375,14 @@ class MeshManager(IOManager):
         """Saves the mesh as checkpoint for each iteration."""
         iteration = int(self.db.parameter_db.optimization_state["iteration"])
 
+        if not self.db.parameter_db.gmsh_file_path:
+            gmsh_file = self.config.get("Mesh", "gmsh_file")
+        else:
+            gmsh_file = self.db.parameter_db.gmsh_file_path
+
         iomesh.write_out_mesh(
             self.db.geometry_db.mesh,
-            self.db.parameter_db.gmsh_file_path,
+            gmsh_file,
             f"{self.result_dir}/checkpoints/mesh/mesh_{iteration}.msh",
         )
 
@@ -392,9 +397,14 @@ class MeshManager(IOManager):
 
     def post_process(self) -> None:
         """Saves a copy of the optimized mesh in Gmsh format."""
+        if not self.db.parameter_db.gmsh_file_path:
+            gmsh_file = self.config.get("Mesh", "gmsh_file")
+        else:
+            gmsh_file = self.db.parameter_db.gmsh_file_path
+
         iomesh.write_out_mesh(
             self.db.function_db.states[0].function_space().mesh(),
-            self.db.parameter_db.gmsh_file_path,
+            gmsh_file,
             f"{self.result_dir}/optimized_mesh.msh",
         )
 
