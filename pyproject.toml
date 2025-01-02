@@ -142,3 +142,21 @@ module = [
     "cashocs_extensions.*",
 ]
 ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+  "F", # pyflakes
+  "E", # pycodestyle error
+  "W", # pycodestyle warning
+  "D", # pydocstyle
+  "C90", # mccabe
+  "UP", # pyupgrade
+  "B", # flake8bugbear
+  "NPY" # numpy
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

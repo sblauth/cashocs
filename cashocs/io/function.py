@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 
@@ -36,7 +36,7 @@ def read_function_from_xdmf(
     degree: int,
     vector_dim: int = 0,
     step: int = 0,
-    comm: Optional[MPI.Comm] = None,
+    comm: MPI.Comm | None = None,
 ) -> fenics.Function:
     """Reads a function from a .xdmf file containing a checkpointed function.
 

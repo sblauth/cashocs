@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 
@@ -44,9 +44,9 @@ class StateProblem(pde_problem.PDEProblem):
         self,
         db: database.Database,
         state_form_handler: _forms.StateFormHandler,
-        initial_guess: Optional[List[fenics.Function]],
-        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
-        newton_linearizations: Optional[List[Optional[ufl.Form]]] = None,
+        initial_guess: list[fenics.Function] | None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: list[ufl.Form | None] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -72,7 +72,7 @@ class StateProblem(pde_problem.PDEProblem):
         else:
             self.newton_linearizations = [None] * self.db.parameter_db.state_dim
 
-        self.bcs_list: List[List[fenics.DirichletBC]] = self.state_form_handler.bcs_list
+        self.bcs_list: list[list[fenics.DirichletBC]] = self.state_form_handler.bcs_list
         self.states = self.db.function_db.states
         self.states_checkpoint = [fun.copy(True) for fun in self.states]
 
@@ -127,7 +127,7 @@ class StateProblem(pde_problem.PDEProblem):
         for functional in self.db.form_db.cost_functional_list:
             functional.update()
 
-    def solve(self) -> List[fenics.Function]:
+    def solve(self) -> list[fenics.Function]:
         """Solves the state system.
 
         Returns:

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -17,7 +17,7 @@
 
 """Type hints for cashocs."""
 
-from typing import Dict, Tuple, Union
+from __future__ import annotations
 
 import fenics
 
@@ -30,16 +30,16 @@ from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import shape_optimization
 from cashocs._optimization import topology_optimization
 
-OptimizationProblem = Union[
-    shape_optimization.ShapeOptimizationProblem,
-    optimal_control.OptimalControlProblem,
-    topology_optimization.TopologyOptimizationProblem,
-]
-GradientProblem = Union[
-    _pde_problems.ShapeGradientProblem, _pde_problems.ControlGradientProblem
-]
+OptimizationProblem = (
+    shape_optimization.ShapeOptimizationProblem
+    | optimal_control.OptimalControlProblem
+    | topology_optimization.TopologyOptimizationProblem
+)
+GradientProblem = (
+    _pde_problems.ShapeGradientProblem | _pde_problems.ControlGradientProblem
+)
 FormHandler = _forms.FormHandler
-MeshTuple = Tuple[
+MeshTuple = tuple[
     fenics.Mesh,
     fenics.MeshFunction,
     fenics.MeshFunction,
@@ -47,16 +47,16 @@ MeshTuple = Tuple[
     fenics.Measure,
     fenics.Measure,
 ]
-SolutionAlgorithm = Union[optimization_algorithms.OptimizationAlgorithm]
+SolutionAlgorithm = optimization_algorithms.OptimizationAlgorithm
 
-KspOption = Dict[str, Union[int, float, str, None]]
-Constraint = Union[constraints.EqualityConstraint, constraints.InequalityConstraint]
+KspOption = dict[str, int | float | str | None]
+Constraint = constraints.EqualityConstraint | constraints.InequalityConstraint
 
-CostFunctional = Union[
-    cost_functional.IntegralFunctional,
-    cost_functional.ScalarTrackingFunctional,
-    cost_functional.MinMaxFunctional,
-    cost_functional.Functional,
-]
+CostFunctional = (
+    cost_functional.IntegralFunctional
+    | cost_functional.ScalarTrackingFunctional
+    | cost_functional.MinMaxFunctional
+    | cost_functional.Functional
+)
 
 ShapeOptimizationProblem = shape_optimization.ShapeOptimizationProblem

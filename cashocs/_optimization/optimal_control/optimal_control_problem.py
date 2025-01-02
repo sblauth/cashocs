@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, List, Optional, TYPE_CHECKING, Union
+from typing import Callable, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -62,41 +62,36 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
     def __init__(
         self,
-        state_forms: Union[List[ufl.Form], ufl.Form],
-        bcs_list: Union[
-            List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
-        ],
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[List[fenics.Function], fenics.Function],
-        controls: Union[List[fenics.Function], fenics.Function],
-        adjoints: Union[List[fenics.Function], fenics.Function],
-        config: Optional[io.Config] = None,
-        riesz_scalar_products: Optional[Union[List[ufl.Form], ufl.Form]] = None,
-        control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        gradient_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        desired_weights: Optional[List[float]] = None,
-        control_bcs_list: Optional[
-            Union[
-                List[List[fenics.DirichletBC]],
-                List[fenics.DirichletBC],
-                fenics.DirichletBC,
-            ]
-        ] = None,
-        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
-        pre_callback: Optional[Callable] = None,
-        post_callback: Optional[Callable] = None,
-        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
-        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
-        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
+        state_forms: list[ufl.Form] | ufl.Form,
+        bcs_list: (
+            list[list[fenics.DirichletBC]]
+            | list[fenics.DirichletBC]
+            | fenics.DirichletBC
+        ),
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: list[fenics.Function] | fenics.Function,
+        controls: list[fenics.Function] | fenics.Function,
+        adjoints: list[fenics.Function] | fenics.Function,
+        config: io.Config | None = None,
+        riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
+        control_constraints: list[list[float | fenics.Function]] | None = None,
+        initial_guess: list[fenics.Function] | None = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        desired_weights: list[float] | None = None,
+        control_bcs_list: (
+            list[list[fenics.DirichletBC]]
+            | list[fenics.DirichletBC]
+            | fenics.DirichletBC
+            | None
+        ) = None,
+        preconditioner_forms: list[ufl.Form] | ufl.Form | None = None,
+        pre_callback: Callable | None = None,
+        post_callback: Callable | None = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
     ) -> None:
         r"""Initializes self.
 
@@ -127,7 +122,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 that there are none (default is ``None``). The (inner) lists should
                 contain two elements of the form ``[u_a, u_b]``, where ``u_a`` is the
                 lower, and ``u_b`` the upper bound.
-            initial_guess: List of functions that act as initial guess for the state
+            initial_guess: list of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
             ksp_options: A list of dicts corresponding to command line options for
@@ -203,19 +198,19 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         self.mesh_parametrization = None
 
-        self.riesz_scalar_products: List[ufl.Form] = self._parse_riesz_scalar_products(
+        self.riesz_scalar_products: list[ufl.Form] = self._parse_riesz_scalar_products(
             riesz_scalar_products
         )
 
         self.use_control_bcs = False
-        self.control_bcs_list: Union[List[List[fenics.DirichletBC]], List[None]]
+        self.control_bcs_list: list[list[fenics.DirichletBC]] | list[None]
         if control_bcs_list is not None:
             self.control_bcs_list_inhomogeneous = _utils.check_and_enlist_bcs(
                 control_bcs_list
             )
             self.control_bcs_list = []
             for list_bcs in self.control_bcs_list_inhomogeneous:
-                hom_bcs: List[fenics.DirichletBC] = [
+                hom_bcs: list[fenics.DirichletBC] = [
                     fenics.DirichletBC(bc) for bc in list_bcs
                 ]
                 for bc in hom_bcs:
@@ -355,10 +350,10 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
     def solve(
         self,
-        algorithm: Optional[str] = None,
-        rtol: Optional[float] = None,
-        atol: Optional[float] = None,
-        max_iter: Optional[int] = None,
+        algorithm: str | None = None,
+        rtol: float | None = None,
+        atol: float | None = None,
+        max_iter: int | None = None,
     ) -> None:
         r"""Solves the optimization problem by the method specified in the config file.
 
@@ -418,7 +413,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         if not self._silent:
             log.end()
 
-    def compute_gradient(self) -> List[fenics.Function]:
+    def compute_gradient(self) -> list[fenics.Function]:
         """Solves the Riesz problem to determine the gradient.
 
         This can be used for debugging, or code validation. The necessary solutions of
@@ -432,7 +427,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         return self.db.function_db.gradient
 
-    def supply_derivatives(self, derivatives: Union[ufl.Form, List[ufl.Form]]) -> None:
+    def supply_derivatives(self, derivatives: ufl.Form | list[ufl.Form]) -> None:
         """Overwrites the derivatives of the reduced cost functional w.r.t. controls.
 
         This allows users to implement their own derivatives and use cashocs as a
@@ -443,7 +438,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             the control variables.
 
         """
-        mod_derivatives: List[ufl.Form]
+        mod_derivatives: list[ufl.Form]
         if isinstance(derivatives, ufl.form.Form):
             mod_derivatives = [derivatives]
         else:
@@ -460,11 +455,13 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
     def supply_custom_forms(
         self,
-        derivatives: Union[ufl.Form, List[ufl.Form]],
-        adjoint_forms: Union[ufl.Form, List[ufl.Form]],
-        adjoint_bcs_list: Union[
-            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
-        ],
+        derivatives: ufl.Form | list[ufl.Form],
+        adjoint_forms: ufl.Form | list[ufl.Form],
+        adjoint_bcs_list: (
+            fenics.DirichletBC
+            | list[fenics.DirichletBC]
+            | list[list[fenics.DirichletBC]]
+        ),
     ) -> None:
         """Overrides both adjoint system and derivatives with user input.
 
@@ -485,9 +482,9 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
     def gradient_test(
         self,
-        u: Optional[List[fenics.Function]] = None,
-        h: Optional[List[fenics.Function]] = None,
-        rng: Optional[np.random.RandomState] = None,
+        u: list[fenics.Function] | None = None,
+        h: list[fenics.Function] | None = None,
+        rng: np.random.RandomState | None = None,
     ) -> float:
         """Performs a Taylor test to verify correctness of the computed gradient.
 
@@ -507,8 +504,8 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         return verification.control_gradient_test(self, u, h, rng)
 
     def _parse_riesz_scalar_products(
-        self, riesz_scalar_products: Union[List[ufl.Form], ufl.Form]
-    ) -> List[ufl.Form]:
+        self, riesz_scalar_products: list[ufl.Form] | ufl.Form
+    ) -> list[ufl.Form]:
         """Checks, whether a given scalar product is symmetric.
 
         Args:

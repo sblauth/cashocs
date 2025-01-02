@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -23,7 +23,7 @@ in the truncated Newton method.
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -136,14 +136,14 @@ class HessianProblem:
             "ksp_atol": 1e-50,
             "ksp_max_it": 100,
         }
-        self.riesz_ksp_options: List[_typing.KspOption] = []
+        self.riesz_ksp_options: list[_typing.KspOption] = []
         for _ in range(len(self.db.function_db.controls)):
             self.riesz_ksp_options.append(option)
 
         self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
 
     def hessian_application(
-        self, h: List[fenics.Function], out: List[fenics.Function]
+        self, h: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         r"""Computes the application of the Hessian to some element.
 
@@ -238,7 +238,7 @@ class HessianProblem:
         self.no_sensitivity_solves += 2
 
     def reduced_hessian_application(
-        self, h: List[fenics.Function], out: List[fenics.Function]
+        self, h: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         """Computes the application of the reduced Hessian on a direction.
 
@@ -268,7 +268,7 @@ class HessianProblem:
             )
             out[j].vector().apply("")
 
-    def newton_solve(self) -> List[fenics.Function]:
+    def newton_solve(self) -> list[fenics.Function]:
         """Solves the Newton step with an iterative method.
 
         Returns:

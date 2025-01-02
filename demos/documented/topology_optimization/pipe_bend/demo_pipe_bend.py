@@ -97,6 +97,7 @@ import numpy as np
 
 import cashocs
 
+parameters["dof_ordering_library"] = "Boost"
 # -
 
 # Next, we load the configuration file for the problem and define the mesh with the

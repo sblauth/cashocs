@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,10 +19,9 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 import fenics
-from typing_extensions import TYPE_CHECKING
 
 from cashocs import _exceptions
 from cashocs import log
@@ -91,12 +90,12 @@ class ArmijoLineSearch(line_search.LineSearch):
     def search(
         self,
         solver: optimization_algorithms.OptimizationAlgorithm,
-        search_direction: List[fenics.Function],
+        search_direction: list[fenics.Function],
         has_curvature_info: bool,
         active_idx: np.ndarray | None = None,
         constraint_gradient: sparse.csr_matrix | None = None,
         dropped_idx: np.ndarray | None = None,
-    ) -> Tuple[Optional[fenics.Function], bool]:
+    ) -> tuple[fenics.Function | None, bool]:
         """Performs the line search.
 
         Args:
@@ -104,6 +103,13 @@ class ArmijoLineSearch(line_search.LineSearch):
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates whether the direction is
                 (presumably) scaled.
+            active_idx: The list of active indices of the working set. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
+            constraint_gradient: The gradient of the constraints for the mesh quality.
+                Only needed for shape optimization with mesh quality constraints.
+                Default is `None`.
+            dropped_idx: The list of indicies for dropped constraints. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
 
         Returns:
             A tuple (defo, is_remeshed), where defo is accepted deformation / update
@@ -185,7 +191,7 @@ class ArmijoLineSearch(line_search.LineSearch):
             return (None, False)
 
     def _compute_decrease_measure(
-        self, search_direction: List[fenics.Function]
+        self, search_direction: list[fenics.Function]
     ) -> float:
         """Computes the decrease measure for use in the Armijo line search.
 

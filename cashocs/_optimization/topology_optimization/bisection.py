@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import scipy.optimize
@@ -37,7 +37,7 @@ class LevelSetVolumeProjector:
     def __init__(
         self,
         levelset_function: fenics.Function,
-        volume_restriction: Union[float, tuple[float, float]] | None = None,
+        volume_restriction: float | tuple[float, float] | None = None,
         db: database.Database | None = None,
     ) -> None:
         """Initializes a class to project the levelset function.

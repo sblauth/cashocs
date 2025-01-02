@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from cashocs._optimization import cost_functional
 
@@ -39,10 +39,10 @@ class FormDatabase:
 
     def __init__(
         self,
-        cost_functional_list: List[_typing.CostFunctional],
-        state_forms: List[ufl.Form],
-        bcs_list: List[List[fenics.DirichletBC]],
-        preconditioner_forms: List[ufl.Form],
+        cost_functional_list: list[_typing.CostFunctional],
+        state_forms: list[ufl.Form],
+        bcs_list: list[list[fenics.DirichletBC]],
+        preconditioner_forms: list[ufl.Form],
     ):
         """Initializes the form database.
 

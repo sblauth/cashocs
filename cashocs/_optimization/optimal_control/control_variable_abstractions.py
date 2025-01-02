@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -74,7 +74,7 @@ class ControlVariableAbstractions(
         ]
 
     def compute_decrease_measure(
-        self, search_direction: Optional[List[fenics.Function]] = None
+        self, search_direction: list[fenics.Function] | None = None
     ) -> float:
         """Computes the measure of decrease needed for the Armijo test.
 
@@ -115,7 +115,7 @@ class ControlVariableAbstractions(
 
     def update_optimization_variables(
         self,
-        search_direction: List[fenics.Function],
+        search_direction: list[fenics.Function],
         stepsize: float,
         beta: float,
         active_idx: np.ndarray | None = None,
@@ -200,7 +200,7 @@ class ControlVariableAbstractions(
         )
 
     def compute_a_priori_decreases(
-        self, search_direction: List[fenics.Function], stepsize: float
+        self, search_direction: list[fenics.Function], stepsize: float
     ) -> int:
         """Computes the number of times the stepsize has to be "halved" a priori.
 
@@ -224,7 +224,7 @@ class ControlVariableAbstractions(
         return False
 
     def project_ncg_search_direction(
-        self, search_direction: List[fenics.Function]
+        self, search_direction: list[fenics.Function]
     ) -> None:
         """Restricts the search direction to the inactive set.
 
@@ -256,8 +256,8 @@ class ControlVariableAbstractions(
         self.box_constraints.restrictor.compute_active_sets()
 
     def restrict_to_active_set(
-        self, a: List[fenics.Function], b: List[fenics.Function]
-    ) -> List[fenics.Function]:
+        self, a: list[fenics.Function], b: list[fenics.Function]
+    ) -> list[fenics.Function]:
         """Restricts a function to the active set.
 
         Restricts a control type function ``a`` onto the active set,
@@ -275,8 +275,8 @@ class ControlVariableAbstractions(
         return self.box_constraints.restrictor.restrict_to_active_set(a, b)
 
     def restrict_to_inactive_set(
-        self, a: List[fenics.Function], b: List[fenics.Function]
-    ) -> List[fenics.Function]:
+        self, a: list[fenics.Function], b: list[fenics.Function]
+    ) -> list[fenics.Function]:
         """Restricts a function to the inactive set.
 
         Restricts a control type function ``a`` onto the inactive set,

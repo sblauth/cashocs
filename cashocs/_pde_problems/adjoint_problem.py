@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 
@@ -42,7 +42,7 @@ class AdjointProblem(pde_problem.PDEProblem):
         db: database.Database,
         adjoint_form_handler: _forms.AdjointFormHandler,
         state_problem: sp.StateProblem,
-        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
     ) -> None:
         """Initializes self.
 
@@ -110,7 +110,7 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.db.parameter_db.optimization_state["no_adjoint_solves"] = value
         self._number_of_solves = value
 
-    def solve(self) -> List[fenics.Function]:
+    def solve(self) -> list[fenics.Function]:
         """Solves the adjoint system.
 
         Returns:

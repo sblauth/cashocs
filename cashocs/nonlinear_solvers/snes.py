@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import copy
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 from petsc4py import PETSc
@@ -53,16 +53,16 @@ class SNESSolver:
         self,
         nonlinear_form: ufl.Form,
         u: fenics.Function,
-        bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
-        derivative: Optional[ufl.Form] = None,
-        petsc_options: Optional[_typing.KspOption] = None,
-        shift: Optional[ufl.Form] = None,
-        rtol: Optional[float] = None,
-        atol: Optional[float] = None,
-        max_iter: Optional[int] = None,
-        A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
-        b_tensor: Optional[fenics.PETScVector] = None,
-        preconditioner_form: Optional[ufl.Form] = None,
+        bcs: fenics.DirichletBC | list[fenics.DirichletBC],
+        derivative: ufl.Form | None = None,
+        petsc_options: _typing.KspOption | None = None,
+        shift: ufl.Form | None = None,
+        rtol: float | None = None,
+        atol: float | None = None,
+        max_iter: int | None = None,
+        A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
+        b_tensor: fenics.PETScVector | None = None,
+        preconditioner_form: ufl.Form | None = None,
     ) -> None:
         """Initialize the SNES solver.
 
@@ -151,8 +151,8 @@ class SNESSolver:
         else:
             self.P_petsc = None
 
-        self.assembler_shift: Optional[fenics.SystemAssembler] = None
-        self.residual_shift: Optional[fenics.PETScVector] = None
+        self.assembler_shift: fenics.SystemAssembler | None = None
+        self.residual_shift: fenics.PETScVector | None = None
         if self.shift is not None:
             self.assembler_shift = fenics.SystemAssembler(
                 self.derivative, self.shift, self.bcs
@@ -174,7 +174,7 @@ class SNESSolver:
 
         """
         log.begin("Assembling the residual for Newton's method.", level=log.DEBUG)
-        self.u.vector().vec().setArray(x)
+        self.u.vector().vec().aypx(0.0, x)
         self.u.vector().apply("")
         f = fenics.PETScVector(f)
 
@@ -206,7 +206,7 @@ class SNESSolver:
         """
         if not self.is_preassembled:
             log.begin("Assembling the Jacobian for Newton's method.", level=log.DEBUG)
-            self.u.vector().vec().setArray(x)
+            self.u.vector().vec().aypx(0.0, x)
             self.u.vector().apply("")
 
             J = fenics.PETScMatrix(J)  # pylint: disable=invalid-name
@@ -241,7 +241,15 @@ class SNESSolver:
 
         _utils.setup_petsc_options([snes], [self.petsc_options])
         snes.setTolerances(rtol=self.rtol, atol=self.atol, max_it=self.max_iter)
-        snes.solve(None, self.u.vector().vec())
+
+        x = fenics.Function(self.u.function_space())
+        x.vector().vec().aypx(0.0, self.u.vector().vec())
+        x.vector().apply("")
+
+        snes.solve(None, x.vector().vec())
+
+        self.u.vector().vec().setArray(x.vector().vec())
+        self.u.vector().apply("")
 
         converged_reason = snes.getConvergedReason()
         if converged_reason < 0:
@@ -260,16 +268,16 @@ class SNESSolver:
 def snes_solve(
     nonlinear_form: ufl.Form,
     u: fenics.Function,
-    bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
-    derivative: Optional[ufl.Form] = None,
-    petsc_options: Optional[_typing.KspOption] = None,
-    shift: Optional[ufl.Form] = None,
-    rtol: Optional[float] = None,
-    atol: Optional[float] = None,
-    max_iter: Optional[int] = None,
-    A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
-    b_tensor: Optional[fenics.PETScVector] = None,
-    preconditioner_form: Optional[ufl.Form] = None,
+    bcs: fenics.DirichletBC | list[fenics.DirichletBC],
+    derivative: ufl.Form | None = None,
+    petsc_options: _typing.KspOption | None = None,
+    shift: ufl.Form | None = None,
+    rtol: float | None = None,
+    atol: float | None = None,
+    max_iter: int | None = None,
+    A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
+    b_tensor: fenics.PETScVector | None = None,
+    preconditioner_form: ufl.Form | None = None,
 ) -> fenics.Function:
     """Solve a nonlinear PDE problem with PETSc SNES.
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import abc
 import ctypes
-from typing import cast, List, Optional, Set, Tuple, TYPE_CHECKING, Union
+from typing import cast, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -91,10 +91,6 @@ class ReducedCostFunctional:
 class Functional(abc.ABC):
     """Base class for all cost functionals."""
 
-    def __init__(self) -> None:
-        """Initialize the functional."""
-        pass
-
     @abc.abstractmethod
     def evaluate(self) -> float:
         """Evaluates the functional.
@@ -122,7 +118,7 @@ class Functional(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def coefficients(self) -> Tuple[fenics.Function]:
+    def coefficients(self) -> tuple[fenics.Function]:
         """Computes the ufl coefficients which are used in the functional.
 
         Returns:
@@ -132,7 +128,7 @@ class Functional(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def scale(self, scaling_factor: Union[float, int]) -> None:
+    def scale(self, scaling_factor: float | int) -> None:
         """Scales the functional by a scalar.
 
         Args:
@@ -186,17 +182,17 @@ class IntegralFunctional(Functional):
         """
         return fenics.derivative(self.form, argument, direction)
 
-    def coefficients(self) -> Tuple[fenics.Function]:
+    def coefficients(self) -> tuple[fenics.Function]:
         """Computes the ufl coefficients which are used in the functional.
 
         Returns:
             The set of used coefficients.
 
         """
-        coeffs: Tuple[fenics.Function] = self.form.coefficients()
+        coeffs: tuple[fenics.Function] = self.form.coefficients()
         return coeffs
 
-    def scale(self, scaling_factor: Union[float, int]) -> None:
+    def scale(self, scaling_factor: float | int) -> None:
         """Scales the functional by a scalar.
 
         Args:
@@ -216,8 +212,8 @@ class ScalarTrackingFunctional(Functional):
     def __init__(
         self,
         integrand: ufl.Form,
-        tracking_goal: Union[float, int, ctypes.c_float, ctypes.c_double],
-        weight: Union[float, int] = 1.0,
+        tracking_goal: float | int | ctypes.c_float | ctypes.c_double,
+        weight: float | int = 1.0,
     ) -> None:
         """Initializes self.
 
@@ -284,17 +280,17 @@ class ScalarTrackingFunctional(Functional):
         )
         return derivative
 
-    def coefficients(self) -> Tuple[fenics.Function]:
+    def coefficients(self) -> tuple[fenics.Function]:
         """Computes the ufl coefficients which are used in the functional.
 
         Returns:
             The set of used coefficients.
 
         """
-        coeffs: Tuple[fenics.Function] = self.integrand.coefficients()
+        coeffs: tuple[fenics.Function] = self.integrand.coefficients()
         return coeffs
 
-    def scale(self, scaling_factor: Union[float, int]) -> None:
+    def scale(self, scaling_factor: float | int) -> None:
         """Scales the functional by a scalar.
 
         Args:
@@ -315,10 +311,10 @@ class MinMaxFunctional(Functional):
     def __init__(
         self,
         integrand: ufl.Form,
-        lower_bound: Optional[Union[float, int]] = None,
-        upper_bound: Optional[Union[float, int]] = None,
-        mu: Union[float, int] = 1.0,
-        lambd: Union[float, int] = 0.0,
+        lower_bound: float | int | None = None,
+        upper_bound: float | int | None = None,
+        mu: float | int = 1.0,
+        lambd: float | int = 0.0,
     ) -> None:
         """Initializes self."""
         super().__init__()
@@ -416,17 +412,17 @@ class MinMaxFunctional(Functional):
 
         return _utils.summation(derivative_list)
 
-    def coefficients(self) -> Tuple[fenics.Function]:
+    def coefficients(self) -> tuple[fenics.Function]:
         """Computes the ufl coefficients which are used in the functional.
 
         Returns:
             The set of used coefficients.
 
         """
-        coeffs: Tuple[fenics.Function] = self.integrand.coefficients()
+        coeffs: tuple[fenics.Function] = self.integrand.coefficients()
         return coeffs
 
-    def scale(self, scaling_factor: Union[float, int]) -> None:
+    def scale(self, scaling_factor: float | int) -> None:
         """Scales the functional by a scalar.
 
         Args:
@@ -446,8 +442,8 @@ class Lagrangian:
 
     def __init__(
         self,
-        cost_functional_list: List[_typing.CostFunctional],
-        state_forms: List[ufl.Form],
+        cost_functional_list: list[_typing.CostFunctional],
+        state_forms: list[ufl.Form],
     ) -> None:
         """Initializes self.
 
@@ -484,7 +480,7 @@ class Lagrangian:
         derivative = cost_functional_derivative + state_forms_derivative
         return derivative
 
-    def coefficients(self) -> Set[fenics.Function]:
+    def coefficients(self) -> set[fenics.Function]:
         """Computes the ufl coefficients which are used in the functional.
 
         Returns:

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from cashocs import _exceptions
 from cashocs import _utils
@@ -37,9 +37,9 @@ class ParameterDatabase:
         self,
         function_db: function_database.FunctionDatabase,
         config: io.Config,
-        state_ksp_options: List[_typing.KspOption],
-        adjoint_ksp_options: List[_typing.KspOption],
-        gradient_ksp_options: Optional[List[_typing.KspOption]],
+        state_ksp_options: list[_typing.KspOption],
+        adjoint_ksp_options: list[_typing.KspOption],
+        gradient_ksp_options: list[_typing.KspOption] | None,
     ) -> None:
         """Initializes the database.
 
@@ -55,7 +55,7 @@ class ParameterDatabase:
         self.state_ksp_options = state_ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
         self.gradient_ksp_options = gradient_ksp_options
-        self.temp_dict: Dict = {}
+        self.temp_dict: dict = {}
 
         self._problem_type = ""
         self.state_dim: int = len(function_db.states)
@@ -70,7 +70,7 @@ class ParameterDatabase:
         self.is_remeshed: bool = False
 
         self.control_dim: int = 1
-        self.optimization_state: Dict = {"stepsize": 1.0}
+        self.optimization_state: dict = {"stepsize": 1.0}
         self.remesh_directory: str = ""
         self.gmsh_file_path: str = ""
 

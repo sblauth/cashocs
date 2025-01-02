@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -22,7 +22,7 @@ from __future__ import annotations
 import functools
 import gc
 import subprocess  # nosec B404
-from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
+from typing import Callable, TYPE_CHECKING
 
 import dolfin.function.argument
 import fenics
@@ -78,37 +78,31 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
     @functools.singledispatchmethod  # type: ignore
     def __init__(
         self,
-        state_forms: Union[List[ufl.Form], ufl.Form],
-        bcs_list: Union[
-            List[List[fenics.DirichletBC]],
-            List[fenics.DirichletBC],
-            fenics.DirichletBC,
-        ],
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[List[fenics.Function], fenics.Function],
-        adjoints: Union[List[fenics.Function], fenics.Function],
+        state_forms: list[ufl.Form] | ufl.Form,
+        bcs_list: (
+            list[list[fenics.DirichletBC]]
+            | list[fenics.DirichletBC]
+            | fenics.DirichletBC
+        ),
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: list[fenics.Function] | fenics.Function,
+        adjoints: list[fenics.Function] | fenics.Function,
         boundaries: fenics.MeshFunction,
-        config: Optional[io.Config] = None,
-        shape_scalar_product: Optional[ufl.Form] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        gradient_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        desired_weights: Optional[List[float]] = None,
-        temp_dict: Optional[Dict] = None,
-        initial_function_values: Optional[List[float]] = None,
-        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
-        pre_callback: Optional[Callable] = None,
-        post_callback: Optional[Callable] = None,
-        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
-        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
-        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
+        config: io.Config | None = None,
+        shape_scalar_product: ufl.Form | None = None,
+        initial_guess: list[fenics.Function] | None = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        desired_weights: list[float] | None = None,
+        temp_dict: dict | None = None,
+        initial_function_values: list[float] | None = None,
+        preconditioner_forms: list[ufl.Form] | ufl.Form | None = None,
+        pre_callback: Callable | None = None,
+        post_callback: Callable | None = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -138,7 +132,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 objects to define the weak form, which have to be in a
                 :py:class:`fenics.VectorFunctionSpace` of continuous, linear Lagrange
                 finite elements. Moreover, this form is required to be symmetric.
-            initial_guess: List of functions that act as initial guess for the state
+            initial_guess: list of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
             ksp_options: A list of dicts corresponding to command line options for
@@ -233,12 +227,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             "ShapeGradient", "use_p_laplacian"
         ):
             log.warning(
-                (
-                    "You have supplied a custom scalar product and set the parameter "
-                    "``use_p_laplacian`` in the config file."
-                    "cashocs will use the supplied scalar product and not the "
-                    "p-Laplacian to compute the shape gradient."
-                )
+                "You have supplied a custom scalar product and set the parameter "
+                "``use_p_laplacian`` in the config file."
+                "cashocs will use the supplied scalar product and not the "
+                "p-Laplacian to compute the shape gradient."
             )
 
         self.shape_regularization = _forms.shape_regularization.ShapeRegularization(
@@ -421,10 +413,10 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
     def solve(
         self,
-        algorithm: Optional[str] = None,
-        rtol: Optional[float] = None,
-        atol: Optional[float] = None,
-        max_iter: Optional[int] = None,
+        algorithm: str | None = None,
+        rtol: float | None = None,
+        atol: float | None = None,
+        max_iter: int | None = None,
     ) -> None:
         r"""Solves the optimization problem by the method specified in the config file.
 
@@ -494,7 +486,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             )
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-    def compute_shape_gradient(self) -> List[fenics.Function]:
+    def compute_shape_gradient(self) -> list[fenics.Function]:
         """Solves the Riesz problem to determine the shape gradient.
 
         This can be used for debugging, or code validation.
@@ -542,10 +534,12 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
     def supply_custom_forms(
         self,
         shape_derivative: ufl.Form,
-        adjoint_forms: Union[ufl.Form, List[ufl.Form]],
-        adjoint_bcs_list: Union[
-            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
-        ],
+        adjoint_forms: ufl.Form | list[ufl.Form],
+        adjoint_bcs_list: (
+            fenics.DirichletBC
+            | list[fenics.DirichletBC]
+            | list[list[fenics.DirichletBC]]
+        ),
     ) -> None:
         """Overrides both adjoint system and shape derivative with user input.
 
@@ -574,8 +568,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
 
     def gradient_test(
         self,
-        h: Optional[fenics.Function] = None,
-        rng: Optional[np.random.RandomState] = None,
+        h: fenics.Function | None = None,
+        rng: np.random.RandomState | None = None,
     ) -> float:
         """Performs a Taylor test to verify that the computed shape gradient is correct.
 

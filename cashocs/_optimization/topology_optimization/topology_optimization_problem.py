@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import copy
-from typing import Callable, List, Optional, TYPE_CHECKING, Union
+from typing import Callable, TYPE_CHECKING
 
 import fenics
 from matplotlib import colors
@@ -79,24 +79,20 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
         topological_derivative_neg: fenics.Function | ufl.Form,
         topological_derivative_pos: fenics.Function | ufl.Form,
         update_levelset: Callable,
-        volume_restriction: Union[float, tuple[float, float]] | None = None,
+        volume_restriction: float | tuple[float, float] | None = None,
         config: io.Config | None = None,
         riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
         initial_guess: list[fenics.Function] | None = None,
-        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        gradient_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
         desired_weights: list[float] | None = None,
-        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
-        pre_callback: Optional[Callable] = None,
-        post_callback: Optional[Callable] = None,
-        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
-        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
-        newton_linearizations: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
+        preconditioner_forms: list[ufl.Form] | ufl.Form | None = None,
+        pre_callback: Callable | None = None,
+        post_callback: Callable | None = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
     ) -> None:
         r"""Initializes the topology optimization problem.
 
@@ -132,7 +128,7 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
             riesz_scalar_products: The scalar products of the control space. Can either
                 be ``None`` or a single UFL form. If it is ``None``, the
                 :math:`L^2(\Omega)` product is used (default is ``None``).
-            initial_guess: List of functions that act as initial guess for the state
+            initial_guess: list of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
             ksp_options: A list of strings corresponding to command line options for

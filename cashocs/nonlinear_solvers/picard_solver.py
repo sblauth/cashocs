@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, TYPE_CHECKING, TypeVar, Union
+from typing import TYPE_CHECKING, TypeVar
 
 import fenics
 import numpy as np
@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 T = TypeVar("T")
 
 
-def _setup_obj(obj: T, dim: int) -> Union[T, List[None]]:
+def _setup_obj(obj: T, dim: int) -> T | list[None]:
     """Returns a list of None if obj is None, else returns obj.
 
     Args:
@@ -58,8 +58,8 @@ def _setup_obj(obj: T, dim: int) -> Union[T, List[None]]:
 
 
 def _create_homogenized_bcs(
-    bcs_list: List[List[fenics.DirichletBC]],
-) -> List[List[fenics.DirichletBC]]:
+    bcs_list: list[list[fenics.DirichletBC]],
+) -> list[list[fenics.DirichletBC]]:
     """Copies the bcs_list and homogenizes the boundary conditions.
 
     Args:
@@ -81,9 +81,7 @@ def _create_homogenized_bcs(
     return bcs_list_hom
 
 
-def _enlist_picard(
-    obj: Optional[List[Union[T, None]]], length: int
-) -> List[Union[T, None]]:
+def _enlist_picard(obj: list[T | None] | None, length: int) -> list[T | None]:
     if obj is None:
         return [None] * length
     else:
@@ -91,27 +89,27 @@ def _enlist_picard(
 
 
 def picard_iteration(
-    form_list: Union[List[ufl.form], ufl.Form],
-    u_list: Union[List[fenics.Function], fenics.Function],
-    bcs_list: Union[List[fenics.DirichletBC], List[List[fenics.DirichletBC]]],
+    form_list: list[ufl.form] | ufl.Form,
+    u_list: list[fenics.Function] | fenics.Function,
+    bcs_list: list[fenics.DirichletBC] | list[list[fenics.DirichletBC]],
     max_iter: int = 50,
     rtol: float = 1e-10,
     atol: float = 1e-10,
     verbose: bool = True,
     inner_max_iter: int = 25,
-    ksp_options: Optional[List[_typing.KspOption]] = None,
+    ksp_options: list[_typing.KspOption] | None = None,
     # pylint: disable=invalid-name
-    A_tensors: Optional[List[fenics.PETScMatrix]] = None,
-    b_tensors: Optional[List[fenics.PETScVector]] = None,
-    preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
-    newton_linearizations: Optional[List[ufl.Form]] = None,
+    A_tensors: list[fenics.PETScMatrix] | None = None,
+    b_tensors: list[fenics.PETScVector] | None = None,
+    preconditioner_forms: list[ufl.Form] | ufl.Form | None = None,
+    newton_linearizations: list[ufl.Form] | None = None,
 ) -> None:
     """Solves a system of coupled PDEs via a Picard iteration.
 
     Args:
-        form_list: List of the coupled PDEs.
-        u_list: List of the state variables (to be solved for).
-        bcs_list: List of boundary conditions for the PDEs.
+        form_list: list of the coupled PDEs.
+        u_list: list of the state variables (to be solved for).
+        bcs_list: list of boundary conditions for the PDEs.
         max_iter: The maximum number of iterations for the Picard iteration.
         rtol: The relative tolerance for the Picard iteration, default is 1e-10.
         atol: The absolute tolerance for the Picard iteration, default is 1e-10.
@@ -119,10 +117,10 @@ def picard_iteration(
             ``True``.
         inner_max_iter: Maximum number of iterations for the inner Newton solver;
             default is 25.
-        ksp_options: List of options for the KSP objects.
-        A_tensors: List of matrices for the right-hand sides of the inner (linearized)
+        ksp_options: list of options for the KSP objects.
+        A_tensors: list of matrices for the right-hand sides of the inner (linearized)
             equations.
-        b_tensors: List of vectors for the left-hand sides of the inner (linearized)
+        b_tensors: list of vectors for the left-hand sides of the inner (linearized)
             equations.
         preconditioner_forms: The list of forms for the preconditioner. The default
             is `None`, so that the preconditioner matrix is the same as the system
@@ -202,9 +200,9 @@ def picard_iteration(
 
 
 def _compute_residual(
-    form_list: List[ufl.Form],
-    res_tensor: List[fenics.PETScVector],
-    bcs_list: List[List[fenics.DirichletBC]],
+    form_list: list[ufl.Form],
+    res_tensor: list[fenics.PETScVector],
+    bcs_list: list[list[fenics.DirichletBC]],
 ) -> float:
     """Computes the residual for the picard iteration.
 
@@ -232,11 +230,11 @@ def _compute_residual(
 
 def _get_linear_solver_options(
     j: int,
-    ksp_options: Optional[List[_typing.KspOption]],
+    ksp_options: list[_typing.KspOption] | None,
     # pylint: disable=invalid-name
-    A_tensors: Optional[List[fenics.PETScMatrix]],
-    b_tensors: Optional[List[fenics.PETScVector]],
-) -> Tuple[Optional[_typing.KspOption], fenics.PETScMatrix, fenics.PETScVector]:
+    A_tensors: list[fenics.PETScMatrix] | None,
+    b_tensors: list[fenics.PETScVector] | None,
+) -> tuple[_typing.KspOption | None, fenics.PETScMatrix, fenics.PETScVector]:
     """Computes the arguments for the individual components considered in the iteration.
 
     Returns:

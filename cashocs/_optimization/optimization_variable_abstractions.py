@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -24,7 +24,7 @@ the same optimization algorithms can be used for different _typing of problems.
 from __future__ import annotations
 
 import abc
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -57,7 +57,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
     @abc.abstractmethod
     def compute_decrease_measure(
-        self, search_direction: List[fenics.Function]
+        self, search_direction: list[fenics.Function]
     ) -> float:
         """Computes the measure of decrease needed for the Armijo test.
 
@@ -78,7 +78,7 @@ class OptimizationVariableAbstractions(abc.ABC):
     @abc.abstractmethod
     def update_optimization_variables(
         self,
-        search_direction: List[fenics.Function],
+        search_direction: list[fenics.Function],
         stepsize: float,
         beta: float,
         active_idx: np.ndarray | None = None,
@@ -118,7 +118,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
     @abc.abstractmethod
     def compute_a_priori_decreases(
-        self, search_direction: List[fenics.Function], stepsize: float
+        self, search_direction: list[fenics.Function], stepsize: float
     ) -> int:
         """Computes the number of times the stepsize has to be "halved" a priori.
 
@@ -144,7 +144,7 @@ class OptimizationVariableAbstractions(abc.ABC):
 
     @abc.abstractmethod
     def project_ncg_search_direction(
-        self, search_direction: List[fenics.Function]
+        self, search_direction: list[fenics.Function]
     ) -> None:
         """Restricts the search direction to the inactive set.
 
@@ -154,13 +154,14 @@ class OptimizationVariableAbstractions(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
     def compute_active_sets(self) -> None:
         """Computes the active sets of the problem."""
         pass
 
     def restrict_to_inactive_set(
-        self, a: List[fenics.Function], b: List[fenics.Function]
-    ) -> List[fenics.Function]:
+        self, a: list[fenics.Function], b: list[fenics.Function]
+    ) -> list[fenics.Function]:
         """Restricts a function to the inactive set.
 
         Note, that nothing will happen if the type of the optimization problem does not
@@ -183,8 +184,8 @@ class OptimizationVariableAbstractions(abc.ABC):
 
     # pylint: disable=unused-argument
     def restrict_to_active_set(
-        self, a: List[fenics.Function], b: List[fenics.Function]
-    ) -> List[fenics.Function]:
+        self, a: list[fenics.Function], b: list[fenics.Function]
+    ) -> list[fenics.Function]:
         """Restricts a function to the active set.
 
         Note, that nothing will happen if the type of the optimization problem does not

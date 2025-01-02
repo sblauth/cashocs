@@ -6,6 +6,7 @@ __pycache__/
 coverage.xml
 htmlcov
 *.orig
+.ruff_cache
 
 ### paraview
 *.pvd

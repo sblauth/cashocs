@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -25,7 +25,7 @@ import json
 import pathlib
 import subprocess  # nosec B404
 import time
-from typing import Dict, List, Optional
+from typing import Optional
 
 import fenics
 import meshio
@@ -221,9 +221,9 @@ def check_for_physical_names(
             without extension.
 
     """
-    physical_groups: Dict[str, Dict[str, int]] = {"dx": {}, "ds": {}}
+    physical_groups: dict[str, dict[str, int]] = {"dx": {}, "ds": {}}
     has_physical_groups = False
-    with open(inputfile, "r", encoding="utf-8") as infile:
+    with open(inputfile, encoding="utf-8") as infile:
         for line in infile:
             line = line.strip()
             if line == "$PhysicalNames":
@@ -254,7 +254,7 @@ def check_for_physical_names(
                 json.dump(physical_groups, ofile, indent=4)
 
 
-def convert(argv: Optional[List[str]] = None) -> None:
+def convert(argv: Optional[list[str]] = None) -> None:
     """Converts a Gmsh .msh file to a .xdmf mesh file.
 
     Args:

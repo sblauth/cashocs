@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import configparser
 import inspect
-from typing import Any, Callable, cast, List, Optional, TypeVar, Union
+from typing import Any, Callable, cast, TypeVar, Union
 
 import fenics
 
@@ -30,7 +30,7 @@ from cashocs import _exceptions
 T = TypeVar("T")
 
 
-def enlist(arg: Union[List[T], T]) -> List[T]:
+def enlist(arg: list[T] | T) -> list[T]:
     """Wraps the input argument into a list, if it isn't a list already.
 
     Args:
@@ -47,10 +47,10 @@ def enlist(arg: Union[List[T], T]) -> List[T]:
 
 
 def check_and_enlist_bcs(
-    bcs_list: Union[
-        fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
-    ]
-) -> List[List[fenics.DirichletBC]]:
+    bcs_list: (
+        fenics.DirichletBC | list[fenics.DirichletBC] | list[list[fenics.DirichletBC]]
+    ),
+) -> list[list[fenics.DirichletBC]]:
     """Enlists DirichletBC objects for cashocs.
 
     Args:
@@ -77,11 +77,10 @@ def check_and_enlist_bcs(
 
 
 def check_and_enlist_control_constraints(
-    control_constraints: Union[
-        List[Union[float, int, fenics.Function]],
-        List[List[Union[float, int, fenics.Function]]],
-    ]
-) -> List[List[Union[float, int, fenics.Function]]]:
+    control_constraints: (
+        list[float | int | fenics.Function] | list[list[float | int | fenics.Function]]
+    ),
+) -> list[list[float | int | fenics.Function]]:
     """Wraps control constraints into a list suitable for cashocs.
 
     Args:
@@ -95,14 +94,14 @@ def check_and_enlist_control_constraints(
         control_constraints[0], list
     ):
         control_constraints = cast(
-            List[List[Union[float, int, fenics.Function]]], control_constraints
+            list[list[Union[float, int, fenics.Function]]], control_constraints
         )
         return control_constraints
     elif isinstance(control_constraints, list) and not isinstance(
         control_constraints[0], list
     ):
         control_constraints = cast(
-            List[Union[float, int, fenics.Function]], control_constraints
+            list[Union[float, int, fenics.Function]], control_constraints
         )
         return [control_constraints]
     else:
@@ -114,7 +113,7 @@ def check_and_enlist_control_constraints(
 
 
 def optimization_algorithm_configuration(
-    config: configparser.ConfigParser, algorithm: Optional[str] = None
+    config: configparser.ConfigParser, algorithm: str | None = None
 ) -> str:
     """Returns the internal name of the optimization algorithm and updates config.
 
@@ -172,8 +171,8 @@ def optimization_algorithm_configuration(
 
 
 def create_function_list(
-    function_spaces: List[fenics.FunctionSpace],
-) -> List[fenics.Function]:
+    function_spaces: list[fenics.FunctionSpace],
+) -> list[fenics.Function]:
     """Creates a list of functions.
 
     Args:

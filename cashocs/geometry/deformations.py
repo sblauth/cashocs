@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -86,7 +86,7 @@ class DeformationHandler:
 
     def move_mesh(
         self,
-        transformation: Union[fenics.Function, np.ndarray],
+        transformation: fenics.Function | np.ndarray,
         validated_a_priori: bool = False,
         test_for_intersections: bool = True,
     ) -> bool:

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import cast, List, Optional, Tuple, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -93,7 +93,7 @@ class LineSearch(abc.ABC):
     def perform(
         self,
         solver: optimization_algorithms.OptimizationAlgorithm,
-        search_direction: List[fenics.Function],
+        search_direction: list[fenics.Function],
         has_curvature_info: bool,
         active_idx: np.ndarray | None = None,
         constraint_gradient: sparse.csr_matrix | None = None,
@@ -150,7 +150,7 @@ class LineSearch(abc.ABC):
     def initialize_stepsize(
         self,
         solver: optimization_algorithms.OptimizationAlgorithm,
-        search_direction: List[fenics.Function],
+        search_direction: list[fenics.Function],
         has_curvature_info: bool,
     ) -> None:
         """Initializes the stepsize.
@@ -212,12 +212,12 @@ class LineSearch(abc.ABC):
     def search(
         self,
         solver: optimization_algorithms.OptimizationAlgorithm,
-        search_direction: List[fenics.Function],
+        search_direction: list[fenics.Function],
         has_curvature_info: bool,
         active_idx: np.ndarray | None = None,
         constraint_gradient: sparse.csr_matrix | None = None,
         dropped_idx: np.ndarray | None = None,
-    ) -> Tuple[Optional[fenics.Function], bool]:
+    ) -> tuple[fenics.Function | None, bool]:
         """Performs a line search.
 
         Args:

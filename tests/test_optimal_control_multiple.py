@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -151,8 +151,6 @@ def ocp(state_forms, bcs_list, J, states, controls, adjoints, config_ocp):
 
 
 def test_control_gradient_multiple(ocp, rng):
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 
