@@ -11,6 +11,8 @@ of the maintenance releases, please take a look at
 
 * Add support for named Gmsh meshes, so that the names can not only be used with :py:func:`cashocs.create_dirichlet_bcs`, but also with the :py:class:`cashocs.NamedMeasure` objects created with :py:func:`cashocs.import_mesh`.
 
+* Add a pseudo time stepping solver for nonlinear equations. This uses PETSc's TS and is implemented in :py:func:`cashocs.ts_pseudo_solve`.
+
 2.3.0 (November 12, 2024)
 -------------------------
 

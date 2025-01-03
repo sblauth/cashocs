@@ -172,6 +172,33 @@ class PETScSNESError(PETScError):
         }
 
 
+class PETScTSError(PETScError):
+    """This exception is raised if the solution of a nonlinear problem with TS fails.
+
+    Also returns the PETSc error code and reason.
+    """
+
+    def __init__(
+        self,
+        error_code: int,
+        message: str = "The PETSc TS solver did not converge.",
+    ) -> None:
+        """Initializes self.
+
+        Args:
+            error_code: The error code issued by PETSc.
+            message: The message, detailing why PETSc issued an error.
+
+        """
+        super().__init__(error_code, message)
+        self.error_dict = {
+            -1: " (ts_diverged_nonlinear_solve)",
+            -2: " (ts_diverged_step_rejected)",
+            -3: " (ts_forward_diverged_linear_solve)",
+            -4: " (ts_adjoint_diverged_linear_solve)",
+        }
+
+
 class InputError(CashocsException):
     """This gets raised when the user input to a public API method is wrong."""
 
