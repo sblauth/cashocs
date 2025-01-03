@@ -361,6 +361,13 @@ class Config(ConfigParser):
                 "boundaries_dist": {
                     "type": "list",
                 },
+                "distance_method": {
+                    "type": "str",
+                    "possible_options": [
+                        "eikonal",
+                        "poisson",
+                    ],
+                },
                 "smooth_mu": {
                     "type": "bool",
                 },
@@ -610,6 +617,7 @@ mu_max = 1.0
 dist_min = 1.0
 dist_max = 1.0
 boundaries_dist = []
+distance_method = eikonal
 smooth_mu = False
 inhomogeneous = False
 update_inhomogeneous = False

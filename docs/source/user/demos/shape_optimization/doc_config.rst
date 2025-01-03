@@ -743,6 +743,17 @@ This means, that only boundaries marked with 1, 2, and 3 are considered for comp
 the distance, and all others are ignored. The default behavior is that all (outer) boundaries
 are considered.
 
+For computing the distance to the boundary, two methods are available and can be specified with the parameter
+
+.. code-block:: ini
+
+    distance_method = eikonal
+
+Possible options are :ini:`distance_method = eikonal`, which uses the Eikonal equation, or
+:ini:`distance_method = poisson`, which uses a Poisson approach. While the Eikonal approach
+is more accurate, and thus the default, the Poisson approach is cheaper and more robust, while
+being also accurate close to the wall, but not so accurate further away.
+
 There is also another possibility to compute the shape gradient in cashocs, namely using the :math:`p`-Laplacian, as proposed by `Müller, Kühl, Siebenborn, Deckelnick, Hinze, and Rung <https://doi.org/10.1007/s00158-021-03030-x>`_. In order to do so, we have the following line
 
 .. code-block:: ini
@@ -1334,6 +1345,8 @@ in the following.
       - The value of :math:`\mu` for a boundary distance larger than :ini:`dist_max`
     * - :ini:`boundaries_dist = []`
       - The indices of the boundaries, which shall be used to compute the distance, :ini:`boundaries_dist = []` means that all boundaries are considered
+    * - :ini:`distance_method = eikonal`
+      - The method for computing the distance to the boundary. Can be either :ini:`eikonal` or :ini:`poisson`
     * - :ini:`smooth_mu = False`
       - If false, a linear (continuous) interpolation between :ini:`mu_min` and :ini:`mu_max` is used, otherwise a cubic :math:`C^1` interpolant is used
     * - :ini:`use_p_laplacian = False`

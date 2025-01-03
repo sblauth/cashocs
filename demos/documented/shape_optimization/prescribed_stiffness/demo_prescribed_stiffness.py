@@ -12,7 +12,7 @@
 # .. include:: ../../../global.rst
 # ```
 #
-# (demo_eikonal_stiffness)=
+# (demo_prescribed_stiffness)=
 # # Computing the Shape Stiffness via Distance to the Boundaries
 #
 # ## Problem Formulation
@@ -42,14 +42,16 @@
 # For a background on the stiffness of the shape gradient, we refer to
 # {ref}`config_shape_shape_gradient`, where it is defined as the parameter
 # $\mu$ used in the computation of the shape gradient. Note that the distance
-# computation is done via an eikonal equation, hence the name of the demo.
+# computation is done either via an Eikonal equation or Poisson equation.
 #
 # ## Implementation
 #
-# The complete python code can be found in the file {download}`demo_eikonal_stiffness.py
-# </../../demos/documented/shape_optimization/eikonal_stiffness/demo_eikonal_stiffness.py>`
+# The complete python code can be found in the file
+# {download}`demo_prescribed_stiffness.py
+# </../../demos/documented/shape_optimization/
+# prescribed_stiffness/demo_prescribed_stiffness.py>`
 # and the corresponding config can be found in {download}`config.ini
-# </../../demos/documented/shape_optimization/eikonal_stiffness/config.ini>`.
+# </../../demos/documented/shape_optimization/prescribed_stiffness/config.ini>`.
 #
 # ### Changes in the config file
 #
@@ -70,6 +72,7 @@
 # mu_max = 1.0
 # smooth_mu = false
 # boundaries_dist = [4]
+# distance_method = eikonal
 # :::
 #
 # The first line
@@ -103,7 +106,7 @@
 # where {ini}`smooth_mu = True` uses the third order polynomial, and
 # {ini}`smooth_mu = False` uses the linear function.
 #
-# Finally, the line
+# The line
 # :::{code-block} ini
 # boundaries_dist = [4]
 # :::
@@ -111,6 +114,16 @@
 # specifies, which boundaries are considered for the distance computation. These are
 # again specified using the boundary markers, as it was previously explained in
 # {ref}`config_shape_shape_gradient`.
+# Finally, the line
+# :::{code-block} ini
+# distance_method = eikonal
+# :::
+#
+# determines which approach is used to compute the distance to the boundary. This can
+# either be {ini}`distance_method = eikonal` or {ini}`distance_method = poisson`. The
+# Eikonal approach is more accurate, but can be instable, whereas the Poisson approach
+# is more robust and accurate in close proximity to the wall, but less accurate further
+# away.
 #
 # For the sake of completeness, here is the code for solving the problem
 
@@ -169,8 +182,9 @@ plt.colorbar(fig_p, fraction=0.046, pad=0.04)
 plt.title("State variable p")
 
 plt.tight_layout()
-# plt.savefig("./img_eikonal_stiffness.png", dpi=150, bbox_inches="tight")
+# plt.savefig("./img_prescribed_stiffness.png", dpi=150, bbox_inches="tight")
 # -
 
 # The results should look like this
-# ![](/../../demos/documented/shape_optimization/shape_stokes/img_shape_stokes.png)
+# ![](/../../demos/documented/shape_optimization/prescribed_stiffness/
+# img_prescribed_stiffness.png)

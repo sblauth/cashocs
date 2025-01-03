@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import copy
-from typing import Literal, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 
@@ -45,7 +45,7 @@ def compute_boundary_distance(
     tol: float = 1e-1,
     max_iter: int = 10,
     minimum_distance: float = 0.0,
-    method: Literal["poisson", "eikonal"] = "poisson",
+    method: str = "eikonal",
 ) -> fenics.Function:
     """Computes (an approximation of) the distance to the boundary.
 
@@ -69,8 +69,9 @@ def compute_boundary_distance(
             should be set to 0.0 for most applications, which is also the default. One
             exception is for turbulence modeling and wall functions.
         method: Which method should be used to compute the boundary distance. Can either
-            be 'poisson' or 'eikonal'. It is recommended to use 'poisson', which is more
-            robust and also the default.
+            be 'poisson' or 'eikonal'. The default is 'eikonal', which is more accurate.
+            The poisson approach is less accurate, but more robust and gives a very
+            good approximation close to the wall.
 
     Returns:
         A fenics function representing an approximation of the distance to the boundary.
@@ -175,7 +176,7 @@ def compute_boundary_distance_poisson(
         * dx
         + ufl.sqrt(ufl.dot(ufl.grad(u), ufl.grad(u))) * v * dx
     )
-    nonlinear_solvers.linear_solve(form, distance, bcs)
+    nonlinear_solvers.linear_solve(form, distance, bcs, ksp_options=ksp_options)
 
     return distance
 
