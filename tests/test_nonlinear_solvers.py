@@ -97,6 +97,42 @@ def test_snes_solver():
     assert np.allclose(u.vector()[:], u_fen.vector()[:])
 
 
+def test_ts_pseudo_solver():
+    mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
+    V = FunctionSpace(mesh, "CG", 1)
+
+    u = Function(V)
+    u_fen = Function(V)
+    v = TestFunction(V)
+
+    F = (
+        inner(grad(u), grad(v)) * dx
+        + Constant(1e2) * pow(u, 3) * v * dx
+        - Constant(1) * v * dx
+    )
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
+
+    solve(F == 0, u, bcs)
+    u_fen.vector().vec().aypx(0.0, u.vector().vec())
+    u_fen.vector().apply("")
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+
+    petsc_options = {
+        "ts_type": "beuler",
+        "ts_dt": 1e-1,
+        "ts_max_steps": 100,
+        "snes_type": "ksponly",
+    }
+    petsc_options.update(cashocs._utils.linalg.direct_ksp_options)
+
+    cashocs.ts_pseudo_solve(
+        F, u, bcs, petsc_options=petsc_options, rtol=1e-9, atol=1e-10
+    )
+
+    assert np.allclose(u.vector()[:], u_fen.vector()[:])
+
+
 def test_newton_linearization(config_sop):
     config_sop.set("StateSystem", "is_linear", "False")
     config_sop.set("StateSystem", "newton_verbose", "True")

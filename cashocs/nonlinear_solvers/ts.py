@@ -154,11 +154,11 @@ class TSPseudoSolver:
             self.A_petsc = fenics.PETScMatrix(self.comm).mat()
 
         if b_tensor is not None:
-            self.residual_fenics = b_tensor
             self.residual_petsc = b_tensor.vec()
         else:
-            self.residual_fenics = fenics.PETScVector(self.comm)
-            self.residual_petsc = self.residual_fenics.vec()
+            self.residual_petsc = fenics.PETScVector(self.comm).vec()
+
+        self.residual_convergence = fenics.PETScVector(self.comm)
 
         self.mass_matrix_petsc = fenics.PETScMatrix(self.comm).mat()
         self.mass_application_petsc = fenics.Function(self.space).vector().vec()
@@ -367,6 +367,23 @@ class TSPseudoSolver:
             B.scale(sigma)
             B.assemble()
 
+    def compute_nonlinear_residual(self, u: PETSc.Vec) -> float:
+        """Computes the residual of the nonlinear equation.
+
+        Args:
+            u (PETSc.Vec): The current iterate.
+
+        Returns:
+            float: The norm of the nonlinear residual.
+
+        """
+        self.u.vector().vec().aypx(0.0, u)
+        self.u.vector().apply("")
+        self.assembler.assemble(self.residual_convergence, self.u.vector())
+
+        residual_norm: float = self.residual_convergence.norm("l2")
+        return residual_norm
+
     def monitor(
         self,
         ts: PETSc.TS,
@@ -383,7 +400,8 @@ class TSPseudoSolver:
             u (PETSc.Vec): The current iterate.
 
         """
-        residual_norm = self.residual_fenics.norm("l2")
+        residual_norm = self.compute_nonlinear_residual(u)
+
         log.info(f"{i = }  {t = :.3e}  residual: {residual_norm:.3e}")
 
         if residual_norm < np.maximum(self.rtol * self.res_initial, self.atol):
@@ -432,7 +450,7 @@ class TSPseudoSolver:
                 ts, 0.0, self.u.vector().vec(), self.A_petsc, self.P_petsc
             )
 
-        self.res_initial = self.residual_fenics.norm("l2")
+        self.res_initial = self.compute_nonlinear_residual(self.u.vector().vec())
         ts.setTime(0.0)
         ts.setMonitor(self.monitor)
 
