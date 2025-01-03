@@ -253,7 +253,7 @@ class TSPseudoSolver:
 
         """
         log.begin("Assembling the residual for pseudo time stepping.", level=log.DEBUG)
-        self.u.vector().vec().setArray(u)
+        self.u.vector().vec().aypx(0.0, u)
         self.u.vector().apply("")
 
         f_fenics = fenics.PETScVector(f)
@@ -289,7 +289,7 @@ class TSPseudoSolver:
 
         """
         log.begin("Assembling the Jacobian for pseudo time stepping.", level=log.DEBUG)
-        self.u.vector().vec().setArray(u)
+        self.u.vector().vec().aypx(0.0, u)
         self.u.vector().apply("")
 
         J = fenics.PETScMatrix(J)  # pylint: disable=invalid-name
@@ -331,7 +331,8 @@ class TSPseudoSolver:
         """
         res = self.mass_matrix_petsc.createVecLeft()
         self.mass_matrix_petsc.mult(u_dot, res)
-        f.setArray(res)
+        f.aypx(0.0, res)
+        f.assemble()
 
     def assemble_mass_matrix(
         self,
@@ -458,7 +459,14 @@ class TSPseudoSolver:
         if self.max_iter is not None:
             ts.setMaxSteps(self.max_iter)
 
-        ts.solve(self.u.vector().vec())
+        x = fenics.Function(self.space)
+        x.vector().vec().aypx(0.0, self.u.vector().vec())
+        x.vector().apply("")
+
+        ts.solve(x.vector().vec())
+
+        self.u.vector().vec().aypx(0.0, x.vector().vec())
+        self.u.vector().apply("")
 
         converged_reason = ts.getConvergedReason()
         if converged_reason < 0:
