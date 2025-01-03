@@ -12,7 +12,7 @@
 # .. include:: ../../../global.rst
 # ```
 #
-# (demo_prescribed_stiffness)=
+# (demo_prescribed_mu)=
 # # Computing the Shape Stiffness via Distance to the Boundaries
 #
 # ## Problem Formulation
@@ -47,11 +47,10 @@
 # ## Implementation
 #
 # The complete python code can be found in the file
-# {download}`demo_prescribed_stiffness.py
-# </../../demos/documented/shape_optimization/
-# prescribed_stiffness/demo_prescribed_stiffness.py>`
+# {download}`demo_prescribed_mu.py
+# </../../demos/documented/shape_optimization/prescribed_mu/demo_prescribed_mu.py>`
 # and the corresponding config can be found in {download}`config.ini
-# </../../demos/documented/shape_optimization/prescribed_stiffness/config.ini>`.
+# </../../demos/documented/shape_optimization/prescribed_mu/config.ini>`.
 #
 # ### Changes in the config file
 #
@@ -182,9 +181,8 @@ plt.colorbar(fig_p, fraction=0.046, pad=0.04)
 plt.title("State variable p")
 
 plt.tight_layout()
-# plt.savefig("./img_prescribed_stiffness.png", dpi=150, bbox_inches="tight")
+# plt.savefig("./img_prescribed_mu.png", dpi=150, bbox_inches="tight")
 # -
 
 # The results should look like this
-# ![](/../../demos/documented/shape_optimization/prescribed_stiffness/
-# img_prescribed_stiffness.png)
+# ![](/../../demos/documented/shape_optimization/prescribed_mu/img_prescribed_mu.png)

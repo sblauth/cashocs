@@ -16,7 +16,7 @@ be treated with cashocs.
    demo_remeshing.md
    demo_custom_scalar_product.md
    demo_scaling.md
-   demo_prescribed_stiffness.md
+   demo_prescribed_mu.md
    demo_p_laplacian.md
    demo_space_mapping_semilinear_transmission.md
    demo_space_mapping_uniform_flow_distribution.md
