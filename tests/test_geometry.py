@@ -389,19 +389,26 @@ def test_move_mesh():
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
-def test_eikonal_distance():
+@pytest.mark.parametrize(
+    "type, expected_tolerance", [("poisson", 1e-12), ("eikonal", 5e-2)]
+)
+def test_boundary_distance(type, expected_tolerance):
     mesh, _, boundaries, _, _, _ = cashocs.regular_mesh(16)
-    dist = cashocs.geometry.compute_boundary_distance(mesh, boundaries, [1, 2, 3, 4])
+    dist = cashocs.geometry.compute_boundary_distance(
+        mesh, boundaries=boundaries, boundary_idcs=[1, 2, 3, 4], type=type
+    )
     assert dist.vector().min() >= 0.0
-    assert (dist.vector().max() - 0.5) / 0.5 <= 0.05
+    assert (dist.vector().max() - 0.5) / 0.5 <= expected_tolerance
 
-    dist = cashocs.geometry.compute_boundary_distance(mesh, boundaries, [1])
+    dist = cashocs.geometry.compute_boundary_distance(
+        mesh, boundaries=boundaries, boundary_idcs=[1], type=type
+    )
     assert dist.vector().min() >= 0.0
-    assert (dist.vector().max() - 1.0) / 1.0 <= 0.05
+    assert (dist.vector().max() - 1.0) / 1.0 <= expected_tolerance
 
-    dist = cashocs.geometry.compute_boundary_distance(mesh)
+    dist = cashocs.geometry.compute_boundary_distance(mesh, type=type)
     assert dist.vector().min() >= 0.0
-    assert (dist.vector().max() - 0.5) / 0.5 <= 0.05
+    assert (dist.vector().max() - 0.5) / 0.5 <= expected_tolerance
 
 
 def test_named_mesh_import():

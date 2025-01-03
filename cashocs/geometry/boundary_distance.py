@@ -20,12 +20,22 @@
 from __future__ import annotations
 
 import copy
+from typing import Literal, TYPE_CHECKING
 
 import fenics
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 import numpy as np
 
 from cashocs import _utils
+from cashocs import nonlinear_solvers
 from cashocs.geometry import measure
+
+if TYPE_CHECKING:
+    from cashocs import _typing
 
 
 def compute_boundary_distance(
@@ -34,8 +44,146 @@ def compute_boundary_distance(
     boundary_idcs: list[int | str] | None = None,
     tol: float = 1e-1,
     max_iter: int = 10,
+    minimum_distance: float = 0.0,
+    method: Literal["poisson", "eikonal"] = "poisson",
 ) -> fenics.Function:
     """Computes (an approximation of) the distance to the boundary.
+
+    The user can specify which boundaries are considered for the distance computation
+    by specifying the parameters `boundaries` and `boundary_idcs`. Default is to
+    consider all boundaries.
+
+    Args:
+        mesh: The dolfin mesh object, representing the computational domain.
+        boundaries: A meshfunction for the boundaries, which is needed in case specific
+            boundaries are targeted for the distance computation (while others are
+            ignored), default is `None` (all boundaries are used).
+        boundary_idcs: A list of indices which indicate, which parts of the boundaries
+            should be used for the distance computation, default is `None` (all
+            boundaries are used).
+        tol: A tolerance for the iterative solution of the eikonal equation. Default is
+            1e-1.
+        max_iter: Number of iterations for the iterative solution of the eikonal
+            equation. Default is 10.
+        minimum_distance: The distance of the mesh boundary to the (physical) wall. This
+            should be set to 0.0 for most applications, which is also the default. One
+            exception is for turbulence modeling and wall functions.
+        method: Which method should be used to compute the boundary distance. Can either
+            be 'poisson' or 'eikonal'. It is recommended to use 'poisson', which is more
+            robust and also the default.
+
+    Returns:
+        A fenics function representing an approximation of the distance to the boundary.
+
+    """
+    if method == "poisson":
+        return compute_boundary_distance_poisson(
+            mesh,
+            boundaries=boundaries,
+            boundary_idcs=boundary_idcs,
+            minimum_distance=minimum_distance,
+        )
+    elif method == "eikonal":
+        return compute_boundary_distance_eikonal(
+            mesh,
+            boundaries=boundaries,
+            boundary_idcs=boundary_idcs,
+            tol=tol,
+            max_iter=max_iter,
+        )
+
+
+def compute_boundary_distance_poisson(
+    mesh: fenics.Mesh,
+    boundaries: fenics.MeshFunction | None = None,
+    boundary_idcs: list[int | str] | None = None,
+    minimum_distance: float = 0.0,
+) -> fenics.Function:
+    """Computes the distance to the boundary with a Poisson approach.
+
+    The user can specify which boundaries are considered for the distance computation
+    by specifying the parameters `boundaries` and `boundary_idcs`. Default is to
+    consider all boundaries.
+
+    Args:
+        mesh (fenics.Mesh): The dolfin mesh object, representing the computational
+            domain
+        boundaries (fenics.MeshFunction | None, optional): A meshfunction for the
+            boundaries, which is needed in case specific boundaries are targeted for
+            the distance computation (while others are ignored), default is `None` (all
+            boundaries are used). Defaults to None.
+        boundary_idcs (list[int  |  str] | None, optional): A list of indices which
+            indicate, which parts of the boundaries should be used for the distance
+            computation, default is `None` (all boundaries are used). Defaults to None.
+        minimum_distance (float, optional): The distance of the mesh boundary to the
+            (physical) wall. This should be set to 0.0 for most applications, which is
+            also the default. One exception is for turbulence modeling and wall
+            functions. Defaults to 0.0.
+
+    Returns:
+        fenics.Function: A fenics function representing an approximation of the
+            distance to the boundary.
+
+    """
+    cg1_space = fenics.FunctionSpace(mesh, "CG", 1)
+    dx = fenics.Measure("dx", domain=mesh)
+
+    u = fenics.Function(cg1_space)
+    v = fenics.TestFunction(cg1_space)
+    poisson_form = (
+        fenics.dot(fenics.grad(u), fenics.grad(v)) * dx - fenics.Constant(1.0) * v * dx
+    )
+
+    if (boundaries is not None) and (boundary_idcs is not None):
+        if len(boundary_idcs) > 0:
+            bcs = _utils.create_dirichlet_bcs(
+                cg1_space, fenics.Constant(minimum_distance), boundaries, boundary_idcs
+            )
+        else:
+            bcs = fenics.DirichletBC(
+                cg1_space,
+                fenics.Constant(minimum_distance),
+                fenics.CompiledSubDomain("on_boundary"),
+            )
+    else:
+        bcs = fenics.DirichletBC(
+            cg1_space,
+            fenics.Constant(minimum_distance),
+            fenics.CompiledSubDomain("on_boundary"),
+        )
+
+    ksp_options: _typing.KspOption = {
+        "ksp_type": "cg",
+        "pc_type": "hypre",
+        "pc_hypre_type": "boomeramg",
+        "pc_hypre_boomeramg_strong_threshold": 0.7,
+        "ksp_rtol": 1e-12,
+        "ksp_atol": 1e-50,
+        "ksp_max_it": 1000,
+    }
+    nonlinear_solvers.linear_solve(poisson_form, u, bcs, ksp_options=ksp_options)
+
+    distance = fenics.Function(cg1_space)
+    form = (
+        distance * v * dx
+        - ufl.sqrt(ufl.dot(ufl.grad(u), ufl.grad(u)) + fenics.Constant(2.0) * u)
+        * v
+        * dx
+        + ufl.sqrt(ufl.dot(ufl.grad(u), ufl.grad(u))) * v * dx
+    )
+    nonlinear_solvers.linear_solve(form, distance, bcs)
+
+    return distance
+
+
+def compute_boundary_distance_eikonal(
+    mesh: fenics.Mesh,
+    boundaries: fenics.MeshFunction | None = None,
+    boundary_idcs: list[int | str] | None = None,
+    tol: float = 1e-1,
+    max_iter: int = 10,
+) -> fenics.Function:
+    """Computes the distance to the boundary by solving the Eikonal equation.
 
     The function iteratively solves the Eikonal equation to compute the distance to the
     boundary.
