@@ -25,6 +25,12 @@ from cashocs.nonlinear_solvers.linear_solver import linear_solve
 from cashocs.nonlinear_solvers.newton_solver import newton_solve
 from cashocs.nonlinear_solvers.picard_solver import picard_iteration
 from cashocs.nonlinear_solvers.snes import snes_solve
-from cashocs.nonlinear_solvers.ts import ts_solve
+from cashocs.nonlinear_solvers.ts import ts_pseudo_solve
 
-__all__ = ["newton_solve", "picard_iteration", "linear_solve", "snes_solve", "ts_solve"]
+__all__ = [
+    "newton_solve",
+    "picard_iteration",
+    "linear_solve",
+    "snes_solve",
+    "ts_pseudo_solve",
+]
