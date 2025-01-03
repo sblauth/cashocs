@@ -105,6 +105,10 @@ def compute_boundary_distance_poisson(
     by specifying the parameters `boundaries` and `boundary_idcs`. Default is to
     consider all boundaries.
 
+    The approach is described, e.g., in Section 1.1.3 of
+    `Tucker, Differential equation-based wall distance computation for DES and RANS
+    (2003) <https://doi.org/10.1016/S0021-9991(03)00272-9>`_.
+
     Args:
         mesh (fenics.Mesh): The dolfin mesh object, representing the computational
             domain

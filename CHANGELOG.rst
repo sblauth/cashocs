@@ -13,6 +13,8 @@ of the maintenance releases, please take a look at
 
 * Add a pseudo time stepping solver for nonlinear equations. This uses PETSc's TS and is implemented in :py:func:`cashocs.ts_pseudo_solve`.
 
+* Add a Poisson approach for computing the distance to the wall. This should be more robust than the previous approach of solving the Eikonal equation and is, thus, the new default method.
+
 2.3.0 (November 12, 2024)
 -------------------------
 
