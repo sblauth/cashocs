@@ -34,6 +34,7 @@ from cashocs._utils.helpers import check_and_enlist_control_constraints
 from cashocs._utils.helpers import check_file_extension
 from cashocs._utils.helpers import create_function_list
 from cashocs._utils.helpers import enlist
+from cashocs._utils.helpers import get_petsc_prefixes
 from cashocs._utils.helpers import number_of_arguments
 from cashocs._utils.helpers import optimization_algorithm_configuration
 from cashocs._utils.interpolations import interpolate_by_angle
@@ -70,4 +71,5 @@ __all__ = [
     "interpolate_by_volume",
     "check_file_extension",
     "number_of_arguments",
+    "get_petsc_prefixes",
 ]

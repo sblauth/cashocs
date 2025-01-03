@@ -21,11 +21,14 @@ from __future__ import annotations
 
 import configparser
 import inspect
-from typing import Any, Callable, cast, TypeVar, Union
+from typing import Any, Callable, cast, TYPE_CHECKING, TypeVar, Union
 
 import fenics
 
 from cashocs import _exceptions
+
+if TYPE_CHECKING:
+    from cashocs import _typing
 
 T = TypeVar("T")
 
@@ -210,3 +213,18 @@ def number_of_arguments(function: Callable[..., Any]) -> int:
     sig = inspect.signature(function)
 
     return len(sig.parameters)
+
+
+def get_petsc_prefixes(petsc_options: _typing.KspOption) -> set[str]:
+    """Get a set of prefixes used in the petsc options.
+
+    Args:
+        petsc_options: The dictionary of options for the PETSc solvers.
+
+    """
+    prefixes = set()
+    for key in petsc_options.keys():
+        prefix = key.split("_", maxsplit=1)[0]
+        prefixes.add(prefix)
+
+    return prefixes
