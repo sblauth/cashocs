@@ -65,7 +65,7 @@ class ControlFormHandler(form_handler.FormHandler):
         """
         super().__init__(optimization_problem, db)
 
-        self.hessian_form_handler = HessianFormHandler(self.db)
+        self.hessian_form_handler: HessianFormHandler = HessianFormHandler(self.db)
         self.riesz_scalar_products = optimization_problem.riesz_scalar_products
         self.control_bcs_list = optimization_problem.control_bcs_list
 

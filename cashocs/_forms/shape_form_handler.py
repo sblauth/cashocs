@@ -215,7 +215,10 @@ class Stiffness:
             self.distance.vector().vec().aypx(
                 0.0,
                 boundary_distance.compute_boundary_distance(
-                    self.mesh, self.boundaries, self.bdry_idcs
+                    self.mesh,
+                    self.boundaries,
+                    self.bdry_idcs,
+                    method=self.config.get("ShapeGradient", "distance_method"),
                 )
                 .vector()
                 .vec(),
