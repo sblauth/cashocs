@@ -1,5 +1,6 @@
 from petsc4py import PETSc
 from cashocs import _utils
+from cashocs import log
 import fenics
 
 
@@ -43,7 +44,8 @@ class TSSolver:
         self.mass_matrix_petsc = fenics.PETScMatrix(self.comm).mat()
 
         self.mass_application_petsc = fenics.Function(self.space).vector().vec()
-        self.residual_petsc = fenics.PETScVector(self.comm).vec()
+        self.residual_fenics = fenics.PETScVector(self.comm)
+        self.residual_petsc = self.residual_fenics.vec()
 
         self.assembler = fenics.SystemAssembler(
             self.derivative, self.nonlinear_form, self.bcs
@@ -72,10 +74,10 @@ class TSSolver:
 
         dx = fenics.Measure("dx", domain=self.mesh)
 
-        trial_u, _, trial_nu = fenics.split(trial)
-        test_u, _, test_nu = fenics.split(test)
+        trial_u, _ = fenics.split(trial)
+        test_u, _ = fenics.split(test)
 
-        form = fenics.dot(trial_u, test_u) * dx + fenics.dot(trial_nu, test_nu) * dx
+        form = fenics.dot(trial_u, test_u) * dx
         M = fenics.PETScMatrix(self.mass_matrix_petsc)
         fenics.assemble(form, tensor=M)
 
@@ -87,6 +89,7 @@ class TSSolver:
             self.MP_petsc = None
 
     def assemble_residual(self, ts, t, u, f):
+        log.begin("Assembling the residual for pseudo time stepping.", level=log.DEBUG)
         self.u.vector().vec().setArray(u)
         self.u.vector().apply("")
 
@@ -94,8 +97,10 @@ class TSSolver:
         self.assembler.assemble(f_fenics, self.u.vector())
 
         f.scale(-1)
+        log.end()
 
     def assemble_jacobian(self, ts, t, u, J, P):
+        log.begin("Assembling the Jacobian for pseudo time stepping.", level=log.DEBUG)
         self.u.vector().vec().setArray(u)
         self.u.vector().apply("")
 
@@ -116,6 +121,8 @@ class TSSolver:
             P_petsc.scale(-1)
             P_petsc.assemble()
 
+        log.end()
+
     def assemble_i_function(self, ts, t, u, u_dot, f):
         res = self.mass_matrix_petsc.createVecLeft()
         self.mass_matrix_petsc.mult(u_dot, res)
@@ -132,20 +139,29 @@ class TSSolver:
             B.assemble()
 
     def monitor(self, ts, i, t, x):
-        self.container.vector().vec().aypx(0.0, x)
-        append = False if i == 0 else True
-        with fenics.XDMFFile(self.mesh.mpi_comm(), "progress.xdmf") as file:
-            file.parameters["flush_output"] = True
-            file.parameters["functions_share_mesh"] = False
-            file.write_checkpoint(
-                self.container,
-                "progress",
-                i,
-                fenics.XDMFFile.Encoding.HDF5,
-                append,
-            )
+        # self.container.vector().vec().aypx(0.0, x)
+        # append = False if i == 0 else True
+        # with fenics.XDMFFile(self.mesh.mpi_comm(), "progress.xdmf") as file:
+        #     file.parameters["flush_output"] = True
+        #     file.parameters["functions_share_mesh"] = False
+        #     file.write_checkpoint(
+        #         self.container,
+        #         "progress",
+        #         i,
+        #         fenics.XDMFFile.Encoding.HDF5,
+        #         append,
+        #     )
+
+        residual_norm = self.residual_fenics.norm("l2")
+        log.info(f"{i = }  {t = :.3e}  residual: {residual_norm:.3e}")
+
+        if residual_norm < 1e-5 * self.res_initial:
+            ts.setConvergedReason(PETSc.TS.ConvergedReason.CONVERGED_USER)
+            max_time = ts.getMaxTime()
+            ts.setTime(max_time)
 
     def solve(self):
+        log.begin("Solving the nonlinear PDE system with pseudo time stepping.")
         ts = PETSc.TS().create()
         ts.setProblemType(ts.ProblemType.NONLINEAR)
 
@@ -177,17 +193,23 @@ class TSSolver:
         self.assemble_jacobian(
             ts, 0.0, self.u.vector().vec(), self.A_petsc, self.P_petsc
         )
+        self.res_initial = self.residual_fenics.norm("l2")
 
         ts.setTime(0.0)
         # ts.setTimeStep(1e-6)
         ts.setMaxTime(1e12)
 
-        # ts.setMonitor(self.monitor)
+        ts.setMonitor(self.monitor)
 
         _utils.setup_petsc_options([ts], [self.petsc_options])
         ts.solve(self.u.vector().vec())
 
-        ts.destroy()
+        if hasattr(PETSc, "garbage_cleanup"):
+            ts.destroy()
+            PETSc.garbage_cleanup(comm=self.comm)
+            PETSc.garbage_cleanup()
+
+        log.end()
 
         return self.u
 
