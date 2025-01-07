@@ -78,6 +78,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         linear_solver: _utils.linalg.LinearSolver | None = None,
         adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
         newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -130,6 +131,9 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 linearizations should be used for the (nonlinear) state equations when
                 solving them (with Newton's method). The default is `None`, so that the
                 Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         self.state_forms = _utils.enlist(state_forms)
@@ -153,6 +157,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.linear_solver = linear_solver
         self.adjoint_linear_solver = adjoint_linear_solver
         self.newton_linearizations = newton_linearizations
+        self.excluded_from_time_derivative = excluded_from_time_derivative
 
         self.current_function_value = 0.0
 
@@ -375,6 +380,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         linear_solver: _utils.linalg.LinearSolver | None = None,
         adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
         newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
     ) -> None:
         r"""Initializes self.
 
@@ -438,6 +444,9 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 linearizations should be used for the (nonlinear) state equations when
                 solving them (with Newton's method). The default is `None`, so that the
                 Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         super().__init__(
@@ -458,6 +467,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             linear_solver=linear_solver,
             adjoint_linear_solver=adjoint_linear_solver,
             newton_linearizations=newton_linearizations,
+            excluded_from_time_derivative=excluded_from_time_derivative,
         )
 
         self.controls = _utils.enlist(controls)
@@ -523,6 +533,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
 
         optimal_control_problem.inject_pre_post_callback(
@@ -566,6 +577,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
         temp_problem.state_problem.has_solution = True
         self.current_function_value = temp_problem.reduced_cost_functional.evaluate()
@@ -600,6 +612,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         linear_solver: _utils.linalg.LinearSolver | None = None,
         adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
         newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -660,6 +673,9 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 linearizations should be used for the (nonlinear) state equations when
                 solving them (with Newton's method). The default is `None`, so that the
                 Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         super().__init__(
@@ -680,6 +696,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             linear_solver=linear_solver,
             adjoint_linear_solver=adjoint_linear_solver,
             newton_linearizations=newton_linearizations,
+            excluded_from_time_derivative=excluded_from_time_derivative,
         )
 
         self.boundaries = boundaries
@@ -744,6 +761,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
 
         shape_optimization_problem.inject_pre_post_callback(
@@ -786,6 +804,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
         temp_problem.state_problem.has_solution = True
         self.current_function_value = temp_problem.reduced_cost_functional.evaluate()

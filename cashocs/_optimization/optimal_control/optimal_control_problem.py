@@ -92,6 +92,9 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
         linear_solver: _utils.linalg.LinearSolver | None = None,
         adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
         newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: (
+            list[int] | list[list[int]] | list[None] | None
+        ) = None,
     ) -> None:
         r"""Initializes self.
 
@@ -159,6 +162,9 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 linearizations should be used for the (nonlinear) state equations when
                 solving them (with Newton's method). The default is `None`, so that the
                 Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         Examples:
             Examples how to use this class can be found in the :ref:`tutorial
@@ -183,6 +189,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
             linear_solver=linear_solver,
             adjoint_linear_solver=adjoint_linear_solver,
             newton_linearizations=newton_linearizations,
+            excluded_from_time_derivative=excluded_from_time_derivative,
         )
 
         self.db.function_db.controls = _utils.enlist(controls)
@@ -283,6 +290,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 linear_solver=linear_solver,
                 adjoint_linear_solver=adjoint_linear_solver,
                 newton_linearizations=newton_linearizations,
+                excluded_from_time_derivative=excluded_from_time_derivative,
             )
 
     def _erase_pde_memory(self) -> None:

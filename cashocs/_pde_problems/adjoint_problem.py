@@ -60,6 +60,10 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.adjoint_form_handler = adjoint_form_handler
         self.state_problem = state_problem
 
+        self.excluded_from_time_derivative = (
+            self.state_problem.excluded_from_time_derivative
+        )
+
         self.adjoints = self.db.function_db.adjoints
         self.bcs_list_ad = self.adjoint_form_handler.bcs_list_ad
 
@@ -126,6 +130,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                 or self.db.parameter_db.state_dim == 1
             ):
                 for i in range(self.db.parameter_db.state_dim):
+                    eftd = self.excluded_from_time_derivative[i]
                     if "ts" in _utils.get_petsc_prefixes(
                         self.db.parameter_db.adjoint_ksp_options[-1 - i]
                     ):
@@ -141,7 +146,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                             preconditioner_form=self.db.form_db.preconditioner_forms[
                                 -1 - i
                             ],
-                            excluded_from_time_derivative=None,
+                            excluded_from_time_derivative=eftd,
                         )
                     else:
                         _utils.assemble_and_solve_linear(

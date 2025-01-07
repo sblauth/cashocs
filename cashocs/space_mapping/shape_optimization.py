@@ -108,6 +108,7 @@ class CoarseModel:
         linear_solver: _utils.linalg.LinearSolver | None = None,
         adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
         newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
     ):
         """Initializes self.
 
@@ -148,6 +149,9 @@ class CoarseModel:
                 linearizations should be used for the (nonlinear) state equations when
                 solving them (with Newton's method). The default is `None`, so that the
                 Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         self.state_forms = state_forms
@@ -175,6 +179,7 @@ class CoarseModel:
         self.linear_solver = linear_solver
         self.adjoint_linear_solver = adjoint_linear_solver
         self.newton_linearizations = newton_linearizations
+        self.excluded_from_time_derivative = excluded_from_time_derivative
 
         self._pre_callback: Callable | None = None
         self._post_callback: Callable | None = None
@@ -206,6 +211,7 @@ class CoarseModel:
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
 
         self.coordinates_optimal = self.mesh.coordinates().copy()
@@ -311,6 +317,9 @@ class ParameterExtraction:
         self.newton_linearizations = (
             coarse_model.shape_optimization_problem.newton_linearizations
         )
+        self.excluded_from_time_derivative = (
+            coarse_model.shape_optimization_problem.excluded_from_time_derivative
+        )
 
         self.coordinates_initial = coarse_model.coordinates_initial
 
@@ -365,6 +374,7 @@ class ParameterExtraction:
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
         if self.shape_optimization_problem is not None:
             self.shape_optimization_problem.inject_pre_post_callback(
