@@ -409,7 +409,7 @@ class TSPseudoSolver:
         """
         residual_norm = self.compute_nonlinear_residual(u)
 
-        log.info(f"{i = }  {t = :.3e}  residual: {residual_norm:.3e}")
+        log.debug(f"TS {i = }  {t = :.3e}  residual: {residual_norm:.3e}")
 
         self.rtol = cast(float, self.rtol)
         self.atol = cast(float, self.atol)

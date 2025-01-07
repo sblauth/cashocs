@@ -724,7 +724,7 @@ def test_pseudo_time_stepping(F, bcs, J, y, u, p, config_ocp):
 
     ksp_options = {
         "ts_type": "beuler",
-        "ts_max_steps": 1000,
+        "ts_max_steps": 100,
         "ts_dt": 1e-1,
         "snes_type": "ksponly",
         "ksp_type": "preonly",
