@@ -411,13 +411,13 @@ class TSPseudoSolver:
             ts.setTime(max_time)
 
     def solve(self) -> fenics.Function:
-        """Solves the nonlinear problem with pseudo time stepping.
+        """Solves the (nonlinear) problem with pseudo time stepping.
 
         Returns:
             fenics.Function: The solution obtained by the solver.
 
         """
-        log.begin("Solving the nonlinear PDE system with pseudo time stepping.")
+        log.begin("Solving the PDE system with pseudo time stepping.")
         ts = PETSc.TS().create()
         ts.setProblemType(ts.ProblemType.NONLINEAR)
 

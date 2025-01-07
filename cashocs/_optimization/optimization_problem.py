@@ -381,7 +381,7 @@ class OptimizationProblem(abc.ABC):
             parsed_ksp_options = _utils.enlist(ksp_options)
 
         parsed_adjoint_ksp_options: list[_typing.KspOption] = (
-            parsed_ksp_options[:]
+            copy.deepcopy(parsed_ksp_options)
             if adjoint_ksp_options is None
             else _utils.enlist(adjoint_ksp_options)
         )
