@@ -55,8 +55,9 @@ class ParameterDatabase:
         self.state_ksp_options = state_ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
 
-        for opt in self.adjoint_ksp_options:
-            opt["snes_type"] = "ksponly"
+        if self.adjoint_ksp_options is not None:
+            for opt in self.adjoint_ksp_options:
+                opt["snes_type"] = "ksponly"
 
         self.gradient_ksp_options = gradient_ksp_options
         self.temp_dict: dict = {}
