@@ -6,6 +6,8 @@ on:
   schedule:
     - cron: '03 22 * * *'
 
+permissions: read-all
+
 jobs:
   parallel_tests:
     name: Test (py=${{ matrix.python-version}}, ${{ matrix.mpi }})

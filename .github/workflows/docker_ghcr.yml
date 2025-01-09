@@ -17,6 +17,8 @@ on:
   schedule:
     - cron: '17 21 * * *'
 
+permissions: read-all
+
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}

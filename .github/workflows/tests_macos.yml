@@ -4,7 +4,8 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '17 0 * * *'
-    
+
+permissions: read-all
     
 jobs:
   serial_tests:

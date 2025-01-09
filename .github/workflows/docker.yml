@@ -8,6 +8,8 @@ on:
   schedule:
     - cron: '17 21 * * *'
 
+permissions: read-all
+
 jobs:
   build_test_env:
     name: Build sblauth/cashocs-test-env image

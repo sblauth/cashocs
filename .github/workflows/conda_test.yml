@@ -5,6 +5,8 @@ on:
   schedule:
     - cron: '42 23 * * *'
 
+permissions: read-all
+
 jobs:
   conda_test:
     name: Test conda installation
