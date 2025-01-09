@@ -8,14 +8,8 @@ meshio==5.3.5
 docutils==0.21.2
 pydata-sphinx-theme==0.16.1
 sphinx-design==0.6.1
-setuptools>=65.5.1
-pygments>=2.7.4
 typing_extensions
 myst-parser==4.0.0
 jupytext==1.16.6
 sphinx-favicon==1.0.1
 matplotlib
-pillow>=10.0.1
-fonttools>=4.43.0
-requests>=2.32.0
-zipp>=3.19.1
