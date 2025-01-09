@@ -5,8 +5,9 @@ on:
   pull_request:
   schedule:
     - cron: '17 22 * * *'
-    
-    
+
+permissions: read-all
+
 jobs:
   serial_tests:
     name: Test (py=${{ matrix.python-version}}, ubuntu-latest)

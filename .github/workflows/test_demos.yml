@@ -5,6 +5,8 @@ on:
   schedule:
     - cron: '02 23 * * *'
 
+permissions: read-all
+
 jobs:
   serial_demos:
     name: Serial demos

@@ -5,6 +5,8 @@ on:
     tags:
       - 'v*'
 
+permissions: read-all
+
 jobs:
   run_tests:
     name: Run tests before publishing
@@ -42,6 +44,8 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - run_tests
+    permissions:
+        content: write
     steps:
     
     - name: Checkout repository
