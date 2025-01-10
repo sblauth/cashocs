@@ -10,14 +10,15 @@ on:
   schedule:
     - cron: '37 22 * * *'
 
-permissions:
-  security-events: write
+permissions: read-all
 
 jobs:
   OSSAR-Scan:
     # OSSAR runs on windows-latest.
     # ubuntu-latest and macos-latest support coming soon
     runs-on: windows-latest
+    permissions:
+        security-events: write
 
     steps:
     - name: Checkout repository
