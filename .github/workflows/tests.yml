@@ -51,3 +51,4 @@ jobs:
         files: coverage.xml
         token: ${{ secrets.CODECOV_TOKEN }}
         verbose: true
+        root_dir: ./cashocs
