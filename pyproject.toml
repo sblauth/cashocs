@@ -105,6 +105,7 @@ match_dir = "cashocs/"
 
 [tool.coverage.run]
 source = ["cashocs"]
+relative_files = true
 
 [tool.coverage.report]
 exclude_lines = [
