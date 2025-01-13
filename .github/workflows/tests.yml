@@ -30,8 +30,6 @@ jobs:
 
     - name: Checkout repository
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      with:
-        fetch-depth: 2
 
     - name: Install cashocs
       shell: bash
@@ -45,10 +43,18 @@ jobs:
         source /usr/local/bin/_entrypoint.sh
         python3 -m pytest -vv --cov=cashocs --cov-report=xml tests/
 
-    - name: Upload coverage to codecov.io
-      uses: codecov/codecov-action@1e68e06f1dbfde0e4cefc87efeba9e4643565303 # v5.1.2
+    - name: Coverage comment
+      id: coverage_comment
+      uses: py-cov-action/python-coverage-comment-action@v3
       with:
-        files: coverage.xml
-        token: ${{ secrets.CODECOV_TOKEN }}
-        verbose: true
-        root_dir: ./cashocs
+        GITHUB_TOKEN: ${{ github.token }}
+        COVERAGE_DATA_BRANCH: coverage
+
+    - name: Store Pull Request comment to be posted
+      uses: actions/upload-artifact@v4
+      if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
+      with:
+        # If you use a different name, update COMMENT_ARTIFACT_NAME accordingly
+        name: python-coverage-comment-action
+        # If you use a different name, update COMMENT_FILENAME accordingly
+        path: python-coverage-comment-action.txt
