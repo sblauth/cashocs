@@ -26,8 +26,8 @@
 .. image:: https://img.shields.io/github/actions/workflow/status/sblauth/cashocs/tests.yml?branch=main&label=tests&style=flat-square
    :target: https://github.com/sblauth/cashocs/actions/workflows/tests.yml
 
-.. image:: https://img.shields.io/codecov/c/gh/sblauth/cashocs?color=brightgreen&style=flat-square
-    :target: https://codecov.io/gh/sblauth/cashocs
+.. image:: https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsblauth%2Fcashocs%2Fcoverage%2Fendpoint.json&style=flat-square
+   :target: https://htmlpreview.github.io/?https://github.com/sblauth/cashocs/blob/coverage/htmlcov/index.html
 
 .. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest&style=flat-square
     :target: https://cashocs.readthedocs.io/en/latest/?badge=latest
