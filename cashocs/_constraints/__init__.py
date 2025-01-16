@@ -27,6 +27,6 @@ from cashocs._constraints.constraints import InequalityConstraint
 __all__ = [
     "ConstrainedOptimalControlProblem",
     "ConstrainedShapeOptimizationProblem",
-    "InequalityConstraint",
     "EqualityConstraint",
+    "InequalityConstraint",
 ]
