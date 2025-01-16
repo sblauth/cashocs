@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Taylor tests for verifying correctness."""
+"""Taylor tests for verifying gradient correctness."""
 
 from __future__ import annotations
 
