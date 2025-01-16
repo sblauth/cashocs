@@ -24,15 +24,18 @@ optimization problems, in particular, shape optimization and optimal control pro
 The documentation for cashocs can be found `here <https://cashocs.readthedocs.io/>`_.
 """
 
+from cashocs import geometry
+from cashocs import io
 from cashocs import log
+from cashocs import nonlinear_solvers
 from cashocs import space_mapping
+from cashocs import verification
 from cashocs._constraints.constrained_problems import ConstrainedOptimalControlProblem
 from cashocs._constraints.constrained_problems import (
     ConstrainedShapeOptimizationProblem,
 )
 from cashocs._constraints.constraints import EqualityConstraint
 from cashocs._constraints.constraints import InequalityConstraint
-from cashocs._optimization import verification
 from cashocs._optimization.cost_functional import Functional
 from cashocs._optimization.cost_functional import IntegralFunctional
 from cashocs._optimization.cost_functional import MinMaxFunctional
@@ -130,35 +133,38 @@ __citation__ = """
 """
 
 __all__ = [
+    "geometry",
+    "io",
+    "log",
+    "nonlinear_solvers",
     "space_mapping",
-    "import_mesh",
-    "LogLevel",
-    "regular_mesh",
-    "regular_box_mesh",
-    "compute_mesh_quality",
-    "newton_solve",
-    "picard_iteration",
-    "OptimalControlProblem",
-    "ShapeOptimizationProblem",
-    "load_config",
-    "create_dirichlet_bcs",
     "verification",
     "ConstrainedOptimalControlProblem",
     "ConstrainedShapeOptimizationProblem",
     "EqualityConstraint",
     "InequalityConstraint",
-    "set_log_level",
-    "Interpolator",
-    "IntegralFunctional",
-    "ScalarTrackingFunctional",
-    "MinMaxFunctional",
     "Functional",
-    "interval_mesh",
-    "convert",
-    "linear_solve",
+    "IntegralFunctional",
+    "MinMaxFunctional",
+    "ScalarTrackingFunctional",
+    "OptimalControlProblem",
+    "ShapeOptimizationProblem",
     "TopologyOptimizationProblem",
+    "create_dirichlet_bcs",
     "interpolate_levelset_function_to_cells",
+    "Interpolator",
+    "compute_mesh_quality",
+    "interval_mesh",
+    "regular_box_mesh",
+    "regular_mesh",
+    "convert",
+    "import_mesh",
+    "load_config",
+    "LogLevel",
+    "set_log_level",
+    "linear_solve",
+    "newton_solve",
+    "picard_iteration",
     "snes_solve",
     "ts_pseudo_solve",
-    "log",
 ]

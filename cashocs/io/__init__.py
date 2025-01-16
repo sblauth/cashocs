@@ -17,6 +17,11 @@
 
 """Inputs and outputs."""
 
+from cashocs.io import config
+from cashocs.io import function
+from cashocs.io import managers
+from cashocs.io import mesh
+from cashocs.io import output
 from cashocs.io.config import Config
 from cashocs.io.config import load_config
 from cashocs.io.function import import_function
@@ -30,15 +35,20 @@ from cashocs.io.mesh import write_out_mesh
 from cashocs.io.output import OutputManager
 
 __all__ = [
-    "convert",
+    "config",
+    "function",
+    "managers",
+    "mesh",
+    "output",
     "Config",
     "load_config",
-    "write_out_mesh",
-    "read_mesh_from_xdmf",
-    "read_function_from_xdmf",
-    "OutputManager",
-    "import_mesh",
-    "extract_mesh_from_xdmf",
-    "export_mesh",
     "import_function",
+    "read_function_from_xdmf",
+    "convert",
+    "export_mesh",
+    "extract_mesh_from_xdmf",
+    "import_mesh",
+    "read_mesh_from_xdmf",
+    "write_out_mesh",
+    "OutputManager",
 ]

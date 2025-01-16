@@ -35,12 +35,12 @@ from cashocs import _pde_problems
 from cashocs import _utils
 from cashocs import io
 from cashocs import log
+from cashocs import verification
 from cashocs._optimization import cost_functional
 from cashocs._optimization import line_search as ls
 from cashocs._optimization import optimal_control
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
-from cashocs._optimization import verification
 from cashocs._optimization.optimal_control import box_constraints
 
 if TYPE_CHECKING:

@@ -40,11 +40,11 @@ from cashocs import _utils
 from cashocs import geometry
 from cashocs import io
 from cashocs import log
+from cashocs import verification
 from cashocs._optimization import cost_functional
 from cashocs._optimization import line_search as ls
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import optimization_problem
-from cashocs._optimization import verification
 from cashocs._optimization.shape_optimization import shape_variable_abstractions
 from cashocs.geometry import mesh_testing
 

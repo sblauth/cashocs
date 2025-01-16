@@ -62,10 +62,8 @@ napoleon_use_keyword = True
 napoleon_use_rtype = True
 
 autodoc_default_options = {
-    "members": True,
     "member-order": "groupwise",
     "undoc-members": False,
-    "inherited-members": "ConfigParser",
     "show-inheritance": True,
 }
 autodoc_member_order = "alphabetical"
@@ -81,7 +79,7 @@ autodoc_mock_imports = [
     "h5py",
     "cashocs_extensions",
 ]
-autodoc_typehints = "description"
+autodoc_typehints = "both"
 autoclass_content = "both"
 
 highlight_language = "python"
@@ -155,7 +153,8 @@ html_css_files = ["cashocs.css"]
 pygments_style = "sphinx"
 
 autosummary_generate = True
-autosummary_imported_members = True
+autosummary_imported_members = False
+autosummary_ignore_module_all = False
 
 myst_enable_extensions = ["dollarmath", "colon_fence"]
 

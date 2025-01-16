@@ -22,8 +22,13 @@ fenics. The :py:func:`regular_mesh <cashocs.geometry.regular_mesh>` and
 :py:func:`regular_box_mesh <cashocs.geometry.regular_box_mesh>` commands create 2D and
 3D box meshes which are great for testing and development.
 """
-
+from cashocs.geometry import boundary_distance
+from cashocs.geometry import deformations
+from cashocs.geometry import measure
+from cashocs.geometry import mesh
+from cashocs.geometry import mesh_handler
 from cashocs.geometry import mesh_testing
+from cashocs.geometry import quality
 from cashocs.geometry.boundary_distance import compute_boundary_distance
 from cashocs.geometry.deformations import DeformationHandler
 from cashocs.geometry.measure import _EmptyMeasure
@@ -36,15 +41,21 @@ from cashocs.geometry.quality import compute_mesh_quality
 from cashocs.geometry.quality import MeshQuality
 
 __all__ = [
-    "compute_mesh_quality",
+    "boundary_distance",
+    "deformations",
+    "measure",
+    "mesh",
+    "mesh_handler",
+    "mesh_testing",
+    "quality",
     "compute_boundary_distance",
     "DeformationHandler",
-    "generate_measure",
     "_EmptyMeasure",
-    "regular_mesh",
+    "generate_measure",
     "interval_mesh",
     "regular_box_mesh",
+    "regular_mesh",
     "_MeshHandler",
+    "compute_mesh_quality",
     "MeshQuality",
-    "mesh_testing",
 ]
