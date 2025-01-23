@@ -82,12 +82,6 @@ absolute tolerance for the Newton solver via
 
 Note, that the default values are :ini:`newton_rtol = 1e-11` and :ini:`newton_atol = 1e-13`.
 
-.. note::
-
-    The parameters :ini:`newton_rtol` and :ini:`newton_atol` are also used to determine the
-    relative and absolute tolerance, respectively, when using pseudo time stepping as
-    solver for either state or adjoint system. Here, the tolerances are the same for both.
-
 The parameter :ini:`newton_iter`, which is defined via
 
 .. code-block:: ini

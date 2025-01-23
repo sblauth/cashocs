@@ -187,8 +187,6 @@ class StateProblem(pde_problem.PDEProblem):
                                     self.bcs_list[i],
                                     derivative=self.newton_linearizations[i],
                                     petsc_options=petsc_options,
-                                    rtol=self.newton_rtol,
-                                    atol=self.newton_atol,
                                     A_tensor=self.A_tensors[i],
                                     b_tensor=self.b_tensors[i],
                                     preconditioner_form=pc_forms,

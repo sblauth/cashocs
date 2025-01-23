@@ -168,6 +168,8 @@ petsc_options = {
     "ts_max_steps": 100,
     "ts_dt": 1e0,
     "snes_type": "ksponly",
+    "snes_rtol": 1e-6,
+    "snes_atol": 1e-10,
     "ksp_type": "preonly",
     "pc_type": "lu",
     "pc_factor_mat_solver_type": "mumps",
@@ -183,6 +185,20 @@ petsc_options = {
 # option {python}`"snes_type": "ksponly"` is used. It is usually more efficient to only
 # do a single iteration of the nonlinearity per pseudo time step, leading to a linearly
 # implicit Euler method. However, here all possibles PETSc SNES options can be set.
+#
+# Moreover, the relative and absolute tolerances (based on the residual of $F(u) = 0$)
+# for the pseudo time stepping are defined with {python}`"snes_rtol": "1e-6"` and
+# {python}`"snes_atol": "1e-10"`. Hence, these parameters specify two things: First, the
+# tolerances for the SNES for each pseudo time step. Here, this is not active as we have
+# chosen the "ksponly", but, e.g., for {python}`"snes_type": "newtonls"` the tolerances
+# would be active. Second, the parameters also specify the tolerances for the
+# convergence of the pseudo time stepping method, based on the residual of the actual
+# nonlinear equation. However, as it does not make much sense to use a different
+# tolerance for these two things, this doubling of parameters should be fine for most
+# applications. We would usually recommend to use {python}`"snes_type": "ksponly"`
+# anyway, as this only does a single iteration of Newton's method per pseudo time step
+# and this is usually sufficient anyway.
+#
 # Finally, the options for the linear solver are specified analogously to the discussion
 # in {ref}`demo_iterative_solvers`.
 #
@@ -221,16 +237,11 @@ sop.solve()
 # :caption: config.ini
 # [StateSystem]
 # is_linear = False
-# newton_rtol = 1e-6
-# newton_atol = 1e-10
 # backend = petsc
 # ```
 #
-# Here, we additionally have to use {ini}`is_linear = False` and {ini}`backend = petsc`.
-# Moreover, the relative and absolute tolerances (based on the residual of $F(u) = 0$)
-# for the pseudo time stepping are defined with {ini}`newton_rtol = 1e-6` and
-# {ini}`newton_atol = 1e-10`. Note that these parameters will be renamed in the future
-# to better show their meaning.
+# Here, we additionally have to use {ini}`is_linear = False` to use the pseudo time
+# stepping - but of course this setting also works for linear problems.
 #
 # ::::
 #

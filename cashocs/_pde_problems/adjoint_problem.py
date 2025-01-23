@@ -73,8 +73,6 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.picard_verbose: bool = self.config.getboolean(
             "StateSystem", "picard_verbose"
         )
-        self.adjoint_rtol: float = self.config.getfloat("StateSystem", "newton_rtol")
-        self.adjoint_atol: float = self.config.getfloat("StateSystem", "newton_atol")
 
         # pylint: disable=invalid-name
         self.A_tensors = [
@@ -143,8 +141,6 @@ class AdjointProblem(pde_problem.PDEProblem):
                             petsc_options=self.db.parameter_db.adjoint_ksp_options[
                                 -1 - i
                             ],
-                            rtol=self.adjoint_rtol,
-                            atol=self.adjoint_atol,
                             A_tensor=self.A_tensors[-1 - i],
                             b_tensor=self.b_tensors[-1 - i],
                             preconditioner_form=self.db.form_db.preconditioner_forms[
