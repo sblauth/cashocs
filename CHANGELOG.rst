@@ -11,7 +11,7 @@ of the maintenance releases, please take a look at
 
 * Add support for named Gmsh meshes, so that the names can not only be used with :py:func:`cashocs.create_dirichlet_bcs`, but also with the :py:class:`cashocs.NamedMeasure` objects created with :py:func:`cashocs.import_mesh`.
 
-* Add a pseudo time stepping solver for nonlinear equations. This uses PETSc's TS and is implemented in :py:func:`cashocs.ts_pseudo_solve`.
+* Add a pseudo time stepping solver for nonlinear equations. This uses PETSc's TS and is implemented in :py:func:`cashocs.ts_pseudo_solve`. The pseudo time stepping is also available for optimization problems and documented at `<https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/demo_pseudo_time_stepping/>`_.
 
 * Add a Poisson approach for computing the distance to the wall. This should be more robust than the previous approach of solving the Eikonal equation but less robust. The method can be changed in the configuration (see "New configuration file parameters" below).
 
