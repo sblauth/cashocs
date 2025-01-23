@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING
+from typing import cast, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -61,8 +61,8 @@ class TSPseudoSolver:
         derivative: ufl.Form | None = None,
         petsc_options: _typing.KspOption | None = None,
         shift: ufl.Form | None = None,
-        rtol: float = 1e-10,
-        atol: float = 1e-10,
+        rtol: float | None = None,
+        atol: float | None = None,
         max_iter: int | None = None,
         A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
         b_tensor: fenics.PETScVector | None = None,
@@ -87,10 +87,16 @@ class TSPseudoSolver:
                 TS object. Defaults to None.
             shift (ufl.Form | None, optional): A shift term, if the right-hand side of
                 the nonlinear problem is not zero, but shift. Defaults to None.
-            rtol (float | None, optional): Relative tolerance of the solver. Defaults
-                to 1e-10.
-            atol (float | None, optional): Absolute tolerance of the solver. Defaults
-                to 1e-10.
+            rtol (float | None, optional): Relative tolerance of the solver. If this
+                is set to a float, the float is used as relative tolerance. If this is
+                set to None, then the relative tolerance of the SNES object is used,
+                which can be defined with the petsc options `snes_rtol rtol`. Defaults
+                to None.
+            atol (float | None, optional): Absolute tolerance of the solver. If this
+                is set to a float, the float is used as absolute tolerance. If this is
+                set to None, then the absolute tolerance of the SNES object is used,
+                which can be defined with the petsc options `snes_atol atol`. Defaults
+                to None.
             max_iter (int | None, optional): Maximum number of iterations carried out
                 by the method. Overrides the specification in the petsc_options.
                 Defaults to None.
@@ -403,7 +409,10 @@ class TSPseudoSolver:
         """
         residual_norm = self.compute_nonlinear_residual(u)
 
-        log.info(f"{i = }  {t = :.3e}  residual: {residual_norm:.3e}")
+        log.debug(f"TS {i = }  {t = :.3e}  residual: {residual_norm:.3e}")
+
+        self.rtol = cast(float, self.rtol)
+        self.atol = cast(float, self.atol)
 
         if residual_norm < np.maximum(self.rtol * self.res_initial, self.atol):
             ts.setConvergedReason(PETSc.TS.ConvergedReason.CONVERGED_USER)
@@ -411,13 +420,13 @@ class TSPseudoSolver:
             ts.setTime(max_time)
 
     def solve(self) -> fenics.Function:
-        """Solves the nonlinear problem with pseudo time stepping.
+        """Solves the (nonlinear) problem with pseudo time stepping.
 
         Returns:
             fenics.Function: The solution obtained by the solver.
 
         """
-        log.begin("Solving the nonlinear PDE system with pseudo time stepping.")
+        log.begin("Solving the PDE system with pseudo time stepping.")
         ts = PETSc.TS().create()
         ts.setProblemType(ts.ProblemType.NONLINEAR)
 
@@ -456,6 +465,10 @@ class TSPseudoSolver:
         ts.setMonitor(self.monitor)
 
         _utils.setup_petsc_options([ts], [self.petsc_options])
+        if self.rtol is None:
+            self.rtol = ts.getSNES().rtol
+        if self.atol is None:
+            self.atol = ts.getSNES().atol
         if self.max_iter is not None:
             ts.setMaxSteps(self.max_iter)
 
@@ -489,8 +502,8 @@ def ts_pseudo_solve(
     derivative: ufl.Form | None = None,
     petsc_options: _typing.KspOption | None = None,
     shift: ufl.Form | None = None,
-    rtol: float = 1e-10,
-    atol: float = 1e-10,
+    rtol: float | None = None,
+    atol: float | None = None,
     max_iter: int | None = None,
     A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
     b_tensor: fenics.PETScVector | None = None,
@@ -518,10 +531,14 @@ def ts_pseudo_solve(
             TS object. Defaults to None.
         shift (ufl.Form | None, optional): A shift term, if the right-hand side of
             the nonlinear problem is not zero, but shift. Defaults to None.
-        rtol (float | None, optional): Relative tolerance of the solver. Defaults
-            to 1e-10.
-        atol (float | None, optional): Absolute tolerance of the solver. Defaults
-            to 1e-10.
+        rtol (float | None, optional): Relative tolerance of the solver. If this
+            is set to a float, the float is used as relative tolerance. If this is
+            set to None, then the relative tolerance of the SNES object is used, which
+            can be defined with the petsc options `snes_rtol rtol`. Defaults to None.
+        atol (float | None, optional): Absolute tolerance of the solver. If this
+            is set to a float, the float is used as absolute tolerance. If this is
+            set to None, then the absolute tolerance of the SNES object is used, which
+            can be defined with the petsc options `snes_atol atol`. Defaults to None.
         max_iter (int | None, optional): Maximum number of iterations carried out
             by the method. Overrides the specification in the petsc_options.
             Defaults to None.

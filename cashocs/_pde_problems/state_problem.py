@@ -47,6 +47,7 @@ class StateProblem(pde_problem.PDEProblem):
         initial_guess: list[fenics.Function] | None,
         linear_solver: _utils.linalg.LinearSolver | None = None,
         newton_linearizations: list[ufl.Form | None] | None = None,
+        excluded_from_time_derivative: list[list[int]] | list[None] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -61,6 +62,9 @@ class StateProblem(pde_problem.PDEProblem):
                 linearizations should be used for the (nonlinear) state equations when
                 solving them (with Newton's method). The default is `None`, so that the
                 Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         super().__init__(db, linear_solver=linear_solver)
@@ -71,6 +75,11 @@ class StateProblem(pde_problem.PDEProblem):
             self.newton_linearizations = newton_linearizations
         else:
             self.newton_linearizations = [None] * self.db.parameter_db.state_dim
+
+        if excluded_from_time_derivative is not None:
+            self.excluded_from_time_derivative = excluded_from_time_derivative
+        else:
+            self.excluded_from_time_derivative = [None] * self.db.parameter_db.state_dim
 
         self.bcs_list: list[list[fenics.DirichletBC]] = self.state_form_handler.bcs_list
         self.states = self.db.function_db.states
@@ -166,17 +175,34 @@ class StateProblem(pde_problem.PDEProblem):
                             fenics.assign(self.states[i], self.initial_guess[i])
 
                         pc_forms = self.db.form_db.preconditioner_forms[i]
+                        petsc_options = self.db.parameter_db.state_ksp_options[i]
+                        eftd = self.excluded_from_time_derivative[i]
                         if self.backend == "petsc":
-                            nonlinear_solvers.snes_solve(
-                                self.state_form_handler.state_eq_forms[i],
-                                self.states[i],
-                                self.bcs_list[i],
-                                derivative=self.newton_linearizations[i],
-                                petsc_options=self.db.parameter_db.state_ksp_options[i],
-                                A_tensor=self.A_tensors[i],
-                                b_tensor=self.b_tensors[i],
-                                preconditioner_form=pc_forms,
-                            )
+                            if "ts" in _utils.get_petsc_prefixes(
+                                self.db.parameter_db.state_ksp_options[i]
+                            ):
+                                nonlinear_solvers.ts_pseudo_solve(
+                                    self.state_form_handler.state_eq_forms[i],
+                                    self.states[i],
+                                    self.bcs_list[i],
+                                    derivative=self.newton_linearizations[i],
+                                    petsc_options=petsc_options,
+                                    A_tensor=self.A_tensors[i],
+                                    b_tensor=self.b_tensors[i],
+                                    preconditioner_form=pc_forms,
+                                    excluded_from_time_derivative=eftd,
+                                )
+                            else:
+                                nonlinear_solvers.snes_solve(
+                                    self.state_form_handler.state_eq_forms[i],
+                                    self.states[i],
+                                    self.bcs_list[i],
+                                    derivative=self.newton_linearizations[i],
+                                    petsc_options=petsc_options,
+                                    A_tensor=self.A_tensors[i],
+                                    b_tensor=self.b_tensors[i],
+                                    preconditioner_form=pc_forms,
+                                )
                         else:
                             nonlinear_solvers.newton_solve(
                                 self.state_form_handler.state_eq_forms[i],

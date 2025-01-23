@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import abc
 import copy
-from typing import Callable, TYPE_CHECKING
+from typing import Callable, cast, TYPE_CHECKING
 import weakref
 
 import fenics
@@ -116,6 +116,9 @@ class OptimizationProblem(abc.ABC):
         linear_solver: _utils.linalg.LinearSolver | None = None,
         adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
         newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: (
+            list[int] | list[list[int]] | list[None] | None
+        ) = None,
     ) -> None:
         r"""Initializes self.
 
@@ -178,6 +181,9 @@ class OptimizationProblem(abc.ABC):
                 linearizations should be used for the (nonlinear) state equations when
                 solving them (with Newton's method). The default is `None`, so that the
                 Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         Notes:
             If one uses a single PDE constraint, the inputs can be the objects
@@ -216,6 +222,7 @@ class OptimizationProblem(abc.ABC):
             self.desired_weights,
             self.preconditioner_forms,
             self.newton_linearizations,
+            self.excluded_from_time_derivative,
         ) = self._parse_optional_inputs(
             initial_guess,
             ksp_options,
@@ -224,6 +231,7 @@ class OptimizationProblem(abc.ABC):
             desired_weights,
             preconditioner_forms,
             newton_linearizations,
+            excluded_from_time_derivative,
         )
 
         if initial_function_values is not None:
@@ -265,6 +273,7 @@ class OptimizationProblem(abc.ABC):
             self.initial_guess,
             linear_solver=self.linear_solver,
             newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
         self.adjoint_problem = _pde_problems.AdjointProblem(
             self.db,
@@ -333,6 +342,9 @@ class OptimizationProblem(abc.ABC):
         desired_weights: list[float] | float | None,
         preconditioner_forms: list[ufl.Form] | ufl.Form | None,
         newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: (
+            list[int] | list[list[int]] | list[None] | None
+        ) = None,
     ) -> tuple[
         list[fenics.Function] | None,
         list[_typing.KspOption],
@@ -341,6 +353,7 @@ class OptimizationProblem(abc.ABC):
         list[float] | None,
         list[ufl.Form | None],
         list[ufl.Form | None],
+        list[list[int]] | list[None],
     ]:
         """Initializes the optional input parameters.
 
@@ -364,6 +377,9 @@ class OptimizationProblem(abc.ABC):
                 linearizations should be used for the (nonlinear) state equations when
                 solving them (with Newton's method). The default is `None`, so that the
                 Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         if initial_guess is None:
@@ -381,7 +397,7 @@ class OptimizationProblem(abc.ABC):
             parsed_ksp_options = _utils.enlist(ksp_options)
 
         parsed_adjoint_ksp_options: list[_typing.KspOption] = (
-            parsed_ksp_options[:]
+            copy.deepcopy(parsed_ksp_options)
             if adjoint_ksp_options is None
             else _utils.enlist(adjoint_ksp_options)
         )
@@ -411,6 +427,10 @@ class OptimizationProblem(abc.ABC):
         else:
             parsed_newton_linearizations = _utils.enlist(newton_linearizations)
 
+        parsed_time_derivative_list = self._parse_excluded_from_time_derivative(
+            excluded_from_time_derivative
+        )
+
         return (
             parsed_initial_guess,
             parsed_ksp_options,
@@ -419,7 +439,45 @@ class OptimizationProblem(abc.ABC):
             parsed_desired_weights,
             parsed_preconditioner_forms,
             parsed_newton_linearizations,
+            parsed_time_derivative_list,
         )
+
+    def _parse_excluded_from_time_derivative(
+        self,
+        excluded_from_time_derivative: (
+            list[int] | list[list[int]] | list[None] | None
+        ) = None,
+    ) -> list[list[int]] | list[None]:
+        """Initiale the excluded_from_time_derivative parameter.
+
+        Args:
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
+
+        Returns:
+            list[list[int]] | list[None]: The parsed parameter.
+
+        """
+        if excluded_from_time_derivative is None:
+            parsed_time_derivative_list: list[list[int]] | list[None] = [
+                None
+            ] * self.state_dim
+        else:
+            if len(excluded_from_time_derivative) > 0 and isinstance(
+                excluded_from_time_derivative[0], int
+            ):
+                excluded_from_time_derivative = cast(
+                    list[int], excluded_from_time_derivative
+                )
+                parsed_time_derivative_list = [excluded_from_time_derivative]
+            else:
+                excluded_from_time_derivative = cast(
+                    list[list[int]], excluded_from_time_derivative
+                )
+                parsed_time_derivative_list = excluded_from_time_derivative
+
+        return parsed_time_derivative_list
 
     def compute_state_variables(self) -> None:
         """Solves the state system.

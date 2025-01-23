@@ -1030,3 +1030,40 @@ def test_global_deformation():
     mesh.bounding_box_tree().build(mesh)
     sop.mesh_handler.move_mesh(sop.global_deformation_function)
     assert np.max(np.abs(optimized_coordinates - mesh.coordinates())) <= 1e-13
+
+
+def test_snes():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("StateSystem", "is_linear", "False")
+    config.set("StateSystem", "backend", "petsc")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config=config)
+    sop.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=7)
+    assert sop.solver.relative_norm <= sop.solver.rtol
+
+
+def test_pseudo_time_stepping():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("StateSystem", "is_linear", "False")
+    config.set("StateSystem", "backend", "petsc")
+
+    ksp_options = {
+        "ts_type": "beuler",
+        "ts_max_steps": 100,
+        "ts_dt": 1e-0,
+        "snes_type": "ksponly",
+        "ksp_type": "preonly",
+        "pc_type": "lu",
+    }
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+
+    sop = cashocs.ShapeOptimizationProblem(
+        e, bcs, J, u, p, boundaries, config=config, ksp_options=ksp_options
+    )
+    sop.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=7)
+    assert sop.solver.relative_norm <= sop.solver.rtol

@@ -707,3 +707,32 @@ def test_optimal_control_with_custom_preconditioner(geometry, config_ocp):
         ksp_options=ksp_options,
     )
     ocp.solve(rtol=1e-2, max_iter=38)
+
+
+def test_snes(F, bcs, J, y, u, p, config_ocp):
+    config_ocp.set("StateSystem", "is_linear", "False")
+    config_ocp.set("StateSystem", "backend", "petsc")
+
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
+    ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=17)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+def test_pseudo_time_stepping(F, bcs, J, y, u, p, config_ocp):
+    config_ocp.set("StateSystem", "is_linear", "False")
+    config_ocp.set("StateSystem", "backend", "petsc")
+
+    ksp_options = {
+        "ts_type": "beuler",
+        "ts_max_steps": 100,
+        "ts_dt": 1e-1,
+        "snes_type": "ksponly",
+        "ksp_type": "preonly",
+        "pc_type": "lu",
+    }
+
+    ocp = cashocs.OptimalControlProblem(
+        F, bcs, J, y, u, p, config=config_ocp, ksp_options=ksp_options
+    )
+    ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=17)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol

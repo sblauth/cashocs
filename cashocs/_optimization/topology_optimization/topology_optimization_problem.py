@@ -93,6 +93,7 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
         linear_solver: _utils.linalg.LinearSolver | None = None,
         adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
         newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
     ) -> None:
         r"""Initializes the topology optimization problem.
 
@@ -163,6 +164,9 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
                 linearizations should be used for the (nonlinear) state equations when
                 solving them (with Newton's method). The default is `None`, so that the
                 Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         super().__init__(
@@ -183,6 +187,7 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
             linear_solver=linear_solver,
             adjoint_linear_solver=adjoint_linear_solver,
             newton_linearizations=newton_linearizations,
+            excluded_from_time_derivative=excluded_from_time_derivative,
         )
 
         self.db.parameter_db.problem_type = "topology"
@@ -247,6 +252,7 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
             linear_solver=linear_solver,
             adjoint_linear_solver=adjoint_linear_solver,
             newton_linearizations=newton_linearizations,
+            excluded_from_time_derivative=excluded_from_time_derivative,
         )
         self._base_ocp.db.parameter_db.problem_type = "topology"
         self.db.function_db.control_spaces = (
