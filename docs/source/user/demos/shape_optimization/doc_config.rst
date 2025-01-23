@@ -131,6 +131,12 @@ Here, :ini:`newton_rtol` sets the relative, and :ini:`newton_atol` the absolute 
 for Newton's method. Their default values are :ini:`newton_rtol = 1e-11` and
 :ini:`newton_atol = 1e-13`.
 
+.. note::
+
+    The parameters :ini:`newton_rtol` and :ini:`newton_atol` are also used to determine the
+    relative and absolute tolerance, respectively, when using pseudo time stepping as
+    solver for either state or adjoint system. Here, the tolerances are the same for both.
+
 The next parameter for the Newton iteration is the maximum number of iterations it
 is allowed to perform before the iteration is cancelled. This is controlled via
 
