@@ -6,8 +6,15 @@ here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
-2.4.0 (in development)
+
+2.5.0 (in development)
 ----------------------
+
+
+
+
+2.4.0 (January 24, 2025)
+------------------------
 
 * Add support for named Gmsh meshes, so that the names can not only be used with :py:func:`cashocs.create_dirichlet_bcs`, but also with the :py:class:`cashocs.NamedMeasure` objects created with :py:func:`cashocs.import_mesh`.
 

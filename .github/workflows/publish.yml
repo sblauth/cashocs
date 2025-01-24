@@ -45,7 +45,7 @@ jobs:
     needs:
       - run_tests
     permissions:
-        content: write
+      contents: write
     steps:
     
     - name: Checkout repository

@@ -1055,6 +1055,8 @@ def test_pseudo_time_stepping():
         "ts_max_steps": 100,
         "ts_dt": 1e-0,
         "snes_type": "ksponly",
+        "snes_rtol": 1e-6,
+        "snes_atol": 1e-14,
         "ksp_type": "preonly",
         "pc_type": "lu",
     }
