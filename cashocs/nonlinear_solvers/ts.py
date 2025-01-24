@@ -482,7 +482,10 @@ class TSPseudoSolver:
         self.u.vector().apply("")
 
         converged_reason = ts.getConvergedReason()
-        if converged_reason < 0:
+        if (
+            converged_reason < 0
+            or converged_reason == PETSc.TS.ConvergedReason.CONVERGED_ITS
+        ):
             raise _exceptions.PETScTSError(converged_reason)
 
         if hasattr(PETSc, "garbage_cleanup"):
