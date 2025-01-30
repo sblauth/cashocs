@@ -608,8 +608,8 @@ class ShapeFormHandler(form_handler.FormHandler):
                 * self.dx
                 + fenics.Constant(lambda_lame)
                 / pow(self.volumes, self.inhomogeneous_exponent)
-                * fenics.div(trial)
-                * fenics.div(test)
+                * ufl.div(trial)
+                * ufl.div(test)
                 * self.dx
                 + fenics.Constant(damping_factor)
                 / pow(self.volumes, self.inhomogeneous_exponent)

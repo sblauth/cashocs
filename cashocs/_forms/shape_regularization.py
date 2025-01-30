@@ -71,7 +71,7 @@ def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl_expr.Expr:
         The tangential divergence of u.
 
     """
-    return fenics.div(u) - ufl.inner(ufl.grad(u) * n, n)
+    return ufl.div(u) - ufl.inner(ufl.grad(u) * n, n)
 
 
 class ShapeRegularizationTerm(abc.ABC):
@@ -162,7 +162,7 @@ class VolumeRegularization(ShapeRegularizationTerm):
             shape_form = (
                 fenics.Constant(self.mu)
                 * (self.current_volume - fenics.Constant(self.target_volume))
-                * fenics.div(self.test_vector_field)
+                * ufl.div(self.test_vector_field)
                 * self.dx
             )
             return shape_form
@@ -367,13 +367,12 @@ class BarycenterRegularization(ShapeRegularizationTerm):
                 * (
                     self.current_barycenter_x
                     / self.current_volume
-                    * fenics.div(self.test_vector_field)
+                    * ufl.div(self.test_vector_field)
                     + 1
                     / self.current_volume
                     * (
                         self.test_vector_field[0]
-                        + self.spatial_coordinate[0]
-                        * fenics.div(self.test_vector_field)
+                        + self.spatial_coordinate[0] * ufl.div(self.test_vector_field)
                     )
                 )
                 * self.dx
@@ -385,13 +384,12 @@ class BarycenterRegularization(ShapeRegularizationTerm):
                 * (
                     self.current_barycenter_y
                     / self.current_volume
-                    * fenics.div(self.test_vector_field)
+                    * ufl.div(self.test_vector_field)
                     + 1
                     / self.current_volume
                     * (
                         self.test_vector_field[1]
-                        + self.spatial_coordinate[1]
-                        * fenics.div(self.test_vector_field)
+                        + self.spatial_coordinate[1] * ufl.div(self.test_vector_field)
                     )
                 )
                 * self.dx
@@ -407,13 +405,13 @@ class BarycenterRegularization(ShapeRegularizationTerm):
                     * (
                         self.current_barycenter_z
                         / self.current_volume
-                        * fenics.div(self.test_vector_field)
+                        * ufl.div(self.test_vector_field)
                         + 1
                         / self.current_volume
                         * (
                             self.test_vector_field[2]
                             + self.spatial_coordinate[2]
-                            * fenics.div(self.test_vector_field)
+                            * ufl.div(self.test_vector_field)
                         )
                     )
                     * self.dx
