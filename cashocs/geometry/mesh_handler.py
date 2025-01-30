@@ -337,8 +337,8 @@ class _MeshHandler:
             self.l_frobenius = (
                 fenics.sqrt(
                     ufl.inner(
-                        fenics.grad(self.search_direction_container),
-                        fenics.grad(self.search_direction_container),
+                        ufl.grad(self.search_direction_container),
+                        ufl.grad(self.search_direction_container),
                     )
                 )
                 * self.test_dg0

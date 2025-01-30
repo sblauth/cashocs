@@ -25,6 +25,11 @@ from typing import TYPE_CHECKING
 import fenics
 import numpy as np
 
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+
 from cashocs import _utils
 from cashocs import log
 
@@ -59,7 +64,7 @@ class APrioriMeshTester:
         self.l_prior = (
             fenics.det(
                 fenics.Identity(self.mesh.geometric_dimension())
-                + fenics.grad(self.transformation_container)
+                + ufl.grad(self.transformation_container)
             )
             * fenics.TestFunction(dg_function_space)
             * dx

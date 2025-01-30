@@ -57,7 +57,7 @@ def t_grad(u: fenics.Function, n: fenics.FacetNormal) -> ufl_expr.Expr:
         The tangential gradient of u.
 
     """
-    return fenics.grad(u) - fenics.outer(fenics.grad(u) * n, n)
+    return ufl.grad(u) - fenics.outer(ufl.grad(u) * n, n)
 
 
 def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl_expr.Expr:
@@ -71,7 +71,7 @@ def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl_expr.Expr:
         The tangential divergence of u.
 
     """
-    return fenics.div(u) - ufl.inner(fenics.grad(u) * n, n)
+    return fenics.div(u) - ufl.inner(ufl.grad(u) * n, n)
 
 
 class ShapeRegularizationTerm(abc.ABC):
