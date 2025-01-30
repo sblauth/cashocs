@@ -88,7 +88,7 @@ def split_linear_forms(forms: list[ufl.Form]) -> tuple[list[ufl.Form], list[ufl.
         if rhs.empty():
             test_function = lhs.arguments()[0]
             mesh = lhs.ufl_domain()
-            dx = fenics.Measure("dx", mesh)
+            dx = ufl.Measure("dx", mesh)
             zero_form = (
                 ufl.dot(
                     fenics.Constant(np.zeros(test_function.ufl_shape)),

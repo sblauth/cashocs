@@ -51,7 +51,7 @@ class APrioriMeshTester:
 
         dg_function_space = fenics.FunctionSpace(self.mesh, "DG", 0)
         vector_cg_space = fenics.VectorFunctionSpace(self.mesh, "CG", 1)
-        dx = fenics.Measure("dx", domain=mesh)
+        dx = ufl.Measure("dx", domain=mesh)
 
         self.transformation_container = fenics.Function(vector_cg_space)
 

@@ -88,7 +88,7 @@ class ShapeRegularizationTerm(abc.ABC):
 
         self.config = self.db.config
         self.mesh = db.geometry_db.mesh
-        self.dx = fenics.Measure("dx", self.mesh)
+        self.dx = ufl.Measure("dx", self.mesh)
         self.use_relative_scaling = self.config.getboolean(
             "Regularization", "use_relative_scaling"
         )
@@ -233,7 +233,7 @@ class SurfaceRegularization(ShapeRegularizationTerm):
         """
         super().__init__(db)
 
-        self.ds = fenics.Measure("ds", self.mesh)
+        self.ds = ufl.Measure("ds", self.mesh)
         self.mu = self.config.getfloat("Regularization", "factor_surface")
         self.target_surface = self.config.getfloat("Regularization", "target_surface")
         if self.config.getboolean("Regularization", "use_initial_surface"):
@@ -522,7 +522,7 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         super().__init__(db)
 
         self.geometric_dimension = db.geometry_db.mesh.geometric_dimension()
-        self.ds = fenics.Measure("ds", self.mesh)
+        self.ds = ufl.Measure("ds", self.mesh)
         self.spatial_coordinate = fenics.SpatialCoordinate(self.mesh)
 
         self.a_curvature_matrix = fenics.PETScMatrix()

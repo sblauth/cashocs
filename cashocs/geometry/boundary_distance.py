@@ -131,7 +131,7 @@ def compute_boundary_distance_poisson(
 
     """
     cg1_space = fenics.FunctionSpace(mesh, "CG", 1)
-    dx = fenics.Measure("dx", domain=mesh)
+    dx = ufl.Measure("dx", domain=mesh)
 
     u = fenics.Function(cg1_space)
     v = fenics.TestFunction(cg1_space)

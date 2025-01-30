@@ -83,7 +83,7 @@ class Stiffness:
 
         self.inhomogeneous_mu = False
 
-        self.dx = fenics.Measure("dx", self.mesh)
+        self.dx = ufl.Measure("dx", self.mesh)
 
         self.use_distance_mu = self.config.getboolean(
             "ShapeGradient", "use_distance_mu"

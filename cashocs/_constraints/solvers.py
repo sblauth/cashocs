@@ -30,6 +30,11 @@ from cashocs import log
 from cashocs._constraints import constraints
 from cashocs._optimization import cost_functional
 
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+
 if TYPE_CHECKING:
     try:
         from ufl_legacy.core import expr as ufl_expr
@@ -177,7 +182,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
     def _project_pointwise_multiplier(
         self,
         project_terms: ufl_expr.Expr | list[ufl_expr.Expr],
-        measure: fenics.Measure,
+        measure: ufl.Measure,
         multiplier: fenics.Function,
         A_tensor: fenics.PETScMatrix,  # pylint: disable=invalid-name
         b_tensor: fenics.PETScVector,

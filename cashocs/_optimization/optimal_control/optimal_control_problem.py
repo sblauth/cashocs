@@ -524,7 +524,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
 
         """
         if riesz_scalar_products is None:
-            dx = fenics.Measure(
+            dx = ufl.Measure(
                 "dx", self.db.function_db.controls[0].function_space().mesh()
             )
             return [

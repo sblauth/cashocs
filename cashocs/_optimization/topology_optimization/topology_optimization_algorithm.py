@@ -27,7 +27,9 @@ import numpy as np
 
 try:
     from ufl_legacy import algorithms as ufl_algorithms
+    import ufl_legacy as ufl
 except ImportError:
+    import ufl
     from ufl import algorithms as ufl_algorithms
 
 from cashocs import _exceptions
@@ -113,7 +115,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
 
         self.projection = optimization_problem.projection
 
-    def _generate_measure(self) -> fenics.Measure:
+    def _generate_measure(self) -> ufl.Measure:
         """Generates the measure for projecting the topological derivative.
 
         Returns:
@@ -147,11 +149,11 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             self.form_handler.riesz_scalar_products[0].integrals()[0].subdomain_data()
         )
         if is_everywhere:
-            measure = fenics.Measure("dx", mesh)
+            measure = ufl.Measure("dx", mesh)
         else:
             measure = _utils.summation(
                 [
-                    fenics.Measure(
+                    ufl.Measure(
                         "dx", mesh, subdomain_data=subdomain_data, subdomain_id=id
                     )
                     for id in subdomain_id_list
