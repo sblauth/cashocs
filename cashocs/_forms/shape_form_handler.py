@@ -119,7 +119,7 @@ class Stiffness:
                 psi = fenics.TestFunction(self.cg_function_space)
 
                 # pylint: disable=invalid-name
-                self.A_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
+                self.A_mu = ufl.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
                 self.l_mu = fenics.Constant(0.0) * psi * self.dx
 
                 self.bcs_mu = _utils.create_dirichlet_bcs(
@@ -604,7 +604,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                 fenics.Constant(2)
                 * self.mu_lame
                 / pow(self.volumes, self.inhomogeneous_exponent)
-                * fenics.inner(eps(trial), eps(test))
+                * ufl.inner(eps(trial), eps(test))
                 * self.dx
                 + fenics.Constant(lambda_lame)
                 / pow(self.volumes, self.inhomogeneous_exponent)
@@ -613,7 +613,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                 * self.dx
                 + fenics.Constant(damping_factor)
                 / pow(self.volumes, self.inhomogeneous_exponent)
-                * fenics.inner(trial, test)
+                * ufl.inner(trial, test)
                 * self.dx
             )
 
@@ -707,14 +707,14 @@ class ShapeFormHandler(form_handler.FormHandler):
             delta = self.config.getfloat("ShapeGradient", "damping_factor")
             eps = self.config.getfloat("ShapeGradient", "p_laplacian_stabilization")
             kappa = pow(
-                fenics.inner(
+                ufl.inner(
                     fenics.grad(self.db.function_db.gradient[0]),
                     fenics.grad(self.db.function_db.gradient[0]),
                 ),
                 (p - 2) / 2.0,
             )
             p_laplace_form = (
-                fenics.inner(
+                ufl.inner(
                     self.mu_lame
                     * (fenics.Constant(eps) + kappa)
                     * fenics.grad(self.db.function_db.gradient[0]),

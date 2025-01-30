@@ -29,6 +29,11 @@ import weakref
 import fenics
 import numpy as np
 
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import io
@@ -331,7 +336,7 @@ class _MeshHandler:
             self.a_frobenius = self.trial_dg0 * self.test_dg0 * self.dx
             self.l_frobenius = (
                 fenics.sqrt(
-                    fenics.inner(
+                    ufl.inner(
                         fenics.grad(self.search_direction_container),
                         fenics.grad(self.search_direction_container),
                     )

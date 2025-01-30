@@ -147,7 +147,7 @@ bcs = no_slip_bcs + [bc_lid, bc_pressure]
 #
 # The definition of the optimization problem is in complete analogy to the previous
 # ones we considered. The only difference is the fact that we now have to use
-# {py:func}`fenics.inner` to multiply the vector valued functions {python}`u`,
+# {py:func}`ufl.inner` to multiply the vector valued functions {python}`u`,
 # {python}`u_d` and {python}`c`.
 
 alpha = 1e-5

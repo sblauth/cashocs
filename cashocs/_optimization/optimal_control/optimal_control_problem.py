@@ -528,7 +528,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                 "dx", self.db.function_db.controls[0].function_space().mesh()
             )
             return [
-                fenics.inner(
+                ufl.inner(
                     fenics.TrialFunction(self.db.function_db.control_spaces[i]),
                     fenics.TestFunction(self.db.function_db.control_spaces[i]),
                 )

@@ -420,8 +420,8 @@ class ConditionNumberCalculator(MeshQualityCalculator):
             * dx
         )
         rhs = (
-            fenics.sqrt(fenics.inner(jac, jac))
-            * fenics.sqrt(fenics.inner(inv, inv))
+            fenics.sqrt(ufl.inner(jac, jac))
+            * fenics.sqrt(ufl.inner(inv, inv))
             * fenics.TestFunction(function_space_dg0)
             * dx
         )

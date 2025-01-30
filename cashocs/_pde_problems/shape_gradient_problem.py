@@ -207,11 +207,11 @@ class _PLaplaceProjector:
         self.form_list = []
         for p in self.p_list:
             kappa = pow(
-                fenics.inner(fenics.grad(self.solution), fenics.grad(self.solution)),
+                ufl.inner(fenics.grad(self.solution), fenics.grad(self.solution)),
                 (p - 2) / 2.0,
             )
             self.form_list.append(
-                fenics.inner(
+                ufl.inner(
                     self.mu_lame
                     * (fenics.Constant(eps) + kappa)
                     * fenics.grad(self.solution),

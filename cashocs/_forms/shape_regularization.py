@@ -71,7 +71,7 @@ def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl_expr.Expr:
         The tangential divergence of u.
 
     """
-    return fenics.div(u) - fenics.inner(fenics.grad(u) * n, n)
+    return fenics.div(u) - ufl.inner(fenics.grad(u) * n, n)
 
 
 class ShapeRegularizationTerm(abc.ABC):
@@ -535,14 +535,14 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         n = fenics.FacetNormal(self.mesh)
         x = fenics.SpatialCoordinate(self.mesh)
         self.a_curvature = (
-            fenics.inner(
+            ufl.inner(
                 fenics.TrialFunction(self.db.function_db.control_spaces[0]),
                 fenics.TestFunction(self.db.function_db.control_spaces[0]),
             )
             * self.ds
         )
         self.l_curvature = (
-            fenics.inner(
+            ufl.inner(
                 t_grad(x, n),
                 t_grad(fenics.TestFunction(self.db.function_db.control_spaces[0]), n),
             )
@@ -568,7 +568,7 @@ class CurvatureRegularization(ShapeRegularizationTerm):
             identity = fenics.Identity(self.geometric_dimension)
 
             shape_form = fenics.Constant(self.mu) * (
-                fenics.inner(
+                ufl.inner(
                     (identity - (t_grad(x, n) + (t_grad(x, n)).T))
                     * t_grad(self.test_vector_field, n),
                     t_grad(self.kappa_curvature, n),
@@ -599,7 +599,7 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         if self.is_active:
             self._compute_curvature()
             curvature_val = fenics.assemble(
-                fenics.inner(self.kappa_curvature, self.kappa_curvature) * self.ds
+                ufl.inner(self.kappa_curvature, self.kappa_curvature) * self.ds
             )
             value += 0.5 * self.mu * curvature_val
 
@@ -626,7 +626,7 @@ class CurvatureRegularization(ShapeRegularizationTerm):
             if not self.db.parameter_db.temp_dict:
                 self._compute_curvature()
                 value = 0.5 * fenics.assemble(
-                    fenics.inner(self.kappa_curvature, self.kappa_curvature) * self.ds
+                    ufl.inner(self.kappa_curvature, self.kappa_curvature) * self.ds
                 )
 
                 if abs(value) < 1e-15:

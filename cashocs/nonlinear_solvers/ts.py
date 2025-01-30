@@ -223,7 +223,7 @@ class TSPseudoSolver:
             if len(test_shape) == 1:
                 mass_matrix_part = ufl.dot(split_trial[i], split_test[i]) * dx
             elif len(test_shape) == 2:
-                mass_matrix_part = fenics.inner(split_trial[i], split_test[i]) * dx
+                mass_matrix_part = ufl.inner(split_trial[i], split_test[i]) * dx
             else:
                 mass_matrix_part = split_trial[i] * split_test[i] * dx
 
