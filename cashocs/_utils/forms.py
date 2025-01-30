@@ -295,6 +295,6 @@ def bilinear_boundary_form_modification(forms: list[ufl.Form]) -> list[ufl.Form]
         trial, test = form.arguments()
         mesh = trial.function_space().mesh()
         dx = fenics.Measure("dx", domain=mesh)
-        mod_forms.append(form + fenics.Constant(0.0) * fenics.dot(trial, test) * dx)
+        mod_forms.append(form + fenics.Constant(0.0) * ufl.dot(trial, test) * dx)
 
     return mod_forms

@@ -476,7 +476,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
             for coeff in self.material_derivative_coeffs:
                 material_derivative = self.lagrangian.derivative(
-                    coeff, fenics.dot(fenics.grad(coeff), self.test_vector_field)
+                    coeff, ufl.dot(fenics.grad(coeff), self.test_vector_field)
                 )
 
                 material_derivative = ufl_algorithms.expand_derivatives(
@@ -722,7 +722,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                 )
                 * self.dx
                 + fenics.Constant(delta)
-                * fenics.dot(self.db.function_db.gradient[0], self.test_vector_field)
+                * ufl.dot(self.db.function_db.gradient[0], self.test_vector_field)
                 * self.dx
             )
         else:

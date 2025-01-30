@@ -219,7 +219,7 @@ class _PLaplaceProjector:
                 )
                 * dx
                 + fenics.Constant(delta)
-                * fenics.dot(self.solution, self.test_vector_field)
+                * ufl.dot(self.solution, self.test_vector_field)
                 * dx
             )
 
