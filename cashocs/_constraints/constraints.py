@@ -53,7 +53,7 @@ class Constraint(abc.ABC):
     def __init__(
         self,
         variable_function: ufl.Form | ufl_expr.Expr,
-        measure: fenics.Measure | None = None,
+        measure: ufl.Measure | None = None,
     ) -> None:
         """Initializes self.
 
@@ -94,7 +94,7 @@ class EqualityConstraint(Constraint):
         self,
         variable_function: ufl.Form | ufl_expr.Expr,
         target: float,
-        measure: fenics.Measure | None = None,
+        measure: ufl.Measure | None = None,
     ) -> None:
         """Initializes self.
 
@@ -154,7 +154,7 @@ class InequalityConstraint(Constraint):
         variable_function: ufl.Form | ufl_expr.Expr,
         lower_bound: float | fenics.Function | None = None,
         upper_bound: float | fenics.Function | None = None,
-        measure: fenics.Measure | None = None,
+        measure: ufl.Measure | None = None,
     ) -> None:
         """Initializes self.
 

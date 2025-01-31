@@ -52,7 +52,7 @@ class _EmptyMeasure(ufl.Measure):
 
     """
 
-    def __init__(self, measure: fenics.Measure) -> None:
+    def __init__(self, measure: ufl.Measure) -> None:
         """Initializes self.
 
         Args:
@@ -76,11 +76,11 @@ class _EmptyMeasure(ufl.Measure):
 
 
 def generate_measure(
-    idx: list[int | str], measure: fenics.Measure
-) -> fenics.Measure | _EmptyMeasure:
+    idx: list[int | str], measure: ufl.Measure
+) -> ufl.Measure | _EmptyMeasure:
     """Generates a measure based on indices.
 
-    Generates a :py:class:`fenics.MeasureSum` or
+    Generates a :py:class:`ufl.MeasureSum` or
     :py:class:`_EmptyMeasure <cashocs.geometry._EmptyMeasure>` object corresponding to
     ``measure`` and the subdomains / boundaries specified in idx. This is a convenient
     shortcut to writing ``dx(1) + dx(2) + dx(3)`` in case many measures are involved.

@@ -27,6 +27,11 @@ import fenics
 from cashocs import _utils
 from cashocs._database import database
 
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+
 if TYPE_CHECKING:
     from cashocs import _typing
     from cashocs import io
@@ -84,7 +89,7 @@ class FormHandler(abc.ABC):
         self.cost_functional_shift: float = 0.0
         self.lagrangian: cf.Lagrangian = self.db.form_db.lagrangian
 
-        self.dx: fenics.Measure = self.db.geometry_db.dx
+        self.dx: ufl.Measure = self.db.geometry_db.dx
 
         self.opt_algo: str = _utils.optimization_algorithm_configuration(self.config)
 
