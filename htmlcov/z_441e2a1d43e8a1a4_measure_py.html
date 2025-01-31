@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_441e2a1d43e8a1a4_mesh_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-01-30 22:34 +0000
+            created at 2025-01-31 08:58 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -134,7 +134,7 @@
     <p class="pln"><span class="n"><a id="t52" href="#t52">52</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t53" href="#t53">53</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t54" href="#t54">54</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t55" href="#t55">55</a></span><span class="t">    <span class="key">def</span> <span class="nam">__init__</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">measure</span><span class="op">:</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Measure</span><span class="op">)</span> <span class="op">-></span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t55" href="#t55">55</a></span><span class="t">    <span class="key">def</span> <span class="nam">__init__</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">measure</span><span class="op">:</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">Measure</span><span class="op">)</span> <span class="op">-></span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t56" href="#t56">56</a></span><span class="t">        <span class="str">"""Initializes self.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t57" href="#t57">57</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t58" href="#t58">58</a></span><span class="t"><span class="str">        Args:</span>&nbsp;</span><span class="r"></span></p>
@@ -158,11 +158,11 @@
     <p class="pln"><span class="n"><a id="t76" href="#t76">76</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t77" href="#t77">77</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t78" href="#t78">78</a></span><span class="t"><span class="key">def</span> <span class="nam">generate_measure</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t79" href="#t79">79</a></span><span class="t">    <span class="nam">idx</span><span class="op">:</span> <span class="nam">list</span><span class="op">[</span><span class="nam">int</span> <span class="op">|</span> <span class="nam">str</span><span class="op">]</span><span class="op">,</span> <span class="nam">measure</span><span class="op">:</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Measure</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t80" href="#t80">80</a></span><span class="t"><span class="op">)</span> <span class="op">-></span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Measure</span> <span class="op">|</span> <span class="nam">_EmptyMeasure</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t79" href="#t79">79</a></span><span class="t">    <span class="nam">idx</span><span class="op">:</span> <span class="nam">list</span><span class="op">[</span><span class="nam">int</span> <span class="op">|</span> <span class="nam">str</span><span class="op">]</span><span class="op">,</span> <span class="nam">measure</span><span class="op">:</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">Measure</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t80" href="#t80">80</a></span><span class="t"><span class="op">)</span> <span class="op">-></span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">Measure</span> <span class="op">|</span> <span class="nam">_EmptyMeasure</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t81" href="#t81">81</a></span><span class="t">    <span class="str">"""Generates a measure based on indices.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t82" href="#t82">82</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t83" href="#t83">83</a></span><span class="t"><span class="str">    Generates a :py:class:`fenics.MeasureSum` or</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t83" href="#t83">83</a></span><span class="t"><span class="str">    Generates a :py:class:`ufl.MeasureSum` or</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t84" href="#t84">84</a></span><span class="t"><span class="str">    :py:class:`_EmptyMeasure &lt;cashocs.geometry._EmptyMeasure>` object corresponding to</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t85" href="#t85">85</a></span><span class="t"><span class="str">    ``measure`` and the subdomains / boundaries specified in idx. This is a convenient</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t86" href="#t86">86</a></span><span class="t"><span class="str">    shortcut to writing ``dx(1) + dx(2) + dx(3)`` in case many measures are involved.</span>&nbsp;</span><span class="r"></span></p>
@@ -292,7 +292,7 @@
             <a class="nav" href="z_441e2a1d43e8a1a4_mesh_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-01-30 22:34 +0000
+            created at 2025-01-31 08:58 +0000
         </p>
     </div>
 </footer>

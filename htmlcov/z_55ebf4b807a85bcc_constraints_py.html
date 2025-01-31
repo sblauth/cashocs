@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_55ebf4b807a85bcc_solvers_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-01-30 22:34 +0000
+            created at 2025-01-31 08:58 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -135,7 +135,7 @@
     <p class="run"><span class="n"><a id="t53" href="#t53">53</a></span><span class="t">    <span class="key">def</span> <span class="nam">__init__</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t54" href="#t54">54</a></span><span class="t">        <span class="nam">self</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t55" href="#t55">55</a></span><span class="t">        <span class="nam">variable_function</span><span class="op">:</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">Form</span> <span class="op">|</span> <span class="nam">ufl_expr</span><span class="op">.</span><span class="nam">Expr</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t56" href="#t56">56</a></span><span class="t">        <span class="nam">measure</span><span class="op">:</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Measure</span> <span class="op">|</span> <span class="key">None</span> <span class="op">=</span> <span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t56" href="#t56">56</a></span><span class="t">        <span class="nam">measure</span><span class="op">:</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">Measure</span> <span class="op">|</span> <span class="key">None</span> <span class="op">=</span> <span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t57" href="#t57">57</a></span><span class="t">    <span class="op">)</span> <span class="op">-></span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t58" href="#t58">58</a></span><span class="t">        <span class="str">"""Initializes self.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t59" href="#t59">59</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -176,7 +176,7 @@
     <p class="pln"><span class="n"><a id="t94" href="#t94">94</a></span><span class="t">        <span class="nam">self</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t95" href="#t95">95</a></span><span class="t">        <span class="nam">variable_function</span><span class="op">:</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">Form</span> <span class="op">|</span> <span class="nam">ufl_expr</span><span class="op">.</span><span class="nam">Expr</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t96" href="#t96">96</a></span><span class="t">        <span class="nam">target</span><span class="op">:</span> <span class="nam">float</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t97" href="#t97">97</a></span><span class="t">        <span class="nam">measure</span><span class="op">:</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Measure</span> <span class="op">|</span> <span class="key">None</span> <span class="op">=</span> <span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t97" href="#t97">97</a></span><span class="t">        <span class="nam">measure</span><span class="op">:</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">Measure</span> <span class="op">|</span> <span class="key">None</span> <span class="op">=</span> <span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t98" href="#t98">98</a></span><span class="t">    <span class="op">)</span> <span class="op">-></span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t99" href="#t99">99</a></span><span class="t">        <span class="str">"""Initializes self.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t100" href="#t100">100</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -236,7 +236,7 @@
     <p class="pln"><span class="n"><a id="t154" href="#t154">154</a></span><span class="t">        <span class="nam">variable_function</span><span class="op">:</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">Form</span> <span class="op">|</span> <span class="nam">ufl_expr</span><span class="op">.</span><span class="nam">Expr</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t155" href="#t155">155</a></span><span class="t">        <span class="nam">lower_bound</span><span class="op">:</span> <span class="nam">float</span> <span class="op">|</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Function</span> <span class="op">|</span> <span class="key">None</span> <span class="op">=</span> <span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t156" href="#t156">156</a></span><span class="t">        <span class="nam">upper_bound</span><span class="op">:</span> <span class="nam">float</span> <span class="op">|</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Function</span> <span class="op">|</span> <span class="key">None</span> <span class="op">=</span> <span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t157" href="#t157">157</a></span><span class="t">        <span class="nam">measure</span><span class="op">:</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Measure</span> <span class="op">|</span> <span class="key">None</span> <span class="op">=</span> <span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t157" href="#t157">157</a></span><span class="t">        <span class="nam">measure</span><span class="op">:</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">Measure</span> <span class="op">|</span> <span class="key">None</span> <span class="op">=</span> <span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t158" href="#t158">158</a></span><span class="t">    <span class="op">)</span> <span class="op">-></span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t159" href="#t159">159</a></span><span class="t">        <span class="str">"""Initializes self.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t160" href="#t160">160</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -363,7 +363,7 @@
             <a class="nav" href="z_55ebf4b807a85bcc_solvers_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-01-30 22:34 +0000
+            created at 2025-01-31 08:58 +0000
         </p>
     </div>
 </footer>

@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_b6bdd1693bb45e75___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-01-30 22:34 +0000
+            created at 2025-01-31 08:58 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -606,11 +606,11 @@
     <p class="pln"><span class="n"><a id="t524" href="#t524">524</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t525" href="#t525">525</a></span><span class="t"><span class="str">        """</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t526" href="#t526">526</a></span><span class="t">        <span class="key">if</span> <span class="nam">riesz_scalar_products</span> <span class="key">is</span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t527" href="#t527">527</a></span><span class="t">            <span class="nam">dx</span> <span class="op">=</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Measure</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t527" href="#t527">527</a></span><span class="t">            <span class="nam">dx</span> <span class="op">=</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">Measure</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t528" href="#t528">528</a></span><span class="t">                <span class="str">"dx"</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">db</span><span class="op">.</span><span class="nam">function_db</span><span class="op">.</span><span class="nam">controls</span><span class="op">[</span><span class="num">0</span><span class="op">]</span><span class="op">.</span><span class="nam">function_space</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">mesh</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t529" href="#t529">529</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t530" href="#t530">530</a></span><span class="t">            <span class="key">return</span> <span class="op">[</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t531" href="#t531">531</a></span><span class="t">                <span class="nam">fenics</span><span class="op">.</span><span class="nam">inner</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t531" href="#t531">531</a></span><span class="t">                <span class="nam">ufl</span><span class="op">.</span><span class="nam">inner</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t532" href="#t532">532</a></span><span class="t">                    <span class="nam">fenics</span><span class="op">.</span><span class="nam">TrialFunction</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">db</span><span class="op">.</span><span class="nam">function_db</span><span class="op">.</span><span class="nam">control_spaces</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t533" href="#t533">533</a></span><span class="t">                    <span class="nam">fenics</span><span class="op">.</span><span class="nam">TestFunction</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">db</span><span class="op">.</span><span class="nam">function_db</span><span class="op">.</span><span class="nam">control_spaces</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t534" href="#t534">534</a></span><span class="t">                <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -629,7 +629,7 @@
             <a class="nav" href="z_b6bdd1693bb45e75___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-01-30 22:34 +0000
+            created at 2025-01-31 08:58 +0000
         </p>
     </div>
 </footer>

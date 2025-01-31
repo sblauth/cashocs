@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_441e2a1d43e8a1a4___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-01-30 22:34 +0000
+            created at 2025-01-31 08:58 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -155,7 +155,7 @@
     <p class="run"><span class="n"><a id="t73" href="#t73">73</a></span><span class="t">    <span class="nam">rhs_list</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t74" href="#t74">74</a></span><span class="t">    <span class="key">for</span> <span class="nam">i</span> <span class="key">in</span> <span class="nam">range</span><span class="op">(</span><span class="nam">len</span><span class="op">(</span><span class="nam">forms</span><span class="op">)</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t75" href="#t75">75</a></span><span class="t">        <span class="key">try</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t76" href="#t76">76</a></span><span class="t">            <span class="nam">lhs</span><span class="op">,</span> <span class="nam">rhs</span> <span class="op">=</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">system</span><span class="op">(</span><span class="nam">forms</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t76" href="#t76">76</a></span><span class="t">            <span class="nam">lhs</span><span class="op">,</span> <span class="nam">rhs</span> <span class="op">=</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">system</span><span class="op">(</span><span class="nam">forms</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t77" href="#t77">77</a></span><span class="t">        <span class="key">except</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">log</span><span class="op">.</span><span class="nam">UFLException</span> <span class="key">as</span> <span class="nam">ufl_exception</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="exc show_exc"><span class="n"><a id="t78" href="#t78">78</a></span><span class="t">            <span class="key">raise</span> <span class="nam">_exceptions</span><span class="op">.</span><span class="nam">CashocsException</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t79" href="#t79">79</a></span><span class="t">                <span class="str">"The state system could not be transferred to a linear "</span>&nbsp;</span><span class="r"></span></p>
@@ -170,9 +170,9 @@
     <p class="run"><span class="n"><a id="t88" href="#t88">88</a></span><span class="t">        <span class="key">if</span> <span class="nam">rhs</span><span class="op">.</span><span class="nam">empty</span><span class="op">(</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t89" href="#t89">89</a></span><span class="t">            <span class="nam">test_function</span> <span class="op">=</span> <span class="nam">lhs</span><span class="op">.</span><span class="nam">arguments</span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="num">0</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t90" href="#t90">90</a></span><span class="t">            <span class="nam">mesh</span> <span class="op">=</span> <span class="nam">lhs</span><span class="op">.</span><span class="nam">ufl_domain</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t91" href="#t91">91</a></span><span class="t">            <span class="nam">dx</span> <span class="op">=</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Measure</span><span class="op">(</span><span class="str">"dx"</span><span class="op">,</span> <span class="nam">mesh</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t91" href="#t91">91</a></span><span class="t">            <span class="nam">dx</span> <span class="op">=</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">Measure</span><span class="op">(</span><span class="str">"dx"</span><span class="op">,</span> <span class="nam">mesh</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t92" href="#t92">92</a></span><span class="t">            <span class="nam">zero_form</span> <span class="op">=</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t93" href="#t93">93</a></span><span class="t">                <span class="nam">fenics</span><span class="op">.</span><span class="nam">dot</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t93" href="#t93">93</a></span><span class="t">                <span class="nam">ufl</span><span class="op">.</span><span class="nam">dot</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t94" href="#t94">94</a></span><span class="t">                    <span class="nam">fenics</span><span class="op">.</span><span class="nam">Constant</span><span class="op">(</span><span class="nam">np</span><span class="op">.</span><span class="nam">zeros</span><span class="op">(</span><span class="nam">test_function</span><span class="op">.</span><span class="nam">ufl_shape</span><span class="op">)</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t95" href="#t95">95</a></span><span class="t">                    <span class="nam">test_function</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t96" href="#t96">96</a></span><span class="t">                <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -796,7 +796,7 @@
             <a class="nav" href="z_441e2a1d43e8a1a4___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-01-30 22:34 +0000
+            created at 2025-01-31 08:58 +0000
         </p>
     </div>
 </footer>
