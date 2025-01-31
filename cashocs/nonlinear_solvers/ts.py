@@ -203,8 +203,8 @@ class TSPseudoSolver:
 
         dx = ufl.Measure("dx", domain=self.mesh)
 
-        split_trial = fenics.split(trial)
-        split_test = fenics.split(test)
+        split_trial = ufl.split(trial)
+        split_test = ufl.split(test)
 
         split_trial = tuple(
             fun

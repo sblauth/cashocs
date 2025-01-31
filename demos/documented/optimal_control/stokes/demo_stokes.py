@@ -101,7 +101,7 @@ v, q = split(vq)
 c = Function(U)
 
 # Here, {python}`up` plays the role of the state variable, having components {python}`u`
-# and {python}`p`, which are extracted using the {py:func}`fenics.split` command. The
+# and {python}`p`, which are extracted using the {py:func}`ufl.split` command. The
 # adjoint state {python}`vq`  is structured in exactly the same fashion. See
 # {ref}`demo_monolithic_problems` for more details. Similarly to there, {python}`v` will
 # play the role of the adjoint velocity, and {python}`q` the one of the adjoint
