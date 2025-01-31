@@ -226,7 +226,7 @@ def compute_boundary_distance_eikonal(
 
     u_curr = fenics.Function(function_space)
     u_prev = fenics.Function(function_space)
-    norm_u_prev = fenics.sqrt(ufl.dot(ufl.grad(u_prev), ufl.grad(u_prev)))
+    norm_u_prev = ufl.sqrt(ufl.dot(ufl.grad(u_prev), ufl.grad(u_prev)))
 
     if (boundaries is not None) and (boundary_idcs is not None):
         if len(boundary_idcs) > 0:
@@ -257,7 +257,7 @@ def compute_boundary_distance_eikonal(
 
     residual_form = (
         pow(
-            fenics.sqrt(ufl.dot(ufl.grad(u_curr), ufl.grad(u_curr)))
+            ufl.sqrt(ufl.dot(ufl.grad(u_curr), ufl.grad(u_curr)))
             - fenics.Constant(1.0),
             2,
         )

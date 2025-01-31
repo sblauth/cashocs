@@ -335,7 +335,7 @@ class _MeshHandler:
         if self.angle_change != float("inf"):
             self.a_frobenius = self.trial_dg0 * self.test_dg0 * self.dx
             self.l_frobenius = (
-                fenics.sqrt(
+                ufl.sqrt(
                     ufl.inner(
                         ufl.grad(self.search_direction_container),
                         ufl.grad(self.search_direction_container),
