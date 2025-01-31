@@ -62,8 +62,8 @@ class APrioriMeshTester:
             * dx
         )
         self.l_prior = (
-            fenics.det(
-                fenics.Identity(self.mesh.geometric_dimension())
+            ufl.det(
+                ufl.Identity(self.mesh.geometric_dimension())
                 + ufl.grad(self.transformation_container)
             )
             * fenics.TestFunction(dg_function_space)

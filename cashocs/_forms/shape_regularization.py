@@ -57,7 +57,7 @@ def t_grad(u: fenics.Function, n: fenics.FacetNormal) -> ufl_expr.Expr:
         The tangential gradient of u.
 
     """
-    return ufl.grad(u) - fenics.outer(ufl.grad(u) * n, n)
+    return ufl.grad(u) - ufl.outer(ufl.grad(u) * n, n)
 
 
 def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl_expr.Expr:
@@ -563,7 +563,7 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         if self.is_active:
             x = fenics.SpatialCoordinate(self.mesh)
             n = fenics.FacetNormal(self.mesh)
-            identity = fenics.Identity(self.geometric_dimension)
+            identity = ufl.Identity(self.geometric_dimension)
 
             shape_form = fenics.Constant(self.mu) * (
                 ufl.inner(
