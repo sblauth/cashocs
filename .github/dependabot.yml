@@ -8,15 +8,21 @@ updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
-      interval: "daily"
-      time: "06:00"
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
       timezone: Europe/Berlin
+    assignees:
+      - "sbblauth"
 
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "daily"
-      time: "06:00"
+      interval: "weekly"
+      day: "monday"
+      time: "03:00"
       timezone: Europe/Berlin
     allow:
       - dependency-type: "all"
+    assignees:
+      - "sblauth"
