@@ -38,7 +38,7 @@ if TYPE_CHECKING:
 
 
 def _get_mesh_stats(
-    mode: Literal["import", "generate"] = "import"
+    mode: Literal["import", "generate"] = "import",
 ) -> Callable[..., Callable[..., _typing.MeshTuple]]:
     """A decorator for mesh importing / generating function which logs stats.
 
@@ -51,7 +51,7 @@ def _get_mesh_stats(
     """
 
     def decorator_stats(
-        func: Callable[..., _typing.MeshTuple]
+        func: Callable[..., _typing.MeshTuple],
     ) -> Callable[..., _typing.MeshTuple]:
         """A decorator for a mesh generating function.
 
