@@ -75,7 +75,7 @@
 | cashocs/geometry/mesh\_testing.py                                                  |       63 |        4 |     94% |163, 169-170, 222 |
 | cashocs/geometry/quality.py                                                        |       93 |        6 |     94% |308, 346, 381, 444, 474, 498 |
 | cashocs/io/\_\_init\_\_.py                                                         |       17 |        0 |    100% |           |
-| cashocs/io/config.py                                                               |      139 |        3 |     98% |33, 711-712 |
+| cashocs/io/config.py                                                               |      138 |        4 |     97% |33, 72, 714-715 |
 | cashocs/io/function.py                                                             |       21 |       15 |     29% |58-73, 93-99 |
 | cashocs/io/managers.py                                                             |      247 |       12 |     95% |365, 379, 401, 632-638, 664-668 |
 | cashocs/io/mesh.py                                                                 |      235 |       32 |     86% |91, 146-150, 283-308, 334, 363-364, 397, 553-554, 558-560, 631, 664 |
@@ -91,7 +91,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      381 |       42 |     89% |165, 266, 349-354, 454, 541-542, 672-674, 681-683, 710-744, 929, 958-960, 970-972, 986-987 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      395 |       55 |     86% |167, 269, 344-345, 439, 516-517, 532-559, 682-683, 700-702, 708-710, 742-782, 954, 981-983, 993-995, 1009-1010 |
 | cashocs/verification.py                                                            |      123 |        3 |     98% |214-215, 247 |
-|                                                                          **TOTAL** | **7481** |  **615** | **92%** |           |
+|                                                                          **TOTAL** | **7480** |  **616** | **92%** |           |
 
 
 ## Setup coverage badge
