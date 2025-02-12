@@ -67,7 +67,7 @@ def _check_for_config_list(string: str) -> bool:
             char.isdigit()
             or char.isalpha()
             or char.isspace()
-            or char in ["[", "]", ".", ",", "-", '"', "_"]
+            or char in ["[", "]", ".", ",", "-", '"', "'", "_"]
         ):
             return result
 
