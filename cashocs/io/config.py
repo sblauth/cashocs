@@ -63,7 +63,12 @@ def _check_for_config_list(string: str) -> bool:
     result = False
 
     for char in string:
-        if not (char.isdigit() or char.isspace() or char in ["[", "]", ".", ",", "-"]):
+        if not (
+            char.isdigit()
+            or char.isalpha()
+            or char.isspace()
+            or char in ["[", "]", ".", ",", "-", '"', "_"]
+        ):
             return result
 
     if string[0] != "[":
@@ -71,9 +76,7 @@ def _check_for_config_list(string: str) -> bool:
     if string[-1] != "]":
         return result
 
-    result = True
-
-    return result
+    return True
 
 
 class Config(ConfigParser):
