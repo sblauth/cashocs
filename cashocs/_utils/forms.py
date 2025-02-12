@@ -120,7 +120,7 @@ def min_(a: float | fenics.Function, b: float | fenics.Function) -> ufl.core.exp
 def moreau_yosida_regularization(
     term: ufl.core.expr.Expr,
     gamma: float,
-    measure: fenics.Measure,
+    measure: ufl.Measure,
     lower_threshold: float | fenics.Function | None = None,
     upper_threshold: float | fenics.Function | None = None,
     shift_lower: float | fenics.Function | None = None,
@@ -294,7 +294,7 @@ def bilinear_boundary_form_modification(forms: list[ufl.Form]) -> list[ufl.Form]
     for form in forms:
         trial, test = form.arguments()
         mesh = trial.function_space().mesh()
-        dx = fenics.Measure("dx", domain=mesh)
-        mod_forms.append(form + fenics.Constant(0.0) * fenics.dot(trial, test) * dx)
+        dx = ufl.Measure("dx", domain=mesh)
+        mod_forms.append(form + fenics.Constant(0.0) * ufl.dot(trial, test) * dx)
 
     return mod_forms

@@ -131,12 +131,12 @@ def compute_boundary_distance_poisson(
 
     """
     cg1_space = fenics.FunctionSpace(mesh, "CG", 1)
-    dx = fenics.Measure("dx", domain=mesh)
+    dx = ufl.Measure("dx", domain=mesh)
 
     u = fenics.Function(cg1_space)
     v = fenics.TestFunction(cg1_space)
     poisson_form = (
-        fenics.dot(fenics.grad(u), fenics.grad(v)) * dx - fenics.Constant(1.0) * v * dx
+        ufl.dot(ufl.grad(u), ufl.grad(v)) * dx - fenics.Constant(1.0) * v * dx
     )
 
     if (boundaries is not None) and (boundary_idcs is not None):
@@ -226,7 +226,7 @@ def compute_boundary_distance_eikonal(
 
     u_curr = fenics.Function(function_space)
     u_prev = fenics.Function(function_space)
-    norm_u_prev = fenics.sqrt(fenics.dot(fenics.grad(u_prev), fenics.grad(u_prev)))
+    norm_u_prev = ufl.sqrt(ufl.dot(ufl.grad(u_prev), ufl.grad(u_prev)))
 
     if (boundaries is not None) and (boundary_idcs is not None):
         if len(boundary_idcs) > 0:
@@ -246,18 +246,18 @@ def compute_boundary_distance_eikonal(
             fenics.CompiledSubDomain("on_boundary"),
         )
 
-    lhs = fenics.dot(fenics.grad(u), fenics.grad(v)) * dx
+    lhs = ufl.dot(ufl.grad(u), ufl.grad(v)) * dx
     rhs = fenics.Constant(1.0) * v * dx
 
     _utils.assemble_and_solve_linear(
         lhs, rhs, bcs, fun=u_curr, ksp_options=ksp_options, comm=comm
     )
 
-    rhs = fenics.dot(fenics.grad(u_prev) / norm_u_prev, fenics.grad(v)) * dx
+    rhs = ufl.dot(ufl.grad(u_prev) / norm_u_prev, ufl.grad(v)) * dx
 
     residual_form = (
         pow(
-            fenics.sqrt(fenics.dot(fenics.grad(u_curr), fenics.grad(u_curr)))
+            ufl.sqrt(ufl.dot(ufl.grad(u_curr), ufl.grad(u_curr)))
             - fenics.Constant(1.0),
             2,
         )

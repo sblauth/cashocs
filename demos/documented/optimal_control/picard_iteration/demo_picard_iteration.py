@@ -128,7 +128,7 @@ bcs = [bcs_y, bcs_z]
 #
 # The cost functional is defined as in {ref}`demo_monolithic_problems`, the only
 # difference is that {python}`y` and {python}`z` now are {py:class}`fenics.Function` objects, whereas
-# they were generated with the {py:func}`fenics.split` command previously
+# they were generated with the {py:func}`ufl.split` command previously
 
 y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)
 z_d = Expression("sin(4*pi*x[0])*sin(4*pi*x[1])", degree=1)

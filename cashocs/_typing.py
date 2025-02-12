@@ -30,6 +30,11 @@ from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import shape_optimization
 from cashocs._optimization import topology_optimization
 
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+
 OptimizationProblem = (
     shape_optimization.ShapeOptimizationProblem
     | optimal_control.OptimalControlProblem
@@ -43,9 +48,9 @@ MeshTuple = tuple[
     fenics.Mesh,
     fenics.MeshFunction,
     fenics.MeshFunction,
-    fenics.Measure,
-    fenics.Measure,
-    fenics.Measure,
+    ufl.Measure,
+    ufl.Measure,
+    ufl.Measure,
 ]
 SolutionAlgorithm = optimization_algorithms.OptimizationAlgorithm
 
