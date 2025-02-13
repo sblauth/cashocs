@@ -61,9 +61,9 @@
 | cashocs/\_pde\_problems/shape\_gradient\_problem.py                                |       90 |        5 |     94% |84, 230, 233-235 |
 | cashocs/\_pde\_problems/state\_problem.py                                          |       87 |        7 |     92% |77, 82, 121, 158, 266-270 |
 | cashocs/\_typing.py                                                                |       23 |       23 |      0% |     20-67 |
-| cashocs/\_utils/\_\_init\_\_.py                                                    |       25 |        0 |    100% |           |
-| cashocs/\_utils/forms.py                                                           |       65 |        0 |    100% |           |
-| cashocs/\_utils/helpers.py                                                         |       63 |        1 |     98% |        69 |
+| cashocs/\_utils/\_\_init\_\_.py                                                    |       26 |        0 |    100% |           |
+| cashocs/\_utils/forms.py                                                           |       62 |        0 |    100% |           |
+| cashocs/\_utils/helpers.py                                                         |       71 |        1 |     99% |        69 |
 | cashocs/\_utils/interpolations.py                                                  |       43 |       18 |     58% |25, 273-446 |
 | cashocs/\_utils/linalg.py                                                          |      179 |       20 |     89% |77, 152, 298, 347-348, 408-411, 534, 671-675, 695-707 |
 | cashocs/geometry/\_\_init\_\_.py                                                   |       18 |        0 |    100% |           |
@@ -91,7 +91,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      381 |       42 |     89% |165, 266, 349-354, 454, 541-542, 672-674, 681-683, 710-744, 929, 958-960, 970-972, 986-987 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      395 |       55 |     86% |167, 269, 344-345, 439, 516-517, 532-559, 682-683, 700-702, 708-710, 742-782, 954, 981-983, 993-995, 1009-1010 |
 | cashocs/verification.py                                                            |      123 |        3 |     98% |214-215, 247 |
-|                                                                          **TOTAL** | **7480** |  **616** | **92%** |           |
+|                                                                          **TOTAL** | **7486** |  **616** | **92%** |           |
 
 
 ## Setup coverage badge
