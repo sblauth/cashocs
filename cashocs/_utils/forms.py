@@ -29,6 +29,7 @@ except ImportError:
     import ufl
 
 from cashocs import _exceptions
+from cashocs import _utils
 from cashocs import log
 
 T = TypeVar("T")
@@ -257,28 +258,10 @@ def create_dirichlet_bcs(
 
     bcs_list = []
     for entry in idcs:
-        if isinstance(entry, int):
-            bcs_list.append(
-                fenics.DirichletBC(function_space, value, boundaries, entry, **kwargs)
-            )
-        elif isinstance(entry, str):
-            physical_groups = mesh.physical_groups
-            if entry in physical_groups["ds"].keys():
-                bcs_list.append(
-                    fenics.DirichletBC(
-                        function_space,
-                        value,
-                        boundaries,
-                        physical_groups["ds"][entry],
-                        **kwargs,
-                    )
-                )
-            else:
-                raise _exceptions.InputError(
-                    "cashocs.create_dirichlet_bcs",
-                    "idcs",
-                    "The string you have supplied is not associated with a boundary.",
-                )
+        int_tag = _utils.boundary_tag_to_int(mesh, entry)
+        bcs_list.append(
+            fenics.DirichletBC(function_space, value, boundaries, int_tag, **kwargs)
+        )
 
     return bcs_list
 

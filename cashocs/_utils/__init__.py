@@ -29,6 +29,7 @@ from cashocs._utils.forms import min_
 from cashocs._utils.forms import moreau_yosida_regularization
 from cashocs._utils.forms import multiplication
 from cashocs._utils.forms import summation
+from cashocs._utils.helpers import boundary_tag_to_int
 from cashocs._utils.helpers import check_and_enlist_bcs
 from cashocs._utils.helpers import check_and_enlist_control_constraints
 from cashocs._utils.helpers import check_file_extension
@@ -55,6 +56,7 @@ __all__ = [
     "moreau_yosida_regularization",
     "multiplication",
     "summation",
+    "boundary_tag_to_int",
     "check_and_enlist_bcs",
     "check_and_enlist_control_constraints",
     "check_file_extension",
