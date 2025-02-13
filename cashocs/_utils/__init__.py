@@ -29,7 +29,6 @@ from cashocs._utils.forms import min_
 from cashocs._utils.forms import moreau_yosida_regularization
 from cashocs._utils.forms import multiplication
 from cashocs._utils.forms import summation
-from cashocs._utils.helpers import boundary_tag_to_int
 from cashocs._utils.helpers import check_and_enlist_bcs
 from cashocs._utils.helpers import check_and_enlist_control_constraints
 from cashocs._utils.helpers import check_file_extension
@@ -38,6 +37,7 @@ from cashocs._utils.helpers import enlist
 from cashocs._utils.helpers import get_petsc_prefixes
 from cashocs._utils.helpers import number_of_arguments
 from cashocs._utils.helpers import optimization_algorithm_configuration
+from cashocs._utils.helpers import tag_to_int
 from cashocs._utils.interpolations import interpolate_by_angle
 from cashocs._utils.interpolations import interpolate_by_volume
 from cashocs._utils.interpolations import interpolate_levelset_function_to_cells
@@ -56,7 +56,6 @@ __all__ = [
     "moreau_yosida_regularization",
     "multiplication",
     "summation",
-    "boundary_tag_to_int",
     "check_and_enlist_bcs",
     "check_and_enlist_control_constraints",
     "check_file_extension",
@@ -65,6 +64,7 @@ __all__ = [
     "get_petsc_prefixes",
     "number_of_arguments",
     "optimization_algorithm_configuration",
+    "tag_to_int",
     "interpolate_by_angle",
     "interpolate_by_volume",
     "interpolate_levelset_function_to_cells",
