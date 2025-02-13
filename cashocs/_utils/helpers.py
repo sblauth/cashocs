@@ -228,3 +228,29 @@ def get_petsc_prefixes(petsc_options: _typing.KspOption) -> set[str]:
         prefixes.add(prefix)
 
     return prefixes
+
+
+def boundary_tag_to_int(mesh: fenics.Mesh, tag: int | str) -> int:
+    """Converts a given tag (for boundary objects) to the corresponding integer tag.
+
+    Args:
+        mesh (fenics.Mesh): The (imported) finite element mesh.
+        tag (int | str): The tag. Can either be an integer or a string.
+
+    Returns:
+        int: The integer tag corresponding to the supplied tag.
+
+    """
+    if isinstance(tag, int):
+        return tag
+    elif isinstance(tag, str):
+        physical_groups = mesh.physical_groups
+        if tag in physical_groups["ds"].keys():
+            int_tag: int = physical_groups["ds"][tag]
+            return int_tag
+        else:
+            raise _exceptions.InputError(
+                "boundary_tag_to_int",
+                "tag",
+                f"The tag {tag} is not associated with a boundary.",
+            )
