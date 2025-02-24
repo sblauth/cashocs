@@ -65,7 +65,7 @@ from cashocs.nonlinear_solvers import picard_iteration
 from cashocs.nonlinear_solvers import snes_solve
 from cashocs.nonlinear_solvers import ts_pseudo_solve
 
-__version__ = "2.4.1"
+__version__ = "2.4.2"
 
 __citation__ = """
 @Article{Blauth2021cashocs,
