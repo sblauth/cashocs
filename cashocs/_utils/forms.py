@@ -29,6 +29,7 @@ except ImportError:
     import ufl
 
 from cashocs import _exceptions
+from cashocs import _utils
 from cashocs import log
 
 T = TypeVar("T")
@@ -120,7 +121,7 @@ def min_(a: float | fenics.Function, b: float | fenics.Function) -> ufl.core.exp
 def moreau_yosida_regularization(
     term: ufl.core.expr.Expr,
     gamma: float,
-    measure: fenics.Measure,
+    measure: ufl.Measure,
     lower_threshold: float | fenics.Function | None = None,
     upper_threshold: float | fenics.Function | None = None,
     shift_lower: float | fenics.Function | None = None,
@@ -257,28 +258,10 @@ def create_dirichlet_bcs(
 
     bcs_list = []
     for entry in idcs:
-        if isinstance(entry, int):
-            bcs_list.append(
-                fenics.DirichletBC(function_space, value, boundaries, entry, **kwargs)
-            )
-        elif isinstance(entry, str):
-            physical_groups = mesh.physical_groups
-            if entry in physical_groups["ds"].keys():
-                bcs_list.append(
-                    fenics.DirichletBC(
-                        function_space,
-                        value,
-                        boundaries,
-                        physical_groups["ds"][entry],
-                        **kwargs,
-                    )
-                )
-            else:
-                raise _exceptions.InputError(
-                    "cashocs.create_dirichlet_bcs",
-                    "idcs",
-                    "The string you have supplied is not associated with a boundary.",
-                )
+        int_tag = _utils.tag_to_int(mesh, entry, "ds")
+        bcs_list.append(
+            fenics.DirichletBC(function_space, value, boundaries, int_tag, **kwargs)
+        )
 
     return bcs_list
 
@@ -294,7 +277,7 @@ def bilinear_boundary_form_modification(forms: list[ufl.Form]) -> list[ufl.Form]
     for form in forms:
         trial, test = form.arguments()
         mesh = trial.function_space().mesh()
-        dx = fenics.Measure("dx", domain=mesh)
-        mod_forms.append(form + fenics.Constant(0.0) * fenics.dot(trial, test) * dx)
+        dx = ufl.Measure("dx", domain=mesh)
+        mod_forms.append(form + fenics.Constant(0.0) * ufl.dot(trial, test) * dx)
 
     return mod_forms

@@ -27,6 +27,11 @@ import scipy.optimize
 from cashocs import _exceptions
 from cashocs import _utils
 
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+
 if TYPE_CHECKING:
     from cashocs._database import database
 
@@ -64,7 +69,7 @@ class LevelSetVolumeProjector:
         )
         self.levelset_function_temp.vector().apply("")
 
-        self.dx = fenics.Measure("dx", self.levelset_function.function_space().mesh())
+        self.dx = ufl.Measure("dx", self.levelset_function.function_space().mesh())
 
         self.dg0_space = fenics.FunctionSpace(
             self.levelset_function.function_space().mesh(), "DG", 0

@@ -60,7 +60,7 @@ jobs:
 
     - name: Check if release is a pre-release
       id: check_version
-      uses: nowsprinting/check-version-format-action@de7dcbd404b253dd775262e49c9924fa834e17a2 # v4.0.3
+      uses: nowsprinting/check-version-format-action@7da421b91c010f7abd2f68fe06b32816b7653949 # v4.0.4
       with:
         prefix: 'v'
 
@@ -87,7 +87,7 @@ jobs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
     - name: Set up Python 3.11
-      uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+      uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
       with:
         python-version: 3.11
 
@@ -98,4 +98,4 @@ jobs:
       run: python -m build --sdist --wheel --outdir dist/ .
 
     - name: Publish distribution to PyPI
-      uses: pypa/gh-action-pypi-publish@67339c736fd9354cd4f8cb0b744f2b82a74b5c70 # release/v1
+      uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # release/v1

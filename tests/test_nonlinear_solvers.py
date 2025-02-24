@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Tests for the nonlinear_solvers module.
-
-"""
+"""Tests for the nonlinear_solvers module."""
 
 from fenics import *
 import numpy as np

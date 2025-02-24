@@ -73,7 +73,7 @@ def split_linear_forms(forms: list[ufl.Form]) -> tuple[list[ufl.Form], list[ufl.
     rhs_list = []
     for i in range(len(forms)):
         try:
-            lhs, rhs = fenics.system(forms[i])
+            lhs, rhs = ufl.system(forms[i])
         except ufl.log.UFLException as ufl_exception:
             raise _exceptions.CashocsException(
                 "The state system could not be transferred to a linear "
@@ -88,9 +88,9 @@ def split_linear_forms(forms: list[ufl.Form]) -> tuple[list[ufl.Form], list[ufl.
         if rhs.empty():
             test_function = lhs.arguments()[0]
             mesh = lhs.ufl_domain()
-            dx = fenics.Measure("dx", mesh)
+            dx = ufl.Measure("dx", mesh)
             zero_form = (
-                fenics.dot(
+                ufl.dot(
                     fenics.Constant(np.zeros(test_function.ufl_shape)),
                     test_function,
                 )
