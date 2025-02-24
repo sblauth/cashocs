@@ -176,9 +176,10 @@ def interval_mesh(
             end_point = padded_partitions[i + 1]
 
             part = fenics.CompiledSubDomain(
-                "x[0] >= start_point && x[0] <= end_point",
+                "x[0] >= start_point - eps && x[0] <= end_point + eps",
                 start_point=start_point,
                 end_point=end_point,
+                eps=fenics.DOLFIN_EPS,
             )
             part.mark(subdomains, i + 1)
 
