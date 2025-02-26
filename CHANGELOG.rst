@@ -10,6 +10,7 @@ of the maintenance releases, please take a look at
 2.5.0 (in development)
 ----------------------
 
+* Add support for Python 3.13
 
 
 
