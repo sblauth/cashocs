@@ -82,6 +82,16 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.topological_derivative_pos = (
             optimization_problem.topological_derivative_pos
         )
+        for i in range(0, len(self.optimization_problem.cost_functional_list)):
+                if hasattr(self.optimization_problem.cost_functional_list[i],
+                           'topological_derivative'):
+                    self.topological_derivative_pos += \
+                        self.optimization_problem.cost_functional_list[
+                            i].topological_derivative()
+                    self.topological_derivative_neg += \
+                        self.optimization_problem.cost_functional_list[
+                            i].topological_derivative()
+
         self.update_levelset: Callable = optimization_problem.update_levelset
         self.config = optimization_problem.config
         self.re_normalize_levelset = optimization_problem.re_normalize_levelset
@@ -311,7 +321,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             self._cashocs_problem.adjoint_problem.has_solution = False
         self._cashocs_problem.compute_adjoint_variables()
 
-        for i in range(0, len(self.optimization_problem.cost_functional_list)):
+        '''for i in range(0, len(self.optimization_problem.cost_functional_list)):
                 if hasattr(self.optimization_problem.cost_functional_list[i],
                            'topological_derivative'):
                     self.topological_derivative_pos += \
@@ -319,7 +329,9 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
                             i].topological_derivative()
                     self.topological_derivative_neg += \
                         self.optimization_problem.cost_functional_list[
-                            i].topological_derivative()
+                            i].topological_derivative()'''
+
+
 
         if not self.topological_derivative_is_identical:
             self.average_topological_derivative()
