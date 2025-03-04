@@ -817,3 +817,21 @@ class ShapeFormHandler(form_handler.FormHandler):
                 [0.0] * len(self.fixed_indices)
             )
             function.vector().apply("")
+
+    def apply_reextension_bcs(self, function: fenics.Function) -> None:
+        """Applies the boundary conditions for the reextension of the shape gradient.
+
+        Args:
+            function (fenics.Function): The function which shall receive the boundary
+                values of the shape gradient.
+
+        """
+        for bc in self.bcs_extension:
+            bc.apply(function.vector())
+            function.vector().apply("")
+
+        if self.use_fixed_dimensions:
+            function.vector().vec()[self.fixed_indices] = np.array(
+                [0.0] * len(self.fixed_indices)
+            )
+            function.vector().apply("")

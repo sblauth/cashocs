@@ -197,13 +197,23 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                     np.array([0.0] * len(self.form_handler.fixed_indices)),
                 )
                 self.form_handler.fe_reextension_vector.apply("")
+
+            reextended_gradient = fenics.Function(self.db.function_db.control_spaces[0])
+            self.form_handler.apply_reextension_bcs(  # Effect of DirichletBCs on KSP
+                reextended_gradient
+            )
             self.linear_solver.solve(
                 A=self.form_handler.reextension_matrix,
                 b=self.form_handler.fe_reextension_vector.vec(),
-                fun=self.db.function_db.gradient[0],
+                fun=reextended_gradient,
                 ksp_options=self.ksp_options,
             )
-            self.form_handler.apply_shape_bcs(self.db.function_db.gradient[0])
+            self.form_handler.apply_reextension_bcs(reextended_gradient)
+
+            self.db.function_db.gradient[0].vector().vec().aypx(
+                0.0, reextended_gradient.vector().vec()
+            )
+            self.db.function_db.gradient[0].vector().apply("")
 
     def _compute_normal_deformation(self) -> fenics.Function:
         """Computes the projection of the gradient deformation on the normal vector.
