@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -26,6 +26,11 @@ import mpi4py.MPI
 
 from cashocs import _utils
 
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+
 if TYPE_CHECKING:
     from petsc4py import PETSc
 
@@ -52,7 +57,7 @@ class GeometryDatabase:
 
         """
         self.mesh: fenics.Mesh = function_db.state_spaces[0].mesh()
-        self.dx: fenics.Measure = fenics.Measure("dx", self.mesh)
+        self.dx: ufl.Measure = ufl.Measure("dx", self.mesh)
         self.mpi_comm: mpi4py.MPI.Intracomm = self.mesh.mpi_comm()
 
         self.function_db = function_db

@@ -24,11 +24,11 @@ jupytext_process.process()
 # -- Project information -----------------------------------------------------
 
 project = "cashocs"
-copyright = "2020-2024, Sebastian Blauth"
+copyright = "2020-2025, Fraunhofer ITWM and Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
-release = "2.1.0-dev"
+release = "2.5.0-dev"
 
 
 # -- General configuration ---------------------------------------------------
@@ -62,10 +62,8 @@ napoleon_use_keyword = True
 napoleon_use_rtype = True
 
 autodoc_default_options = {
-    "members": True,
     "member-order": "groupwise",
     "undoc-members": False,
-    "inherited-members": "ConfigParser",
     "show-inheritance": True,
 }
 autodoc_member_order = "alphabetical"
@@ -79,8 +77,9 @@ autodoc_mock_imports = [
     "dolfin",
     "configparser",
     "h5py",
+    "cashocs_extensions",
 ]
-autodoc_typehints = "description"
+autodoc_typehints = "both"
 autoclass_content = "both"
 
 highlight_language = "python"
@@ -98,6 +97,10 @@ exclude_patterns = ["_build"]
 favicons = [
     {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.jpg"},
     {"rel": "icon", "sizes": "32x32", "href": "favicon/favicon-32x32.jpg"},
+]
+
+suppress_warnings = [
+    "autosummary.import_cycle",
 ]
 
 # -- Options for HTML output -------------------------------------------------
@@ -150,7 +153,8 @@ html_css_files = ["cashocs.css"]
 pygments_style = "sphinx"
 
 autosummary_generate = True
-autosummary_imported_members = True
+autosummary_imported_members = False
+autosummary_ignore_module_all = False
 
 myst_enable_extensions = ["dollarmath", "colon_fence"]
 

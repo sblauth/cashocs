@@ -7,10 +7,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cashocs"
-version = "2.1.0-dev"
+version = "2.5.0-dev"
 description = "Computational Adjoint-Based Shape Optimization and Optimal Control Software"
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = {text = "GNU General Public License v3 or later (GPLv3+)"}
 authors = [
 	{name = "Sebastian Blauth"},
@@ -34,20 +34,21 @@ classifiers = [
     "Intended Audience :: End Users/Desktop",
     "Intended Audience :: Science/Research",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3 :: Only",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Operating System :: OS Independent"
 ]
 dependencies = [
-	"meshio >= 4.1.0",
-	"numpy",
-	"typing_extensions",
-        "matplotlib",
-        "scipy"
+    "meshio >= 4.1.0",
+    "numpy",
+    "scipy >= 1.10.0",
+    "typing_extensions",
+    "matplotlib",
 ]
 
 [project.urls]
@@ -105,6 +106,7 @@ match_dir = "cashocs/"
 
 [tool.coverage.run]
 source = ["cashocs"]
+relative_files = true
 
 [tool.coverage.report]
 exclude_lines = [
@@ -113,7 +115,7 @@ exclude_lines = [
     "raise _exceptions.InputError",
     "raise _exceptions.CashocsException",
     "raise _exceptions.CashocsDebugException",
-    "_loggers.warning",
+    "log.warning",
     "abstractmethod",
 ]
 
@@ -139,5 +141,24 @@ module = [
 	"h5py",
     "matplotlib.*",
     "scipy.*",
+    "cashocs_extensions.*",
 ]
 ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+  "F", # pyflakes
+  "E", # pycodestyle error
+  "W", # pycodestyle warning
+  "D", # pydocstyle
+  "C90", # mccabe
+  "UP", # pyupgrade
+  "B", # flake8bugbear
+  "NPY" # numpy
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

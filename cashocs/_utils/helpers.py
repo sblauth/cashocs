@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -21,16 +21,19 @@ from __future__ import annotations
 
 import configparser
 import inspect
-from typing import Any, Callable, cast, List, Optional, TypeVar, Union
+from typing import Any, Callable, cast, TYPE_CHECKING, TypeVar, Union
 
 import fenics
 
 from cashocs import _exceptions
 
+if TYPE_CHECKING:
+    from cashocs import _typing
+
 T = TypeVar("T")
 
 
-def enlist(arg: Union[List[T], T]) -> List[T]:
+def enlist(arg: list[T] | T) -> list[T]:
     """Wraps the input argument into a list, if it isn't a list already.
 
     Args:
@@ -47,10 +50,10 @@ def enlist(arg: Union[List[T], T]) -> List[T]:
 
 
 def check_and_enlist_bcs(
-    bcs_list: Union[
-        fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
-    ]
-) -> List[List[fenics.DirichletBC]]:
+    bcs_list: (
+        fenics.DirichletBC | list[fenics.DirichletBC] | list[list[fenics.DirichletBC]]
+    ),
+) -> list[list[fenics.DirichletBC]]:
     """Enlists DirichletBC objects for cashocs.
 
     Args:
@@ -77,11 +80,10 @@ def check_and_enlist_bcs(
 
 
 def check_and_enlist_control_constraints(
-    control_constraints: Union[
-        List[Union[float, int, fenics.Function]],
-        List[List[Union[float, int, fenics.Function]]],
-    ]
-) -> List[List[Union[float, int, fenics.Function]]]:
+    control_constraints: (
+        list[float | int | fenics.Function] | list[list[float | int | fenics.Function]]
+    ),
+) -> list[list[float | int | fenics.Function]]:
     """Wraps control constraints into a list suitable for cashocs.
 
     Args:
@@ -95,14 +97,14 @@ def check_and_enlist_control_constraints(
         control_constraints[0], list
     ):
         control_constraints = cast(
-            List[List[Union[float, int, fenics.Function]]], control_constraints
+            list[list[Union[float, int, fenics.Function]]], control_constraints
         )
         return control_constraints
     elif isinstance(control_constraints, list) and not isinstance(
         control_constraints[0], list
     ):
         control_constraints = cast(
-            List[Union[float, int, fenics.Function]], control_constraints
+            list[Union[float, int, fenics.Function]], control_constraints
         )
         return [control_constraints]
     else:
@@ -114,7 +116,7 @@ def check_and_enlist_control_constraints(
 
 
 def optimization_algorithm_configuration(
-    config: configparser.ConfigParser, algorithm: Optional[str] = None
+    config: configparser.ConfigParser, algorithm: str | None = None
 ) -> str:
     """Returns the internal name of the optimization algorithm and updates config.
 
@@ -172,8 +174,8 @@ def optimization_algorithm_configuration(
 
 
 def create_function_list(
-    function_spaces: List[fenics.FunctionSpace],
-) -> List[fenics.Function]:
+    function_spaces: list[fenics.FunctionSpace],
+) -> list[fenics.Function]:
     """Creates a list of functions.
 
     Args:
@@ -211,3 +213,46 @@ def number_of_arguments(function: Callable[..., Any]) -> int:
     sig = inspect.signature(function)
 
     return len(sig.parameters)
+
+
+def get_petsc_prefixes(petsc_options: _typing.KspOption) -> set[str]:
+    """Get a set of prefixes used in the petsc options.
+
+    Args:
+        petsc_options: The dictionary of options for the PETSc solvers.
+
+    """
+    prefixes = set()
+    for key in petsc_options.keys():
+        prefix = key.split("_", maxsplit=1)[0]
+        prefixes.add(prefix)
+
+    return prefixes
+
+
+def tag_to_int(mesh: fenics.Mesh, tag: int | str, tag_type: str) -> int:
+    """Converts a given tag (for boundary objects) to the corresponding integer tag.
+
+    Args:
+        mesh (fenics.Mesh): The (imported) finite element mesh.
+        tag (int | str): The tag. Can either be an integer or a string.
+        tag_type (str): The type of tag. Must be "dx" for a subdomain or "ds" for a
+            boundary (either internal or external).
+
+    Returns:
+        int: The integer tag corresponding to the supplied tag.
+
+    """
+    if isinstance(tag, int):
+        return tag
+    elif isinstance(tag, str):
+        physical_groups = mesh.physical_groups
+        if tag in physical_groups[tag_type].keys():
+            int_tag: int = physical_groups[tag_type][tag]
+            return int_tag
+        else:
+            raise _exceptions.InputError(
+                "tag_to_int",
+                "tag",
+                f"Tag {tag} is not associated with physical group of type {tag_type}.",
+            )

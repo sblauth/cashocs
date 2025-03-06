@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -24,4 +24,4 @@ from cashocs._optimization.shape_optimization.shape_variable_abstractions import
     ShapeVariableAbstractions,
 )
 
-__all__ = ["ShapeVariableAbstractions", "ShapeOptimizationProblem"]
+__all__ = ["ShapeOptimizationProblem", "ShapeVariableAbstractions"]

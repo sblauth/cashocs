@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,13 +19,13 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
 
 from cashocs import _exceptions
-from cashocs import _loggers
+from cashocs import log
 from cashocs.geometry import measure
 
 if TYPE_CHECKING:
@@ -86,7 +86,7 @@ class DeformationHandler:
 
     def move_mesh(
         self,
-        transformation: Union[fenics.Function, np.ndarray],
+        transformation: fenics.Function | np.ndarray,
         validated_a_priori: bool = False,
         test_for_intersections: bool = True,
     ) -> bool:
@@ -128,7 +128,7 @@ class DeformationHandler:
             else:
                 dof_transformation = transformation
             if not self.a_priori_tester.test(dof_transformation, float("inf")):
-                _loggers.debug(
+                log.debug(
                     "Mesh transformation rejected due to a priori check.\n"
                     "Reason: Transformation would result in inverted mesh elements."
                 )

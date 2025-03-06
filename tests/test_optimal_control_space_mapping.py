@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -194,7 +194,7 @@ def test_ocsm_parameter_extraction_single(config_ocsm, y_d):
     parameter_extraction = ocsm.ParameterExtraction(
         coarse_model, J_pe, y_pe, u_pe, config=config_ocsm
     )
-    parameter_extraction._solve()
+    parameter_extraction._solve(0)
     control_pe = u_pe.vector()[:]
     assert np.allclose(control_ocp, control_pe)
 
@@ -270,7 +270,7 @@ def test_ocsm_parameter_extraction_multiple(config_ocsm, y_d, z_d):
     parameter_extraction = ocsm.ParameterExtraction(
         coarse_model, J, states_pe, controls_pe, config=config_ocsm
     )
-    parameter_extraction._solve()
+    parameter_extraction._solve(0)
 
     assert np.max(np.abs(u_ocp - u_pe.vector()[:])) / np.max(np.abs(u_ocp)) < 1e-10
     assert np.max(np.abs(v_ocp - v_pe.vector()[:])) / np.max(np.abs(v_ocp)) < 1e-10

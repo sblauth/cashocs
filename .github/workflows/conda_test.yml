@@ -5,25 +5,34 @@ on:
   schedule:
     - cron: '42 23 * * *'
 
+permissions: read-all
+
 jobs:
   conda_test:
     name: Test conda installation
     strategy:
       matrix:
-        os: [ubuntu-22.04, macos-12]
+        os: [ubuntu-latest, macos-13]
       fail-fast: false
     runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash -el {0}
     
     steps:
-      - name: Update conda_test
-        run: |
-          conda update conda
+      - name: Setup conda
+        uses: conda-incubator/setup-miniconda@505e6394dae86d6a5c7fbb6e3fb8938e3e863830 # v3.1.1
+        with:
+          miniforge-version: latest
+          auto-activate-base: true
+          auto-update-conda: true
+          conda-remove-defaults: true
       
       - name: Install cashocs
-        run: conda create -n test -c conda-forge cashocs python=3.11
+        run: conda create -n cashocs cashocs python=3.13
       
       - name: Test if package was installed properly
         run: |
-          conda run -n test python -c "import cashocs; cashocs.regular_mesh(16)"
-          conda run -n test mpirun -n 2 python -c "import cashocs; cashocs.regular_mesh(16)"
+          conda run -n cashocs python -c "import cashocs; cashocs.regular_mesh(16)"
+          conda run -n cashocs mpirun -n 2 python -c "import cashocs; cashocs.regular_mesh(16)"
         

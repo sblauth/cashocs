@@ -1,0 +1,17 @@
+changelog:
+  exclude:
+    authors:
+      - snyk-bot
+  categories:
+    - title: New Features and Improvements
+      labels:
+        - enhancement
+    - title: Bug Fixes
+      labels:
+        - bug
+    - title: Configuration changes
+      labels:
+        - config
+    - title: Changes to the documentation
+      labels:
+        - documentation

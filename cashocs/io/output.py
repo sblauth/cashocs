@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from datetime import datetime as dt
 import pathlib
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from cashocs.io import managers
 
@@ -43,6 +43,8 @@ class OutputManager:
         self.config = self.db.config
         self.result_dir = self.config.get("Output", "result_dir")
         self.result_dir = self.result_dir.rstrip("/")
+
+        self._silent = False
 
         self.time_suffix = self.config.getboolean("Output", "time_suffix")
         if self.time_suffix:
@@ -74,9 +76,10 @@ class OutputManager:
         if not checkpoints_path.is_dir() and save_checkpoints:
             checkpoints_path.mkdir(parents=True, exist_ok=True)
 
-        self.managers: List[managers.IOManager] = []
-        if verbose:
-            self.managers.append(managers.ConsoleManager(self.db, self.result_dir))
+        self.managers: list[managers.IOManager] = []
+        self.managers.append(
+            managers.ConsoleManager(self.db, self.result_dir, verbose=verbose)
+        )
         if save_txt:
             self.managers.append(managers.FileManager(self.db, self.result_dir))
         if save_state or save_adjoint or save_gradient:
@@ -86,20 +89,24 @@ class OutputManager:
         self.output_dict = result_manager.output_dict
         self.managers.append(result_manager)
 
-        self.managers.append(managers.MeshManager(self.db, self.result_dir))
+        if save_mesh:
+            self.managers.append(managers.MeshManager(self.db, self.result_dir))
         self.managers.append(managers.TempFileManager(self.db, self.result_dir))
 
     def output(self) -> None:
         """Writes the desired output to files and console."""
-        for manager in self.managers:
-            manager.output()
+        if not self._silent:
+            for manager in self.managers:
+                manager.output()
 
     def output_summary(self) -> None:
         """Writes the summary to files and console."""
-        for manager in self.managers:
-            manager.output_summary()
+        if not self._silent:
+            for manager in self.managers:
+                manager.output_summary()
 
     def post_process(self) -> None:
         """Performs a postprocessing of the output."""
-        for manager in self.managers:
-            manager.post_process()
+        if not self._silent:
+            for manager in self.managers:
+                manager.post_process()

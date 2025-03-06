@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -22,11 +22,11 @@ from __future__ import annotations
 import abc
 from typing import TYPE_CHECKING
 
-import fenics
 import numpy as np
 
 from cashocs import _exceptions
 from cashocs import _utils
+from cashocs import log
 
 if TYPE_CHECKING:
     from cashocs import _pde_problems
@@ -61,6 +61,7 @@ class OptimizationAlgorithm(abc.ABC):
         self.line_search_broken = False
         self.has_curvature_info = False
 
+        # ToDo: Make this a weakref.proxy
         self.optimization_problem = optimization_problem
         self.form_handler = optimization_problem.form_handler
         self.state_problem: _pde_problems.StateProblem = (
@@ -95,6 +96,10 @@ class OptimizationAlgorithm(abc.ABC):
         self.converged = False
         self.converged_reason = 0
 
+        self.active_idx: np.ndarray | None = None
+        self.constraint_gradient: np.ndarray | None = None
+        self.dropped_idx: np.ndarray | None = None
+
         if self.db.parameter_db.is_remeshed:
             self.rtol = self.db.parameter_db.temp_dict["OptimizationRoutine"]["rtol"]
             self.atol = self.db.parameter_db.temp_dict["OptimizationRoutine"]["atol"]
@@ -115,6 +120,8 @@ class OptimizationAlgorithm(abc.ABC):
 
         self.output_manager = optimization_problem.output_manager
         self.initialize_solver()
+
+        self.constraint_manager = optimization_problem.constraint_manager
 
     @property
     def iteration(self) -> int:
@@ -236,9 +243,7 @@ class OptimizationAlgorithm(abc.ABC):
 
         """
         if self.soft_exit:
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print(message, flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            log.error(message)
         else:
             raise _exceptions.NotConvergedError("Optimization Algorithm", message)
 
@@ -251,7 +256,7 @@ class OptimizationAlgorithm(abc.ABC):
 
         else:
             self.objective_value = self.cost_functional.evaluate()
-            self.gradient_norm = np.NAN
+            self.gradient_norm = np.nan
             self.relative_norm = np.nan
             # maximum iterations reached
             if self.converged_reason == -1:
@@ -263,6 +268,7 @@ class OptimizationAlgorithm(abc.ABC):
             elif self.converged_reason == -2:
                 self.iteration -= 1
                 self.post_process()
+                log.end()
                 self._exit("Armijo rule failed.")
 
             # Mesh Quality is too low
@@ -351,3 +357,31 @@ class OptimizationAlgorithm(abc.ABC):
         """Evaluates the cost functional and performs the output operation."""
         self.objective_value = self.cost_functional.evaluate()
         self.output()
+
+    def project_search_direction(self) -> None:
+        """Projects the search direction to the tangent space of the active constraints.
+
+        If no mesh quality constraints are active, the search direction will not be
+        changed in any way. Otherwise, self.search_direction will be overwritten.
+
+        """
+        if (
+            self.constraint_manager is None
+            or not self.constraint_manager.has_constraints
+        ):
+            self.active_idx = None
+            self.constraint_gradient = None
+            self.dropped_idx = None
+        else:
+            (
+                p_dof,
+                _,
+                self.active_idx,
+                self.constraint_gradient,
+                self.dropped_idx,
+            ) = self.constraint_manager.compute_projected_search_direction(
+                self.search_direction, self
+            )
+            for i in range(len(self.db.function_db.gradient)):
+                self.search_direction[i].vector().vec().aypx(0.0, p_dof.vector().vec())
+                self.search_direction[i].vector().apply("")

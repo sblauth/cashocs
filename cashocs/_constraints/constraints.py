@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import abc
-from typing import Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -47,13 +47,13 @@ class Constraint(abc.ABC):
     multiplier: fenics.Function
     target: float
     min_max_term: cost_functional.MinMaxFunctional
-    lower_bound: Union[fenics.Function, float]
-    upper_bound: Union[fenics.Function, float]
+    lower_bound: fenics.Function | float
+    upper_bound: fenics.Function | float
 
     def __init__(
         self,
-        variable_function: Union[ufl.Form, ufl_expr.Expr],
-        measure: Optional[fenics.Measure] = None,
+        variable_function: ufl.Form | ufl_expr.Expr,
+        measure: ufl.Measure | None = None,
     ) -> None:
         """Initializes self.
 
@@ -92,9 +92,9 @@ class EqualityConstraint(Constraint):
 
     def __init__(
         self,
-        variable_function: Union[ufl.Form, ufl_expr.Expr],
+        variable_function: ufl.Form | ufl_expr.Expr,
         target: float,
-        measure: Optional[fenics.Measure] = None,
+        measure: ufl.Measure | None = None,
     ) -> None:
         """Initializes self.
 
@@ -151,10 +151,10 @@ class InequalityConstraint(Constraint):
 
     def __init__(
         self,
-        variable_function: Union[ufl.Form, ufl_expr.Expr],
-        lower_bound: Optional[Union[float, fenics.Function]] = None,
-        upper_bound: Optional[Union[float, fenics.Function]] = None,
-        measure: Optional[fenics.Measure] = None,
+        variable_function: ufl.Form | ufl_expr.Expr,
+        lower_bound: float | fenics.Function | None = None,
+        upper_bound: float | fenics.Function | None = None,
+        measure: ufl.Measure | None = None,
     ) -> None:
         """Initializes self.
 
@@ -188,8 +188,7 @@ class InequalityConstraint(Constraint):
             mesh = self.measure.ufl_domain().ufl_cargo()
             multiplier_space = fenics.FunctionSpace(mesh, "CG", 1)
             self.multiplier = fenics.Function(multiplier_space)
-            weight_space = fenics.FunctionSpace(mesh, "R", 0)
-            self.weight = fenics.Function(weight_space)
+            self.weight = fenics.Constant(0.0)
 
             self.cost_functional_terms = []
             if self.upper_bound is not None:

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -21,8 +21,26 @@ This module has custom solvers for nonlinear PDEs, including a damped Newton met
 a Picard iteration for coupled problems.
 """
 
+from cashocs.nonlinear_solvers import linear_solver
+from cashocs.nonlinear_solvers import newton_solver
+from cashocs.nonlinear_solvers import picard_solver
+from cashocs.nonlinear_solvers import snes
+from cashocs.nonlinear_solvers import ts
 from cashocs.nonlinear_solvers.linear_solver import linear_solve
 from cashocs.nonlinear_solvers.newton_solver import newton_solve
 from cashocs.nonlinear_solvers.picard_solver import picard_iteration
+from cashocs.nonlinear_solvers.snes import snes_solve
+from cashocs.nonlinear_solvers.ts import ts_pseudo_solve
 
-__all__ = ["newton_solve", "picard_iteration", "linear_solve"]
+__all__ = [
+    "linear_solver",
+    "newton_solver",
+    "picard_solver",
+    "snes",
+    "ts",
+    "linear_solve",
+    "newton_solve",
+    "picard_iteration",
+    "snes_solve",
+    "ts_pseudo_solve",
+]

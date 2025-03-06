@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -20,7 +20,9 @@
 from __future__ import annotations
 
 import abc
-from typing import Callable, List, Optional, TYPE_CHECKING, Union
+import copy
+import pathlib
+from typing import Callable, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -32,9 +34,12 @@ except ImportError:
     import ufl
 
 from cashocs import _utils
+from cashocs import log
 from cashocs._constraints import solvers
+from cashocs._database import database
 from cashocs._optimization import optimal_control
 from cashocs._optimization import shape_optimization
+from cashocs.io import output
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -44,27 +49,36 @@ if TYPE_CHECKING:
 class ConstrainedOptimizationProblem(abc.ABC):
     """An optimization problem with additional equality / inequality constraints."""
 
-    solver: Union[solvers.AugmentedLagrangianMethod, solvers.QuadraticPenaltyMethod]
+    solver: solvers.AugmentedLagrangianMethod | solvers.QuadraticPenaltyMethod
 
     def __init__(
         self,
-        state_forms: Union[List[ufl.Form], ufl.Form],
-        bcs_list: Union[
-            List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
-        ],
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[fenics.Function, List[fenics.Function]],
-        adjoints: Union[fenics.Function, List[fenics.Function]],
-        constraint_list: Union[List[_typing.Constraint], _typing.Constraint],
-        config: Optional[io.Config] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        preconditioner_forms: Optional[List[ufl.Form]] = None,
+        state_forms: list[ufl.Form] | ufl.Form,
+        bcs_list: (
+            list[list[fenics.DirichletBC]]
+            | list[fenics.DirichletBC]
+            | fenics.DirichletBC
+        ),
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: fenics.Function | list[fenics.Function],
+        adjoints: fenics.Function | list[fenics.Function],
+        constraint_list: list[_typing.Constraint] | _typing.Constraint,
+        config: io.Config | None = None,
+        initial_guess: list[fenics.Function] | None = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        preconditioner_forms: list[ufl.Form] | None = None,
+        pre_callback: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ) = None,
+        post_callback: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ) = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -88,7 +102,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 the optimization algorithm. This has then to be specified in the
                 :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
                 default is ``None``.
-            initial_guess: List of functions that act as initial guess for the state
+            initial_guess: list of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
             ksp_options: A list of dicts corresponding to command line options for
@@ -98,15 +112,34 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
+            gradient_ksp_options: A list of dicts corresponding to command line options
+                for PETSc, used to compute the (shape) gradient. If this is ``None``,
+                either a direct or an iterative method is used (depending on the
+                configuration, section OptimizationRoutine, key gradient_method).
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
+            adjoint_linear_solver: The linear solver (KSP) which is used to solve the
+                (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
-        self.state_forms = state_forms
-        self.bcs_list = bcs_list
-        self.states = states
-        self.adjoints = adjoints
+        self.state_forms = _utils.enlist(state_forms)
+        self.bcs_list = _utils.check_and_enlist_bcs(bcs_list)
+        self.states = _utils.enlist(states)
+        self.adjoints = _utils.enlist(adjoints)
 
         if config is not None:
             self.config = config
@@ -117,21 +150,28 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.initial_guess = initial_guess
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
+        self.gradient_ksp_options = gradient_ksp_options
         self.preconditioner_forms = preconditioner_forms
+        self.pre_callback = pre_callback
+        self.post_callback = post_callback
+        self.linear_solver = linear_solver
+        self.adjoint_linear_solver = adjoint_linear_solver
+        self.newton_linearizations = newton_linearizations
+        self.excluded_from_time_derivative = excluded_from_time_derivative
 
         self.current_function_value = 0.0
 
-        self._pre_callback: Optional[
-            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
-        ] = None
-        self._post_callback: Optional[
-            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
-        ] = None
+        self._pre_callback: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ) = None
+        self._post_callback: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ) = None
 
-        self.cost_functional_form_initial: List[_typing.CostFunctional] = _utils.enlist(
+        self.cost_functional_form_initial: list[_typing.CostFunctional] = _utils.enlist(
             cost_functional_form
         )
-        self.constraint_list: List[_typing.Constraint] = _utils.enlist(constraint_list)
+        self.constraint_list: list[_typing.Constraint] = _utils.enlist(constraint_list)
 
         self.constraint_dim = len(self.constraint_list)
 
@@ -141,6 +181,21 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         self.cost_functional_shift = 0.0
 
+        self.db = database.Database(
+            self.config,
+            self.states,
+            self.adjoints,
+            self.ksp_options,  # type: ignore
+            self.adjoint_ksp_options,  # type: ignore
+            self.gradient_ksp_options,  # type: ignore
+            self.cost_functional_form_initial,
+            self.state_forms,
+            self.bcs_list,
+            self.preconditioner_forms,  # type: ignore
+        )
+
+        self.output_manager = output.OutputManager(self.db)
+
     def solve(
         self,
         method: Literal[
@@ -148,11 +203,11 @@ class ConstrainedOptimizationProblem(abc.ABC):
         ] = "Augmented Lagrangian",
         tol: float = 1e-2,
         max_iter: int = 25,
-        inner_rtol: Optional[float] = None,
-        inner_atol: Optional[float] = None,
-        constraint_tol: Optional[float] = None,
-        mu_0: Optional[float] = None,
-        lambda_0: Optional[List[float]] = None,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
+        constraint_tol: float | None = None,
+        mu_0: float | None = None,
+        lambda_0: list[float] | None = None,
     ) -> None:
         """Solves the constrained optimization problem.
 
@@ -178,10 +233,16 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
         """
         if method.casefold() in ["augmented lagrangian", "al"]:
+            log.begin(
+                "Solving the constrained problem with an augmented Lagrangian method."
+            )
             self.solver = solvers.AugmentedLagrangianMethod(
                 self, mu_0=mu_0, lambda_0=lambda_0
             )
         elif method.casefold() in ["quadratic penalty", "qp"]:
+            log.begin(
+                "Solving the constrained problem with a quadratic penalty method."
+            )
             self.solver = solvers.QuadraticPenaltyMethod(
                 self, mu_0=mu_0, lambda_0=lambda_0
             )
@@ -193,6 +254,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
             inner_atol=inner_atol,
             constraint_tol=constraint_tol,
         )
+        log.end()
 
     def total_constraint_violation(self) -> float:
         """Computes the total constraint violation.
@@ -212,8 +274,9 @@ class ConstrainedOptimizationProblem(abc.ABC):
     def _solve_inner_problem(
         self,
         tol: float = 1e-2,
-        inner_rtol: Optional[float] = None,
-        inner_atol: Optional[float] = None,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
+        iteration: int = 0,
     ) -> None:
         """Solves the inner (unconstrained) optimization problem.
 
@@ -225,15 +288,16 @@ class ConstrainedOptimizationProblem(abc.ABC):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
+            iteration: The current outer iteration count.
 
         """
         self.rtol = inner_rtol or tol
 
     def inject_pre_callback(
         self,
-        function: Optional[
-            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
-        ],
+        function: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ),
     ) -> None:
         """Changes the a-priori callback of the OptimizationProblem.
 
@@ -246,9 +310,9 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
     def inject_post_callback(
         self,
-        function: Optional[
-            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
-        ],
+        function: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ),
     ) -> None:
         """Changes the a-posteriori callback of the OptimizationProblem.
 
@@ -261,12 +325,12 @@ class ConstrainedOptimizationProblem(abc.ABC):
 
     def inject_pre_post_callback(
         self,
-        pre_function: Optional[
-            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
-        ],
-        post_function: Optional[
-            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
-        ],
+        pre_function: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ),
+        post_function: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ),
     ) -> None:
         """Changes the a-priori (pre) and a-posteriori (post) callbacks of the problem.
 
@@ -286,33 +350,37 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
 
     def __init__(
         self,
-        state_forms: Union[ufl.Form, List[ufl.Form]],
-        bcs_list: Union[
-            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
-        ],
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[fenics.Function, List[fenics.Function]],
-        controls: Union[fenics.Function, List[fenics.Function]],
-        adjoints: Union[fenics.Function, List[fenics.Function]],
-        constraint_list: Union[_typing.Constraint, List[_typing.Constraint]],
-        config: Optional[io.Config] = None,
-        riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
-        control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        control_bcs_list: Optional[
-            Union[
-                fenics.DirichletBC,
-                List[fenics.DirichletBC],
-                List[List[fenics.DirichletBC]],
-            ]
-        ] = None,
-        preconditioner_forms: Optional[List[ufl.Form]] = None,
+        state_forms: ufl.Form | list[ufl.Form],
+        bcs_list: (
+            fenics.DirichletBC
+            | list[fenics.DirichletBC]
+            | list[list[fenics.DirichletBC]]
+        ),
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: fenics.Function | list[fenics.Function],
+        controls: fenics.Function | list[fenics.Function],
+        adjoints: fenics.Function | list[fenics.Function],
+        constraint_list: _typing.Constraint | list[_typing.Constraint],
+        config: io.Config | None = None,
+        riesz_scalar_products: ufl.Form | list[ufl.Form] | None = None,
+        control_constraints: list[list[float | fenics.Function]] | None = None,
+        initial_guess: list[fenics.Function] | None = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        control_bcs_list: (
+            fenics.DirichletBC
+            | list[fenics.DirichletBC]
+            | list[list[fenics.DirichletBC]]
+            | None
+        ) = None,
+        preconditioner_forms: list[ufl.Form] | None = None,
+        pre_callback: Callable | None = None,
+        post_callback: Callable | None = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
     ) -> None:
         r"""Initializes self.
 
@@ -345,7 +413,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 that there are none (default is ``None``). The (inner) lists should
                 contain two elements of the form ``[u_a, u_b]``, where ``u_a`` is the
                 lower, and ``u_b`` the upper bound.
-            initial_guess: List of functions that act as initial guess for the state
+            initial_guess: list of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
             ksp_options: A list of dicts corresponding to command line options for
@@ -355,11 +423,30 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
+            gradient_ksp_options: A list of dicts corresponding to command line options
+                for PETSc, used to compute the (shape) gradient. If this is ``None``,
+                either a direct or an iterative method is used (depending on the
+                configuration, section OptimizationRoutine, key gradient_method).
             control_bcs_list: A list of boundary conditions for the control variables.
                 This is passed analogously to ``bcs_list``. Default is ``None``.
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
+            adjoint_linear_solver: The linear solver (KSP) which is used to solve the
+                (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         super().__init__(
@@ -373,19 +460,36 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
+            gradient_ksp_options=gradient_ksp_options,
             preconditioner_forms=preconditioner_forms,
+            pre_callback=pre_callback,
+            post_callback=post_callback,
+            linear_solver=linear_solver,
+            adjoint_linear_solver=adjoint_linear_solver,
+            newton_linearizations=newton_linearizations,
+            excluded_from_time_derivative=excluded_from_time_derivative,
         )
 
-        self.controls = controls
+        self.controls = _utils.enlist(controls)
         self.riesz_scalar_products = riesz_scalar_products
         self.control_bcs_list = control_bcs_list
         self.control_constraints = control_constraints
 
+        self.db.function_db.controls = self.controls
+        self.db.function_db.control_spaces = [
+            x.function_space() for x in self.db.function_db.controls
+        ]
+        self.db.function_db.gradient = _utils.create_function_list(
+            self.db.function_db.control_spaces
+        )
+        self.db.parameter_db.problem_type = "control"
+
     def _solve_inner_problem(
         self,
         tol: float = 1e-2,
-        inner_rtol: Optional[float] = None,
-        inner_atol: Optional[float] = None,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
+        iteration: int = 0,
     ) -> None:
         """Solves the inner (unconstrained) optimization problem.
 
@@ -397,9 +501,16 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
+            iteration: The current outer iteration count
 
         """
-        super()._solve_inner_problem(tol, inner_rtol, inner_atol)
+        super()._solve_inner_problem(
+            tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol, iteration=iteration
+        )
+
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set("Output", "result_dir", str(output_path / f"subproblem_{iteration}"))
 
         optimal_control_problem = optimal_control.OptimalControlProblem(
             self.state_forms,
@@ -408,14 +519,21 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             self.states,
             self.controls,
             self.adjoints,
-            config=self.config,
+            config=config,
             riesz_scalar_products=self.riesz_scalar_products,
             control_constraints=self.control_constraints,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
+            gradient_ksp_options=self.gradient_ksp_options,
             control_bcs_list=self.control_bcs_list,
             preconditioner_forms=self.preconditioner_forms,
+            pre_callback=self.pre_callback,
+            post_callback=self.post_callback,
+            linear_solver=self.linear_solver,
+            adjoint_linear_solver=self.adjoint_linear_solver,
+            newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
 
         optimal_control_problem.inject_pre_post_callback(
@@ -434,6 +552,11 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         if self.solver.iterations == 1:
             self.initial_norm = optimal_control_problem.solver.gradient_norm_initial
 
+        config = copy.deepcopy(self.config)
+        config.set("Output", "save_state", "False")
+        config.set("Output", "save_adjoint", "False")
+        config.set("Output", "save_gradient", "False")
+
         temp_problem = optimal_control.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -441,12 +564,20 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             self.states,
             self.controls,
             self.adjoints,
-            config=self.config,
+            config=config,
             riesz_scalar_products=self.riesz_scalar_products,
             control_constraints=self.control_constraints,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
+            gradient_ksp_options=self.gradient_ksp_options,
+            preconditioner_forms=self.preconditioner_forms,
+            pre_callback=self.pre_callback,
+            post_callback=self.post_callback,
+            linear_solver=self.linear_solver,
+            adjoint_linear_solver=self.adjoint_linear_solver,
+            newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
         temp_problem.state_problem.has_solution = True
         self.current_function_value = temp_problem.reduced_cost_functional.evaluate()
@@ -457,28 +588,31 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
 
     def __init__(
         self,
-        state_forms: Union[ufl.Form, List[ufl.Form]],
-        bcs_list: Union[
-            fenics.DirichletBC,
-            List[fenics.DirichletBC],
-            List[List[fenics.DirichletBC]],
-            None,
-        ],
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[fenics.Function, List[fenics.Function]],
-        adjoints: Union[fenics.Function, List[fenics.Function]],
+        state_forms: ufl.Form | list[ufl.Form],
+        bcs_list: (
+            fenics.DirichletBC
+            | list[fenics.DirichletBC]
+            | list[list[fenics.DirichletBC]]
+            | None
+        ),
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: fenics.Function | list[fenics.Function],
+        adjoints: fenics.Function | list[fenics.Function],
         boundaries: fenics.MeshFunction,
-        constraint_list: Union[_typing.Constraint, List[_typing.Constraint]],
-        config: Optional[io.Config] = None,
-        shape_scalar_product: Optional[ufl.Form] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        preconditioner_forms: Optional[List[ufl.Form]] = None,
+        constraint_list: _typing.Constraint | list[_typing.Constraint],
+        config: io.Config | None = None,
+        shape_scalar_product: ufl.Form | None = None,
+        initial_guess: list[fenics.Function] | None = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        preconditioner_forms: list[ufl.Form] | None = None,
+        pre_callback: Callable | None = None,
+        post_callback: Callable | None = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -510,7 +644,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 objects to define the weak form, which have to be in a
                 :py:class:`fenics.VectorFunctionSpace` of continuous, linear Lagrange
                 finite elements. Moreover, this form is required to be symmetric.
-            initial_guess: List of functions that act as initial guess for the state
+            initial_guess: list of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
             ksp_options: A list of dicts corresponding to command line options for
@@ -520,9 +654,28 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 for PETSc, used to solve the adjoint systems. If this is ``None``, then
                 the same options as for the state systems are used (default is
                 ``None``).
+            gradient_ksp_options: A list of dicts corresponding to command line options
+                for PETSc, used to compute the (shape) gradient. If this is ``None``,
+                either a direct or an iterative method is used (depending on the
+                configuration, section OptimizationRoutine, key gradient_method).
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
+            adjoint_linear_solver: The linear solver (KSP) which is used to solve the
+                (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         super().__init__(
@@ -536,17 +689,37 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
+            gradient_ksp_options=gradient_ksp_options,
             preconditioner_forms=preconditioner_forms,
+            pre_callback=pre_callback,
+            post_callback=post_callback,
+            linear_solver=linear_solver,
+            adjoint_linear_solver=adjoint_linear_solver,
+            newton_linearizations=newton_linearizations,
+            excluded_from_time_derivative=excluded_from_time_derivative,
         )
 
         self.boundaries = boundaries
         self.shape_scalar_product = shape_scalar_product
 
+        if shape_scalar_product is None:
+            deformation_space: fenics.FunctionSpace = fenics.VectorFunctionSpace(
+                self.db.geometry_db.mesh, "CG", 1
+            )
+        else:
+            deformation_space = shape_scalar_product.arguments()[0].ufl_function_space()
+        self.db.function_db.control_spaces = [deformation_space]
+        self.db.function_db.gradient = [
+            fenics.Function(self.db.function_db.control_spaces[0])
+        ]
+        self.db.parameter_db.problem_type = "shape"
+
     def _solve_inner_problem(
         self,
         tol: float = 1e-2,
-        inner_rtol: Optional[float] = None,
-        inner_atol: Optional[float] = None,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
+        iteration: int = 0,
     ) -> None:
         """Solves the inner (unconstrained) optimization problem.
 
@@ -558,9 +731,16 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
                 so that ``inner_rtol = tol`` is used.
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
+            iteration: The current outer iteration count.
 
         """
-        super()._solve_inner_problem(tol, inner_rtol, inner_atol)
+        super()._solve_inner_problem(
+            tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol, iteration=iteration
+        )
+
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set("Output", "result_dir", str(output_path / f"subproblem_{iteration}"))
 
         shape_optimization_problem = shape_optimization.ShapeOptimizationProblem(
             self.state_forms,
@@ -569,13 +749,21 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             self.states,
             self.adjoints,
             self.boundaries,
-            config=self.config,
+            config=config,
             shape_scalar_product=self.shape_scalar_product,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
+            gradient_ksp_options=self.gradient_ksp_options,
             preconditioner_forms=self.preconditioner_forms,
+            pre_callback=self.pre_callback,
+            post_callback=self.post_callback,
+            linear_solver=self.linear_solver,
+            adjoint_linear_solver=self.adjoint_linear_solver,
+            newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
+
         shape_optimization_problem.inject_pre_post_callback(
             self._pre_callback, self._post_callback
         )
@@ -592,6 +780,11 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         if self.solver.iterations == 1:
             self.initial_norm = shape_optimization_problem.solver.gradient_norm_initial
 
+        config = copy.deepcopy(self.config)
+        config.set("Output", "save_state", "False")
+        config.set("Output", "save_adjoint", "False")
+        config.set("Output", "save_gradient", "False")
+
         temp_problem = shape_optimization.ShapeOptimizationProblem(
             self.state_forms,
             self.bcs_list,
@@ -599,11 +792,19 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             self.states,
             self.adjoints,
             self.boundaries,
-            config=self.config,
+            config=config,
             shape_scalar_product=self.shape_scalar_product,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
+            gradient_ksp_options=self.gradient_ksp_options,
+            preconditioner_forms=self.preconditioner_forms,
+            pre_callback=self.pre_callback,
+            post_callback=self.post_callback,
+            linear_solver=self.linear_solver,
+            adjoint_linear_solver=self.adjoint_linear_solver,
+            newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
         temp_problem.state_problem.has_solution = True
         self.current_function_value = temp_problem.reduced_cost_functional.evaluate()

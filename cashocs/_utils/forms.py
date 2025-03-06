@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Any, List, Optional, Tuple, TypeVar, Union
+from typing import Any, TypeVar
 
 import fenics
 
@@ -29,12 +29,13 @@ except ImportError:
     import ufl
 
 from cashocs import _exceptions
-from cashocs import _loggers
+from cashocs import _utils
+from cashocs import log
 
 T = TypeVar("T")
 
 
-def summation(x: List[T]) -> Union[T, fenics.Constant]:
+def summation(x: list[T]) -> T | fenics.Constant:
     """Sums elements of a list in a UFL friendly fashion.
 
     This can be used to sum, e.g., UFL forms, or UFL expressions that can be used in UFL
@@ -55,7 +56,7 @@ def summation(x: List[T]) -> Union[T, fenics.Constant]:
     """
     if len(x) == 0:
         y = fenics.Constant(0.0)
-        _loggers.warning("Empty list handed to summation, returning 0.")
+        log.warning("Empty list handed to summation, returning 0.")
     else:
         y = x[0]
 
@@ -65,7 +66,7 @@ def summation(x: List[T]) -> Union[T, fenics.Constant]:
     return y
 
 
-def multiplication(x: List[T]) -> Union[T, fenics.Constant]:
+def multiplication(x: list[T]) -> T | fenics.Constant:
     """Multiplies the elements of a list in a UFL friendly fashion.
 
     Used to build the product of certain UFL expressions to construct a UFL form.
@@ -79,7 +80,7 @@ def multiplication(x: List[T]) -> Union[T, fenics.Constant]:
     """
     if len(x) == 0:
         y = fenics.Constant(1.0)
-        _loggers.warning("Empty list handed to multiplication, returning 1.")
+        log.warning("Empty list handed to multiplication, returning 1.")
     else:
         y = x[0]
 
@@ -89,9 +90,7 @@ def multiplication(x: List[T]) -> Union[T, fenics.Constant]:
     return y
 
 
-def max_(
-    a: Union[float, fenics.Function], b: Union[float, fenics.Function]
-) -> ufl.core.expr.Expr:
+def max_(a: float | fenics.Function, b: float | fenics.Function) -> ufl.core.expr.Expr:
     """Computes the maximum of a and b.
 
     Args:
@@ -105,9 +104,7 @@ def max_(
     return (a + b + abs(a - b)) / fenics.Constant(2.0)
 
 
-def min_(
-    a: Union[float, fenics.Function], b: Union[float, fenics.Function]
-) -> ufl.core.expr.Expr:
+def min_(a: float | fenics.Function, b: float | fenics.Function) -> ufl.core.expr.Expr:
     """Computes the minimum of a and b.
 
     Args:
@@ -124,11 +121,11 @@ def min_(
 def moreau_yosida_regularization(
     term: ufl.core.expr.Expr,
     gamma: float,
-    measure: fenics.Measure,
-    lower_threshold: Optional[Union[float, fenics.Function]] = None,
-    upper_threshold: Optional[Union[float, fenics.Function]] = None,
-    shift_lower: Optional[Union[float, fenics.Function]] = None,
-    shift_upper: Optional[Union[float, fenics.Function]] = None,
+    measure: ufl.Measure,
+    lower_threshold: float | fenics.Function | None = None,
+    upper_threshold: float | fenics.Function | None = None,
+    shift_lower: float | fenics.Function | None = None,
+    shift_upper: float | fenics.Function | None = None,
 ) -> ufl.Form:
     r"""Implements a Moreau-Yosida regularization of an inequality constraint.
 
@@ -212,13 +209,11 @@ def moreau_yosida_regularization(
 
 def create_dirichlet_bcs(
     function_space: fenics.FunctionSpace,
-    value: Union[
-        fenics.Constant, fenics.Expression, fenics.Function, float, Tuple[float]
-    ],
+    value: fenics.Constant | fenics.Expression | fenics.Function | float | tuple[float],
     boundaries: fenics.MeshFunction,
-    idcs: Union[List[Union[int, str]], int, str],
+    idcs: list[int | str] | int | str,
     **kwargs: Any,
-) -> List[fenics.DirichletBC]:
+) -> list[fenics.DirichletBC]:
     """Create several Dirichlet boundary conditions at once.
 
     Wraps multiple Dirichlet boundary conditions into a list, in case
@@ -263,33 +258,15 @@ def create_dirichlet_bcs(
 
     bcs_list = []
     for entry in idcs:
-        if isinstance(entry, int):
-            bcs_list.append(
-                fenics.DirichletBC(function_space, value, boundaries, entry, **kwargs)
-            )
-        elif isinstance(entry, str):
-            physical_groups = mesh.physical_groups
-            if entry in physical_groups["ds"].keys():
-                bcs_list.append(
-                    fenics.DirichletBC(
-                        function_space,
-                        value,
-                        boundaries,
-                        physical_groups["ds"][entry],
-                        **kwargs,
-                    )
-                )
-            else:
-                raise _exceptions.InputError(
-                    "cashocs.create_dirichlet_bcs",
-                    "idcs",
-                    "The string you have supplied is not associated with a boundary.",
-                )
+        int_tag = _utils.tag_to_int(mesh, entry, "ds")
+        bcs_list.append(
+            fenics.DirichletBC(function_space, value, boundaries, int_tag, **kwargs)
+        )
 
     return bcs_list
 
 
-def bilinear_boundary_form_modification(forms: List[ufl.Form]) -> List[ufl.Form]:
+def bilinear_boundary_form_modification(forms: list[ufl.Form]) -> list[ufl.Form]:
     """Modifies a bilinear form for the case it is given on the boundary only.
 
     This avoids a bug in fenics.SystemAssembler where the matrices' sparsity pattern
@@ -300,7 +277,7 @@ def bilinear_boundary_form_modification(forms: List[ufl.Form]) -> List[ufl.Form]
     for form in forms:
         trial, test = form.arguments()
         mesh = trial.function_space().mesh()
-        dx = fenics.Measure("dx", domain=mesh)
-        mod_forms.append(form + fenics.Constant(0.0) * fenics.dot(trial, test) * dx)
+        dx = ufl.Measure("dx", domain=mesh)
+        mod_forms.append(form + fenics.Constant(0.0) * ufl.dot(trial, test) * dx)
 
     return mod_forms

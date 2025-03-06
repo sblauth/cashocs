@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -25,7 +25,7 @@ and barycenter, and desired ones.
 from __future__ import annotations
 
 import abc
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 
@@ -34,8 +34,8 @@ try:
 except ImportError:
     import ufl
 
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 
 if TYPE_CHECKING:
     try:
@@ -57,7 +57,7 @@ def t_grad(u: fenics.Function, n: fenics.FacetNormal) -> ufl_expr.Expr:
         The tangential gradient of u.
 
     """
-    return fenics.grad(u) - fenics.outer(fenics.grad(u) * n, n)
+    return ufl.grad(u) - ufl.outer(ufl.grad(u) * n, n)
 
 
 def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl_expr.Expr:
@@ -71,7 +71,7 @@ def t_div(u: fenics.Function, n: fenics.FacetNormal) -> ufl_expr.Expr:
         The tangential divergence of u.
 
     """
-    return fenics.div(u) - fenics.inner(fenics.grad(u) * n, n)
+    return ufl.div(u) - ufl.inner(ufl.grad(u) * n, n)
 
 
 class ShapeRegularizationTerm(abc.ABC):
@@ -88,7 +88,7 @@ class ShapeRegularizationTerm(abc.ABC):
 
         self.config = self.db.config
         self.mesh = db.geometry_db.mesh
-        self.dx = fenics.Measure("dx", self.mesh)
+        self.dx = ufl.Measure("dx", self.mesh)
         self.use_relative_scaling = self.config.getboolean(
             "Regularization", "use_relative_scaling"
         )
@@ -107,6 +107,7 @@ class ShapeRegularizationTerm(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
     def update(self) -> None:
         """Updates the internal parameters of the regularization term."""
         pass
@@ -161,7 +162,7 @@ class VolumeRegularization(ShapeRegularizationTerm):
             shape_form = (
                 fenics.Constant(self.mu)
                 * (self.current_volume - fenics.Constant(self.target_volume))
-                * fenics.div(self.test_vector_field)
+                * ufl.div(self.test_vector_field)
                 * self.dx
             )
             return shape_form
@@ -198,7 +199,7 @@ class VolumeRegularization(ShapeRegularizationTerm):
                 value = 0.5 * pow(volume - self.target_volume, 2)
 
                 if abs(value) < 1e-15:
-                    _loggers.info(
+                    log.info(
                         "The volume regularization vanishes for the initial "
                         "iteration. Multiplying this term with the factor you "
                         "supplied as weight."
@@ -232,7 +233,7 @@ class SurfaceRegularization(ShapeRegularizationTerm):
         """
         super().__init__(db)
 
-        self.ds = fenics.Measure("ds", self.mesh)
+        self.ds = ufl.Measure("ds", self.mesh)
         self.mu = self.config.getfloat("Regularization", "factor_surface")
         self.target_surface = self.config.getfloat("Regularization", "target_surface")
         if self.config.getboolean("Regularization", "use_initial_surface"):
@@ -293,7 +294,7 @@ class SurfaceRegularization(ShapeRegularizationTerm):
                 value = 0.5 * pow(surface - self.target_surface, 2)
 
                 if abs(value) < 1e-15:
-                    _loggers.info(
+                    log.info(
                         "The surface regularization vanishes for the initial "
                         "iteration. Multiplying this term with the factor you "
                         "supplied as weight."
@@ -366,13 +367,12 @@ class BarycenterRegularization(ShapeRegularizationTerm):
                 * (
                     self.current_barycenter_x
                     / self.current_volume
-                    * fenics.div(self.test_vector_field)
+                    * ufl.div(self.test_vector_field)
                     + 1
                     / self.current_volume
                     * (
                         self.test_vector_field[0]
-                        + self.spatial_coordinate[0]
-                        * fenics.div(self.test_vector_field)
+                        + self.spatial_coordinate[0] * ufl.div(self.test_vector_field)
                     )
                 )
                 * self.dx
@@ -384,13 +384,12 @@ class BarycenterRegularization(ShapeRegularizationTerm):
                 * (
                     self.current_barycenter_y
                     / self.current_volume
-                    * fenics.div(self.test_vector_field)
+                    * ufl.div(self.test_vector_field)
                     + 1
                     / self.current_volume
                     * (
                         self.test_vector_field[1]
-                        + self.spatial_coordinate[1]
-                        * fenics.div(self.test_vector_field)
+                        + self.spatial_coordinate[1] * ufl.div(self.test_vector_field)
                     )
                 )
                 * self.dx
@@ -406,13 +405,13 @@ class BarycenterRegularization(ShapeRegularizationTerm):
                     * (
                         self.current_barycenter_z
                         / self.current_volume
-                        * fenics.div(self.test_vector_field)
+                        * ufl.div(self.test_vector_field)
                         + 1
                         / self.current_volume
                         * (
                             self.test_vector_field[2]
                             + self.spatial_coordinate[2]
-                            * fenics.div(self.test_vector_field)
+                            * ufl.div(self.test_vector_field)
                         )
                     )
                     * self.dx
@@ -472,7 +471,7 @@ class BarycenterRegularization(ShapeRegularizationTerm):
                 )
 
                 if abs(value) < 1e-15:
-                    _loggers.info(
+                    log.info(
                         "The barycenter regularization vanishes for the initial "
                         "iteration. Multiplying this term with the factor you "
                         "supplied as weight."
@@ -484,7 +483,7 @@ class BarycenterRegularization(ShapeRegularizationTerm):
                     "mu_barycenter"
                 ]
 
-    def _compute_barycenter_list(self) -> List[float]:
+    def _compute_barycenter_list(self) -> list[float]:
         """Computes the list of barycenters for the geometry.
 
         Returns:
@@ -523,7 +522,7 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         super().__init__(db)
 
         self.geometric_dimension = db.geometry_db.mesh.geometric_dimension()
-        self.ds = fenics.Measure("ds", self.mesh)
+        self.ds = ufl.Measure("ds", self.mesh)
         self.spatial_coordinate = fenics.SpatialCoordinate(self.mesh)
 
         self.a_curvature_matrix = fenics.PETScMatrix()
@@ -534,14 +533,14 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         n = fenics.FacetNormal(self.mesh)
         x = fenics.SpatialCoordinate(self.mesh)
         self.a_curvature = (
-            fenics.inner(
+            ufl.inner(
                 fenics.TrialFunction(self.db.function_db.control_spaces[0]),
                 fenics.TestFunction(self.db.function_db.control_spaces[0]),
             )
             * self.ds
         )
         self.l_curvature = (
-            fenics.inner(
+            ufl.inner(
                 t_grad(x, n),
                 t_grad(fenics.TestFunction(self.db.function_db.control_spaces[0]), n),
             )
@@ -564,10 +563,10 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         if self.is_active:
             x = fenics.SpatialCoordinate(self.mesh)
             n = fenics.FacetNormal(self.mesh)
-            identity = fenics.Identity(self.geometric_dimension)
+            identity = ufl.Identity(self.geometric_dimension)
 
             shape_form = fenics.Constant(self.mu) * (
-                fenics.inner(
+                ufl.inner(
                     (identity - (t_grad(x, n) + (t_grad(x, n)).T))
                     * t_grad(self.test_vector_field, n),
                     t_grad(self.kappa_curvature, n),
@@ -598,7 +597,7 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         if self.is_active:
             self._compute_curvature()
             curvature_val = fenics.assemble(
-                fenics.inner(self.kappa_curvature, self.kappa_curvature) * self.ds
+                ufl.inner(self.kappa_curvature, self.kappa_curvature) * self.ds
             )
             value += 0.5 * self.mu * curvature_val
 
@@ -625,11 +624,11 @@ class CurvatureRegularization(ShapeRegularizationTerm):
             if not self.db.parameter_db.temp_dict:
                 self._compute_curvature()
                 value = 0.5 * fenics.assemble(
-                    fenics.inner(self.kappa_curvature, self.kappa_curvature) * self.ds
+                    ufl.inner(self.kappa_curvature, self.kappa_curvature) * self.ds
                 )
 
                 if abs(value) < 1e-15:
-                    _loggers.info(
+                    log.info(
                         "The curvature regularization vanishes for the initial "
                         "iteration. Multiplying this term with the factor you "
                         "supplied as weight."
@@ -640,6 +639,10 @@ class CurvatureRegularization(ShapeRegularizationTerm):
                 self.mu = self.db.parameter_db.temp_dict["Regularization"][
                     "mu_curvature"
                 ]
+
+    def update(self) -> None:
+        """Updates the internal parameters of the regularization term."""
+        pass
 
 
 class ShapeRegularization:

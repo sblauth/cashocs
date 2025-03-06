@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -22,10 +22,17 @@ from __future__ import annotations
 from configparser import ConfigParser
 import json
 import pathlib
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from cashocs import _exceptions
-from cashocs import _loggers
+from cashocs import log
+
+try:
+    import cashocs_extensions  # pylint: disable=unused-import # noqa: F401
+
+    has_cashocs_extensions = True
+except ImportError:
+    has_cashocs_extensions = False
 
 
 def load_config(path: str) -> ConfigParser:
@@ -56,7 +63,12 @@ def _check_for_config_list(string: str) -> bool:
     result = False
 
     for char in string:
-        if not (char.isdigit() or char.isspace() or char in ["[", "]", ".", ",", "-"]):
+        if not (
+            char.isdigit()
+            or char.isalpha()
+            or char.isspace()
+            or char in ["[", "]", ".", ",", "-", '"', "'", "_"]
+        ):
             return result
 
     if string[0] != "[":
@@ -64,15 +76,13 @@ def _check_for_config_list(string: str) -> bool:
     if string[-1] != "]":
         return result
 
-    result = True
-
-    return result
+    return True
 
 
 class Config(ConfigParser):
     """Class for handling the config in cashocs."""
 
-    def __init__(self, config_file: Optional[str] = None) -> None:
+    def __init__(self, config_file: str | None = None) -> None:
         """Initializes self.
 
         Args:
@@ -80,15 +90,10 @@ class Config(ConfigParser):
 
         """
         super().__init__()
-        self.config_errors: List[str] = []
+        self.config_errors: list[str] = []
 
-        self.config_scheme: Dict[str, Dict[str, Dict[str, Any]]] = {
+        self.config_scheme: dict[str, dict[str, dict[str, Any]]] = {
             "Mesh": {
-                "mesh_file": {
-                    "type": "str",
-                    "attributes": ["file"],
-                    "file_extension": "xdmf",
-                },
                 "gmsh_file": {
                     "type": "str",
                     "attributes": ["file"],
@@ -150,6 +155,10 @@ class Config(ConfigParser):
                 "picard_verbose": {
                     "type": "bool",
                 },
+                "backend": {
+                    "type": "str",
+                    "possible_options": ["cashocs", "petsc"],
+                },
             },
             "OptimizationRoutine": {
                 "algorithm": {
@@ -202,7 +211,6 @@ class Config(ConfigParser):
                     "type": "float",
                     "attributes": ["positive"],
                 },
-                "safeguard_stepsize": {"type": "bool"},
                 "epsilon_armijo": {
                     "type": "float",
                     "attributes": ["positive", "less_than_one"],
@@ -211,18 +219,19 @@ class Config(ConfigParser):
                     "type": "float",
                     "attributes": ["positive", "larger_than_one"],
                 },
+                "safeguard_stepsize": {"type": "bool"},
                 "polynomial_model": {
                     "type": "str",
                     "possible_options": ["cubic", "quadratic"],
-                },
-                "factor_low": {
-                    "type": "float",
-                    "attributes": ["less_than_one", "positive"],
                 },
                 "factor_high": {
                     "type": "float",
                     "attributes": ["less_than_one", "positive"],
                     "larger_than": ("LineSearch", "factor_low"),
+                },
+                "factor_low": {
+                    "type": "float",
+                    "attributes": ["less_than_one", "positive"],
                 },
                 "fail_if_not_converged": {
                     "type": "bool",
@@ -298,6 +307,9 @@ class Config(ConfigParser):
                 "shape_bdry_fix_z": {
                     "type": "list",
                 },
+                "fixed_dimensions": {
+                    "type": "list",
+                },
                 "use_pull_back": {
                     "type": "bool",
                 },
@@ -352,6 +364,13 @@ class Config(ConfigParser):
                 "boundaries_dist": {
                     "type": "list",
                 },
+                "distance_method": {
+                    "type": "str",
+                    "possible_options": [
+                        "eikonal",
+                        "poisson",
+                    ],
+                },
                 "smooth_mu": {
                     "type": "bool",
                 },
@@ -365,9 +384,6 @@ class Config(ConfigParser):
                 "p_laplacian_stabilization": {
                     "type": "float",
                     "attributes": ["non_negative", "less_than_one"],
-                },
-                "fixed_dimensions": {
-                    "type": "list",
                 },
                 "degree_estimation": {
                     "type": "bool",
@@ -566,6 +582,7 @@ picard_rtol = 1e-10
 picard_atol = 1e-12
 picard_iter = 50
 picard_verbose = False
+backend = cashocs
 
 [OptimizationRoutine]
 algorithm = none
@@ -596,7 +613,6 @@ use_sqrt_mu = False
 use_p_laplacian = False
 p_laplacian_power = 2
 p_laplacian_stabilization = 0.0
-degree_estimation = True
 use_pull_back = True
 use_distance_mu = False
 mu_min = 1.0
@@ -604,6 +620,7 @@ mu_max = 1.0
 dist_min = 1.0
 dist_max = 1.0
 boundaries_dist = []
+distance_method = eikonal
 smooth_mu = False
 inhomogeneous = False
 update_inhomogeneous = False
@@ -614,6 +631,7 @@ shape_bdry_fix = []
 shape_bdry_fix_x = []
 shape_bdry_fix_y = []
 shape_bdry_fix_z = []
+degree_estimation = True
 global_deformation = False
 test_for_intersections = True
 
@@ -675,8 +693,8 @@ max_iter_bisection = 100
 
 [Output]
 save_results = True
-verbose = True
-save_txt = True
+verbose = False
+save_txt = False
 save_state = False
 save_adjoint = False
 save_gradient = False
@@ -692,17 +710,21 @@ restart = False
 
         self.read_string(self.default_config_str)
 
+        if has_cashocs_extensions:
+            self.config_scheme.update(cashocs_extensions.config.config_scheme)
+            self.read_string(cashocs_extensions.config.default_config_str)
+
         if config_file is not None:
             file = pathlib.Path(config_file)
             if file.is_file():
                 self.read(config_file)
             else:
-                _loggers.warning(
+                log.warning(
                     f"Could not find the specified config file {config_file}. "
                     "Using cashocs default config instead."
                 )
 
-    def getlist(self, section: str, option: str, **kwargs: Any) -> List:
+    def getlist(self, section: str, option: str, **kwargs: Any) -> list:
         """Extracts a list from a config file.
 
         Args:
@@ -718,7 +740,7 @@ restart = False
         if (
             self.config_scheme[section][option]["type"] == "list"
         ) and _check_for_config_list(self.get(section, option)):
-            py_list: List = json.loads(self.get(section, option, **kwargs))
+            py_list: list = json.loads(self.get(section, option, **kwargs))
             return py_list
         else:
             raise _exceptions.InputError(
@@ -882,7 +904,7 @@ restart = False
             self._check_larger_than_one_attribute(section, key, key_attributes)
 
     def _check_file_attribute(
-        self, section: str, key: str, key_attributes: List[str]
+        self, section: str, key: str, key_attributes: list[str]
     ) -> None:
         """Checks, whether a file specified in key exists.
 
@@ -921,7 +943,7 @@ restart = False
             )
 
     def _check_non_negative_attribute(
-        self, section: str, key: str, key_attributes: List[str]
+        self, section: str, key: str, key_attributes: list[str]
     ) -> None:
         """Checks, whether key is nonnegative.
 
@@ -938,7 +960,7 @@ restart = False
                 )
 
     def _check_positive_attribute(
-        self, section: str, key: str, key_attributes: List[str]
+        self, section: str, key: str, key_attributes: list[str]
     ) -> None:
         """Checks, whether key is positive.
 
@@ -956,7 +978,7 @@ restart = False
                 )
 
     def _check_less_than_one_attribute(
-        self, section: str, key: str, key_attributes: List[str]
+        self, section: str, key: str, key_attributes: list[str]
     ) -> None:
         """Checks, whether key is less than one.
 
@@ -974,7 +996,7 @@ restart = False
                 )
 
     def _check_larger_than_one_attribute(
-        self, section: str, key: str, key_attributes: List[str]
+        self, section: str, key: str, key_attributes: list[str]
     ) -> None:
         """Checks, whether key is larger than one.
 

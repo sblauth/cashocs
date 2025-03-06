@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import cast, List, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -54,7 +54,7 @@ class ShapeVariableAbstractions(
         self.mesh_handler = optimization_problem.mesh_handler
 
     def compute_decrease_measure(
-        self, search_direction: List[fenics.Function]
+        self, search_direction: list[fenics.Function]
     ) -> float:
         """Computes the measure of decrease needed for the Armijo test.
 
@@ -88,7 +88,13 @@ class ShapeVariableAbstractions(
         self.mesh_handler.revert_transformation()
 
     def update_optimization_variables(
-        self, search_direction: List[fenics.Function], stepsize: float, beta: float
+        self,
+        search_direction: list[fenics.Function],
+        stepsize: float,
+        beta: float,
+        active_idx: np.ndarray | None = None,
+        constraint_gradient: np.ndarray | None = None,
+        dropped_idx: np.ndarray | None = None,
     ) -> float:
         """Updates the optimization variables based on a line search.
 
@@ -97,6 +103,10 @@ class ShapeVariableAbstractions(
             stepsize: The current (trial) stepsize.
             beta: The parameter for the line search, which "halves" the stepsize if the
                 test was not successful.
+            active_idx: A boolean mask corresponding to the working set.
+            constraint_gradient: The gradient of (all) constraints.
+            dropped_idx: A boolean mask indicating which constraints have been recently
+                dropped from the working set.
 
         Returns:
             The stepsize which was found to be acceptable.
@@ -123,7 +133,7 @@ class ShapeVariableAbstractions(
         return stepsize
 
     def compute_a_priori_decreases(
-        self, search_direction: List[fenics.Function], stepsize: float
+        self, search_direction: list[fenics.Function], stepsize: float
     ) -> int:
         """Computes the number of times the stepsize has to be "halved" a priori.
 
@@ -162,7 +172,7 @@ class ShapeVariableAbstractions(
         return requires_remeshing
 
     def project_ncg_search_direction(
-        self, search_direction: List[fenics.Function]
+        self, search_direction: list[fenics.Function]
     ) -> None:
         """Restricts the search direction to the inactive set.
 
@@ -170,4 +180,8 @@ class ShapeVariableAbstractions(
             search_direction: The current search direction (will be overwritten).
 
         """
+        pass
+
+    def compute_active_sets(self) -> None:
+        """Computes the active sets of the problem."""
         pass

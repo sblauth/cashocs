@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,11 +19,12 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 
 from cashocs import _utils
+from cashocs import log
 from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
@@ -41,7 +42,7 @@ class AdjointProblem(pde_problem.PDEProblem):
         db: database.Database,
         adjoint_form_handler: _forms.AdjointFormHandler,
         state_problem: sp.StateProblem,
-        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
     ) -> None:
         """Initializes self.
 
@@ -58,6 +59,10 @@ class AdjointProblem(pde_problem.PDEProblem):
 
         self.adjoint_form_handler = adjoint_form_handler
         self.state_problem = state_problem
+
+        self.excluded_from_time_derivative = (
+            self.state_problem.excluded_from_time_derivative
+        )
 
         self.adjoints = self.db.function_db.adjoints
         self.bcs_list_ad = self.adjoint_form_handler.bcs_list_ad
@@ -86,9 +91,16 @@ class AdjointProblem(pde_problem.PDEProblem):
 
         self._number_of_solves = 0
         if self.db.parameter_db.temp_dict:
-            self.number_of_solves: int = self.db.parameter_db.temp_dict[
-                "output_dict"
-            ].get("adjoint_solves", 0)
+            if (
+                "no_adjoint_solves"
+                in self.db.parameter_db.temp_dict["output_dict"].keys()
+            ):
+
+                self.number_of_solves: int = self.db.parameter_db.temp_dict[
+                    "output_dict"
+                ]["no_adjoint_solves"][-1]
+            else:
+                self.number_of_solves = 0
         else:
             self.number_of_solves = 0
 
@@ -102,7 +114,7 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.db.parameter_db.optimization_state["no_adjoint_solves"] = value
         self._number_of_solves = value
 
-    def solve(self) -> List[fenics.Function]:
+    def solve(self) -> list[fenics.Function]:
         """Solves the adjoint system.
 
         Returns:
@@ -112,25 +124,47 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.state_problem.solve()
 
         if not self.has_solution:
+            log.begin("Solving the adjoint system.", level=log.DEBUG)
             if (
                 not self.config.getboolean("StateSystem", "picard_iteration")
                 or self.db.parameter_db.state_dim == 1
             ):
                 for i in range(self.db.parameter_db.state_dim):
-                    _utils.assemble_and_solve_linear(
-                        self.adjoint_form_handler.adjoint_eq_lhs[-1 - i],
-                        self.adjoint_form_handler.adjoint_eq_rhs[-1 - i],
-                        self.bcs_list_ad[-1 - i],
-                        A=self.A_tensors[-1 - i],
-                        b=self.b_tensors[-1 - i],
-                        fun=self.adjoints[-1 - i],
-                        ksp_options=self.db.parameter_db.adjoint_ksp_options[-1 - i],
-                        comm=self.db.geometry_db.mpi_comm,
-                        preconditioner_form=self.db.form_db.preconditioner_forms[
-                            -1 - i
-                        ],
-                        linear_solver=self.linear_solver,
-                    )
+                    eftd = self.excluded_from_time_derivative[i]
+                    if "ts" in _utils.get_petsc_prefixes(
+                        self.db.parameter_db.adjoint_ksp_options[-1 - i]
+                    ):
+                        nonlinear_solvers.ts_pseudo_solve(
+                            self.adjoint_form_handler.adjoint_eq_forms[-1 - i],
+                            self.adjoints[-1 - i],
+                            self.bcs_list_ad[-1 - i],
+                            petsc_options=self.db.parameter_db.adjoint_ksp_options[
+                                -1 - i
+                            ],
+                            A_tensor=self.A_tensors[-1 - i],
+                            b_tensor=self.b_tensors[-1 - i],
+                            preconditioner_form=self.db.form_db.preconditioner_forms[
+                                -1 - i
+                            ],
+                            excluded_from_time_derivative=eftd,
+                        )
+                    else:
+                        _utils.assemble_and_solve_linear(
+                            self.adjoint_form_handler.adjoint_eq_lhs[-1 - i],
+                            self.adjoint_form_handler.adjoint_eq_rhs[-1 - i],
+                            self.bcs_list_ad[-1 - i],
+                            A=self.A_tensors[-1 - i],
+                            b=self.b_tensors[-1 - i],
+                            fun=self.adjoints[-1 - i],
+                            ksp_options=self.db.parameter_db.adjoint_ksp_options[
+                                -1 - i
+                            ],
+                            comm=self.db.geometry_db.mpi_comm,
+                            preconditioner_form=self.db.form_db.preconditioner_forms[
+                                -1 - i
+                            ],
+                            linear_solver=self.linear_solver,
+                        )
 
             else:
                 nonlinear_solvers.picard_iteration(
@@ -141,19 +175,15 @@ class AdjointProblem(pde_problem.PDEProblem):
                     rtol=self.picard_rtol,
                     atol=self.picard_atol,
                     verbose=self.picard_verbose,
-                    inner_damped=False,
-                    inner_inexact=False,
-                    inner_verbose=False,
                     inner_max_iter=2,
                     ksp_options=self.db.parameter_db.adjoint_ksp_options[::-1],
                     A_tensors=self.A_tensors[::-1],
                     b_tensors=self.b_tensors[::-1],
-                    inner_is_linear=True,
                     preconditioner_forms=self.db.form_db.preconditioner_forms[::-1],
-                    linear_solver=self.linear_solver,
                 )
 
             self.has_solution = True
             self.number_of_solves += 1
+            log.end()
 
         return self.adjoints

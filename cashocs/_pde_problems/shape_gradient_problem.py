@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -25,7 +25,7 @@ from __future__ import annotations
 
 import configparser
 import copy
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -35,13 +35,14 @@ try:
 except ImportError:
     import ufl
 
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
     from cashocs import _forms
+    from cashocs import _typing
     from cashocs._database import database
     from cashocs._pde_problems import adjoint_problem as ap
     from cashocs._pde_problems import state_problem as sp
@@ -91,7 +92,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             self.config.getboolean("ShapeGradient", "use_p_laplacian")
             and self.form_handler.use_fixed_dimensions
         ):
-            _loggers.warning(
+            log.warning(
                 "Incompatible config settings: "
                 "use_p_laplacian and fixed_dimensions are incompatible. "
                 "Falling back to use_p_laplacian=False."
@@ -111,7 +112,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 self.config,
             )
 
-    def solve(self) -> List[fenics.Function]:
+    def solve(self) -> list[fenics.Function]:
         """Solves the Riesz projection problem to obtain the shape gradient.
 
         Returns:
@@ -123,6 +124,8 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         self.adjoint_problem.solve()
 
         if not self.has_solution:
+            log.begin("Computing the gradient deformation.", level=log.DEBUG)
+
             self.form_handler.shape_regularization.update_geometric_quantities()
 
             if (
@@ -149,6 +152,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                     fun=self.db.function_db.gradient[0],
                     ksp_options=self.ksp_options,
                 )
+                self.form_handler.apply_shape_bcs(self.db.function_db.gradient[0])
 
                 self.has_solution = True
 
@@ -157,6 +161,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             self.gradient_norm_squared = self.form_handler.scalar_product(
                 self.db.function_db.gradient, self.db.function_db.gradient
             )
+            log.end()
 
         return self.db.function_db.gradient
 
@@ -168,9 +173,9 @@ class _PLaplaceProjector:
         self,
         db: database.Database,
         gradient_problem: ShapeGradientProblem,
-        gradient: List[fenics.Function],
+        gradient: list[fenics.Function],
         shape_derivative: ufl.Form,
-        bcs_shape: List[fenics.DirichletBC],
+        bcs_shape: list[fenics.DirichletBC],
         config: configparser.ConfigParser,
     ) -> None:
         """Initializes self.
@@ -202,19 +207,19 @@ class _PLaplaceProjector:
         self.form_list = []
         for p in self.p_list:
             kappa = pow(
-                fenics.inner(fenics.grad(self.solution), fenics.grad(self.solution)),
+                ufl.inner(ufl.grad(self.solution), ufl.grad(self.solution)),
                 (p - 2) / 2.0,
             )
             self.form_list.append(
-                fenics.inner(
+                ufl.inner(
                     self.mu_lame
                     * (fenics.Constant(eps) + kappa)
-                    * fenics.grad(self.solution),
-                    fenics.grad(self.test_vector_field),
+                    * ufl.grad(self.solution),
+                    ufl.grad(self.test_vector_field),
                 )
                 * dx
                 + fenics.Constant(delta)
-                * fenics.dot(self.solution, self.test_vector_field)
+                * ufl.dot(self.solution, self.test_vector_field)
                 * dx
             )
 
@@ -231,18 +236,26 @@ class _PLaplaceProjector:
 
     def solve(self) -> None:
         """Solves the p-Laplace problem for computing the shape gradient."""
+        log.begin("Computing the gradient deformation with the p-Laplace approach.")
+
         self.solution.vector().vec().set(0.0)
         self.solution.vector().apply("")
         for nonlinear_form in self.form_list:
-            nonlinear_solvers.newton_solve(
+            petsc_options: _typing.KspOption = {
+                "snes_type": "newtonls",
+                "snes_linesearch_type": "basic",
+                "snes_ksp_ew": True,
+            }
+            petsc_options.update(self.ksp_options)
+
+            nonlinear_solvers.snes_solve(
                 nonlinear_form,
                 self.solution,
                 self.bcs_shape,
+                petsc_options=petsc_options,
                 shift=self.shape_derivative,
-                damped=False,
-                inexact=True,
-                verbose=False,
-                ksp_options=self.ksp_options,
                 A_tensor=self.A_tensor,
                 b_tensor=self.b_tensor,
             )
+
+        log.end()

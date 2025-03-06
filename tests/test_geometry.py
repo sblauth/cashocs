@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Tests for the geometry module.
-
-"""
+"""Tests for the geometry module."""
 
 import pathlib
 import subprocess
@@ -389,19 +387,26 @@ def test_move_mesh():
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
-def test_eikonal_distance():
+@pytest.mark.parametrize(
+    "method, expected_tolerance", [("poisson", 0.28), ("eikonal", 5e-2)]
+)
+def test_boundary_distance(method, expected_tolerance):
     mesh, _, boundaries, _, _, _ = cashocs.regular_mesh(16)
-    dist = cashocs.geometry.compute_boundary_distance(mesh, boundaries, [1, 2, 3, 4])
+    dist = cashocs.geometry.compute_boundary_distance(
+        mesh, boundaries=boundaries, boundary_idcs=[1, 2, 3, 4], method=method
+    )
     assert dist.vector().min() >= 0.0
-    assert (dist.vector().max() - 0.5) / 0.5 <= 0.05
+    assert np.abs(dist.vector().max() - 0.5) / 0.5 <= expected_tolerance
 
-    dist = cashocs.geometry.compute_boundary_distance(mesh, boundaries, [1])
+    dist = cashocs.geometry.compute_boundary_distance(
+        mesh, boundaries=boundaries, boundary_idcs=[1], method=method
+    )
     assert dist.vector().min() >= 0.0
-    assert (dist.vector().max() - 1.0) / 1.0 <= 0.05
+    assert np.abs(dist.vector().max() - 1.0) / 1.0 <= expected_tolerance
 
-    dist = cashocs.geometry.compute_boundary_distance(mesh)
+    dist = cashocs.geometry.compute_boundary_distance(mesh, method=method)
     assert dist.vector().min() >= 0.0
-    assert (dist.vector().max() - 0.5) / 0.5 <= 0.05
+    assert np.abs(dist.vector().max() - 0.5) / 0.5 <= expected_tolerance
 
 
 def test_named_mesh_import():

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Tests for the Picard iteration.
-
-"""
+"""Tests for the Picard iteration."""
 
 from collections import namedtuple
 import pathlib
@@ -28,7 +26,7 @@ import pytest
 
 import cashocs
 
-set_log_level(LogLevel.CRITICAL)
+set_log_level(cashocs.log.CRITICAL)
 
 
 @pytest.fixture

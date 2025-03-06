@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -26,7 +26,7 @@ from __future__ import annotations
 
 import abc
 import copy
-from typing import Callable, Dict, List, Optional, Tuple, TYPE_CHECKING, Union
+from typing import Callable, cast, TYPE_CHECKING
 import weakref
 
 import fenics
@@ -39,14 +39,16 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _forms
-from cashocs import _loggers
 from cashocs import _pde_problems
 from cashocs import _utils
 from cashocs import io
+from cashocs import log
 from cashocs._database import database
 from cashocs._optimization import cost_functional
 
 if TYPE_CHECKING:
+    from cashocs_extensions import mesh_quality_constraints
+
     from cashocs import _typing
     from cashocs._optimization import line_search as ls
     from cashocs._optimization import optimization_algorithms
@@ -66,7 +68,7 @@ class OptimizationProblem(abc.ABC):
     optimization problems.
     """
 
-    gradient: List[fenics.Function]
+    gradient: list[fenics.Function]
     reduced_cost_functional: cost_functional.ReducedCostFunctional
     gradient_problem: _typing.GradientProblem
     output_manager: io.OutputManager
@@ -77,46 +79,46 @@ class OptimizationProblem(abc.ABC):
     uses_custom_scalar_product: bool = False
     line_search: ls.LineSearch
     hessian_problem: _pde_problems.HessianProblem
-    solver: Union[
-        optimization_algorithms.OptimizationAlgorithm,
-        topology_optimization_algorithm.TopologyOptimizationAlgorithm,
-    ]
+    solver: (
+        optimization_algorithms.OptimizationAlgorithm
+        | topology_optimization_algorithm.TopologyOptimizationAlgorithm
+    )
     config: io.Config
-    initial_guess: Optional[List[fenics.Function]]
-    cost_functional_list: List[_typing.CostFunctional]
+    initial_guess: list[fenics.Function] | None
+    cost_functional_list: list[_typing.CostFunctional]
 
     def __init__(
         self,
-        state_forms: Union[List[ufl.Form], ufl.Form],
-        bcs_list: Union[
-            List[List[fenics.DirichletBC]], List[fenics.DirichletBC], fenics.DirichletBC
-        ],
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[List[fenics.Function], fenics.Function],
-        adjoints: Union[List[fenics.Function], fenics.Function],
-        config: Optional[io.Config] = None,
-        initial_guess: Optional[Union[List[fenics.Function], fenics.Function]] = None,
-        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        gradient_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        desired_weights: Optional[List[float]] = None,
-        temp_dict: Optional[Dict] = None,
-        initial_function_values: Optional[List[float]] = None,
-        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
-        pre_callback: Optional[
-            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
-        ] = None,
-        post_callback: Optional[
-            Union[Callable[[], None], Callable[[_typing.OptimizationProblem], None]]
-        ] = None,
-        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
-        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        state_forms: list[ufl.Form] | ufl.Form,
+        bcs_list: (
+            list[list[fenics.DirichletBC]]
+            | list[fenics.DirichletBC]
+            | fenics.DirichletBC
+        ),
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: list[fenics.Function] | fenics.Function,
+        adjoints: list[fenics.Function] | fenics.Function,
+        config: io.Config | None = None,
+        initial_guess: list[fenics.Function] | fenics.Function | None = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        desired_weights: list[float] | None = None,
+        temp_dict: dict | None = None,
+        initial_function_values: list[float] | None = None,
+        preconditioner_forms: list[ufl.Form] | ufl.Form | None = None,
+        pre_callback: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ) = None,
+        post_callback: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ) = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: (
+            list[int] | list[list[int]] | list[None] | None
+        ) = None,
     ) -> None:
         r"""Initializes self.
 
@@ -138,7 +140,7 @@ class OptimizationProblem(abc.ABC):
                 the optimization algorithm. This has then to be specified in the
                 :py:meth:`solve <cashocs.OptimalControlProblem.solve>` method. The
                 default is ``None``.
-            initial_guess: List of functions that act as initial guess for the state
+            initial_guess: list of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
             ksp_options: A list of dicts corresponding to command line options for
@@ -175,6 +177,13 @@ class OptimizationProblem(abc.ABC):
                 systems arising from the discretized PDE.
             adjoint_linear_solver: The linear solver (KSP) which is used to solve the
                 (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         Notes:
             If one uses a single PDE constraint, the inputs can be the objects
@@ -194,8 +203,8 @@ class OptimizationProblem(abc.ABC):
             cost_functional_form
         )
 
-        self.states: List[fenics.Function] = _utils.enlist(states)
-        self.adjoints: List[fenics.Function] = _utils.enlist(adjoints)
+        self.states: list[fenics.Function] = _utils.enlist(states)
+        self.adjoints: list[fenics.Function] = _utils.enlist(adjoints)
 
         self.use_scaling = False
 
@@ -212,6 +221,8 @@ class OptimizationProblem(abc.ABC):
             self.gradient_ksp_options,
             self.desired_weights,
             self.preconditioner_forms,
+            self.newton_linearizations,
+            self.excluded_from_time_derivative,
         ) = self._parse_optional_inputs(
             initial_guess,
             ksp_options,
@@ -219,6 +230,8 @@ class OptimizationProblem(abc.ABC):
             gradient_ksp_options,
             desired_weights,
             preconditioner_forms,
+            newton_linearizations,
+            excluded_from_time_derivative,
         )
 
         if initial_function_values is not None:
@@ -259,6 +272,8 @@ class OptimizationProblem(abc.ABC):
             self.general_form_handler.state_form_handler,
             self.initial_guess,
             linear_solver=self.linear_solver,
+            newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
         self.adjoint_problem = _pde_problems.AdjointProblem(
             self.db,
@@ -266,6 +281,10 @@ class OptimizationProblem(abc.ABC):
             self.state_problem,
             linear_solver=self.adjoint_linear_solver,
         )
+        self.constraint_manager: mesh_quality_constraints.ConstraintManager | None = (
+            None
+        )
+
         self.output_manager = io.OutputManager(self.db)
 
     @abc.abstractmethod
@@ -276,13 +295,13 @@ class OptimizationProblem(abc.ABC):
 
     def _parse_cost_functional_form(
         self,
-        cost_functional_form: Union[
-            List[_typing.CostFunctional],
-            _typing.CostFunctional,
-            List[ufl.Form],
-            ufl.Form,
-        ],
-    ) -> List[_typing.CostFunctional]:
+        cost_functional_form: (
+            list[_typing.CostFunctional]
+            | _typing.CostFunctional
+            | list[ufl.Form]
+            | ufl.Form
+        ),
+    ) -> list[_typing.CostFunctional]:
         """Parses the cost functional form for use in cashocs.
 
         Returns:
@@ -290,7 +309,7 @@ class OptimizationProblem(abc.ABC):
 
         """
         input_cost_functional_list = _utils.enlist(cost_functional_form)
-        cost_functional_list: List[_typing.CostFunctional] = []
+        cost_functional_list: list[_typing.CostFunctional] = []
         for functional in input_cost_functional_list:
             if isinstance(
                 functional,
@@ -316,28 +335,30 @@ class OptimizationProblem(abc.ABC):
 
     def _parse_optional_inputs(
         self,
-        initial_guess: Optional[Union[List[fenics.Function], fenics.Function]],
-        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]],
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ],
-        gradient_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ],
-        desired_weights: Optional[Union[List[float], float]],
-        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]],
-    ) -> Tuple[
-        Optional[List[fenics.Function]],
-        List[_typing.KspOption],
-        List[_typing.KspOption],
-        Optional[List[_typing.KspOption]],
-        Optional[List[float]],
-        List[Optional[ufl.Form]],
+        initial_guess: list[fenics.Function] | fenics.Function | None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None,
+        desired_weights: list[float] | float | None,
+        preconditioner_forms: list[ufl.Form] | ufl.Form | None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: (
+            list[int] | list[list[int]] | list[None] | None
+        ) = None,
+    ) -> tuple[
+        list[fenics.Function] | None,
+        list[_typing.KspOption],
+        list[_typing.KspOption],
+        list[_typing.KspOption] | None,
+        list[float] | None,
+        list[ufl.Form | None],
+        list[ufl.Form | None],
+        list[list[int]] | list[None],
     ]:
         """Initializes the optional input parameters.
 
         Args:
-            initial_guess: List of functions that act as initial guess for the state
+            initial_guess: list of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`.
             ksp_options: A list of dicts corresponding to command line options for
                 PETSc, used to solve the state systems.
@@ -352,6 +373,13 @@ class OptimizationProblem(abc.ABC):
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         if initial_guess is None:
@@ -360,7 +388,7 @@ class OptimizationProblem(abc.ABC):
             parsed_initial_guess = _utils.enlist(initial_guess)
 
         if ksp_options is None:
-            parsed_ksp_options: List[_typing.KspOption] = []
+            parsed_ksp_options: list[_typing.KspOption] = []
             option = copy.deepcopy(_utils.linalg.direct_ksp_options)
 
             for _ in range(self.state_dim):
@@ -368,8 +396,8 @@ class OptimizationProblem(abc.ABC):
         else:
             parsed_ksp_options = _utils.enlist(ksp_options)
 
-        parsed_adjoint_ksp_options: List[_typing.KspOption] = (
-            parsed_ksp_options[:]
+        parsed_adjoint_ksp_options: list[_typing.KspOption] = (
+            copy.deepcopy(parsed_ksp_options)
             if adjoint_ksp_options is None
             else _utils.enlist(adjoint_ksp_options)
         )
@@ -386,11 +414,22 @@ class OptimizationProblem(abc.ABC):
             self.use_scaling = True
 
         if preconditioner_forms is None:
-            parsed_preconditioner_forms: List[Optional[ufl.Form]] = []
+            parsed_preconditioner_forms: list[ufl.Form | None] = []
             for _ in range(self.state_dim):
                 parsed_preconditioner_forms.append(None)
         else:
             parsed_preconditioner_forms = _utils.enlist(preconditioner_forms)
+
+        if newton_linearizations is None:
+            parsed_newton_linearizations: list[ufl.Form | None] = []
+            for _ in range(self.state_dim):
+                parsed_newton_linearizations.append(None)
+        else:
+            parsed_newton_linearizations = _utils.enlist(newton_linearizations)
+
+        parsed_time_derivative_list = self._parse_excluded_from_time_derivative(
+            excluded_from_time_derivative
+        )
 
         return (
             parsed_initial_guess,
@@ -399,7 +438,46 @@ class OptimizationProblem(abc.ABC):
             parsed_gradient_ksp_options,
             parsed_desired_weights,
             parsed_preconditioner_forms,
+            parsed_newton_linearizations,
+            parsed_time_derivative_list,
         )
+
+    def _parse_excluded_from_time_derivative(
+        self,
+        excluded_from_time_derivative: (
+            list[int] | list[list[int]] | list[None] | None
+        ) = None,
+    ) -> list[list[int]] | list[None]:
+        """Initiale the excluded_from_time_derivative parameter.
+
+        Args:
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
+
+        Returns:
+            list[list[int]] | list[None]: The parsed parameter.
+
+        """
+        if excluded_from_time_derivative is None:
+            parsed_time_derivative_list: list[list[int]] | list[None] = [
+                None
+            ] * self.state_dim
+        else:
+            if len(excluded_from_time_derivative) > 0 and isinstance(
+                excluded_from_time_derivative[0], int
+            ):
+                excluded_from_time_derivative = cast(
+                    list[int], excluded_from_time_derivative
+                )
+                parsed_time_derivative_list = [excluded_from_time_derivative]
+            else:
+                excluded_from_time_derivative = cast(
+                    list[list[int]], excluded_from_time_derivative
+                )
+                parsed_time_derivative_list = excluded_from_time_derivative
+
+        return parsed_time_derivative_list
 
     def compute_state_variables(self) -> None:
         """Solves the state system.
@@ -422,10 +500,12 @@ class OptimizationProblem(abc.ABC):
 
     def supply_adjoint_forms(
         self,
-        adjoint_forms: Union[ufl.Form, List[ufl.Form]],
-        adjoint_bcs_list: Union[
-            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
-        ],
+        adjoint_forms: ufl.Form | list[ufl.Form],
+        adjoint_bcs_list: (
+            fenics.DirichletBC
+            | list[fenics.DirichletBC]
+            | list[list[fenics.DirichletBC]]
+        ),
     ) -> None:
         """Overwrites the computed weak forms of the adjoint system.
 
@@ -439,10 +519,10 @@ class OptimizationProblem(abc.ABC):
 
         """
         mod_forms = _utils.enlist(adjoint_forms)
-        mod_bcs_list: List
+        mod_bcs_list: list
         if adjoint_bcs_list == [] or adjoint_bcs_list is None:
             mod_bcs_list = []
-            for i in range(self.state_dim):
+            for _ in range(self.state_dim):
                 mod_bcs_list.append([])
         else:
             mod_bcs_list = _utils.check_and_enlist_bcs(adjoint_bcs_list)
@@ -474,7 +554,7 @@ class OptimizationProblem(abc.ABC):
     def _check_for_custom_forms(self) -> None:
         """Checks, whether custom user forms are used and if they are compatible."""
         if self.has_custom_adjoint and not self.has_custom_derivative:
-            _loggers.warning(
+            log.warning(
                 "You only supplied the adjoint system. "
                 "This might lead to unexpected results.\n"
                 "Consider also supplying the (shape) derivative "
@@ -483,7 +563,7 @@ class OptimizationProblem(abc.ABC):
             )
 
         elif not self.has_custom_adjoint and self.has_custom_derivative:
-            _loggers.warning(
+            log.warning(
                 "You only supplied the derivative of the reduced cost functional. "
                 "This might lead to unexpected results.\n"
                 "Consider also supplying the adjoint system, "
@@ -501,7 +581,7 @@ class OptimizationProblem(abc.ABC):
                 "the Newton solver.",
             )
 
-    def inject_pre_callback(self, function: Optional[Callable]) -> None:
+    def inject_pre_callback(self, function: Callable | None) -> None:
         """Changes the a-priori callback of the OptimizationProblem to function.
 
         Args:
@@ -514,7 +594,7 @@ class OptimizationProblem(abc.ABC):
         self.adjoint_problem.has_solution = False
         self.gradient_problem.has_solution = False
 
-    def inject_post_callback(self, function: Optional[Callable]) -> None:
+    def inject_post_callback(self, function: Callable | None) -> None:
         """Changes the a-posteriori callback of the OptimizationProblem to function.
 
         Args:
@@ -528,7 +608,7 @@ class OptimizationProblem(abc.ABC):
         self.gradient_problem.has_solution = False
 
     def inject_pre_post_callback(
-        self, pre_function: Optional[Callable], post_function: Optional[Callable]
+        self, pre_function: Callable | None, post_function: Callable | None
     ) -> None:
         """Changes the a-priori (pre) and a-posteriori (post) callbacks.
 
@@ -544,10 +624,10 @@ class OptimizationProblem(abc.ABC):
 
     def initialize_solve_parameters(
         self,
-        algorithm: Optional[str] = None,
-        rtol: Optional[float] = None,
-        atol: Optional[float] = None,
-        max_iter: Optional[int] = None,
+        algorithm: str | None = None,
+        rtol: float | None = None,
+        atol: float | None = None,
+        max_iter: int | None = None,
     ) -> None:
         r"""Solves the optimization problem by the method specified in the config file.
 
@@ -612,10 +692,10 @@ class OptimizationProblem(abc.ABC):
     @abc.abstractmethod
     def solve(
         self,
-        algorithm: Optional[str] = None,
-        rtol: Optional[float] = None,
-        atol: Optional[float] = None,
-        max_iter: Optional[int] = None,
+        algorithm: str | None = None,
+        rtol: float | None = None,
+        atol: float | None = None,
+        max_iter: int | None = None,
     ) -> None:
         r"""Solves the optimization problem by the method specified in the config file.
 
@@ -693,7 +773,7 @@ class OptimizationProblem(abc.ABC):
 
             if abs(val) <= 1e-15:
                 val = 1.0
-                _loggers.info(
+                log.info(
                     f"Term {i:d} of the cost functional vanishes "
                     f"for the initial iteration. Multiplying this term with the "
                     f"factor you supplied in desired weights."
@@ -703,7 +783,7 @@ class OptimizationProblem(abc.ABC):
 
     def _scale_cost_functional(self) -> None:
         """Scales the terms of the cost functional."""
-        _loggers.info(
+        log.warning(
             "You are using the automatic scaling functionality of cashocs."
             "This may lead to unexpected results if you try to scale the cost "
             "functional yourself or if you supply custom forms."

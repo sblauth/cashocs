@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,16 +19,18 @@
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 import fenics
-from typing_extensions import TYPE_CHECKING
 
 from cashocs import _exceptions
-from cashocs import _loggers
+from cashocs import log
 from cashocs._optimization.line_search import line_search
 
 if TYPE_CHECKING:
+    import numpy as np
+    from scipy import sparse
+
     from cashocs import _typing
     from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
@@ -71,7 +73,7 @@ class ArmijoLineSearch(line_search.LineSearch):
             return True
 
         if self.stepsize * self.search_direction_inf <= 1e-8:
-            _loggers.error("Stepsize too small.")
+            log.error("Stepsize too small.")
             solver.line_search_broken = True
             return True
         elif (
@@ -79,7 +81,7 @@ class ArmijoLineSearch(line_search.LineSearch):
             and not self.is_newton
             and self.stepsize / self.armijo_stepsize_initial <= 1e-8
         ):
-            _loggers.error("Stepsize too small.")
+            log.error("Stepsize too small.")
             solver.line_search_broken = True
             return True
 
@@ -88,9 +90,12 @@ class ArmijoLineSearch(line_search.LineSearch):
     def search(
         self,
         solver: optimization_algorithms.OptimizationAlgorithm,
-        search_direction: List[fenics.Function],
+        search_direction: list[fenics.Function],
         has_curvature_info: bool,
-    ) -> Tuple[Optional[fenics.Function], bool]:
+        active_idx: np.ndarray | None = None,
+        constraint_gradient: sparse.csr_matrix | None = None,
+        dropped_idx: np.ndarray | None = None,
+    ) -> tuple[fenics.Function | None, bool]:
         """Performs the line search.
 
         Args:
@@ -98,6 +103,13 @@ class ArmijoLineSearch(line_search.LineSearch):
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates whether the direction is
                 (presumably) scaled.
+            active_idx: The list of active indices of the working set. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
+            constraint_gradient: The gradient of the constraints for the mesh quality.
+                Only needed for shape optimization with mesh quality constraints.
+                Default is `None`.
+            dropped_idx: The list of indicies for dropped constraints. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
 
         Returns:
             A tuple (defo, is_remeshed), where defo is accepted deformation / update
@@ -108,6 +120,7 @@ class ArmijoLineSearch(line_search.LineSearch):
         self.initialize_stepsize(solver, search_direction, has_curvature_info)
         is_remeshed = False
 
+        log.begin("Armijo line search.", level=log.DEBUG)
         while True:
             if self._check_for_nonconvergence(solver):
                 return (None, False)
@@ -120,7 +133,12 @@ class ArmijoLineSearch(line_search.LineSearch):
                 )
             self.stepsize = (
                 self.optimization_variable_abstractions.update_optimization_variables(
-                    search_direction, self.stepsize, self.beta_armijo
+                    search_direction,
+                    self.stepsize,
+                    self.beta_armijo,
+                    active_idx,
+                    constraint_gradient,
+                    dropped_idx,
                 )
             )
 
@@ -128,13 +146,23 @@ class ArmijoLineSearch(line_search.LineSearch):
             objective_step = self._compute_objective_at_new_iterate(
                 current_function_value
             )
+            log.debug(
+                f"Trial stepsize {self.stepsize:.3e} - "
+                f"Function value {objective_step:.3e}"
+            )
 
             decrease_measure = self._compute_decrease_measure(search_direction)
 
             if self._satisfies_armijo_condition(
                 objective_step, current_function_value, decrease_measure
             ):
+                log.debug("Stepsize satisfies the Armijo decrease condition.")
                 if self.optimization_variable_abstractions.requires_remeshing():
+                    log.debug(
+                        "The mesh quality was sufficient for accepting the step, "
+                        "but the mesh cannot be used anymore for computing a gradient."
+                        "Performing a remeshing operation."
+                    )
                     is_remeshed = (
                         self.optimization_variable_abstractions.mesh_handler.remesh(
                             solver
@@ -147,9 +175,11 @@ class ArmijoLineSearch(line_search.LineSearch):
                 break
 
             else:
+                log.debug("Stepsize does not satisfy the Armijo decrease condition.")
                 self.stepsize /= self.beta_armijo
                 self.optimization_variable_abstractions.revert_variable_update()
 
+        log.end()
         solver.stepsize = self.stepsize
 
         if not has_curvature_info:
@@ -161,7 +191,7 @@ class ArmijoLineSearch(line_search.LineSearch):
             return (None, False)
 
     def _compute_decrease_measure(
-        self, search_direction: List[fenics.Function]
+        self, search_direction: list[fenics.Function]
     ) -> float:
         """Computes the decrease measure for use in the Armijo line search.
 
@@ -199,5 +229,6 @@ class ArmijoLineSearch(line_search.LineSearch):
                 raise error
             else:
                 objective_step = 2.0 * abs(current_function_value)
+                self.state_problem.revert_to_checkpoint()
 
         return objective_step

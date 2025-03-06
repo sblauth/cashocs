@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -24,7 +24,7 @@ from fenics import *
 
 import cashocs
 
-set_log_level(LogLevel.CRITICAL)
+set_log_level(cashocs.log.CRITICAL)
 config = cashocs.load_config("config.ini")
 parameters["ghost_mode"] = "shared_vertex"
 

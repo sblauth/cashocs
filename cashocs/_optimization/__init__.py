@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -16,7 +16,3 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 """Optimization routines."""
-
-from cashocs._optimization.optimization_problem import OptimizationProblem
-
-__all__ = ["OptimizationProblem"]

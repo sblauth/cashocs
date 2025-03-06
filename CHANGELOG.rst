@@ -7,8 +7,63 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-2.1.0 (in development)
+2.5.0 (in development)
 ----------------------
+
+* Add support for Python 3.13
+
+
+
+2.4.0 (January 24, 2025)
+------------------------
+
+* Add support for named Gmsh meshes, so that the names can not only be used with :py:func:`cashocs.create_dirichlet_bcs`, but also with the :py:class:`cashocs.NamedMeasure` objects created with :py:func:`cashocs.import_mesh`.
+
+* Add a pseudo time stepping solver for nonlinear equations. This uses PETSc's TS and is implemented in :py:func:`cashocs.ts_pseudo_solve`. The pseudo time stepping is also available for optimization problems and documented at `<https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/demo_pseudo_time_stepping/>`_.
+
+* Add a Poisson approach for computing the distance to the wall. This should be more robust than the previous approach of solving the Eikonal equation but less robust. The method can be changed in the configuration (see "New configuration file parameters" below).
+
+* New configuration file parameters:
+
+  * Section ShapeGradient
+
+    * :ini:`distance_method` specifies which method should be used to compute the distance to the boundary. The default is :ini:`distance_method = eikonal`, but the new Poisson approach can be used with :ini:`distance_method = poisson`.
+
+2.3.0 (November 12, 2024)
+-------------------------
+
+* The handling of the terminal output (and some other outputs) has changed significantly and now uses the python logging library. This allows for a greater flexibility and automatically times operations. The downside of this is, that the configuration has to change. Particularly, the :ini:`verbose` and :ini:`save_txt` parameters are now deprecated and will be removed in the future. These are kept for backwards compatibility reasons, but their default value is set to `False` to use the new logging-based approach. Moreover, almost any place where a flag such as a keyword argument :python:`verbose` or :python:`quiet` is used, is deprecated and will be removed in the future. Here, too, the logging-based approach is used by default now. If your applications are too verbose for you now, you can call :python:`cashocs.log.set_log_level(cashocs.log.WARNING)` to increase the log level. A brief documentation of the logging capabilities can be found at `<https://cashocs.readthedocs.io/en/stable/user/demos/misc/demo_logging/>`_.
+
+* Properly handle the output for nested problems in the context of space mapping and additional constraints. The output config is applied to all problems and the sub- and main problems all write their history to files and console.
+
+* Topology optimization problems now work as expected in parallel, with the exception that there is no support for angle-weighted interpolation of the topological derivative. Now, a corresponding exception is raised by cashocs.
+
+* Add additional documentation for the configuration parameters for topology optimization which can be found at `<https://cashocs.readthedocs.io/en/stable/user/demos/topology_optimization/doc_config/>`_.
+
+
+2.2.0 (August 28, 2024)
+-----------------------
+
+* Add a wrapper for PETSc's SNES solver for nonlinear equations. This is used internally in cashocs whenever possible. For the solution of the state system, our own Newton solver is the default for backwards compatibility. Users can use the new SNES backend by specifying :ini:`backend = petsc` in the Section StateSystem of the configuration.
+
+* Allows nesting of PETSc Fieldsplit PCs with the command line option "pc_fieldsplit_%d_fields <a,b,...>, as explained at `<https://petsc.org/main/manualpages/PC/PCFieldSplitSetFields/>`_
+
+* Increase the precision of the Gmsh output from cashocs
+
+* New configuration file parameters:
+
+  * Section StateSystem
+  
+    * :ini:`backend` specifies which backend is used for solving nonlinear equations. The default is :ini:`backend = cashocs`, which is the "old" behavior, and :ini:`backend = petsc` uses the new PETSc SNES interface.
+
+  * Section ShapeGradient
+
+    * :ini:`test_for_intersections` is used to disable the (post mesh movement) check for intersections of the mesh, which ensures physically reasonable designs. This should not be set to `False`.
+
+
+
+2.1.0 (February 6, 2024)
+------------------------
 
 * The class :py:class:`cashocs.DeformationHandler` cannot be used anymore. Instead, use the class by calling :py:class:`cashocs.geometry.DeformationHandler`. 
 
@@ -22,13 +77,17 @@ of the maintenance releases, please take a look at
 
 * The output routines save the xdmf files not in a folder called `xdmf` anymore, but the folder is called `checkpoints`
 
-* The output parameter `save_mesh` does now not only save the optimized mesh, but also writes a Gmsh .msh file of the current iterated mesh for each iteration. This is very useful for restarting simulations.
+* The output parameter :ini:`save_mesh` does now not only save the optimized mesh, but also writes a Gmsh .msh file of the current iterated mesh for each iteration. This is very useful for restarting simulations.
 
 * Added the function :py:func:`cashocs.io.import_function` which can be used to load a XDMF Function with a function space. This is very useful for checkpointing (first, read the saved mesh, define the function space, then call :py:func:`cashocs.io.import_function`.
 
 * :py:func:`cashocs.import_mesh` can now also directly import a Gmsh mesh file. Internally, the mesh is directly converted to xdmf and then read. At the moment, this only supports the conversion mode `physical`.
 
 * Add the kwargs `linear_solver` and (where applicable) `adjoint_linear_solver`. These can be used to define custom python KSP objects via petsc4py, most importantly, custom python-based preconditioners can be used with these. The feature is covered in the undocumented demo "demos/shape_optimization/python_pc".
+
+* Add the kwarg `newton_linearization` to the optimization problem classes. This can be used to specify which (alternative) linearization techniques can be used for solving the nonlinear state systems.
+
+* The function :py:func:`cashocs.newton_solve` does not change the user-specified tolerance (in the ksp_options) anymore, unless the kwarg `inexact=True` is set. This means, that the user can use custom "inexact Newton" schemes (e.g., gain one digit in accuracy) too. The old default was to use the relative tolerance of the nonlinear iteration multiplied with a safety factor (0.1).
 
 * New configuration file parameters:
 

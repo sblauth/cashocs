@@ -9,6 +9,7 @@ be treated with cashocs.
    :caption: List of all topology optimization demos:
 
    demo_poisson_clover.md
+   doc_config
    demo_cantilever.md
    demo_pipe_bend.md
    demo_projection.md

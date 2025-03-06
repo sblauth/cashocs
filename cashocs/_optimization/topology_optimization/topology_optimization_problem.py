@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import copy
-from typing import Callable, List, Optional, TYPE_CHECKING, Union
+from typing import Callable, TYPE_CHECKING
 
 import fenics
 from matplotlib import colors
@@ -32,10 +32,11 @@ except ImportError:
     import ufl
 
 from cashocs import _exceptions
-from cashocs import _optimization
 from cashocs import _utils
 from cashocs import io
+from cashocs import log
 from cashocs._optimization import line_search as ls
+from cashocs._optimization import optimization_problem
 from cashocs._optimization.optimal_control import optimal_control_problem
 from cashocs._optimization.topology_optimization import bisection
 from cashocs._optimization.topology_optimization import descent_topology_algorithm
@@ -48,7 +49,7 @@ if TYPE_CHECKING:
     from cashocs import _typing
 
 
-class TopologyOptimizationProblem(_optimization.OptimizationProblem):
+class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
     r"""A topology optimization problem.
 
     This class is used to define a topology optimization problem, and to solve
@@ -78,24 +79,21 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         topological_derivative_neg: fenics.Function | ufl.Form,
         topological_derivative_pos: fenics.Function | ufl.Form,
         update_levelset: Callable,
-        volume_restriction: Union[float, tuple[float, float]] | None = None,
-        subdomains: fenics.MeshFunction | None=None,
+        volume_restriction: float | tuple[float, float] | None = None,
         config: io.Config | None = None,
         riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
         initial_guess: list[fenics.Function] | None = None,
-        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        gradient_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
         desired_weights: list[float] | None = None,
-        preconditioner_forms: Optional[Union[List[ufl.Form], ufl.Form]] = None,
-        pre_callback: Optional[Callable] = None,
-        post_callback: Optional[Callable] = None,
-        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
-        adjoint_linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        preconditioner_forms: list[ufl.Form] | ufl.Form | None = None,
+        pre_callback: Callable | None = None,
+        post_callback: Callable | None = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
     ) -> None:
         r"""Initializes the topology optimization problem.
 
@@ -131,7 +129,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             riesz_scalar_products: The scalar products of the control space. Can either
                 be ``None`` or a single UFL form. If it is ``None``, the
                 :math:`L^2(\Omega)` product is used (default is ``None``).
-            initial_guess: List of functions that act as initial guess for the state
+            initial_guess: list of functions that act as initial guess for the state
                 variables, should be valid input for :py:func:`fenics.assign`. Defaults
                 to ``None``, which means a zero initial guess.
             ksp_options: A list of strings corresponding to command line options for
@@ -162,6 +160,13 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 systems arising from the discretized PDE.
             adjoint_linear_solver: The linear solver (KSP) which is used to solve the
                 (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         super().__init__(
@@ -181,6 +186,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             post_callback=post_callback,
             linear_solver=linear_solver,
             adjoint_linear_solver=adjoint_linear_solver,
+            newton_linearizations=newton_linearizations,
+            excluded_from_time_derivative=excluded_from_time_derivative,
         )
 
         self.db.parameter_db.problem_type = "topology"
@@ -202,7 +209,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         self.topological_derivative_is_identical = self.config.getboolean(
             "TopologyOptimization", "topological_derivative_is_identical"
         )
-        self.re_normalize_levelset = self.config.getboolean(
+        self.re_normalize_levelset: bool = self.config.getboolean(
             "TopologyOptimization", "re_normalize_levelset"
         )
         self.normalize_topological_derivative = self.config.getboolean(
@@ -237,8 +244,15 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
             initial_guess=initial_guess,
             ksp_options=ksp_options,
             adjoint_ksp_options=adjoint_ksp_options,
+            gradient_ksp_options=gradient_ksp_options,
             desired_weights=desired_weights,
+            preconditioner_forms=preconditioner_forms,
+            pre_callback=pre_callback,
+            post_callback=post_callback,
             linear_solver=linear_solver,
+            adjoint_linear_solver=adjoint_linear_solver,
+            newton_linearizations=newton_linearizations,
+            excluded_from_time_derivative=excluded_from_time_derivative,
         )
         self._base_ocp.db.parameter_db.problem_type = "topology"
         self.db.function_db.control_spaces = (
@@ -255,12 +269,8 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         )
         self.reduced_cost_functional = self._base_ocp.reduced_cost_functional
 
-        self.subdomains = subdomains
-        self.fixed_dofs = []
-        self.compute_fixed_dofs()
-
         self.projection = bisection.LevelSetVolumeProjector(
-            self.levelset_function, volume_restriction, self.db, self.fixed_dofs
+            self.levelset_function, volume_restriction, self.db
         )
 
     def _erase_pde_memory(self) -> None:  # pylint: disable=useless-parent-delegation
@@ -271,16 +281,6 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
         raise NotImplementedError(
             "Gradient test is not implemented for topology optimization."
         )
-    
-    def compute_fixed_dofs(self):
-        if self.subdomains is not None:
-            dofmap = self.levelset_function.function_space().dofmap()
-            for cell in fenics.cells(self.mesh):
-                if self.subdomains[cell.index()] in [20, 30, 40]:
-                    dofs = dofmap.cell_dofs(cell.index())
-                    self.fixed_dofs.extend(dofs)
-            set_dof = set(self.fixed_dofs)
-            self.fixed_dofs = (list(set_dof))
 
     def solve(
         self,
@@ -314,8 +314,9 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
                 the value provided in the config file is used. Default is ``None``.
 
         """
+        log.begin("Solving the topology optimization problem.", level=log.INFO)
         super().solve(algorithm=algorithm, rtol=rtol, atol=atol, max_iter=max_iter)
-        
+
         self.optimization_variable_abstractions = (
             topology_variable_abstractions.TopologyVariableAbstractions(self, self.db)
         )
@@ -346,6 +347,7 @@ class TopologyOptimizationProblem(_optimization.OptimizationProblem):
 
         self.solver.run()
         self.solver.post_processing()
+        log.end()
 
     def plot_shape(self) -> None:
         """Visualize the current shape in a plot."""

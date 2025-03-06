@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -24,12 +24,13 @@ cost functional.
 from __future__ import annotations
 
 import copy
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 
 from cashocs import _forms
 from cashocs import _utils
+from cashocs import log
 from cashocs._pde_problems import pde_problem
 
 if TYPE_CHECKING:
@@ -91,7 +92,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
             fenics.PETScVector() for _ in range(len(self.db.function_db.gradient))
         ]
 
-    def solve(self) -> List[fenics.Function]:
+    def solve(self) -> list[fenics.Function]:
         """Solves the Riesz projection problem to obtain the gradient.
 
         Returns:
@@ -102,6 +103,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
         self.adjoint_problem.solve()
 
         if not self.has_solution:
+            log.begin("Computing the gradient.", level=log.DEBUG)
             for i in range(len(self.db.function_db.gradient)):
                 self.form_handler.assemblers[i].assemble(self.b_tensors[i])
                 self.linear_solver.solve(
@@ -118,5 +120,6 @@ class ControlGradientProblem(pde_problem.PDEProblem):
             )
 
             self.db.callback.call_post()
+            log.end()
 
         return self.db.function_db.gradient

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -29,11 +29,10 @@ import cashocs.space_mapping.shape_optimization as sosm
 
 dir_path = str(pathlib.Path(__file__).parent)
 
-cashocs.set_log_level(cashocs.LogLevel.ERROR)
+cashocs.set_log_level(cashocs.log.ERROR)
 
 cfg = cashocs.load_config(f"{dir_path}/config_sosm.ini")
 Re_f = 50.0
-Re_c = 0.0
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
     f"{dir_path}/sm_mesh/mesh.xdmf"
 )
@@ -97,7 +96,7 @@ class FineModel(sosm.FineModel):
         bc_pressure = DirichletBC(V.sub(1), Constant(0.0), boundaries, 5)
         bcs = [bc_in] + bcs_wall + [bc_out] + [bc_pressure]
 
-        cashocs.newton_solve(F, up, bcs, verbose=False)
+        cashocs.snes_solve(F, up, bcs)
 
         J = cashocs.IntegralFunctional(
             Constant(0.5) * dot(u - u_des, u - u_des) * ds(5)
@@ -105,10 +104,10 @@ class FineModel(sosm.FineModel):
         self.cost_functional_value = J.evaluate()
 
         u_temp, _ = up.split(True)
-        u_temp.set_allow_extrapolation(True)
-        self.u.vector().vec().aypx(
-            0.0, interpolate(u_temp, self.V_coarse.sub(0).collapse()).vector().vec()
+        interpolator = cashocs._utils.Interpolator(
+            u_temp.function_space(), self.V_coarse.sub(0).collapse()
         )
+        self.u.vector().vec().aypx(0.0, interpolator.interpolate(u_temp).vector().vec())
         self.u.vector().apply("")
 
         if MPI.rank(MPI.comm_world) == 0:
@@ -131,12 +130,7 @@ u, p = split(up)
 vq = Function(V)
 v, q = split(vq)
 
-F = (
-    inner(grad(u), grad(v)) * dx
-    + Constant(Re_c) * inner(grad(u) * u, v) * dx
-    - p * div(v) * dx
-    - q * div(u) * dx
-)
+F = inner(grad(u), grad(v)) * dx - p * div(v) * dx - q * div(u) * dx
 
 bc_in = DirichletBC(V.sub(0), u_in, boundaries, 1)
 bcs_wall = cashocs.create_dirichlet_bcs(

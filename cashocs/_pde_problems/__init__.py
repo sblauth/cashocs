@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -25,10 +25,10 @@ from cashocs._pde_problems.shape_gradient_problem import ShapeGradientProblem
 from cashocs._pde_problems.state_problem import StateProblem
 
 __all__ = [
+    "PDEProblem",
     "AdjointProblem",
     "ControlGradientProblem",
     "HessianProblem",
-    "PDEProblem",
     "ShapeGradientProblem",
     "StateProblem",
 ]

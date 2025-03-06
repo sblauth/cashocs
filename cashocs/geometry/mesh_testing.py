@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -25,8 +25,13 @@ from typing import TYPE_CHECKING
 import fenics
 import numpy as np
 
-from cashocs import _loggers
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+
 from cashocs import _utils
+from cashocs import log
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -46,7 +51,7 @@ class APrioriMeshTester:
 
         dg_function_space = fenics.FunctionSpace(self.mesh, "DG", 0)
         vector_cg_space = fenics.VectorFunctionSpace(self.mesh, "CG", 1)
-        dx = fenics.Measure("dx", domain=mesh)
+        dx = ufl.Measure("dx", domain=mesh)
 
         self.transformation_container = fenics.Function(vector_cg_space)
 
@@ -57,9 +62,9 @@ class APrioriMeshTester:
             * dx
         )
         self.l_prior = (
-            fenics.det(
-                fenics.Identity(self.mesh.geometric_dimension())
-                + fenics.grad(self.transformation_container)
+            ufl.det(
+                ufl.Identity(self.mesh.geometric_dimension())
+                + ufl.grad(self.transformation_container)
             )
             * fenics.TestFunction(dg_function_space)
             * dx
@@ -92,6 +97,7 @@ class APrioriMeshTester:
             A boolean that indicates whether the desired transformation is feasible.
 
         """
+        log.begin("Testing if the mesh contains inverted elements", level=log.DEBUG)
         comm = self.transformation_container.function_space().mesh().mpi_comm()
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
@@ -103,6 +109,8 @@ class APrioriMeshTester:
 
         min_det = float(x.min()[1])
         max_det = float(x.max()[1])
+
+        log.end()
 
         return bool((min_det >= 1 / volume_change) and (max_det <= volume_change))
 
@@ -120,10 +128,15 @@ class IntersectionTester:
         self.mesh = mesh
 
         cells = self.mesh.cells()
-        flat_cells = cells.flatten().tolist()
+        vertex_ghost_offset = self.mesh.topology().ghost_offset(0)
+        cell_ghost_offset = self.mesh.topology().ghost_offset(
+            self.mesh.topology().dim()
+        )
+
+        flat_cells = cells[:cell_ghost_offset].flatten().tolist()
         self.cell_counter: collections.Counter = collections.Counter(flat_cells)
         self.occurrences = np.array(
-            [self.cell_counter[i] for i in range(self.mesh.num_vertices())]
+            [self.cell_counter[i] for i in range(vertex_ghost_offset)]
         )
 
     def test(self) -> bool:
@@ -141,14 +154,19 @@ class IntersectionTester:
             element mesh, so this check has to be done manually.
 
         """
+        log.begin(
+            "Testing if the mesh has self intersecting elements.", level=log.DEBUG
+        )
         self_intersections = False
         collisions = CollisionCounter.compute_collisions(self.mesh)
         if not (collisions == self.occurrences).all():
             self_intersections = True
         list_self_intersections = fenics.MPI.comm_world.allgather(self_intersections)
 
+        log.end()
+
         if any(list_self_intersections):
-            _loggers.debug("Mesh transformation rejected due to a posteriori check.")
+            log.debug("Mesh transformation rejected due to a posteriori check.")
             return False
         else:
             return True
@@ -215,5 +233,7 @@ PYBIND11_MODULE(SIGNATURE, m)
             cells that vertex ``i`` collides with.
 
         """
+        vertex_ghost_offset = mesh.topology().ghost_offset(0)
         collisions: np.ndarray = cls._cpp_object.compute_collisions(mesh)
+        collisions = collisions[:vertex_ghost_offset]
         return collisions

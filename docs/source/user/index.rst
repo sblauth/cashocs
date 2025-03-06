@@ -38,6 +38,9 @@ Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx
     the introductory tutorials for shape optimization problems, i.e.,
     :ref:`demo_shape_poisson` and :ref:`config_shape_optimization`.
 
+    For a short introduction to the logging mechanisms in cashocs, we refer the reader 
+    to :ref:`demo_logging`.
+    
     Moreover, we note that some of cashocs functionality is explained only for optimal control, but not
     for shape optimization problems. This includes the contents of :ref:`demo_monolithic_problems`,
     :ref:`demo_picard_iteration`, :ref:`demo_heat_equation`, :ref:`demo_nonlinear_pdes`, 
@@ -54,4 +57,7 @@ Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx
     Moreover, the space mapping capabilities of cashocs are only documented for shape optimization 
     in :ref:`demo_space_mapping_semilinear_transmission` and 
     :ref:`demo_space_mapping_uniform_flow_distribution`. Again, space mapping works the same for 
-    both optimal control and shape optimization.
+    both optimal control and shape optimization. Regarding the solver possibilites,
+    :ref:`demo_pseudo_time_stepping` shows how to use the pseudo time stepping capabilities
+    of cashocs. Again, this works exactly the same for all considered types of optimization
+    problems.

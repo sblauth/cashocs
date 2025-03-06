@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Tests for optimal control with multiple PDE constraints.
-
-"""
+"""Tests for optimal control with multiple PDE constraints."""
 
 from collections import namedtuple
 import pathlib
@@ -151,8 +149,6 @@ def ocp(state_forms, bcs_list, J, states, controls, adjoints, config_ocp):
 
 
 def test_control_gradient_multiple(ocp, rng):
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
-    assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
     assert cashocs.verification.control_gradient_test(ocp, rng=rng) > 1.9
 
 

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,13 +19,18 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import scipy.optimize
 
 from cashocs import _exceptions
 from cashocs import _utils
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 if TYPE_CHECKING:
     from cashocs._database import database
@@ -37,7 +42,7 @@ class LevelSetVolumeProjector:
     def __init__(
         self,
         levelset_function: fenics.Function,
-        volume_restriction: Union[float, tuple[float, float]] | None = None,
+        volume_restriction: float | tuple[float, float] | None = None,
         db: database.Database | None = None,
         fixed_dofs: list | None = None,
     ) -> None:
@@ -65,7 +70,7 @@ class LevelSetVolumeProjector:
         )
         self.levelset_function_temp.vector().apply("")
 
-        self.dx = fenics.Measure("dx", self.levelset_function.function_space().mesh())
+        self.dx = ufl.Measure("dx", self.levelset_function.function_space().mesh())
 
         self.dg0_space = fenics.FunctionSpace(
             self.levelset_function.function_space().mesh(), "DG", 0

@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -34,8 +34,10 @@ from cashocs._utils.helpers import check_and_enlist_control_constraints
 from cashocs._utils.helpers import check_file_extension
 from cashocs._utils.helpers import create_function_list
 from cashocs._utils.helpers import enlist
+from cashocs._utils.helpers import get_petsc_prefixes
 from cashocs._utils.helpers import number_of_arguments
 from cashocs._utils.helpers import optimization_algorithm_configuration
+from cashocs._utils.helpers import tag_to_int
 from cashocs._utils.interpolations import interpolate_by_angle
 from cashocs._utils.interpolations import interpolate_by_volume
 from cashocs._utils.interpolations import interpolate_levelset_function_to_cells
@@ -48,27 +50,29 @@ from cashocs._utils.linalg import solve_linear_problem
 from cashocs._utils.linalg import split_linear_forms
 
 __all__ = [
-    "summation",
-    "multiplication",
+    "bilinear_boundary_form_modification",
     "create_dirichlet_bcs",
     "max_",
     "min_",
     "moreau_yosida_regularization",
-    "check_and_enlist_control_constraints",
+    "multiplication",
+    "summation",
     "check_and_enlist_bcs",
-    "enlist",
-    "optimization_algorithm_configuration",
-    "assemble_petsc_system",
-    "setup_petsc_options",
-    "solve_linear_problem",
-    "Interpolator",
-    "assemble_and_solve_linear",
-    "split_linear_forms",
+    "check_and_enlist_control_constraints",
+    "check_file_extension",
     "create_function_list",
-    "bilinear_boundary_form_modification",
-    "interpolate_levelset_function_to_cells",
+    "enlist",
+    "get_petsc_prefixes",
+    "number_of_arguments",
+    "optimization_algorithm_configuration",
+    "tag_to_int",
     "interpolate_by_angle",
     "interpolate_by_volume",
-    "check_file_extension",
-    "number_of_arguments",
+    "interpolate_levelset_function_to_cells",
+    "assemble_and_solve_linear",
+    "assemble_petsc_system",
+    "Interpolator",
+    "setup_petsc_options",
+    "solve_linear_problem",
+    "split_linear_forms",
 ]

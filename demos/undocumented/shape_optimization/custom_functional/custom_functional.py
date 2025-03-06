@@ -26,13 +26,9 @@ class MyFunctional(cashocs.Functional):
         self.denominator = denominator
         self.target = target
 
-        mesh = self.numerator.integrals()[0].ufl_domain().ufl_cargo()
-        R = FunctionSpace(mesh, "R", 0)
-        self.numerator_value = Function(R)
-        self.denominator_value = Function(R)
-        self.weight = Function(R)
-        self.weight.vector().vec().set(weight)
-        self.weight.vector().apply("")
+        self.numerator_value = Constant(0.0)
+        self.denominator_value = Constant(0.0)
+        self.weight = Constant(weight)
 
     def coefficients(self):
         coeffs1 = self.denominator.coefficients()
@@ -57,32 +53,27 @@ class MyFunctional(cashocs.Functional):
 
     def evaluate(self):
         num_value = assemble(self.numerator)
-        self.numerator_value.vector().vec().set(num_value)
-        self.numerator_value.vector().apply("")
+        self.numerator_value.assign(num_value)
 
         denom_value = assemble(self.denominator)
-        self.denominator_value.vector().vec().set(denom_value)
-        self.denominator_value.vector().apply("")
+        self.denominator_value.assign(denom_value)
 
         val = (
-            self.weight.vector().vec().sum()
+            self.weight.values()[0]
             / 2.0
             * pow(num_value / denom_value - self.target, 2)
         )
         return val
 
     def scale(self, scaling_factor):
-        self.weight.vector().vec().set(scaling_factor)
-        self.weight.vector().apply("")
+        self.weight.assign(scaling_factor)
 
     def update(self):
         num_value = assemble(self.numerator)
-        self.numerator_value.vector().vec().set(num_value)
-        self.numerator_value.vector().apply("")
+        self.numerator_value.assign(num_value)
 
         denom_value = assemble(self.denominator)
-        self.denominator_value.vector().vec().set(denom_value)
-        self.denominator_value.vector().apply("")
+        self.denominator_value.assign(denom_value)
 
 
 # J models the functional

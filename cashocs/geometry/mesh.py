@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -21,16 +21,14 @@ from __future__ import annotations
 
 import collections
 import functools
-import time
-from typing import Any, Callable, List, Optional
+from typing import Any, Callable, TYPE_CHECKING
 
 import fenics
 import numpy as np
 from typing_extensions import Literal
-from typing_extensions import TYPE_CHECKING
 
 from cashocs import _exceptions
-from cashocs import _loggers
+from cashocs import log
 from cashocs.geometry import measure
 
 if TYPE_CHECKING:
@@ -40,9 +38,9 @@ if TYPE_CHECKING:
 
 
 def _get_mesh_stats(
-    mode: Literal["import", "generate"] = "import"
+    mode: Literal["import", "generate"] = "import",
 ) -> Callable[..., Callable[..., _typing.MeshTuple]]:
-    """A decorator for mesh importing / generating function which prints stats.
+    """A decorator for mesh importing / generating function which logs stats.
 
     Args:
         mode: A string indicating whether the mesh is being generated or imported.
@@ -53,7 +51,7 @@ def _get_mesh_stats(
     """
 
     def decorator_stats(
-        func: Callable[..., _typing.MeshTuple]
+        func: Callable[..., _typing.MeshTuple],
     ) -> Callable[..., _typing.MeshTuple]:
         """A decorator for a mesh generating function.
 
@@ -80,24 +78,20 @@ def _get_mesh_stats(
             word = "importing" if mode.casefold() == "import" else "generating"
             worded = "imported" if mode.casefold() == "import" else "generated"
             mpi_size = fenics.MPI.size(fenics.MPI.comm_world)
-            start_time = time.time()
-            _loggers.info(f"{word.capitalize()} mesh.")
+            log.begin(f"{word.capitalize()} mesh.", level=log.INFO)
 
             value = func(*args, **kwargs)
             dim = value[0].geometry().dim()
 
-            end_time = time.time()
-            _loggers.info(
-                f"Done {word} mesh. Elapsed time: {end_time - start_time:.2f} s."
-            )
-            _loggers.info(
+            log.info(
                 f"Successfully {worded} {dim}-dimensional mesh on {mpi_size} CPU(s)."
             )
-            _loggers.info(
+            log.info(
                 f"Mesh contains {value[0].num_entities_global(0):,} vertices and "
                 f"{value[0].num_entities_global(dim):,} cells of type "
-                f"{value[0].ufl_cell().cellname()}.\n"
+                f"{value[0].ufl_cell().cellname()}."
             )
+            log.end()
             return value
 
         return wrapper_stats
@@ -110,8 +104,8 @@ def interval_mesh(
     n: int = 10,
     start: float = 0.0,
     end: float = 1.0,
-    partitions: Optional[List[float]] = None,
-    comm: Optional[MPI.Comm] = None,
+    partitions: list[float] | None = None,
+    comm: MPI.Comm | None = None,
 ) -> _typing.MeshTuple:
     r"""Creates an 1D interval mesh starting at x=0 to x=length.
 
@@ -182,9 +176,10 @@ def interval_mesh(
             end_point = padded_partitions[i + 1]
 
             part = fenics.CompiledSubDomain(
-                "x[0] >= start_point && x[0] <= end_point",
+                "x[0] >= start_point - eps && x[0] <= end_point + eps",
                 start_point=start_point,
                 end_point=end_point,
+                eps=fenics.DOLFIN_EPS,
             )
             part.mark(subdomains, i + 1)
 
@@ -200,9 +195,9 @@ def regular_mesh(
     n: int = 10,
     length_x: float = 1.0,
     length_y: float = 1.0,
-    length_z: Optional[float] = None,
+    length_z: float | None = None,
     diagonal: Literal["left", "right", "left/right", "right/left", "crossed"] = "right",
-    comm: Optional[MPI.Comm] = None,
+    comm: MPI.Comm | None = None,
 ) -> _typing.MeshTuple:
     r"""Creates a mesh corresponding to a rectangle or cube.
 
@@ -343,12 +338,12 @@ def regular_box_mesh(
     n: int = 10,
     start_x: float = 0.0,
     start_y: float = 0.0,
-    start_z: Optional[float] = None,
+    start_z: float | None = None,
     end_x: float = 1.0,
     end_y: float = 1.0,
-    end_z: Optional[float] = None,
+    end_z: float | None = None,
     diagonal: Literal["right", "left", "left/right", "right/left", "crossed"] = "right",
-    comm: Optional[MPI.Comm] = None,
+    comm: MPI.Comm | None = None,
 ) -> _typing.MeshTuple:
     r"""Creates a mesh corresponding to a rectangle or cube.
 
@@ -492,7 +487,7 @@ def regular_box_mesh(
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
 
-def _check_sizes(sizes: List[float]) -> None:
+def _check_sizes(sizes: list[float]) -> None:
     for size in sizes:
         if size <= 0:
             raise _exceptions.InputError(

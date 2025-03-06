@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -20,12 +20,17 @@
 from __future__ import annotations
 
 import abc
-from typing import List, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 
 from cashocs import _utils
 from cashocs._database import database
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -34,8 +39,8 @@ if TYPE_CHECKING:
 
 
 def _get_subdx(
-    function_space: fenics.FunctionSpace, index: int, ls: List
-) -> Union[None, List[int]]:
+    function_space: fenics.FunctionSpace, index: int, ls: list
+) -> None | list[int]:
     """Computes the sub-indices for mixed function spaces based on the id of a subspace.
 
     Args:
@@ -84,13 +89,13 @@ class FormHandler(abc.ABC):
         self.cost_functional_shift: float = 0.0
         self.lagrangian: cf.Lagrangian = self.db.form_db.lagrangian
 
-        self.dx: fenics.Measure = self.db.geometry_db.dx
+        self.dx: ufl.Measure = self.db.geometry_db.dx
 
         self.opt_algo: str = _utils.optimization_algorithm_configuration(self.config)
 
     @abc.abstractmethod
     def scalar_product(
-        self, a: List[fenics.Function], b: List[fenics.Function]
+        self, a: list[fenics.Function], b: list[fenics.Function]
     ) -> float:
         """Computes the scalar product between a and b.
 
@@ -104,6 +109,18 @@ class FormHandler(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
     def update_scalar_product(self) -> None:
         """Updates the scalar product."""
+        pass
+
+    @abc.abstractmethod
+    def apply_shape_bcs(self, function: fenics.Function) -> None:
+        """Applies the geometric boundary conditions / constraints to a function.
+
+        Args:
+            function: The function onto which the geometric constraints are imposed.
+                Must be a vector CG1 function.
+
+        """
         pass

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -20,7 +20,7 @@
 """Extract mesh files from .xdmf files."""
 
 import argparse
-from typing import List, Optional
+from typing import Optional
 
 from cashocs.io import mesh as iomesh
 
@@ -68,7 +68,7 @@ def _generate_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def extract_mesh(argv: Optional[List[str]] = None) -> None:
+def extract_mesh(argv: Optional[list[str]] = None) -> None:
     """Wrapper for calling :py:func:`cashocs.io.extract_mesh` from command line.
 
     Args:

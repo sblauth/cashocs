@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -21,17 +21,18 @@
 from __future__ import annotations
 
 import collections
-from typing import Deque, List, Optional, Tuple
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
-from typing_extensions import TYPE_CHECKING
 
 from cashocs import _exceptions
-from cashocs import _loggers
+from cashocs import log
 from cashocs._optimization.line_search import line_search
 
 if TYPE_CHECKING:
+    from scipy import sparse
+
     from cashocs import _typing
     from cashocs._database import database
     from cashocs._optimization import optimization_algorithms
@@ -62,8 +63,8 @@ class PolynomialLineSearch(line_search.LineSearch):
         self.polynomial_model = self.config.get(
             "LineSearch", "polynomial_model"
         ).casefold()
-        self.f_vals: Deque[float] = collections.deque()
-        self.alpha_vals: Deque[float] = collections.deque()
+        self.f_vals: collections.deque[float] = collections.deque()
+        self.alpha_vals: collections.deque[float] = collections.deque()
 
     def _check_for_nonconvergence(
         self, solver: optimization_algorithms.OptimizationAlgorithm
@@ -82,7 +83,7 @@ class PolynomialLineSearch(line_search.LineSearch):
             return True
 
         if self.stepsize * self.search_direction_inf <= 1e-8:
-            _loggers.error("Stepsize too small.")
+            log.error("Stepsize too small.")
             solver.line_search_broken = True
             return True
         elif (
@@ -90,7 +91,7 @@ class PolynomialLineSearch(line_search.LineSearch):
             and not self.is_newton
             and self.stepsize / self.armijo_stepsize_initial <= 1e-8
         ):
-            _loggers.error("Stepsize too small.")
+            log.error("Stepsize too small.")
             solver.line_search_broken = True
             return True
 
@@ -99,9 +100,12 @@ class PolynomialLineSearch(line_search.LineSearch):
     def search(
         self,
         solver: optimization_algorithms.OptimizationAlgorithm,
-        search_direction: List[fenics.Function],
+        search_direction: list[fenics.Function],
         has_curvature_info: bool,
-    ) -> Tuple[Optional[fenics.Function], bool]:
+        active_idx: np.ndarray | None = None,
+        constraint_gradient: sparse.csr_matrix | None = None,
+        dropped_idx: np.ndarray | None = None,
+    ) -> tuple[fenics.Function | None, bool]:
         """Performs the line search.
 
         Args:
@@ -109,6 +113,13 @@ class PolynomialLineSearch(line_search.LineSearch):
             search_direction: The current search direction.
             has_curvature_info: A flag, which indicates whether the direction is
                 (presumably) scaled.
+            active_idx: The list of active indices of the working set. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
+            constraint_gradient: The gradient of the constraints for the mesh quality.
+                Only needed for shape optimization with mesh quality constraints.
+                Default is `None`.
+            dropped_idx: The list of indicies for dropped constraints. Only needed
+                for shape optimization with mesh quality constraints. Default is `None`.
 
         Returns:
             The accepted deformation / update or None, in case the update was not
@@ -121,6 +132,7 @@ class PolynomialLineSearch(line_search.LineSearch):
         self.alpha_vals.clear()
 
         is_remeshed = False
+        log.begin("Polynomial line search.", level=log.DEBUG)
         while True:
             if self._check_for_nonconvergence(solver):
                 return (None, False)
@@ -133,7 +145,12 @@ class PolynomialLineSearch(line_search.LineSearch):
                 )
             self.stepsize = (
                 self.optimization_variable_abstractions.update_optimization_variables(
-                    search_direction, self.stepsize, self.beta_armijo
+                    search_direction,
+                    self.stepsize,
+                    self.beta_armijo,
+                    active_idx,
+                    constraint_gradient,
+                    dropped_idx,
                 )
             )
             self.alpha_vals.append(self.stepsize)
@@ -144,12 +161,23 @@ class PolynomialLineSearch(line_search.LineSearch):
             objective_step = self.cost_functional.evaluate()
             self.f_vals.append(objective_step)
 
+            log.debug(
+                f"Line search - Trial stepsize {self.stepsize:.3e} - "
+                f"Function value {objective_step:.3e}"
+            )
+
             decrease_measure = self._compute_decrease_measure(search_direction)
 
             if self._satisfies_armijo_condition(
                 objective_step, current_function_value, decrease_measure
             ):
+                log.debug("Stepsize satisfies the Armijo decrease condition.")
                 if self.optimization_variable_abstractions.requires_remeshing():
+                    log.debug(
+                        "The mesh quality was sufficient for accepting the step, "
+                        "but the mesh cannot be used anymore for computing a gradient."
+                        "Performing a remeshing operation."
+                    )
                     is_remeshed = (
                         self.optimization_variable_abstractions.mesh_handler.remesh(
                             solver
@@ -162,6 +190,7 @@ class PolynomialLineSearch(line_search.LineSearch):
                 break
 
             else:
+                log.debug("Stepsize does not satisfy the Armijo decrease condition.")
                 self.stepsize = self._compute_polynomial_stepsize(
                     current_function_value,
                     decrease_measure,
@@ -171,6 +200,7 @@ class PolynomialLineSearch(line_search.LineSearch):
                 self.optimization_variable_abstractions.revert_variable_update()
 
         solver.stepsize = self.stepsize
+        log.end()
 
         if not has_curvature_info:
             self.stepsize /= self.factor_high
@@ -184,8 +214,8 @@ class PolynomialLineSearch(line_search.LineSearch):
         self,
         f_current: float,
         decrease_measure: float,
-        f_vals: Deque[float],
-        alpha_vals: Deque[float],
+        f_vals: collections.deque[float],
+        alpha_vals: collections.deque[float],
     ) -> float:
         """Computes a stepsize based on polynomial models.
 
@@ -229,8 +259,8 @@ class PolynomialLineSearch(line_search.LineSearch):
         self,
         f_current: float,
         decrease_measure: float,
-        f_vals: Deque[float],
-        alpha_vals: Deque[float],
+        f_vals: collections.deque[float],
+        alpha_vals: collections.deque[float],
     ) -> float:
         """Computes a trial stepsize based on a quadratic model.
 
@@ -253,8 +283,8 @@ class PolynomialLineSearch(line_search.LineSearch):
         self,
         f_current: float,
         decrease_measure: float,
-        f_vals: Deque[float],
-        alpha_vals: Deque[float],
+        f_vals: collections.deque[float],
+        alpha_vals: collections.deque[float],
     ) -> float:
         """Computes a trial stepsize based on a cubic model.
 
@@ -293,7 +323,7 @@ class PolynomialLineSearch(line_search.LineSearch):
         return float(stepsize)
 
     def _compute_decrease_measure(
-        self, search_direction: List[fenics.Function]
+        self, search_direction: list[fenics.Function]
     ) -> float:
         """Computes the decrease measure for use in the Armijo line search.
 

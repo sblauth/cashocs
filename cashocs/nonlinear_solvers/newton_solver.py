@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -20,7 +20,7 @@
 from __future__ import annotations
 
 import copy
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -33,6 +33,7 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _utils
+from cashocs import log
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -45,9 +46,9 @@ class _NewtonSolver:
         self,
         nonlinear_form: ufl.Form,
         u: fenics.Function,
-        bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
-        derivative: Optional[ufl.Form] = None,
-        shift: Optional[ufl.Form] = None,
+        bcs: fenics.DirichletBC | list[fenics.DirichletBC],
+        derivative: ufl.Form | None = None,
+        shift: ufl.Form | None = None,
         rtol: float = 1e-10,
         atol: float = 1e-10,
         max_iter: int = 50,
@@ -56,12 +57,12 @@ class _NewtonSolver:
         damped: bool = True,
         inexact: bool = True,
         verbose: bool = True,
-        ksp_options: Optional[_typing.KspOption] = None,
-        A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
-        b_tensor: Optional[fenics.PETScVector] = None,
+        ksp_options: _typing.KspOption | None = None,
+        A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
+        b_tensor: fenics.PETScVector | None = None,
         is_linear: bool = False,
-        preconditioner_form: Optional[ufl.Form] = None,
-        linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+        preconditioner_form: ufl.Form | None = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
     ) -> None:
         r"""Initializes self.
 
@@ -119,9 +120,14 @@ class _NewtonSolver:
         self.b_tensor = b_tensor
         self.is_linear = is_linear
         if preconditioner_form is not None:
-            self.preconditioner_form = fenics.derivative(preconditioner_form, self.u)
+            if len(preconditioner_form.arguments()) == 1:
+                self.preconditioner_form = fenics.derivative(
+                    preconditioner_form, self.u
+                )
+            else:
+                self.preconditioner_form = preconditioner_form
         else:
-            self.preconditioner_form = preconditioner_form
+            self.preconditioner_form = None
 
         self.verbose = verbose if not self.is_linear else False
 
@@ -143,28 +149,22 @@ class _NewtonSolver:
             self.ksp_options = ksp_options
 
         self.iterations = 0
-        for bc in self.bcs:
-            bc.apply(self.u.vector())
-        # copy the boundary conditions and homogenize them for the increment
-        self.bcs_hom = [fenics.DirichletBC(bc) for bc in self.bcs]
-        for bc in self.bcs_hom:
-            bc.homogenize()
 
         # inexact newton parameters
-        self.eta = 1.0
+        self.eta: float | None = 1.0
         self.eta_max = 0.9999
         self.eta_a = 1.0
         self.gamma = 0.9
         self.lmbd = 1.0
 
         self.assembler = fenics.SystemAssembler(
-            self.derivative, -self.nonlinear_form, self.bcs_hom
+            self.derivative, self.nonlinear_form, self.bcs
         )
         self.assembler.keep_diagonal = True
 
         if self.preconditioner_form is not None:
             self.assembler_pc = fenics.SystemAssembler(
-                self.preconditioner_form, -self.nonlinear_form, self.bcs_hom
+                self.preconditioner_form, self.nonlinear_form, self.bcs
             )
             self.assembler_pc.keep_diagonal = True
 
@@ -182,11 +182,11 @@ class _NewtonSolver:
         else:
             self.linear_solver = linear_solver
 
-        self.assembler_shift: Optional[fenics.SystemAssembler] = None
-        self.residual_shift: Optional[fenics.PETScVector] = None
+        self.assembler_shift: fenics.SystemAssembler | None = None
+        self.residual_shift: fenics.PETScVector | None = None
         if self.shift is not None:
             self.assembler_shift = fenics.SystemAssembler(
-                self.derivative, self.shift, self.bcs_hom
+                self.derivative, self.shift, self.bcs
             )
             self.residual_shift = fenics.PETScVector(self.comm)
 
@@ -197,29 +197,28 @@ class _NewtonSolver:
 
     def _print_output(self) -> None:
         """Prints the output of the current iteration to the console."""
-        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            prefix = "Newton solver:  "
-
-            if self.iterations % 10 == 0:
-                info_str = (
-                    f"\n{prefix}iter,  "
-                    f"abs. residual (abs. tol),  "
-                    f"rel. residual (rel. tol)\n\n"
-                )
-            else:
-                info_str = ""
-
-            print_str = (
-                f"{prefix}{self.iterations:4d},  "
-                f"{self.res:>13.3e} ({self.atol:.2e}),  "
-                f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
+        if self.iterations % 10 == 0:
+            info_str = (
+                "\niter,  abs. residual (abs. tol),  rel. residual (rel. tol)\n\n"
             )
+        else:
+            info_str = ""
 
-            print(info_str + print_str, flush=True)
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        print_str = (
+            f"{self.iterations:4d},  "
+            f"{self.res:>13.3e} ({self.atol:.2e}),  "
+            f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
+        )
+        if self.verbose:
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(info_str + print_str, flush=True)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+        else:
+            log.info(info_str + print_str)
 
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
+        log.begin("Assembling the Jacobian for Newton's method.", level=log.DEBUG)
         self.assembler.assemble(self.A_fenics)
         self.A_fenics.ident_zeros()
         self.A_matrix = fenics.as_backend_type(  # pylint: disable=invalid-name
@@ -235,28 +234,30 @@ class _NewtonSolver:
         else:
             self.P_matrix = None
 
+        log.end()
+
     def _compute_eta_inexact(self) -> None:
         """Computes the parameter ``eta`` for the inexact Newton method."""
-        if self.inexact:
+        if self.inexact and isinstance(self.eta, float):
             if self.iterations == 1:
-                self.eta = self.eta_max
+                eta_new = self.eta_max
             elif self.gamma * pow(self.eta, 2) <= 0.1:
-                self.eta = np.minimum(self.eta_max, self.eta_a)
+                eta_new = np.minimum(self.eta_max, self.eta_a)
             else:
-                self.eta = np.minimum(
+                eta_new = np.minimum(
                     self.eta_max,
                     np.maximum(self.eta_a, self.gamma * pow(self.eta, 2)),
                 )
 
             self.eta = np.minimum(
                 self.eta_max,
-                np.maximum(self.eta, 0.5 * self.tol / self.res),
+                np.maximum(eta_new, 0.5 * self.tol / self.res),
             )
         else:
-            self.eta = self.rtol * 1e-1
+            self.eta = None
 
         if self.is_linear:
-            self.eta = self.rtol * 1e-1
+            self.eta = None
 
     def _check_for_nan_residual(self) -> None:
         """Checks, whether the residual is nan. If yes, raise a NotConvergedError."""
@@ -270,13 +271,18 @@ class _NewtonSolver:
             A solution of the nonlinear problem.
 
         """
+        log.begin("Solving the nonlinear PDE system with Newton's method.")
         self._compute_residual()
 
         self.res_0 = self.residual.norm(self.norm_type)
         if self.res_0 == 0.0:  # pragma: no cover
-            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print("Residual vanishes, input is already a solution.", flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            message = "Residual vanishes, input is already a solution."
+            if self.verbose:
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(message, flush=True)
+                fenics.MPI.barrier(fenics.MPI.comm_world)
+            else:
+                log.info(message)
             return self.u
 
         self.res = self.res_0
@@ -307,15 +313,12 @@ class _NewtonSolver:
             )
 
             if self.is_linear:
-                self.u.vector().vec().axpy(1.0, self.du.vector().vec())
+                self.u.vector().vec().axpy(-1.0, self.du.vector().vec())
                 self.u.vector().apply("")
                 break
 
             self._backtracking_line_search()
             self._compute_residual()
-
-            for bc in self.bcs_hom:
-                bc.apply(self.residual)
 
             res_prev = self.res
             self.res = self.residual.norm(self.norm_type)
@@ -328,18 +331,22 @@ class _NewtonSolver:
 
         self._check_if_successful()
 
+        log.end()
+
         return self.u
 
     def _check_for_convergence(self) -> bool:
         """Checks, whether the desired convergence tolerance has been reached."""
         if self.res <= self.tol:
-            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print(
-                    f"\nNewton Solver converged "
-                    f"after {self.iterations:d} iterations.\n",
-                    flush=True,
-                )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            convergence_message = (
+                f"Newton Solver converged after {self.iterations:d} iterations."
+            )
+            if self.verbose:
+                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                    print(convergence_message, flush=True)
+                fenics.MPI.barrier(fenics.MPI.comm_world)
+            else:
+                log.info(convergence_message)
             return True
 
         else:
@@ -369,17 +376,19 @@ class _NewtonSolver:
 
     def _compute_residual(self) -> None:
         """Computes the residual of the nonlinear system."""
+        log.begin("Assembling the residual for Newton's method.", level=log.DEBUG)
         self.residual = fenics.PETScVector(self.comm)
-        self.assembler.assemble(self.residual)
+        self.assembler.assemble(self.residual, self.u.vector())
         if (
             self.shift is not None
             and self.assembler_shift is not None
             and self.residual_shift is not None
         ):
-            self.assembler_shift.assemble(self.residual_shift)
-            self.residual[:] += self.residual_shift[:]
+            self.assembler_shift.assemble(self.residual_shift, self.u.vector())
+            self.residual[:] -= self.residual_shift[:]
 
         self.b = fenics.as_backend_type(self.residual).vec()
+        log.end()
 
     def _compute_convergence_tolerance(self) -> float:
         """Computes the tolerance for the Newton solver.
@@ -399,7 +408,7 @@ class _NewtonSolver:
         """Performs a backtracking line search for the damped Newton method."""
         if self.damped:
             while True:
-                self.u.vector().vec().axpy(self.lmbd, self.du.vector().vec())
+                self.u.vector().vec().axpy(-self.lmbd, self.du.vector().vec())
                 self.u.vector().apply("")
                 self._compute_residual()
                 self.linear_solver.solve(
@@ -427,16 +436,16 @@ class _NewtonSolver:
                     self.breakdown = True
                     break
         else:
-            self.u.vector().vec().axpy(1.0, self.du.vector().vec())
+            self.u.vector().vec().axpy(-1.0, self.du.vector().vec())
             self.u.vector().apply("")
 
 
 def newton_solve(
     nonlinear_form: ufl.Form,
     u: fenics.Function,
-    bcs: Union[fenics.DirichletBC, List[fenics.DirichletBC]],
-    derivative: Optional[ufl.Form] = None,
-    shift: Optional[ufl.Form] = None,
+    bcs: fenics.DirichletBC | list[fenics.DirichletBC],
+    derivative: ufl.Form | None = None,
+    shift: ufl.Form | None = None,
     rtol: float = 1e-10,
     atol: float = 1e-10,
     max_iter: int = 50,
@@ -445,12 +454,12 @@ def newton_solve(
     damped: bool = True,
     inexact: bool = True,
     verbose: bool = True,
-    ksp_options: Optional[_typing.KspOption] = None,
-    A_tensor: Optional[fenics.PETScMatrix] = None,  # pylint: disable=invalid-name
-    b_tensor: Optional[fenics.PETScVector] = None,
+    ksp_options: _typing.KspOption | None = None,
+    A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
+    b_tensor: fenics.PETScVector | None = None,
     is_linear: bool = False,
-    preconditioner_form: Optional[ufl.Form] = None,
-    linear_solver: Optional[_utils.linalg.LinearSolver] = None,
+    preconditioner_form: ufl.Form | None = None,
+    linear_solver: _utils.linalg.LinearSolver | None = None,
 ) -> fenics.Function:
     r"""Solves a nonlinear problem with Newton\'s method.
 

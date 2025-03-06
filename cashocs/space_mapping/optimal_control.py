@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -21,8 +21,9 @@ from __future__ import annotations
 
 import abc
 import collections
-import json
-from typing import Callable, Dict, List, Optional, TYPE_CHECKING, Union
+import copy
+import pathlib
+from typing import Callable, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -35,7 +36,10 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _utils
+from cashocs import log
+from cashocs._database import database
 from cashocs._optimization.optimal_control import optimal_control_problem as ocp
+from cashocs.io import output
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -51,12 +55,8 @@ class FineModel(abc.ABC):
 
     """
 
-    controls: List[fenics.Function]
+    controls: list[fenics.Function]
     cost_functional_value: float
-
-    def __init__(self) -> None:
-        """Initializes self."""
-        pass
 
     @abc.abstractmethod
     def solve_and_evaluate(self) -> None:
@@ -73,26 +73,37 @@ class CoarseModel:
 
     def __init__(
         self,
-        state_forms: Union[List[ufl.Form], ufl.Form],
-        bcs_list: Union[
-            fenics.DirichletBC, List[fenics.DirichletBC], List[List[fenics.DirichletBC]]
-        ],
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[List[fenics.Function], fenics.Function],
-        controls: Union[List[fenics.Function], fenics.Function],
-        adjoints: Union[List[fenics.Function], fenics.Function],
-        config: Optional[io.Config] = None,
-        riesz_scalar_products: Optional[Union[ufl.Form, List[ufl.Form]]] = None,
-        control_constraints: Optional[List[List[Union[float, fenics.Function]]]] = None,
-        initial_guess: Optional[List[fenics.Function]] = None,
-        ksp_options: Optional[Union[_typing.KspOption, List[_typing.KspOption]]] = None,
-        adjoint_ksp_options: Optional[
-            Union[_typing.KspOption, List[_typing.KspOption]]
-        ] = None,
-        desired_weights: Optional[List[float]] = None,
-        preconditioner_forms: Optional[List[ufl.Form]] = None,
+        state_forms: list[ufl.Form] | ufl.Form,
+        bcs_list: (
+            fenics.DirichletBC
+            | list[fenics.DirichletBC]
+            | list[list[fenics.DirichletBC]]
+        ),
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: list[fenics.Function] | fenics.Function,
+        controls: list[fenics.Function] | fenics.Function,
+        adjoints: list[fenics.Function] | fenics.Function,
+        config: io.Config | None = None,
+        riesz_scalar_products: ufl.Form | list[ufl.Form] | None = None,
+        control_constraints: list[list[float | fenics.Function]] | None = None,
+        initial_guess: list[fenics.Function] | None = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        desired_weights: list[float] | None = None,
+        control_bcs_list: (
+            list[list[fenics.DirichletBC]]
+            | list[fenics.DirichletBC]
+            | fenics.DirichletBC
+            | None
+        ) = None,
+        preconditioner_forms: list[ufl.Form] | None = None,
+        pre_callback: Callable | None = None,
+        post_callback: Callable | None = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -112,12 +123,33 @@ class CoarseModel:
             riesz_scalar_products: The scalar products for the coarse problem
             control_constraints: The box constraints for the problem
             initial_guess: The initial guess for solving a nonlinear state equation
-            ksp_options: The list of PETSc options for the state equations
-            adjoint_ksp_options: The list of PETSc options for the adjoint equations
+            ksp_options: The list of PETSc options for the state equations.
+            adjoint_ksp_options: The list of PETSc options for the adjoint equations.
+            gradient_ksp_options: A list of dicts corresponding to command line options
+                for PETSc, used to compute the (shape) gradient. If this is ``None``,
+                either a direct or an iterative method is used (depending on the
+                configuration, section OptimizationRoutine, key gradient_method).
             desired_weights: The desired weights for the cost functional.
+            control_bcs_list: A list of boundary conditions for the control variables.
+                This is passed analogously to ``bcs_list``. Default is ``None``.
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            pre_callback: A function (without arguments) that will be called before each
+                solve of the state system
+            post_callback: A function (without arguments) that will be called after the
+                computation of the gradient.
+            linear_solver: The linear solver (KSP) which is used to solve the linear
+                systems arising from the discretized PDE.
+            adjoint_linear_solver: The linear solver (KSP) which is used to solve the
+                (linear) adjoint system.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         self.state_forms = state_forms
@@ -126,17 +158,35 @@ class CoarseModel:
         self.states = states
         self.controls = controls
         self.adjoints = adjoints
-        self.config = config
+
+        if config is not None:
+            self.config = config
+        else:
+            self.config = io.Config()
+        self.config.validate_config()
+
         self.riesz_scalar_products = riesz_scalar_products
         self.control_constraints = control_constraints
         self.initial_guess = initial_guess
         self.ksp_options = ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
+        self.gradient_ksp_options = gradient_ksp_options
         self.desired_weights = desired_weights
+        self.control_bcs_list = control_bcs_list
         self.preconditioner_forms = preconditioner_forms
+        self.pre_callback = pre_callback
+        self.post_callback = post_callback
+        self.linear_solver = linear_solver
+        self.adjoint_linear_solver = adjoint_linear_solver
+        self.newton_linearizations = newton_linearizations
+        self.excluded_from_time_derivative = excluded_from_time_derivative
 
-        self._pre_callback: Optional[Callable] = None
-        self._post_callback: Optional[Callable] = None
+        self._pre_callback: Callable | None = None
+        self._post_callback: Callable | None = None
+
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set("Output", "result_dir", str(output_path / "coarse_model"))
 
         self.optimal_control_problem = ocp.OptimalControlProblem(
             self.state_forms,
@@ -145,14 +195,22 @@ class CoarseModel:
             self.states,
             self.controls,
             self.adjoints,
-            config=self.config,
+            config=config,
             riesz_scalar_products=self.riesz_scalar_products,
             control_constraints=self.control_constraints,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
+            gradient_ksp_options=self.gradient_ksp_options,
             desired_weights=self.desired_weights,
+            control_bcs_list=self.control_bcs_list,
             preconditioner_forms=self.preconditioner_forms,
+            pre_callback=self.pre_callback,
+            post_callback=self.post_callback,
+            linear_solver=self.linear_solver,
+            adjoint_linear_solver=self.adjoint_linear_solver,
+            newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
 
     def optimize(self) -> None:
@@ -169,13 +227,11 @@ class ParameterExtraction:
     def __init__(
         self,
         coarse_model: CoarseModel,
-        cost_functional_form: Union[
-            List[_typing.CostFunctional], _typing.CostFunctional
-        ],
-        states: Union[List[fenics.Function], fenics.Function],
-        controls: Union[List[fenics.Function], fenics.Function],
-        config: Optional[io.Config] = None,
-        desired_weights: Optional[List[float]] = None,
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: list[fenics.Function] | fenics.Function,
+        controls: list[fenics.Function] | fenics.Function,
+        config: io.Config | None = None,
+        desired_weights: list[float] | None = None,
         mode: str = "initial",
     ) -> None:
         """Initializes self.
@@ -202,14 +258,19 @@ class ParameterExtraction:
         self.cost_functional_form = cost_functional_form
 
         self.states = _utils.enlist(states)
-        self.controls: List[fenics.Function] = _utils.enlist(controls)
+        self.controls: list[fenics.Function] = _utils.enlist(controls)
 
-        self.config = config
+        if config is not None:
+            self.config = config
+        else:
+            self.config = io.Config()
+        self.config.validate_config()
+
         self.mode = mode
         self.desired_weights = desired_weights
 
-        self._pre_callback: Optional[Callable] = None
-        self._post_callback: Optional[Callable] = None
+        self._pre_callback: Callable | None = None
+        self._post_callback: Callable | None = None
 
         self.adjoints = _utils.create_function_list(
             coarse_model.optimal_control_problem.db.function_db.adjoint_spaces
@@ -249,13 +310,35 @@ class ParameterExtraction:
         self.adjoint_ksp_options = (
             coarse_model.optimal_control_problem.adjoint_ksp_options
         )
-        self.preconditioner_forms = coarse_model.preconditioner_forms
-        self.optimal_control_problem: Optional[ocp.OptimalControlProblem] = None
+        self.gradient_ksp_options = (
+            coarse_model.optimal_control_problem.gradient_ksp_options
+        )
+        self.control_bcs_list = coarse_model.control_bcs_list
+        self.preconditioner_forms = (
+            coarse_model.optimal_control_problem.preconditioner_forms
+        )
+        self.pre_callback = coarse_model.pre_callback
+        self.post_callback = coarse_model.post_callback
+        self.linear_solver = coarse_model.optimal_control_problem.linear_solver
+        self.adjoint_linear_solver = (
+            coarse_model.optimal_control_problem.adjoint_linear_solver
+        )
+        self.newton_linearizations = (
+            coarse_model.optimal_control_problem.newton_linearizations
+        )
+        self.excluded_from_time_derivative = (
+            coarse_model.optimal_control_problem.excluded_from_time_derivative
+        )
 
-    def _solve(self, initial_guesses: Optional[List[fenics.Function]] = None) -> None:
+        self.optimal_control_problem: ocp.OptimalControlProblem | None = None
+
+    def _solve(
+        self, iteration: int, initial_guesses: list[fenics.Function] | None = None
+    ) -> None:
         """Solves the parameter extraction problem.
 
         Args:
+            iteration: The current space mapping iteration.
             initial_guesses: The list of initial guesses for solving the problem.
 
         """
@@ -274,6 +357,14 @@ class ParameterExtraction:
                 "ParameterExtraction._solve", "initial_guesses", ""
             )
 
+        config = copy.deepcopy(self.config)
+        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        config.set(
+            "Output",
+            "result_dir",
+            str(output_path / f"parameter_extraction_{iteration}"),
+        )
+
         self.optimal_control_problem = ocp.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -281,14 +372,22 @@ class ParameterExtraction:
             self.states,
             self.controls,
             self.adjoints,
-            config=self.config,
+            config=config,
             riesz_scalar_products=self.riesz_scalar_products,
             control_constraints=self.control_constraints,
             initial_guess=self.initial_guess,
             ksp_options=self.ksp_options,
             adjoint_ksp_options=self.adjoint_ksp_options,
+            gradient_ksp_options=self.gradient_ksp_options,
             desired_weights=self.desired_weights,
+            control_bcs_list=self.control_bcs_list,
             preconditioner_forms=self.preconditioner_forms,
+            pre_callback=self.pre_callback,
+            post_callback=self.post_callback,
+            linear_solver=self.linear_solver,
+            adjoint_linear_solver=self.adjoint_linear_solver,
+            newton_linearizations=self.newton_linearizations,
+            excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
 
         self.optimal_control_problem.inject_pre_post_callback(
@@ -363,6 +462,26 @@ class SpaceMappingProblem:
         self.verbose = verbose
         self.save_history = save_history
 
+        config = copy.deepcopy(self.coarse_model.config)
+        config.set("Output", "save_state", "False")
+        config.set("Output", "save_adjoint", "False")
+        config.set("Output", "save_gradient", "False")
+
+        self.db = database.Database(
+            config,
+            _utils.enlist(self.coarse_model.states),
+            _utils.enlist(self.coarse_model.adjoints),
+            self.coarse_model.ksp_options,  # type: ignore
+            self.coarse_model.adjoint_ksp_options,  # type: ignore
+            self.coarse_model.gradient_ksp_options,  # type: ignore
+            self.coarse_model.cost_functional_form,  # type: ignore
+            _utils.enlist(self.coarse_model.state_forms),
+            _utils.check_and_enlist_bcs(self.coarse_model.bcs_list),
+            self.coarse_model.preconditioner_forms,  # type: ignore
+        )
+
+        self.output_manager = output.OutputManager(self.db)
+
         self.eps = 1.0
         self.converged = False
         self.iteration = 0
@@ -371,7 +490,7 @@ class SpaceMappingProblem:
         self.z_star = self.coarse_model.optimal_control_problem.db.function_db.controls
         self.norm_z_star = 1.0
 
-        self.x: List[fenics.Function] = _utils.enlist(self.fine_model.controls)
+        self.x: list[fenics.Function] = _utils.enlist(self.fine_model.controls)
 
         control_spaces_fine = [xx.function_space() for xx in self.x]
         control_spaces_coarse = (
@@ -404,20 +523,6 @@ class SpaceMappingProblem:
         self.history_rho: collections.deque = collections.deque()
         self.history_alpha: collections.deque = collections.deque()
 
-        self.space_mapping_history: Dict[str, List[float]] = {
-            "cost_function_value": [],
-            "eps": [],
-            "stepsize": [],
-        }
-
-    def update_history(self) -> None:
-        """Updates the space mapping history."""
-        self.space_mapping_history["cost_function_value"].append(
-            self.fine_model.cost_functional_value
-        )
-        self.space_mapping_history["eps"].append(self.eps)
-        self.space_mapping_history["stepsize"].append(self.stepsize)
-
     def _compute_intial_guess(self) -> None:
         """Compute initial guess for the space mapping by solving the coarse problem."""
         self.coarse_model.optimize()
@@ -433,29 +538,37 @@ class SpaceMappingProblem:
     def test_for_nonconvergence(self) -> None:
         """Tests, whether maximum number of iterations are exceeded."""
         if self.iteration >= self.max_iter:
+            self.output_manager.post_process()
             raise _exceptions.NotConvergedError(
                 "Space Mapping",
                 "Maximum number of iterations exceeded.",
             )
 
+    def output(self) -> None:
+        """Uses the output manager to save / show the current results."""
+        optimization_state = self.db.parameter_db.optimization_state
+        optimization_state["iteration"] = self.iteration
+        optimization_state["objective_value"] = self.fine_model.cost_functional_value
+        optimization_state["gradient_norm"] = self.eps
+        optimization_state["stepsize"] = self.stepsize
+
+        self.output_manager.output()
+
     def solve(self) -> None:
         """Solves the space mapping problem."""
+        log.begin("Solving the space mapping problem.")
         self._compute_intial_guess()
 
+        log.begin("Simulating the fine model.")
         self.fine_model.solve_and_evaluate()
-        self.parameter_extraction._solve()  # pylint: disable=protected-access
+        log.end()
+
+        self.parameter_extraction._solve(  # pylint: disable=protected-access
+            self.iteration
+        )
         self.eps = self._compute_eps()
 
-        self.update_history()
-        if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(
-                f"Space Mapping - Iteration {self.iteration:3d}:    "
-                f"Cost functional value = "
-                f"{self.fine_model.cost_functional_value:.3e}    "
-                f"eps = {self.eps:.3e}\n",
-                flush=True,
-            )
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        self.output()
 
         while not self.converged:
             for i in range(len(self.dir_prev)):
@@ -478,20 +591,10 @@ class SpaceMappingProblem:
                 )
                 self.p_prev[i].vector().apply("")
 
+            self.iteration += 1
             self._update_iterates()
 
-            self.iteration += 1
-            self.update_history()
-            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print(
-                    f"Space Mapping - Iteration {self.iteration:3d}:    "
-                    f"Cost functional value = "
-                    f"{self.fine_model.cost_functional_value:.3e}    "
-                    f"eps = {self.eps:.3e}"
-                    f"    step size = {self.stepsize:.3e}",
-                    flush=True,
-                )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            self.output()
 
             if self.eps <= self.tol:
                 self.converged = True
@@ -503,18 +606,9 @@ class SpaceMappingProblem:
             self._update_bfgs_approximation()
 
         if self.converged:
-            if self.save_history and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                with open("./sm_history.json", "w", encoding="utf-8") as file:
-                    json.dump(self.space_mapping_history, file, indent=4)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
-            output = (
-                f"\nStatistics --- "
-                f"Space mapping iterations: {self.iteration:4d} --- "
-                f"Final objective value: {self.fine_model.cost_functional_value:.3e}\n"
-            )
-            if self.verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                print(output, flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            self.output_manager.output_summary()
+            self.output_manager.post_process()
+            log.end()
 
     def _update_broyden_approximation(self) -> None:
         """Updates the approximation of the mapping function with Broyden's method."""
@@ -599,12 +693,16 @@ class SpaceMappingProblem:
                 )
                 self.x[i].vector().apply("")
 
+            log.begin("Simulating the fine model.")
             self.fine_model.solve_and_evaluate()
+            log.end()
+
             self.parameter_extraction._solve(  # pylint: disable=protected-access
+                self.iteration,
                 initial_guesses=[
                     ips.interpolate(self.x[i])
                     for i, ips in enumerate(self.ips_to_coarse)
-                ]
+                ],
             )
             self.eps = self._compute_eps()
 
@@ -622,12 +720,17 @@ class SpaceMappingProblem:
                         self.ips_to_fine[i].interpolate(self.h[i]).vector().vec(),
                     )
                     self.x[i].vector().apply("")
+
+                log.begin("Simulating the fine model.")
                 self.fine_model.solve_and_evaluate()
+                log.end()
+
                 self.parameter_extraction._solve(  # pylint: disable=protected-access
+                    self.iteration,
                     initial_guesses=[
                         ips.interpolate(self.x[i])
                         for i, ips in enumerate(self.ips_to_coarse)
-                    ]
+                    ],
                 )
                 eps_new = self._compute_eps()
 
@@ -644,7 +747,7 @@ class SpaceMappingProblem:
                     )
 
     def _scalar_product(
-        self, a: List[fenics.Function], b: List[fenics.Function]
+        self, a: list[fenics.Function], b: list[fenics.Function]
     ) -> float:
         """Computes the scalar product between ``a`` and ``b``.
 
@@ -661,7 +764,7 @@ class SpaceMappingProblem:
         )
 
     def _compute_search_direction(
-        self, q: List[fenics.Function], out: List[fenics.Function]
+        self, q: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         """Computes the search direction for a given rhs ``q``, saved to ``out``.
 
@@ -686,7 +789,7 @@ class SpaceMappingProblem:
             )
 
     def _compute_steepest_descent_application(
-        self, q: List[fenics.Function], out: List[fenics.Function]
+        self, q: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         """Computes the search direction for the steepest descent method.
 
@@ -700,7 +803,7 @@ class SpaceMappingProblem:
             out[i].vector().apply("")
 
     def _compute_broyden_application(
-        self, q: List[fenics.Function], out: List[fenics.Function]
+        self, q: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         """Computes the search direction for Broyden's method.
 
@@ -730,7 +833,7 @@ class SpaceMappingProblem:
                 out[j].vector().apply("")
 
     def _compute_bfgs_application(
-        self, q: List[fenics.Function], out: List[fenics.Function]
+        self, q: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         """Computes the search direction for the LBFGS method.
 
@@ -776,7 +879,7 @@ class SpaceMappingProblem:
                     out[j].vector().apply("")
 
     def _compute_ncg_direction(
-        self, q: List[fenics.Function], out: List[fenics.Function]
+        self, q: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         """Computes the search direction for the NCG methods.
 
@@ -844,7 +947,7 @@ class SpaceMappingProblem:
 
         return eps
 
-    def inject_pre_callback(self, function: Optional[Callable]) -> None:
+    def inject_pre_callback(self, function: Callable | None) -> None:
         """Changes the a-priori callback of the OptimizationProblem.
 
         Args:
@@ -856,7 +959,7 @@ class SpaceMappingProblem:
         # pylint: disable=protected-access
         self.parameter_extraction._pre_callback = function
 
-    def inject_post_callback(self, function: Optional[Callable]) -> None:
+    def inject_post_callback(self, function: Callable | None) -> None:
         """Changes the a-posteriori callback of the OptimizationProblem.
 
         Args:
@@ -869,7 +972,7 @@ class SpaceMappingProblem:
         self.parameter_extraction._post_callback = function
 
     def inject_pre_post_callback(
-        self, pre_function: Optional[Callable], post_function: Optional[Callable]
+        self, pre_function: Callable | None, post_function: Callable | None
     ) -> None:
         """Changes the a-priori (pre) and a-posteriori (post) callbacks of the problem.
 

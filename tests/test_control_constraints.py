@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -28,7 +28,7 @@ import cashocs
 @pytest.fixture
 def geometry():
     Geometry = namedtuple("Geometry", "mesh boundaries dx ds")
-    mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(10)
+    mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(8)
     geom = Geometry(mesh, boundaries, dx, ds)
 
     return geom
@@ -237,6 +237,7 @@ def test_int_ineq_constraints_only(dir_path, config_ocp, geometry, F, bcs, y, u,
     u.vector().apply("")
     J = cashocs.IntegralFunctional(pow(y - Constant(1.0), 2) * geometry.dx)
     constraint = cashocs.InequalityConstraint(y * y * geometry.dx, upper_bound=0.5)
+    config_ocp.set("OptimizationRoutine", "max_iter", "200")
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=config_ocp
     )

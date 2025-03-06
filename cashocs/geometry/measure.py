@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 import fenics
 from typing_extensions import Literal
@@ -52,7 +52,7 @@ class _EmptyMeasure(ufl.Measure):
 
     """
 
-    def __init__(self, measure: fenics.Measure) -> None:
+    def __init__(self, measure: ufl.Measure) -> None:
         """Initializes self.
 
         Args:
@@ -76,11 +76,11 @@ class _EmptyMeasure(ufl.Measure):
 
 
 def generate_measure(
-    idx: List[int], measure: fenics.Measure
-) -> Union[fenics.Measure, _EmptyMeasure]:
+    idx: list[int | str], measure: ufl.Measure
+) -> ufl.Measure | _EmptyMeasure:
     """Generates a measure based on indices.
 
-    Generates a :py:class:`fenics.MeasureSum` or
+    Generates a :py:class:`ufl.MeasureSum` or
     :py:class:`_EmptyMeasure <cashocs.geometry._EmptyMeasure>` object corresponding to
     ``measure`` and the subdomains / boundaries specified in idx. This is a convenient
     shortcut to writing ``dx(1) + dx(2) + dx(3)`` in case many measures are involved.
@@ -123,11 +123,11 @@ class NamedMeasure(ufl.Measure):
     def __init__(
         self,
         integral_type: Literal["dx", "ds", "dS"],
-        domain: Optional[fenics.Mesh] = None,
+        domain: fenics.Mesh | None = None,
         subdomain_id: str = "everywhere",
-        metadata: Optional[Dict] = None,
-        subdomain_data: Optional[fenics.MeshFunction] = None,
-        physical_groups: Optional[Dict[str, Dict[str, int]]] = None,
+        metadata: dict | None = None,
+        subdomain_data: fenics.MeshFunction | None = None,
+        physical_groups: dict[str, dict[str, int]] | None = None,
     ) -> None:
         """See base class."""
         super().__init__(
@@ -151,7 +151,7 @@ class NamedMeasure(ufl.Measure):
         degree: Any = None,
         scheme: Any = None,
         rule: Any = None,
-    ) -> Optional[ufl.Measure]:
+    ) -> ufl.Measure | None:
         """See base class.
 
         This implementation also allows strings for subdomain id.
@@ -195,8 +195,8 @@ class NamedMeasure(ufl.Measure):
                 rule=rule,
             )
 
-        elif isinstance(subdomain_id, (list)) and all(
-            isinstance(x, int) for x in subdomain_id
+        elif isinstance(subdomain_id, list) and all(
+            isinstance(x, (int, str)) for x in subdomain_id
         ):
             return generate_measure(subdomain_id, self)
 

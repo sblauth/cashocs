@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -23,13 +23,13 @@ in the truncated Newton method.
 
 from __future__ import annotations
 
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
 
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 from cashocs import nonlinear_solvers
 
 if TYPE_CHECKING:
@@ -136,14 +136,14 @@ class HessianProblem:
             "ksp_atol": 1e-50,
             "ksp_max_it": 100,
         }
-        self.riesz_ksp_options: List[_typing.KspOption] = []
+        self.riesz_ksp_options: list[_typing.KspOption] = []
         for _ in range(len(self.db.function_db.controls)):
             self.riesz_ksp_options.append(option)
 
         self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
 
     def hessian_application(
-        self, h: List[fenics.Function], out: List[fenics.Function]
+        self, h: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         r"""Computes the application of the Hessian to some element.
 
@@ -201,14 +201,10 @@ class HessianProblem:
                 rtol=self.picard_rtol,
                 atol=self.picard_atol,
                 verbose=self.picard_verbose,
-                inner_damped=False,
-                inner_inexact=False,
-                inner_verbose=False,
                 inner_max_iter=2,
                 ksp_options=self.db.parameter_db.state_ksp_options,
                 A_tensors=self.state_A_tensors,
                 b_tensors=self.state_b_tensors,
-                inner_is_linear=True,
                 preconditioner_forms=self.db.form_db.preconditioner_forms,
             )
 
@@ -220,14 +216,10 @@ class HessianProblem:
                 rtol=self.picard_rtol,
                 atol=self.picard_atol,
                 verbose=self.picard_verbose,
-                inner_damped=False,
-                inner_inexact=False,
-                inner_verbose=False,
                 inner_max_iter=2,
                 ksp_options=self.db.parameter_db.adjoint_ksp_options,
                 A_tensors=self.adjoint_A_tensors,
                 b_tensors=self.adjoint_b_tensors,
-                inner_is_linear=True,
                 preconditioner_forms=self.db.form_db.preconditioner_forms,
             )
 
@@ -246,7 +238,7 @@ class HessianProblem:
         self.no_sensitivity_solves += 2
 
     def reduced_hessian_application(
-        self, h: List[fenics.Function], out: List[fenics.Function]
+        self, h: list[fenics.Function], out: list[fenics.Function]
     ) -> None:
         """Computes the application of the reduced Hessian on a direction.
 
@@ -276,7 +268,7 @@ class HessianProblem:
             )
             out[j].vector().apply("")
 
-    def newton_solve(self) -> List[fenics.Function]:
+    def newton_solve(self) -> list[fenics.Function]:
         """Solves the Newton step with an iterative method.
 
         Returns:
@@ -299,6 +291,7 @@ class HessianProblem:
 
     def cg(self) -> None:
         """Solves the (truncated) Newton step with a CG method."""
+        log.begin("Solving the Newton system with a CG method.")
         for j in range(len(self.residual)):
             self.residual[j].vector().vec().aypx(
                 0.0, -self.db.function_db.gradient[j].vector().vec()
@@ -332,7 +325,7 @@ class HessianProblem:
 
             rsnew = self.form_handler.scalar_product(self.residual, self.residual)
             eps = np.sqrt(rsnew)
-            _loggers.debug(f"Residual of the CG method: {eps/eps_0:.3e} (relative)")
+            log.debug(f"Residual of the CG method: {eps/eps_0:.3e} (relative)")
             if eps < self.inner_newton_atol + self.inner_newton_rtol * eps_0:
                 break
 
@@ -343,9 +336,11 @@ class HessianProblem:
                 self.p[j].vector().apply("")
 
             rsold = rsnew
+        log.end()
 
     def cr(self) -> None:
         """Solves the (truncated) Newton step with a CR method."""
+        log.begin("Solving the Newton system with a CR method.")
         for j in range(len(self.residual)):
             self.residual[j].vector().vec().aypx(
                 0.0, -self.db.function_db.gradient[j].vector().vec()
@@ -395,7 +390,7 @@ class HessianProblem:
             eps = np.sqrt(
                 self.form_handler.scalar_product(self.residual, self.residual)
             )
-            _loggers.debug(f"Residual of the CR method: {eps/eps_0:.3e} (relative)")
+            log.debug(f"Residual of the CR method: {eps/eps_0:.3e} (relative)")
             if (
                 eps < self.inner_newton_atol + self.inner_newton_rtol * eps_0
                 or i == self.max_it_inner_newton - 1
@@ -425,3 +420,4 @@ class HessianProblem:
                 self.q[j].vector().apply("")
 
             rar = rar_new
+        log.end()

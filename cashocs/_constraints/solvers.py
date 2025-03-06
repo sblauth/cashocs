@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -20,15 +20,20 @@
 from __future__ import annotations
 
 import abc
-from typing import List, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 import fenics
 import numpy as np
 
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 from cashocs._constraints import constraints
 from cashocs._optimization import cost_functional
+
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
 
 if TYPE_CHECKING:
     try:
@@ -48,8 +53,8 @@ class ConstrainedSolver(abc.ABC):
     def __init__(
         self,
         constrained_problem: constrained_problems.ConstrainedOptimizationProblem,
-        mu_0: Optional[float] = None,
-        lambda_0: Optional[Union[List[float], float]] = None,
+        mu_0: float | None = None,
+        lambda_0: list[float] | float | None = None,
     ) -> None:
         """Initializes self.
 
@@ -66,6 +71,7 @@ class ConstrainedSolver(abc.ABC):
 
         self.constraints = self.constrained_problem.constraint_list
         self.constraint_dim = self.constrained_problem.constraint_dim
+        self.output_manager = constrained_problem.output_manager
         self.iterations = 0
 
         if mu_0 is not None:
@@ -108,9 +114,9 @@ class ConstrainedSolver(abc.ABC):
         self,
         tol: float = 1e-2,
         max_iter: int = 25,
-        inner_rtol: Optional[float] = None,
-        inner_atol: Optional[float] = None,
-        constraint_tol: Optional[float] = None,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
+        constraint_tol: float | None = None,
     ) -> None:
         """Solves the constrained problem.
 
@@ -130,28 +136,19 @@ class ConstrainedSolver(abc.ABC):
         """
         pass
 
-    def print_results(self) -> None:
+    def output(self) -> None:
         """Prints the results of the current iteration to the console."""
-        if (self.iterations - 1) % 10 == 0:
-            info_str = (
-                f"\n{self.solver_name}:  iter,  "
-                f"cost function,  "
-                f"constr. violation,  "
-                f"      mu\n\n"
-            )
-        else:
-            info_str = ""
+        db = self.constrained_problem.db
+        optimization_state = db.parameter_db.optimization_state
 
-        val_str = (
-            f"{self.solver_name}:  {self.iterations:4d},  "
-            f"{self.constrained_problem.current_function_value:>13.3e},  "
-            f"{self.constraint_violation:>17.3e},  "
-            f"{self.mu:.2e}"
+        optimization_state["iteration"] = self.iterations - 1
+        optimization_state["objective_value"] = (
+            self.constrained_problem.current_function_value
         )
+        optimization_state["constraint_violation"] = self.constraint_violation
+        optimization_state["mu"] = self.mu
 
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(info_str + val_str, flush=True)
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        self.output_manager.output()
 
 
 class AugmentedLagrangianMethod(ConstrainedSolver):
@@ -160,8 +157,8 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
     def __init__(
         self,
         constrained_problem: constrained_problems.ConstrainedOptimizationProblem,
-        mu_0: Optional[float] = None,
-        lambda_0: Optional[List[float]] = None,
+        mu_0: float | None = None,
+        lambda_0: list[float] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -180,12 +177,12 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         self.A_tensors = [fenics.PETScMatrix() for _ in range(self.constraint_dim)]
         self.b_tensors = [fenics.PETScVector() for _ in range(self.constraint_dim)]
         self.solver_name = "Augmented Lagrangian"
-        self.inner_cost_functional_form: List[_typing.CostFunctional] = []
+        self.inner_cost_functional_form: list[_typing.CostFunctional] = []
 
     def _project_pointwise_multiplier(
         self,
-        project_terms: Union[ufl_expr.Expr, List[ufl_expr.Expr]],
-        measure: fenics.Measure,
+        project_terms: ufl_expr.Expr | list[ufl_expr.Expr],
+        measure: ufl.Measure,
         multiplier: fenics.Function,
         A_tensor: fenics.PETScMatrix,  # pylint: disable=invalid-name
         b_tensor: fenics.PETScVector,
@@ -235,8 +232,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                         -self.lmbd[i] * constraint.target
                     )
 
-                    constraint.quadratic_functional.weight.vector().vec().set(self.mu)
-                    constraint.quadratic_functional.weight.vector().apply("")
+                    constraint.quadratic_functional.weight.assign(self.mu)
                     self.inner_cost_functional_form += [constraint.quadratic_functional]
 
                 elif constraint.measure is not None:
@@ -255,15 +251,12 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
 
             elif isinstance(constraint, constraints.InequalityConstraint):
                 if constraint.is_integral_constraint:
-                    constraint.min_max_term.mu.vector().vec().set(self.mu)
-                    constraint.min_max_term.mu.vector().apply("")
-                    constraint.min_max_term.lambd.vector().vec().set(self.lmbd[i])
-                    constraint.min_max_term.lambd.vector().apply("")
+                    constraint.min_max_term.mu.assign(self.mu)
+                    constraint.min_max_term.lambd.assign(self.lmbd[i])
                     self.inner_cost_functional_form += [constraint.min_max_term]
 
                 elif constraint.is_pointwise_constraint:
-                    constraint.weight.vector().vec().set(self.mu)
-                    constraint.weight.vector().apply("")
+                    constraint.weight.assign(self.mu)
                     self.inner_cost_functional_form += constraint.cost_functional_terms
 
         self.inner_cost_functional_shift = np.sum(self.inner_cost_functional_shifts)
@@ -325,10 +318,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 )
 
             self.lmbd[index] = lower_term + upper_term
-            self.constraints[index].min_max_term.lambd.vector().vec().set(
-                self.lmbd[index]
-            )
-            self.constraints[index].min_max_term.lambd.vector().apply("")
+            self.constraints[index].min_max_term.lambd.assign(self.lmbd[index])
 
         elif self.constraints[index].is_pointwise_constraint:
             project_terms = []
@@ -379,9 +369,9 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         self,
         tol: float = 1e-2,
         max_iter: int = 10,
-        inner_rtol: Optional[float] = None,
-        inner_atol: Optional[float] = None,
-        constraint_tol: Optional[float] = None,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
+        constraint_tol: float | None = None,
     ) -> None:
         """Solves the constrained problem.
 
@@ -405,14 +395,17 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         while True:
             self.iterations += 1
 
-            _loggers.debug(f"mu = {self.mu}")
-            _loggers.debug(f"lambda = {self.lmbd}")
+            log.debug(f"mu = {self.mu}")
+            log.debug(f"lambda = {self.lmbd}")
 
             self._update_cost_functional()
 
             # pylint: disable=protected-access
             self.constrained_problem._solve_inner_problem(
-                tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol
+                tol=tol,
+                inner_rtol=inner_rtol,
+                inner_atol=inner_atol,
+                iteration=self.iterations,
             )
 
             self._update_lagrange_multiplier_estimates()
@@ -422,21 +415,18 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
                 self.constrained_problem.total_constraint_violation()
             )
 
-            self.print_results()
+            self.output()
 
             if self.constraint_violation > self.gamma * self.constraint_violation_prev:
                 self.mu *= self.beta
 
             if self.constraint_violation <= convergence_tol:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(f"{self.solver_name} converged successfully.\n", flush=True)
-                fenics.MPI.barrier(fenics.MPI.comm_world)
+                self.output_manager.output_summary()
+                self.output_manager.post_process()
                 break
 
             if self.iterations >= max_iter:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(f"{self.solver_name} did not converge.\n", flush=True)
-                fenics.MPI.barrier(fenics.MPI.comm_world)
+                self.output_manager.post_process()
                 break
 
 
@@ -446,8 +436,8 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
     def __init__(
         self,
         constrained_problem: constrained_problems.ConstrainedOptimizationProblem,
-        mu_0: Optional[float] = None,
-        lambda_0: Optional[list[float]] = None,
+        mu_0: float | None = None,
+        lambda_0: list[float] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -467,9 +457,9 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         self,
         tol: float = 1e-2,
         max_iter: int = 25,
-        inner_rtol: Optional[float] = None,
-        inner_atol: Optional[float] = None,
-        constraint_tol: Optional[float] = None,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
+        constraint_tol: float | None = None,
     ) -> None:
         """Solves the constrained problem.
 
@@ -493,30 +483,32 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         while True:
             self.iterations += 1
 
-            _loggers.debug(f"mu = {self.mu}")
+            log.debug(f"mu = {self.mu}")
 
             self._update_cost_functional()
 
             # pylint: disable=protected-access
-            self.constrained_problem._solve_inner_problem(tol=tol)
+            self.constrained_problem._solve_inner_problem(
+                tol=tol,
+                inner_rtol=inner_rtol,
+                inner_atol=inner_atol,
+                iteration=self.iterations,
+            )
 
             self.constraint_violation = (
                 self.constrained_problem.total_constraint_violation()
             )
             self.mu *= self.beta
 
-            self.print_results()
+            self.output()
 
             if self.constraint_violation <= convergence_tol:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(f"{self.solver_name} converged successfully.\n", flush=True)
-                fenics.MPI.barrier(fenics.MPI.comm_world)
+                self.output_manager.output_summary()
+                self.output_manager.post_process()
                 break
 
             if self.iterations >= max_iter:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                    print(f"{self.solver_name} did not converge.\n", flush=True)
-                fenics.MPI.barrier(fenics.MPI.comm_world)
+                self.output_manager.post_process()
                 break
 
     def _update_cost_functional(self) -> None:
@@ -528,8 +520,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         for constraint in self.constraints:
             if isinstance(constraint, constraints.EqualityConstraint):
                 if constraint.is_integral_constraint:
-                    constraint.quadratic_functional.weight.vector().vec().set(self.mu)
-                    constraint.quadratic_functional.weight.vector().apply("")
+                    constraint.quadratic_functional.weight.assign(self.mu)
                     self.inner_cost_functional_form += [constraint.quadratic_functional]
 
                 elif constraint.is_pointwise_constraint:
@@ -541,15 +532,12 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
 
             elif isinstance(constraint, constraints.InequalityConstraint):
                 if constraint.is_integral_constraint:
-                    constraint.min_max_term.mu.vector().vec().set(self.mu)
-                    constraint.min_max_term.mu.vector().apply("")
-                    constraint.min_max_term.lambd.vector().vec().set(0.0)
-                    constraint.min_max_term.lambd.vector().apply("")
+                    constraint.min_max_term.mu.assign(self.mu)
+                    constraint.min_max_term.lambd.assign(0.0)
                     self.inner_cost_functional_form += [constraint.min_max_term]
 
                 elif constraint.is_pointwise_constraint:
-                    constraint.weight.vector().vec().set(self.mu)
-                    constraint.weight.vector().apply("")
+                    constraint.weight.assign(self.mu)
                     constraint.multiplier.vector().vec().set(0.0)
                     constraint.multiplier.vector().apply("")
                     self.inner_cost_functional_form += constraint.cost_functional_terms

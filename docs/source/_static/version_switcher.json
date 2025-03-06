@@ -5,10 +5,30 @@
         "url": "https://cashocs.readthedocs.io/en/latest/"
     },
     {
-        "name": "2.0 (stable)",
-        "version": "2.0.13",
-        "url": "https://cashocs.readthedocs.io/en/v2.0.13/",
+        "name": "2.4 (stable)",
+        "version": "2.4.2",
+        "url": "https://cashocs.readthedocs.io/en/stable/",
         "preferred": true
+    },
+    {
+        "name": "2.3",
+        "version": "2.3.3",
+        "url": "https://cashocs.readthedocs.io/en/v2.3.3/"
+    },
+    {
+        "name": "2.2",
+        "version": "2.2.0",
+        "url": "https://cashocs.readthedocs.io/en/v2.2.0/"
+    },
+    {
+        "name": "2.1",
+        "version": "2.1.4",
+        "url": "https://cashocs.readthedocs.io/en/v2.1.4/"
+    },
+    {
+        "name": "2.0",
+        "version": "2.0.14",
+        "url": "https://cashocs.readthedocs.io/en/v2.0.14/"
     },
     {
         "name": "1.8",

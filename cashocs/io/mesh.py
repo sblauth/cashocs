@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -20,23 +20,23 @@
 from __future__ import annotations
 
 import configparser
+import gc
 import json
 import pathlib
 import subprocess  # nosec B404
 import tempfile
-import time
-from typing import Dict, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 import h5py
 import numpy as np
 
 from cashocs import _exceptions
-from cashocs import _loggers
 from cashocs import _utils
+from cashocs import log
 from cashocs._cli._convert import convert as cli_convert
-from cashocs.geometry import measure as measure_module
-from cashocs.geometry import mesh as mesh_module
+from cashocs.geometry.measure import NamedMeasure
+from cashocs.geometry.mesh import _get_mesh_stats
 
 if TYPE_CHECKING:
     from mpi4py import MPI
@@ -44,7 +44,7 @@ if TYPE_CHECKING:
     from cashocs import _typing
 
 
-def import_mesh(mesh_file: str, comm: Optional[MPI.Comm] = None) -> _typing.MeshTuple:
+def import_mesh(mesh_file: str, comm: MPI.Comm | None = None) -> _typing.MeshTuple:
     """Imports a mesh file for use with cashocs / FEniCS.
 
     This function imports a mesh file. The mesh file can either be a Gmsh mesh file
@@ -98,11 +98,13 @@ def import_mesh(mesh_file: str, comm: Optional[MPI.Comm] = None) -> _typing.Mesh
             "Only XDMF (.xdmf) or Gmsh (.msh) meshes are supported.",
         )
 
+    gc.collect()
+
     return mesh_tuple
 
 
 def _import_gmsh_mesh(
-    mesh_file: str, comm: Optional[MPI.Comm] = None
+    mesh_file: str, comm: MPI.Comm | None = None
 ) -> _typing.MeshTuple:
     """Imports a mesh file for use with cashocs / FEniCS.
 
@@ -148,9 +150,9 @@ def _import_gmsh_mesh(
     return mesh_tuple
 
 
-@mesh_module._get_mesh_stats(mode="import")  # pylint:disable=protected-access
+@_get_mesh_stats(mode="import")  # pylint:disable=protected-access
 def _import_xdmf_mesh(
-    mesh_file: str, comm: Optional[MPI.Comm] = None
+    mesh_file: str, comm: MPI.Comm | None = None
 ) -> _typing.MeshTuple:
     """Imports a mesh file for use with cashocs / FEniCS.
 
@@ -227,7 +229,7 @@ def _import_xdmf_mesh(
         xdmf_boundaries.read(boundaries_mvc, "boundaries")
         xdmf_boundaries.close()
 
-    physical_groups: Optional[Dict[str, Dict[str, int]]] = None
+    physical_groups: dict[str, dict[str, int]] | None = None
     physical_groups_path = pathlib.Path(f"{file_string}_physical_groups.json")
     if physical_groups_path.is_file():
         with physical_groups_path.open("r", encoding="utf-8") as file:
@@ -236,13 +238,13 @@ def _import_xdmf_mesh(
     subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
     boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
 
-    dx = measure_module.NamedMeasure(
+    dx = NamedMeasure(
         "dx", domain=mesh, subdomain_data=subdomains, physical_groups=physical_groups
     )
-    ds = measure_module.NamedMeasure(
+    ds = NamedMeasure(
         "ds", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
-    d_interior_facet = measure_module.NamedMeasure(
+    d_interior_facet = NamedMeasure(
         "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
 
@@ -256,9 +258,9 @@ def _import_xdmf_mesh(
 def export_mesh(
     mesh: fenics.Mesh,
     mesh_file: str,
-    subdomains: Optional[fenics.MeshFunction] = None,
-    boundaries: Optional[fenics.MeshFunction] = None,
-    comm: Optional[MPI.Comm] = None,
+    subdomains: fenics.MeshFunction | None = None,
+    boundaries: fenics.MeshFunction | None = None,
+    comm: MPI.Comm | None = None,
 ) -> None:
     """Exports a mesh (together with its subdomains and boundaries).
 
@@ -308,7 +310,7 @@ def export_mesh(
 
 def convert(
     input_file: str,
-    output_file: Optional[str] = None,
+    output_file: str | None = None,
     mode: str = "physical",
     quiet: bool = False,
 ) -> None:
@@ -355,14 +357,14 @@ def create_point_representation(
     mod_line = ""
     if dim == 2:
         mod_line = (
-            f"{points[idcs[subwrite_counter]][0]:.16f} "
-            f"{points[idcs[subwrite_counter]][1]:.16f} 0\n"
+            f"{points[idcs[subwrite_counter]][0]:.16e} "
+            f"{points[idcs[subwrite_counter]][1]:.16e} 0\n"
         )
     elif dim == 3:
         mod_line = (
-            f"{points[idcs[subwrite_counter]][0]:.16f} "
-            f"{points[idcs[subwrite_counter]][1]:.16f} "
-            f"{points[idcs[subwrite_counter]][2]:.16f}\n"
+            f"{points[idcs[subwrite_counter]][0]:.16e} "
+            f"{points[idcs[subwrite_counter]][1]:.16e} "
+            f"{points[idcs[subwrite_counter]][2]:.16e}\n"
         )
 
     return mod_line
@@ -411,9 +413,10 @@ def parse_file(
         dim: The dimensionality of the mesh
 
     """
-    with open(original_msh_file, "r", encoding="utf-8") as old_file, open(
-        out_msh_file, "w", encoding="utf-8"
-    ) as new_file:
+    with (
+        open(original_msh_file, encoding="utf-8") as old_file,
+        open(out_msh_file, "w", encoding="utf-8") as new_file,
+    ):
         node_section = False
         info_section = False
         subnode_counter = 0
@@ -468,7 +471,7 @@ def check_mesh_compatibility(mesh: fenics.Mesh, original_mesh_file: str) -> None
     """
     num_points = 0
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        with open(original_mesh_file, "r", encoding="utf-8") as file:
+        with open(original_mesh_file, encoding="utf-8") as file:
             node_info = False
             for line in file:
                 if node_info:
@@ -524,7 +527,7 @@ def write_out_mesh(  # noqa: C901
 
 
 def read_mesh_from_xdmf(
-    filename: str, step: int = 0, comm: Optional[MPI.Comm] = None
+    filename: str, step: int = 0, comm: MPI.Comm | None = None
 ) -> fenics.Mesh:
     """Reads a mesh from a .xdmf file containing a checkpointed function.
 
@@ -592,9 +595,9 @@ def read_mesh_from_xdmf(
 def extract_mesh_from_xdmf(
     xdmffile: str,
     iteration: int = 0,
-    outputfile: Optional[str] = None,
-    original_gmsh_file: Optional[str] = None,
-    quiet: bool = False,
+    outputfile: str | None = None,
+    original_gmsh_file: str | None = None,
+    quiet: bool = False,  # pylint: disable= unused-argument
 ) -> None:
     """Extracts a Gmsh mesh file from an XDMF state file.
 
@@ -613,7 +616,7 @@ def extract_mesh_from_xdmf(
             `False`.
 
     """
-    start_time = time.time()
+    log.begin("Extracting the mesh from the XDMF file", level=log.DEBUG)
 
     _utils.check_file_extension(xdmffile, "xdmf")
     if outputfile is None:
@@ -660,9 +663,4 @@ def extract_mesh_from_xdmf(
     else:
         write_out_mesh(mesh, original_gmsh_file, outputfile)
 
-    end_time = time.time()
-    if not quiet:
-        _loggers.info(
-            f"Successfully extracted the desired mesh {outputfile} from {xdmffile}"
-            f" in {end_time - start_time:.2f} s"
-        )
+    log.end()

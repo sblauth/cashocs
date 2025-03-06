@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -22,13 +22,14 @@ from __future__ import annotations
 import abc
 from typing import Callable, cast, TYPE_CHECKING
 
-import cashocs
 import fenics
 import numpy as np
 
 try:
     from ufl_legacy import algorithms as ufl_algorithms
+    import ufl_legacy as ufl
 except ImportError:
+    import ufl
     from ufl import algorithms as ufl_algorithms
 
 from cashocs import _exceptions
@@ -37,8 +38,6 @@ from cashocs import _pde_problems
 from cashocs import _utils
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization.topology_optimization import topology_optimization_problem
-from cashocs._utils import interpolate_levelset_function_to_cells
-from cashocs.nonlinear_solvers import linear_solve
 
 if TYPE_CHECKING:
     from cashocs._database import database
@@ -69,13 +68,6 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         super().__init__(db, optimization_problem, line_search)
 
         self.levelset_function: fenics.Function = optimization_problem.levelset_function
-        self.levelset_function_init = fenics.Function(
-            self.levelset_function.function_space()
-        )
-        self.levelset_function_init.vector().vec().aypx(
-            0.0, self.levelset_function.vector().vec()
-        )
-        self.levelset_function_init.vector().apply("")
         self.topological_derivative_neg = (
             optimization_problem.topological_derivative_neg
         )
@@ -110,6 +102,16 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self._cashocs_problem.db.parameter_db.problem_type = "topology"
 
         self.mesh = optimization_problem.mesh
+
+        mpi_comm = self.mesh.mpi_comm()
+        if self.interpolation_scheme == "angle" and mpi_comm.Get_size() > 1:
+            raise _exceptions.InputError(
+                "TopologyOptimizationProblem",
+                "TopologyOptimization.interpolation_scheme",
+                "The angle weighted interpolation option is not supported in parallel. "
+                "Please use interpolation_scheme = volume in your config file.",
+            )
+
         self.cg1_space = fenics.FunctionSpace(self.mesh, "CG", 1)
         self.dg0_space = optimization_problem.dg0_space
         self.topological_derivative_vertex: fenics.Function = fenics.Function(
@@ -122,12 +124,8 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
 
         self.projection = optimization_problem.projection
-        
-        self.fixed_dofs = optimization_problem.fixed_dofs
-        
-        self.dx = fenics.Measure("dx", self.mesh)
 
-    def _generate_measure(self) -> fenics.Measure:
+    def _generate_measure(self) -> ufl.Measure:
         """Generates the measure for projecting the topological derivative.
 
         Returns:
@@ -161,11 +159,11 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             self.form_handler.riesz_scalar_products[0].integrals()[0].subdomain_data()
         )
         if is_everywhere:
-            measure = fenics.Measure("dx", mesh)
+            measure = ufl.Measure("dx", mesh)
         else:
             measure = _utils.summation(
                 [
-                    fenics.Measure(
+                    ufl.Measure(
                         "dx", mesh, subdomain_data=subdomain_data, subdomain_id=id
                     )
                     for id in subdomain_id_list
@@ -206,11 +204,6 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.fenics_matrix.ident_zeros()
         self.riesz_matrix = self.fenics_matrix.mat()
         self.b_tensor = fenics.PETScVector()
-            
-    def reset_levelset(self):
-        if len(self.fixed_dofs) > 0:
-            self.levelset_function.vector()[self.fixed_dofs] = \
-                self.levelset_function_init.vector()[self.fixed_dofs]
 
     @abc.abstractmethod
     def run(self) -> None:
@@ -336,13 +329,13 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         if not self.topological_derivative_is_identical:
             self.average_topological_derivative()
         else:
-            '''self.topological_derivative_vertex.vector().vec().aypx(
+            self.topological_derivative_vertex.vector().vec().aypx(
                 0.0,
                 fenics.project(self.topological_derivative_pos, self.cg1_space)
                 .vector()
                 .vec(),
             )
-            self.topological_derivative_vertex.vector().apply("")'''
+            self.topological_derivative_vertex.vector().apply("")
 
             dg0_function = fenics.Function(self.dg0_space)
             dg0_function.vector()[:] = fenics.project(
@@ -459,7 +452,6 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
     def run(self) -> None:
         """Runs the optimization algorithm to solve the optimization problem."""
         self.normalize(self.levelset_function)
-        self.reset_levelset()
         self.stepsize = 1.0
         self._cashocs_problem.state_problem.has_solution = False
 
@@ -498,11 +490,9 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                 self.stepsize = float(np.minimum(1.5 * self.stepsize, 1.0))
             while True:
                 self.move_levelset(self.stepsize)
-                self.reset_levelset()
                 self.projection.project()
-                self.update_levelset()
                 self.normalize(self.levelset_function)
-                self.reset_levelset()
+                self.update_levelset()
 
                 self._cashocs_problem.state_problem.has_solution = False
                 self.compute_state_variables()
@@ -514,9 +504,9 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                 cost_functional_new = (
                     self._cashocs_problem.reduced_cost_functional.evaluate()
                 )
-                # if cost_functional_new <= self.objective_value:
-                if cost_functional_new <= self.objective_value or self.iteration == 0:
-                # if cost_functional_new <= self.objective_value or self.ls > 4:
+                if cost_functional_new <= self.objective_value or (
+                    self.projection.volume_restriction is not None and k == 0
+                ):
                     break
                 else:
                     self.stepsize *= 0.5

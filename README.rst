@@ -26,11 +26,8 @@
 .. image:: https://img.shields.io/github/actions/workflow/status/sblauth/cashocs/tests.yml?branch=main&label=tests&style=flat-square
    :target: https://github.com/sblauth/cashocs/actions/workflows/tests.yml
 
-.. image:: https://img.shields.io/codecov/c/gh/sblauth/cashocs?color=brightgreen&style=flat-square
-    :target: https://codecov.io/gh/sblauth/cashocs
-
-.. image:: https://img.shields.io/codacy/grade/4debea4be12c495391e1310025851e55?style=flat-square
-    :target: https://app.codacy.com/gh/sblauth/cashocs/dashboard?branch=main
+.. image:: https://img.shields.io/endpoint?url=https%3A%2F%2Fraw.githubusercontent.com%2Fsblauth%2Fcashocs%2Fcoverage%2Fendpoint.json&style=flat-square
+   :target: https://htmlpreview.github.io/?https://github.com/sblauth/cashocs/blob/coverage/htmlcov/index.html
 
 .. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest&style=flat-square
     :target: https://cashocs.readthedocs.io/en/latest/?badge=latest
@@ -76,13 +73,13 @@ we can recommend the textbooks
 
 .. readme_end_disclaimer
 
-However, the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/user>`_ also gives many references either
+However, the `cashocs tutorial <https://cashocs.readthedocs.io/en/stable/user>`_ also gives many references either
 to the underlying theory of PDE constrained optimization or to relevant demos
 and documentation of FEniCS.
 
 An overview over cashocs and its capabilities can be found in `Blauth - cashocs: A Computational, Adjoint-Based
-Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_. Moreover, note that
-the full cashocs documentation is available at `<https://cashocs.readthedocs.io/en/latest>`_.
+Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_ and `Blauth - Version 2.0 - cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2023.101577>`_. Moreover, note that
+the full cashocs documentation is available at `<https://cashocs.readthedocs.io>`_.
 
 
 .. readme_start_installation
@@ -111,7 +108,7 @@ where `<ENV_NAME>` is the desired name of the new environment.
 
 .. note::
 
-    `Gmsh <https://gmsh.info/>`_ is now (starting with release 1.3.2) automatically installed with anaconda.
+    `Gmsh <https://gmsh.info/>`_ is automatically installed with anaconda.
 
 
 
@@ -125,7 +122,7 @@ Manual Installation
   version that matches the HDF5 version used in FEniCS, and `matplotlib <https://matplotlib.org/>`_.
   The version of meshio should be at least 4, but for compatibility it is recommended to use meshio 4.4.
 
-- You might also want to install `Gmsh <https://gmsh.info/>`_, version 4.8.
+- You might also want to install `Gmsh <https://gmsh.info/>`_, version 4.8 or later.
   cashocs does not necessarily need this to work properly,
   but it is required for the remeshing functionality.
 
@@ -191,18 +188,17 @@ Manual Installation
 Usage
 =====
 
-The complete cashocs documentation is available here `<https://cashocs.readthedocs.io/en/latest>`_. For a detailed
-introduction, see the `cashocs tutorial <https://cashocs.readthedocs.io/en/latest/user>`_. The python source code
+The complete cashocs documentation is available here `<https://cashocs.readthedocs.io>`_. For a detailed
+introduction, see the `cashocs tutorial <https://cashocs.readthedocs.io/en/stable/user>`_. The python source code
 for the demo programs is located inside the "demos" folder.
 
 
-.. readme_start_citing
 .. _citing:
 
 Citing
 ======
 
-If you use cashocs for your research, please cite the following papers
+If you use cashocs for your research, please cite the following paper
 
 .. code-block:: text
 
@@ -211,45 +207,7 @@ If you use cashocs for your research, please cite the following papers
 	SoftwareX, Volume 13, 2021
 	https://doi.org/10.1016/j.softx.2020.100646
 
-as well as
-
-.. code-block:: text
-
-	Version 2.0 - cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software
-	Sebastian Blauth
-	SoftwareX, Volume 24, 2023
-	https://doi.org/10.1016/j.softx.2023.101577
-
-
-Additionally, if you are using the nonlinear conjugate gradient methods for shape optimization implemented in cashocs, please cite the following paper
-	
-.. code-block:: text
-
-	Nonlinear Conjugate Gradient Methods for PDE Constrained Shape Optimization Based on Steklov--Poincaré-Type Metrics
-	Sebastian Blauth
-	SIAM Journal on Optimization, Volume 31, Issue 3, 2021
-	https://doi.org/10.1137/20M1367738
-
-If you are using the space mapping methods for shape optimization, please cite the paper
-
-.. code-block:: text
-
-	Space Mapping for PDE Constrained Shape Optimization
-	Sebastian Blauth
-	SIAM Journal on Optimization, Volume 33, Issue 3, 2023
-	https://doi.org/10.1137/22M1515665
-
-and if you are using the topology optimization methods implemented in cashocs, please cite the paper
-
-.. code-block:: text
-
-	Quasi-Newton Methods for Topology Optimization Using a Level-Set Method
-	Sebastian Blauth and Kevin Sturm
-	Structural and Multidisciplinary Optimization, Volume 66, 2023
-	https://doi.org/10.1007/s00158-023-03653-2
-
-	
-If you are using BibTeX, you can use the following entries
+or use the following bibtex entry
 
 .. code-block:: bibtex
 	
@@ -264,73 +222,8 @@ If you are using BibTeX, you can use the following entries
 	  doi      = {https://doi.org/10.1016/j.softx.2020.100646},
 	  keywords = {PDE constrained optimization, Adjoint approach, Shape optimization, Optimal control},
 	}
-
-.. code-block:: bibtex
-
-	@Article{Blauth2023Version,
-	  author   = {Sebastian Blauth},
-	  journal  = {SoftwareX},
-	  title    = {{Version 2.0 - cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software}},
-	  year     = {2023},
-	  issn     = {2352-7110},
-	  pages    = {101577},
-	  volume   = {24},
-	  doi      = {https://doi.org/10.1016/j.softx.2023.101577},
-	  keywords = {PDE constrained optimization, Shape optimization, Topology optimization, Space mapping},
-	}
-
-
-.. code-block:: bibtex
-
-	@Article{Blauth2021Nonlinear,
-	  author   = {Sebastian Blauth},
-	  journal  = {SIAM J. Optim.},
-	  title    = {{Nonlinear Conjugate Gradient Methods for PDE Constrained Shape Optimization Based on Steklov-Poincaré-Type Metrics}},
-	  year     = {2021},
-	  number   = {3},
-	  pages    = {1658--1689},
-	  volume   = {31},
-	  doi      = {10.1137/20M1367738},
-	  fjournal = {SIAM Journal on Optimization},
-	}
-
-
-.. code-block:: bibtex
-
-	@Article{Blauth2023Space,
-	  author   = {Blauth, Sebastian},
-	  journal  = {SIAM J. Optim.},
-	  title    = {{Space Mapping for PDE Constrained Shape Optimization}},
-	  year     = {2023},
-	  issn     = {1052-6234,1095-7189},
-	  number   = {3},
-	  pages    = {1707--1733},
-	  volume   = {33},
-	  doi      = {10.1137/22M1515665},
-	  fjournal = {SIAM Journal on Optimization},
-	  mrclass  = {49Q10 (35Q93 49M41 65K05)},
-	  mrnumber = {4622415},
-	}
-
-
-.. code-block:: bibtex
-
-	@Article{Blauth2023Quasi,
-	  author   = {Blauth, Sebastian and Sturm, Kevin},
-	  journal  = {Struct. Multidiscip. Optim.},
-	  title    = {{Quasi-Newton methods for topology optimization using a level-set method}},
-	  year     = {2023},
-	  issn     = {1615-147X,1615-1488},
-	  number   = {9},
-	  pages    = {203},
-	  volume   = {66},
-	  doi      = {10.1007/s00158-023-03653-2},
-	  fjournal = {Structural and Multidisciplinary Optimization},
-	  mrclass  = {99-06},
-	  mrnumber = {4635978},
-	}
-
-.. readme_end_citing
+	
+For more details on how to cite cashocs please take a look at `<https://cashocs.readthedocs.io/en/stable/about/citing/>`_.
 
 
 .. readme_start_license
@@ -361,8 +254,9 @@ along with cashocs.  If not, see `<https://www.gnu.org/licenses/>`_.
 Contact / About
 ===============
 
-I'm `Sebastian Blauth <https://sblauth.github.io/>`_, a scientific employee at `Fraunhofer ITWM
-<https://www.itwm.fraunhofer.de/en.html>`_. I have developed this project as part of my PhD thesis.
+I'm `Sebastian Blauth <https://sblauth.github.io/>`_, a researcher at `Fraunhofer ITWM
+<https://www.itwm.fraunhofer.de/en.html>`_. I started developing cashocs during my PhD studies and have
+further developed and refined it as part of my employment at Fraunhofer ITWM.
 If you have any questions / suggestions / feedback, etc., you can contact me
 via `sebastian.blauth@itwm.fraunhofer.de
 <mailto:sebastian.blauth@itwm.fraunhofer.de>`_. For more information, visit my website at `<https://sblauth.github.io/>`_.

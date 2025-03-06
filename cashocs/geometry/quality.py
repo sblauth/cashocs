@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -90,7 +90,6 @@ class MeshQualityCalculator:
     #include <dolfin/mesh/Vertex.h>
     #include <dolfin/mesh/MeshFunction.h>
     #include <dolfin/mesh/Cell.h>
-    #include <dolfin/mesh/Vertex.h>
 
     using namespace dolfin;
 
@@ -421,8 +420,8 @@ class ConditionNumberCalculator(MeshQualityCalculator):
             * dx
         )
         rhs = (
-            fenics.sqrt(fenics.inner(jac, jac))
-            * fenics.sqrt(fenics.inner(inv, inv))
+            ufl.sqrt(ufl.inner(jac, jac))
+            * ufl.sqrt(ufl.inner(inv, inv))
             * fenics.TestFunction(function_space_dg0)
             * dx
         )

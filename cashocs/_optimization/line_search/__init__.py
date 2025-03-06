@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -23,4 +23,8 @@ from cashocs._optimization.line_search.polynomial_line_search import (
     PolynomialLineSearch,
 )
 
-__all__ = ["ArmijoLineSearch", "LineSearch", "PolynomialLineSearch"]
+__all__ = [
+    "ArmijoLineSearch",
+    "LineSearch",
+    "PolynomialLineSearch",
+]

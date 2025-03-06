@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2024 Sebastian Blauth
+# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -24,14 +24,28 @@ import json
 import os
 import shutil
 import subprocess  # nosec B404
-from typing import cast, List, TYPE_CHECKING, Union
+from typing import cast, TYPE_CHECKING
 
 import fenics
 
+from cashocs import log
 from cashocs.io import mesh as iomesh
 
 if TYPE_CHECKING:
     from cashocs._database import database
+
+
+output_mapping = {
+    "iteration": "iter",
+    "objective_value": "cost function",
+    "relative_norm": "rel. grad. norm",
+    "gradient_norm": "abs. grad. norm",
+    "mesh_quality": "mesh qlty",
+    "angle": "angle",
+    "stepsize": "step size",
+    "constraint_violation": "constraint violation",
+    "mu": "mu",
+}
 
 
 def generate_summary_str(db: database.Database, precision: int) -> str:
@@ -46,22 +60,33 @@ def generate_summary_str(db: database.Database, precision: int) -> str:
 
     """
     optimization_state = db.parameter_db.optimization_state
-    strs = [
+
+    summary_str_list = [
         "\n",
         "Optimization was successful.\n",
         "Statistics:\n",
         f"    total iterations: {optimization_state['iteration']:4d}\n",
-        "    final objective value: "
-        f"{optimization_state['objective_value']:>10.{precision}e}\n",
-        "    final gradient norm:   "
-        f"{optimization_state['relative_norm']:>10.{precision}e}\n",
-        "    total number of state systems solved:   "
-        f"{optimization_state['no_state_solves']:4d}\n",
-        "    total number of adjoint systems solved: "
-        f"{optimization_state['no_adjoint_solves']:4d}\n",
     ]
+    for key, value in output_mapping.items():
+        if key in optimization_state.keys() and key != "iteration":
+            parameter_name = value
+            parameter_value = optimization_state[key]
+            summary_str_list.append(
+                f"    final {parameter_name}: {parameter_value:.{precision}e}\n"
+            )
 
-    return "".join(strs)
+    if "no_state_solves" in optimization_state.keys():
+        summary_str_list.append(
+            "    total number of state systems solved: "
+            f"{optimization_state['no_state_solves']:4d}\n"
+        )
+    if "no_adjoint_solves" in optimization_state.keys():
+        summary_str_list.append(
+            "    total number of adjoint systems solved: "
+            f"{optimization_state['no_adjoint_solves']:4d}\n"
+        )
+
+    return "".join(summary_str_list)
 
 
 def generate_output_str(db: database.Database, precision: int) -> str:
@@ -78,52 +103,45 @@ def generate_output_str(db: database.Database, precision: int) -> str:
     optimization_state = db.parameter_db.optimization_state
 
     iteration = optimization_state["iteration"]
-    objective_value = optimization_state["objective_value"]
 
-    if not db.parameter_db.display_box_constraints:
-        gradient_str = "grad. norm"
-    else:
-        gradient_str = "stat. meas."
+    info_str_list = []
+    output_str_list = []
+    if iteration % 10 == 0:
+        info_str_list.append("\n")
 
-    if db.parameter_db.problem_type == "shape":
-        mesh_quality = db.parameter_db.optimization_state["mesh_quality"]
-    else:
-        mesh_quality = None
+    for key, value in output_mapping.items():
+        if key in optimization_state.keys():
+            if key == "iteration":
+                if iteration % 10 == 0:
+                    info_str_list.append("iter,  ")
+                output_str_list.append(f"{iteration:4d},  ")
+            else:
+                parameter_value = optimization_state[key]
+                parameter_name = value
+
+                temp_name_str = f"{parameter_name},  "
+                temp_value_str = f"{parameter_value:.{precision}e},  "
+                string_length = max(len(temp_name_str), len(temp_value_str))
+
+                if iteration % 10 == 0:
+                    info_str_list.append(f"{parameter_name},  ".rjust(string_length))
+
+                output_str_list.append(
+                    f"{parameter_value:>{string_length - 3}.{precision}e},  "
+                )
+        else:
+            continue
 
     if iteration % 10 == 0:
-        info_list = [
-            "\niter,  ",
-            "cost function,  ".rjust(max(16, precision + 10)),
-            f"rel. {gradient_str},  ".rjust(max(len(gradient_str) + 7, precision + 9)),
-            f"abs. {gradient_str},  ".rjust(max(len(gradient_str) + 7, precision + 9)),
-        ]
-        if mesh_quality is not None:
-            info_list.append("mesh qlty,  ".rjust(max(12, precision + 9)))
-        if db.parameter_db.problem_type == "topology":
-            info_list.append("angle,  ".rjust(max(10, precision + 7)))
-        info_list.append("step size".rjust(max(9, precision + 6)))
-        info_list.append("\n\n")
-        info_str = "".join(info_list)
-    else:
-        info_str = ""
+        info_str_list.append("\n\n")
 
-    strs = [
-        f"{iteration:4d},  ",
-        f"{objective_value:> 13.{precision}e},  ",
-        f"{optimization_state['relative_norm']:>{len(gradient_str)+5}.{precision}e},  ",
-        f"{optimization_state['gradient_norm']:>{len(gradient_str)+5}.{precision}e},  ",
-    ]
-    if mesh_quality is not None:
-        strs.append(f"{mesh_quality:>9.{precision}e},  ")
-    if db.parameter_db.problem_type == "topology":
-        strs.append(f"{db.parameter_db.optimization_state['angle']:>7.{precision}f},  ")
-
-    if iteration > 0:
-        strs.append(f"{optimization_state['stepsize']:>9.{precision}e}")
     if iteration == 0:
-        strs.append("\n")
+        output_str_list.append("\n")
 
-    return info_str + "".join(strs)
+    info_str = "".join(info_str_list)
+    output_str = "".join(output_str_list)
+
+    return info_str + output_str
 
 
 class IOManager(abc.ABC):
@@ -142,6 +160,7 @@ class IOManager(abc.ABC):
 
         self.config = self.db.config
 
+    @abc.abstractmethod
     def output(self) -> None:
         """The output operation, which is performed after every iteration.
 
@@ -151,6 +170,7 @@ class IOManager(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
     def output_summary(self) -> None:
         """The output operation, which is performed after convergence.
 
@@ -160,6 +180,7 @@ class IOManager(abc.ABC):
         """
         pass
 
+    @abc.abstractmethod
     def post_process(self) -> None:
         """The output operation which is performed as part of the postprocessing.
 
@@ -187,65 +208,30 @@ class ResultManager(IOManager):
 
         self.output_dict = {}
         if self.db.parameter_db.temp_dict:
-            self.output_dict["cost_function_value"] = self.db.parameter_db.temp_dict[
-                "output_dict"
-            ]["cost_function_value"]
-            self.output_dict["gradient_norm"] = self.db.parameter_db.temp_dict[
-                "output_dict"
-            ]["gradient_norm"]
-            self.output_dict["stepsize"] = self.db.parameter_db.temp_dict[
-                "output_dict"
-            ]["stepsize"]
-            self.output_dict["MeshQuality"] = self.db.parameter_db.temp_dict[
-                "output_dict"
-            ]["MeshQuality"]
-            self.output_dict["angle"] = self.db.parameter_db.temp_dict["output_dict"][
-                "angle"
-            ]
-        else:
-            self.output_dict["cost_function_value"] = []
-            self.output_dict["gradient_norm"] = []
-            self.output_dict["stepsize"] = []
-            self.output_dict["MeshQuality"] = []
-            self.output_dict["angle"] = []
+            for key in self.db.parameter_db.temp_dict["output_dict"].keys():
+                self.output_dict[key] = self.db.parameter_db.temp_dict["output_dict"][
+                    key
+                ]
 
     def output(self) -> None:
         """Saves the optimization history to a dictionary."""
-        self.output_dict["cost_function_value"].append(
-            self.db.parameter_db.optimization_state["objective_value"]
-        )
-        self.output_dict["gradient_norm"].append(
-            self.db.parameter_db.optimization_state["relative_norm"]
-        )
-        if self.db.parameter_db.problem_type == "shape":
-            self.output_dict["MeshQuality"].append(
-                self.db.parameter_db.optimization_state["mesh_quality"]
-            )
-        if (
-            self.db.parameter_db.problem_type == "topology"
-            and self.db.config.getboolean("Output", "save_results")
-        ):
-            self.output_dict["angle"].append(
-                self.db.parameter_db.optimization_state["angle"]
-            )
-        self.output_dict["stepsize"].append(
-            self.db.parameter_db.optimization_state["stepsize"]
-        )
+        for key in self.db.parameter_db.optimization_state.keys():
+            if key not in self.output_dict:
+                self.output_dict[key] = []
+
+            self.output_dict[key].append(self.db.parameter_db.optimization_state[key])
+
+    def output_summary(self) -> None:
+        """The output operation, which is performed after convergence.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
 
     def post_process(self) -> None:
         """Saves the history of the optimization to a .json file."""
-        self.output_dict["initial_gradient_norm"] = (
-            self.db.parameter_db.optimization_state["gradient_norm_initial"]
-        )
-        self.output_dict["state_solves"] = self.db.parameter_db.optimization_state[
-            "no_state_solves"
-        ]
-        self.output_dict["adjoint_solves"] = self.db.parameter_db.optimization_state[
-            "no_adjoint_solves"
-        ]
-        self.output_dict["iterations"] = self.db.parameter_db.optimization_state[
-            "iteration"
-        ]
         if self.save_results and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
             with open(f"{self.result_dir}/history.json", "w", encoding="utf-8") as file:
                 json.dump(self.output_dict, file, indent=4)
@@ -255,28 +241,50 @@ class ResultManager(IOManager):
 class ConsoleManager(IOManager):
     """Management of the console output."""
 
-    def __init__(self, db: database.Database, result_dir: str) -> None:
+    def __init__(
+        self, db: database.Database, result_dir: str, verbose: bool = False
+    ) -> None:
         """Initializes self.
 
         Args:
             db: The database of the problem.
             result_dir: The directory, where the results are written to.
+            verbose: Boolean which indicates whether the logging setup (False) or the
+                old setup with print (True) should be used. Default is `False`.
 
         """
         super().__init__(db, result_dir)
+        self.verbose = verbose
         self.precision = self.config.getint("Output", "precision")
 
     def output(self) -> None:
         """Prints the output string to the console."""
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(generate_output_str(self.db, self.precision), flush=True)
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        message = generate_output_str(self.db, self.precision)
+        if self.verbose:
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(message, flush=True)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+        else:
+            log.info(message)
 
     def output_summary(self) -> None:
         """Prints the summary in the console."""
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-            print(generate_summary_str(self.db, self.precision), flush=True)
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        message = generate_summary_str(self.db, self.precision)
+        if self.verbose:
+            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                print(message, flush=True)
+            fenics.MPI.barrier(fenics.MPI.comm_world)
+        else:
+            log.info(message)
+
+    def post_process(self) -> None:
+        """The output operation which is performed as part of the postprocessing.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
 
 
 class FileManager(IOManager):
@@ -314,9 +322,36 @@ class FileManager(IOManager):
                 file.write(generate_summary_str(self.db, self.precision))
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
+    def post_process(self) -> None:
+        """The output operation which is performed as part of the postprocessing.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
+
 
 class TempFileManager(IOManager):
     """Class for managing temporary files."""
+
+    def output(self) -> None:
+        """The output operation, which is performed after every iteration.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
+
+    def output_summary(self) -> None:
+        """The output operation, which is performed after convergence.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
 
     def post_process(self) -> None:
         """Deletes temporary files."""
@@ -336,37 +371,42 @@ class TempFileManager(IOManager):
 class MeshManager(IOManager):
     """Manages the output of meshes."""
 
-    def __init__(self, db: database.Database, result_dir: str) -> None:
-        """Initializes the MeshManager class.
-
-        Args:
-            db: The database of the problem.
-            result_dir: The folder where the results are saved.
-
-        """
-        super().__init__(db, result_dir)
-        self.save_mesh = self.config.getboolean("Output", "save_mesh")
-
     def output(self) -> None:
         """Saves the mesh as checkpoint for each iteration."""
-        if self.save_mesh:
-            iteration = int(self.db.parameter_db.optimization_state["iteration"])
+        iteration = int(self.db.parameter_db.optimization_state["iteration"])
 
-            iomesh.write_out_mesh(
-                self.db.geometry_db.mesh,
-                self.db.parameter_db.gmsh_file_path,
-                f"{self.result_dir}/checkpoints/mesh/mesh_{iteration}.msh",
-            )
+        if not self.db.parameter_db.gmsh_file_path:
+            gmsh_file = self.config.get("Mesh", "gmsh_file")
+        else:
+            gmsh_file = self.db.parameter_db.gmsh_file_path
+
+        iomesh.write_out_mesh(
+            self.db.geometry_db.mesh,
+            gmsh_file,
+            f"{self.result_dir}/checkpoints/mesh/mesh_{iteration}.msh",
+        )
+
+    def output_summary(self) -> None:
+        """The output operation, which is performed after convergence.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
 
     def post_process(self) -> None:
         """Saves a copy of the optimized mesh in Gmsh format."""
-        if self.db.parameter_db.problem_type == "shape":
-            if self.config.getboolean("Output", "save_mesh"):
-                iomesh.write_out_mesh(
-                    self.db.function_db.states[0].function_space().mesh(),
-                    self.db.parameter_db.gmsh_file_path,
-                    f"{self.result_dir}/optimized_mesh.msh",
-                )
+        if not self.db.parameter_db.gmsh_file_path:
+            gmsh_file = self.config.get("Mesh", "gmsh_file")
+        else:
+            gmsh_file = self.db.parameter_db.gmsh_file_path
+
+        iomesh.write_out_mesh(
+            self.db.function_db.states[0].function_space().mesh(),
+            gmsh_file,
+            f"{self.result_dir}/optimized_mesh.msh",
+        )
 
 
 class XDMFFileManager(IOManager):
@@ -392,10 +432,10 @@ class XDMFFileManager(IOManager):
 
         self.is_initialized = False
 
-        self.state_xdmf_list: List[Union[str, List[str]]] = []
-        self.control_xdmf_list: List[Union[str, List[str]]] = []
-        self.adjoint_xdmf_list: List[Union[str, List[str]]] = []
-        self.gradient_xdmf_list: List[Union[str, List[str]]] = []
+        self.state_xdmf_list: list[str | list[str]] = []
+        self.control_xdmf_list: list[str | list[str]] = []
+        self.adjoint_xdmf_list: list[str | list[str]] = []
+        self.gradient_xdmf_list: list[str | list[str]] = []
 
     def _initialize_states_xdmf(self) -> None:
         """Initializes the list of xdmf files for the state variables."""
@@ -456,7 +496,7 @@ class XDMFFileManager(IOManager):
 
     def _generate_xdmf_file_strings(
         self, space: fenics.FunctionSpace, name: str
-    ) -> Union[str, List[str]]:
+    ) -> str | list[str]:
         """Generate the strings (paths) to the xdmf files for visualization.
 
         Args:
@@ -585,8 +625,16 @@ class XDMFFileManager(IOManager):
         mesh = function.function_space().mesh()
         comm = mesh.mpi_comm()
 
-        if function.function_space().ufl_element().family() == "Real":
-            space = fenics.FunctionSpace(mesh, "CG", 1)
+        if function.function_space().ufl_element().family() in [
+            "Real",
+            "NodalEnrichedElement",
+        ]:
+            if len(function.ufl_shape) > 0:
+                space = fenics.VectorFunctionSpace(
+                    mesh, "CG", 1, dim=function.ufl_shape[0]
+                )
+            else:
+                space = fenics.FunctionSpace(mesh, "CG", 1)
             function = fenics.interpolate(function, space)
 
         function.rename(function_name, function_name)
@@ -625,3 +673,21 @@ class XDMFFileManager(IOManager):
         self._save_controls(iteration)
         self._save_adjoints(iteration)
         self._save_gradients(iteration)
+
+    def output_summary(self) -> None:
+        """The output operation, which is performed after convergence.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
+
+    def post_process(self) -> None:
+        """The output operation which is performed as part of the postprocessing.
+
+        Args:
+            solver: The optimization algorithm.
+
+        """
+        pass
