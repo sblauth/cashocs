@@ -319,6 +319,11 @@ class _MeshHandler:
             self.current_mesh_quality = quality.compute_mesh_quality(
                 self.mesh, self.mesh_quality_type, self.mesh_quality_measure
             )
+            if success_flag:
+                log.debug(
+                    "Mesh update was successful. "
+                    f"Deformed mesh has a quality of {self.current_mesh_quality:.3e}"
+                )
             return success_flag
 
     def revert_transformation(self) -> None:

@@ -190,12 +190,13 @@ class LineSearch(abc.ABC):
                 search_direction, self.stepsize
             )
         )
+        self.stepsize /= pow(self.beta_armijo, num_decreases)
         if num_decreases > 0:
             log.debug(
                 "Stepsize is too large for the angle_change parameter in "
-                "section MeshQuality. Making the step smaller to be feasible."
+                "section MeshQuality. Making the step smaller to be feasible. "
+                f"New step size: {self.stepsize:.3e}"
             )
-        self.stepsize /= pow(self.beta_armijo, num_decreases)
 
         if self.safeguard_stepsize and solver.iteration == 0:
             search_direction_norm = np.sqrt(
@@ -205,7 +206,8 @@ class LineSearch(abc.ABC):
                 np.minimum(self.stepsize, 100.0 / (1.0 + search_direction_norm))
             )
             log.debug(
-                "Performed a safeguarding of the stepsize to avoid too large steps."
+                "Performed a safeguarding of the stepsize to avoid too large steps. "
+                f"New step size after safeguarding: {self.stepsize:.3e}"
             )
 
     @abc.abstractmethod
