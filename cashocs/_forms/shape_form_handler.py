@@ -40,6 +40,8 @@ from cashocs._forms import shape_regularization
 from cashocs.geometry import boundary_distance
 
 if TYPE_CHECKING:
+    from petsc4py import PETSc
+
     try:
         from ufl_legacy.core import expr as ufl_expr
     except ImportError:
@@ -247,6 +249,7 @@ class ShapeFormHandler(form_handler.FormHandler):
     shape_derivative: ufl.Form
     fixed_indices: list[int]
     assembler: fenics.SystemAssembler
+    assembler_extension: fenics.SystemAssembler
     scalar_product_matrix: fenics.PETScMatrix
     modified_scalar_product: ufl.Form
 
@@ -354,8 +357,8 @@ class ShapeFormHandler(form_handler.FormHandler):
                 self.riesz_scalar_product, zero_source, self.bcs_extension
             )
             self.fe_reextension_matrix = fenics.PETScMatrix()
-            self.reextension_matrix = self.fe_reextension_matrix.mat()
-            self.fe_reextension_vector = fenics.PETScVector()
+            self.reextension_matrix: PETSc.Mat = self.fe_reextension_matrix.mat()
+            self.fe_reextension_vector: fenics.PETScVector = fenics.PETScVector()
 
         self.update_scalar_product()
         self.p_laplace_form = self._compute_p_laplacian_forms()

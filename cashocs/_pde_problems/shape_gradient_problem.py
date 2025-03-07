@@ -233,11 +233,21 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 + "or 'shared_vertex' before importing your mesh."
             )
 
+        physical_groups = None
+        if hasattr(mesh, "physical_groups"):
+            physical_groups = mesh.physical_groups
+
         ds = measure.NamedMeasure(
-            "ds", domain=mesh, subdomain_data=self.form_handler.boundaries
+            "ds",
+            domain=mesh,
+            subdomain_data=self.form_handler.boundaries,
+            physical_groups=physical_groups,
         )
         dS = measure.NamedMeasure(  # pylint: disable=invalid-name
-            "dS", domain=mesh, subdomain_data=self.form_handler.boundaries
+            "dS",
+            domain=mesh,
+            subdomain_data=self.form_handler.boundaries,
+            physical_groups=physical_groups,
         )
 
         n = fenics.FacetNormal(mesh)
