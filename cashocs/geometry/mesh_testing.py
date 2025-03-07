@@ -97,7 +97,10 @@ class APrioriMeshTester:
             A boolean that indicates whether the desired transformation is feasible.
 
         """
-        log.begin("Testing if the mesh contains inverted elements", level=log.DEBUG)
+        log.begin(
+            "Testing if the mesh elements satisfy the volume change restrictions",
+            level=log.DEBUG,
+        )
         comm = self.transformation_container.function_space().mesh().mpi_comm()
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
@@ -110,9 +113,18 @@ class APrioriMeshTester:
         min_det = float(x.min()[1])
         max_det = float(x.max()[1])
 
+        result = bool((min_det >= 1 / volume_change) and (max_det <= volume_change))
+
+        if result:
+            log.debug(
+                "All mesh elements satisfy the volume change restrictions. "
+                "No inverted cells are in the mesh."
+            )
+        else:
+            log.debug("The mesh does not satisfy the volume change restrictions.")
         log.end()
 
-        return bool((min_det >= 1 / volume_change) and (max_det <= volume_change))
+        return result
 
 
 class IntersectionTester:
@@ -163,13 +175,16 @@ class IntersectionTester:
             self_intersections = True
         list_self_intersections = fenics.MPI.comm_world.allgather(self_intersections)
 
+        if any(list_self_intersections):
+            log.debug("The mesh has self-intersecting elements after the update.")
+            result = False
+        else:
+            log.debug("The mesh does not have self-intersecting elements.")
+            result = True
+
         log.end()
 
-        if any(list_self_intersections):
-            log.debug("Mesh transformation rejected due to a posteriori check.")
-            return False
-        else:
-            return True
+        return result
 
 
 class CollisionCounter:
