@@ -222,7 +222,7 @@ class ArmijoLineSearch(line_search.LineSearch):
         self.state_problem.has_solution = False
         try:
             objective_step = self.cost_functional.evaluate()
-        except (_exceptions.PETScKSPError, _exceptions.NotConvergedError) as error:
+        except (_exceptions.PETScError, _exceptions.NotConvergedError) as error:
             if self.config.getboolean("LineSearch", "fail_if_not_converged"):
                 raise error
             else:
