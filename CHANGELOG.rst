@@ -10,7 +10,9 @@ of the maintenance releases, please take a look at
 2.5.0 (in development)
 ----------------------
 
-* Add support for Python 3.13
+* Add support for Python 3.13.
+
+* Functions with Crouzeix-Raviart elements are now interpolated into discontinuous Galerkin FEM spaces before being saved as .xdmf file so that they can be worked with.
 
 
 
