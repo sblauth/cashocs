@@ -481,6 +481,8 @@ class TSPseudoSolver:
         self.u.vector().vec().aypx(0.0, x.vector().vec())
         self.u.vector().apply("")
 
+        log.end()
+
         converged_reason = ts.getConvergedReason()
         if (
             converged_reason < 0
@@ -492,8 +494,6 @@ class TSPseudoSolver:
             ts.destroy()
             PETSc.garbage_cleanup(comm=self.comm)
             PETSc.garbage_cleanup()
-
-        log.end()
 
         return self.u
 
