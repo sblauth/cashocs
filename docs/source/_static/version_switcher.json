@@ -6,7 +6,7 @@
     },
     {
         "name": "2.4 (stable)",
-        "version": "2.4.2",
+        "version": "2.4.3",
         "url": "https://cashocs.readthedocs.io/en/stable/",
         "preferred": true
     },
