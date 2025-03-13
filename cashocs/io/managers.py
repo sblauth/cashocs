@@ -637,6 +637,16 @@ class XDMFFileManager(IOManager):
                 space = fenics.FunctionSpace(mesh, "CG", 1)
             function = fenics.interpolate(function, space)
 
+        elif function.function_space().ufl_element().family() == "Crouzeix-Raviart":
+            degree = function.function_space().ufl_element().degree()
+            if len(function.ufl_shape) > 0:
+                space = fenics.VectorFunctionSpace(
+                    mesh, "DG", degree, dim=function.ufl_shape[0]
+                )
+            else:
+                space = fenics.FunctionSpace(mesh, "DG", degree)
+            function = fenics.interpolate(function, space)
+
         function.rename(function_name, function_name)
 
         with fenics.XDMFFile(comm, filename) as file:

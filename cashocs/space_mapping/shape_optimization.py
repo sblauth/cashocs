@@ -534,7 +534,7 @@ class SpaceMappingProblem:
 
         lhs = form_handler.modified_scalar_product
         rhs = (
-            fenics.dot(fenics.Constant((0.0, 0.0)), form_handler.test_vector_field)
+            ufl.dot(fenics.Constant((0.0, 0.0)), form_handler.test_vector_field)
             * shape_optimization_problem.form_handler.dx
         )
         bc_helper = fenics.Function(

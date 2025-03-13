@@ -21,8 +21,10 @@ import fenics
 import numpy as np
 
 try:
+    import ufl_legacy as ufl
     from ufl_legacy.core import expr as ufl_expr
 except ImportError:
+    import ufl
     from ufl.core import expr as ufl_expr
 
 cpp_code = """
@@ -236,7 +238,7 @@ def interpolate_by_volume(
     function_space = node_function.function_space()
     mesh = function_space.mesh()
     dg0_space = fenics.FunctionSpace(mesh, "DG", 0)
-    dx = fenics.Measure("dx", mesh)
+    dx = ufl.Measure("dx", mesh)
 
     indicator_omega = fenics.Function(dg0_space)
     interpolate_levelset_function_to_cells(levelset_function, 1.0, 0.0, indicator_omega)

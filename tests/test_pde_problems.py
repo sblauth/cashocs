@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Tests for the module PDE problems.
-
-"""
+"""Tests for the module PDE problems."""
 
 from collections import namedtuple
 

@@ -201,10 +201,10 @@ class TSPseudoSolver:
         trial = fenics.TrialFunction(space)
         test = fenics.TestFunction(space)
 
-        dx = fenics.Measure("dx", domain=self.mesh)
+        dx = ufl.Measure("dx", domain=self.mesh)
 
-        split_trial = fenics.split(trial)
-        split_test = fenics.split(test)
+        split_trial = ufl.split(trial)
+        split_test = ufl.split(test)
 
         split_trial = tuple(
             fun
@@ -221,9 +221,9 @@ class TSPseudoSolver:
         for i in range(len(split_trial)):
             test_shape = split_test[i].ufl_shape
             if len(test_shape) == 1:
-                mass_matrix_part = fenics.dot(split_trial[i], split_test[i]) * dx
+                mass_matrix_part = ufl.dot(split_trial[i], split_test[i]) * dx
             elif len(test_shape) == 2:
-                mass_matrix_part = fenics.inner(split_trial[i], split_test[i]) * dx
+                mass_matrix_part = ufl.inner(split_trial[i], split_test[i]) * dx
             else:
                 mass_matrix_part = split_trial[i] * split_test[i] * dx
 

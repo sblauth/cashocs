@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Tests for the Picard iteration.
-
-"""
+"""Tests for the Picard iteration."""
 
 from collections import namedtuple
 import pathlib

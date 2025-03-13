@@ -83,7 +83,7 @@ class Stiffness:
 
         self.inhomogeneous_mu = False
 
-        self.dx = fenics.Measure("dx", self.mesh)
+        self.dx = ufl.Measure("dx", self.mesh)
 
         self.use_distance_mu = self.config.getboolean(
             "ShapeGradient", "use_distance_mu"
@@ -119,7 +119,7 @@ class Stiffness:
                 psi = fenics.TestFunction(self.cg_function_space)
 
                 # pylint: disable=invalid-name
-                self.A_mu = fenics.inner(fenics.grad(phi), fenics.grad(psi)) * self.dx
+                self.A_mu = ufl.inner(ufl.grad(phi), ufl.grad(psi)) * self.dx
                 self.l_mu = fenics.Constant(0.0) * psi * self.dx
 
                 self.bcs_mu = _utils.create_dirichlet_bcs(
@@ -476,7 +476,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
             for coeff in self.material_derivative_coeffs:
                 material_derivative = self.lagrangian.derivative(
-                    coeff, fenics.dot(fenics.grad(coeff), self.test_vector_field)
+                    coeff, ufl.dot(ufl.grad(coeff), self.test_vector_field)
                 )
 
                 material_derivative = ufl_algorithms.expand_derivatives(
@@ -595,7 +595,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                     The symmetric gradient of ``u``
 
                 """
-                return fenics.Constant(0.5) * (fenics.grad(u) + fenics.grad(u).T)
+                return fenics.Constant(0.5) * (ufl.grad(u) + ufl.grad(u).T)
 
             trial = fenics.TrialFunction(self.db.function_db.control_spaces[0])
             test = fenics.TestFunction(self.db.function_db.control_spaces[0])
@@ -604,16 +604,16 @@ class ShapeFormHandler(form_handler.FormHandler):
                 fenics.Constant(2)
                 * self.mu_lame
                 / pow(self.volumes, self.inhomogeneous_exponent)
-                * fenics.inner(eps(trial), eps(test))
+                * ufl.inner(eps(trial), eps(test))
                 * self.dx
                 + fenics.Constant(lambda_lame)
                 / pow(self.volumes, self.inhomogeneous_exponent)
-                * fenics.div(trial)
-                * fenics.div(test)
+                * ufl.div(trial)
+                * ufl.div(test)
                 * self.dx
                 + fenics.Constant(damping_factor)
                 / pow(self.volumes, self.inhomogeneous_exponent)
-                * fenics.inner(trial, test)
+                * ufl.inner(trial, test)
                 * self.dx
             )
 
@@ -707,22 +707,22 @@ class ShapeFormHandler(form_handler.FormHandler):
             delta = self.config.getfloat("ShapeGradient", "damping_factor")
             eps = self.config.getfloat("ShapeGradient", "p_laplacian_stabilization")
             kappa = pow(
-                fenics.inner(
-                    fenics.grad(self.db.function_db.gradient[0]),
-                    fenics.grad(self.db.function_db.gradient[0]),
+                ufl.inner(
+                    ufl.grad(self.db.function_db.gradient[0]),
+                    ufl.grad(self.db.function_db.gradient[0]),
                 ),
                 (p - 2) / 2.0,
             )
             p_laplace_form = (
-                fenics.inner(
+                ufl.inner(
                     self.mu_lame
                     * (fenics.Constant(eps) + kappa)
-                    * fenics.grad(self.db.function_db.gradient[0]),
-                    fenics.grad(self.test_vector_field),
+                    * ufl.grad(self.db.function_db.gradient[0]),
+                    ufl.grad(self.test_vector_field),
                 )
                 * self.dx
                 + fenics.Constant(delta)
-                * fenics.dot(self.db.function_db.gradient[0], self.test_vector_field)
+                * ufl.dot(self.db.function_db.gradient[0], self.test_vector_field)
                 * self.dx
             )
         else:

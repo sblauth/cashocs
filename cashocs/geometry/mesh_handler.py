@@ -29,6 +29,11 @@ import weakref
 import fenics
 import numpy as np
 
+try:
+    import ufl_legacy as ufl
+except ImportError:
+    import ufl
+
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import io
@@ -314,6 +319,11 @@ class _MeshHandler:
             self.current_mesh_quality = quality.compute_mesh_quality(
                 self.mesh, self.mesh_quality_type, self.mesh_quality_measure
             )
+            if success_flag:
+                log.debug(
+                    "Mesh update was successful. "
+                    f"Deformed mesh has a quality of {self.current_mesh_quality:.3e}"
+                )
             return success_flag
 
     def revert_transformation(self) -> None:
@@ -330,10 +340,10 @@ class _MeshHandler:
         if self.angle_change != float("inf"):
             self.a_frobenius = self.trial_dg0 * self.test_dg0 * self.dx
             self.l_frobenius = (
-                fenics.sqrt(
-                    fenics.inner(
-                        fenics.grad(self.search_direction_container),
-                        fenics.grad(self.search_direction_container),
+                ufl.sqrt(
+                    ufl.inner(
+                        ufl.grad(self.search_direction_container),
+                        ufl.grad(self.search_direction_container),
                     )
                 )
                 * self.test_dg0

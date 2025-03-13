@@ -6,6 +6,16 @@ here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
+
+2.5.0 (in development)
+----------------------
+
+* Add support for Python 3.13.
+
+* Functions with Crouzeix-Raviart elements are now interpolated into discontinuous Galerkin FEM spaces before being saved as .xdmf file so that they can be worked with.
+
+
+
 2.4.0 (January 24, 2025)
 ------------------------
 

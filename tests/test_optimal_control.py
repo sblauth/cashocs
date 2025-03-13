@@ -15,9 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-"""Tests for optimal control problems / algorithms.
-
-"""
+"""Tests for optimal control problems / algorithms."""
 
 from collections import namedtuple
 

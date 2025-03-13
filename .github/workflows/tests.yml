@@ -53,7 +53,7 @@ jobs:
 
     - name: Coverage comment
       id: coverage_comment
-      uses: py-cov-action/python-coverage-comment-action@2b84cfb222691291ba358a586c13606f0a9c172c # v3
+      uses: py-cov-action/python-coverage-comment-action@4823ecd5889666d75be1442f36659490261d7571 # v3
       with:
         GITHUB_TOKEN: ${{ github.token }}
         COVERAGE_DATA_BRANCH: coverage
@@ -61,7 +61,7 @@ jobs:
         MINIMUM_ORANGE: 70
 
     - name: Store Pull Request comment to be posted
-      uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4.6.0
+      uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
       if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
       with:
         # If you use a different name, update COMMENT_ARTIFACT_NAME accordingly

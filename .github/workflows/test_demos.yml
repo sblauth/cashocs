@@ -26,7 +26,7 @@ jobs:
       with:
         environment-file: .github/conda/mpich.yml
         miniforge-version: latest
-        python-version: 3.12
+        python-version: 3.13
         activate-environment: test
         auto-activate-base: false
         conda-remove-defaults: true
@@ -67,7 +67,7 @@ jobs:
       with:
         environment-file: .github/conda/mpich.yml
         miniforge-version: latest
-        python-version: 3.12
+        python-version: 3.13
         activate-environment: test
         auto-activate-base: false
         conda-remove-defaults: true
