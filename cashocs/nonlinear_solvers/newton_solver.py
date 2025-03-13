@@ -329,9 +329,8 @@ class _NewtonSolver:
             if self._check_for_convergence():
                 break
 
-        self._check_if_successful()
-
         log.end()
+        self._check_if_successful()
 
         return self.u
 
