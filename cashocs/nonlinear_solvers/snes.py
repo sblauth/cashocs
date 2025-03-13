@@ -251,6 +251,8 @@ class SNESSolver:
         self.u.vector().vec().setArray(x.vector().vec())
         self.u.vector().apply("")
 
+        log.end()
+
         converged_reason = snes.getConvergedReason()
         if converged_reason < 0:
             raise _exceptions.PETScSNESError(converged_reason)
@@ -259,8 +261,6 @@ class SNESSolver:
             snes.destroy()
             PETSc.garbage_cleanup(comm=self.comm)
             PETSc.garbage_cleanup()
-
-        log.end()
 
         return self.u
 
