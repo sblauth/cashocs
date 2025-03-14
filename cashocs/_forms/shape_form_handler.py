@@ -40,6 +40,8 @@ from cashocs._forms import shape_regularization
 from cashocs.geometry import boundary_distance
 
 if TYPE_CHECKING:
+    from petsc4py import PETSc
+
     try:
         from ufl_legacy.core import expr as ufl_expr
     except ImportError:
@@ -247,6 +249,7 @@ class ShapeFormHandler(form_handler.FormHandler):
     shape_derivative: ufl.Form
     fixed_indices: list[int]
     assembler: fenics.SystemAssembler
+    assembler_extension: fenics.SystemAssembler
     scalar_product_matrix: fenics.PETScMatrix
     modified_scalar_product: ufl.Form
 
@@ -331,10 +334,32 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.modified_scalar_product, self.assembler = self.setup_assembler(
             self.riesz_scalar_product, self.shape_derivative, self.bcs_shape
         )
+
         self.fe_scalar_product_matrix = fenics.PETScMatrix()
+        self.scalar_product_matrix = self.fe_scalar_product_matrix.mat()
         self.fe_shape_derivative_vector = fenics.PETScVector()
 
-        self.scalar_product_matrix = fenics.PETScMatrix()
+        if self.config.getboolean("ShapeGradient", "reextend_from_boundary"):
+            self.bcs_extension = self._setup_bcs_extension()
+            zero_source = (
+                ufl.dot(
+                    self.test_vector_field,
+                    fenics.Constant(
+                        [0]
+                        * self.db.function_db.control_spaces[0]
+                        .ufl_element()
+                        .value_size()
+                    ),
+                )
+                * self.dx
+            )
+            _, self.assembler_extension = self.setup_assembler(
+                self.riesz_scalar_product, zero_source, self.bcs_extension
+            )
+            self.fe_reextension_matrix = fenics.PETScMatrix()
+            self.reextension_matrix: PETSc.Mat = self.fe_reextension_matrix.mat()
+            self.fe_reextension_vector: fenics.PETScVector = fenics.PETScVector()
+
         self.update_scalar_product()
         self.p_laplace_form = self._compute_p_laplacian_forms()
 
@@ -382,6 +407,7 @@ class ShapeFormHandler(form_handler.FormHandler):
                 assembler = fenics.SystemAssembler(
                     modified_scalar_product, shape_derivative, bcs
                 )
+                assembler.keep_diagonal = True
             except (AssertionError, ValueError):
                 assembler = self._setup_assembler_failsafe(
                     modified_scalar_product, shape_derivative, bcs
@@ -544,6 +570,30 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         return bcs_shape
 
+    def _setup_bcs_extension(self) -> list[fenics.DirichletBC]:
+        """Defines the DirichletBCs for the re-extensions of the gradient deformation.
+
+        Returns:
+            list[fenics.DirichletBC]: The list of boundary conditions for re-extending
+                the gradient deformation.
+
+        """
+        all_boundaries = (
+            self.shape_bdry_def
+            + self.shape_bdry_fix
+            + self.shape_bdry_fix_x
+            + self.shape_bdry_fix_y
+            + self.shape_bdry_fix_z
+        )
+        bcs_extension = _utils.create_dirichlet_bcs(
+            self.db.function_db.control_spaces[0],
+            self.db.function_db.gradient[0],
+            self.boundaries,
+            all_boundaries,
+        )
+
+        return bcs_extension
+
     def _compute_shape_gradient_forms(self) -> ufl.Form:
         """Calculates the necessary left-hand-sides for the shape gradient problem.
 
@@ -635,6 +685,15 @@ class ShapeFormHandler(form_handler.FormHandler):
 
             self.fe_scalar_product_matrix.mat().aypx(0.0, copy_mat.mat())
 
+            if self.config.getboolean("ShapeGradient", "reextend_from_boundary"):
+                copy_mat = self.fe_reextension_matrix.copy()
+                copy_mat.ident(self.fixed_indices)
+                copy_mat.mat().transpose()
+                copy_mat.ident(self.fixed_indices)
+                copy_mat.mat().transpose()
+
+                self.fe_reextension_matrix.mat().aypx(0.0, copy_mat.mat())
+
     def update_scalar_product(self) -> None:
         """Updates the linear elasticity equations to the current geometry.
 
@@ -659,6 +718,12 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.assembler.assemble(self.fe_scalar_product_matrix)
         self.fe_scalar_product_matrix.ident_zeros()
         self.scalar_product_matrix = self.fe_scalar_product_matrix.mat()
+
+        if self.config.getboolean("ShapeGradient", "reextend_from_boundary"):
+            self.assembler_extension.assemble(self.fe_reextension_matrix)
+            self.fe_reextension_matrix.ident_zeros()
+            self.reextension_matrix = self.fe_reextension_matrix.mat()
+
         self._project_scalar_product()
 
     def scalar_product(
@@ -747,6 +812,24 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         """
         for bc in self.bcs_shape:
+            bc.apply(function.vector())
+            function.vector().apply("")
+
+        if self.use_fixed_dimensions:
+            function.vector().vec()[self.fixed_indices] = np.array(
+                [0.0] * len(self.fixed_indices)
+            )
+            function.vector().apply("")
+
+    def apply_reextension_bcs(self, function: fenics.Function) -> None:
+        """Applies the boundary conditions for the reextension of the shape gradient.
+
+        Args:
+            function (fenics.Function): The function which shall receive the boundary
+                values of the shape gradient.
+
+        """
+        for bc in self.bcs_extension:
             bc.apply(function.vector())
             function.vector().apply("")
 
