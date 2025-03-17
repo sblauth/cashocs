@@ -10,6 +10,8 @@ of the maintenance releases, please take a look at
 2.5.0 (in development)
 ----------------------
 
+* Update the way :py:func:`cashocs.ts_pseudo_solve` handles convergence / divergence. A new divergence tolerance is introduced. If the residual increases by a factor of 1e4, the solver automatically diverges and raises a corresponding exception. Moreover, if the solver reaches the maximum number of iterations, no exception is raised anymore. Instead, a warning is issued that the solver did not reach the specified tolerances, but converges anyway. This is in line with the convergence of the PETSc TS.
+
 * Add support for Python 3.13.
 
 * Functions with Crouzeix-Raviart elements are now interpolated into discontinuous Galerkin FEM spaces before being saved as .xdmf file so that they can be worked with.
