@@ -411,9 +411,14 @@ class TSPseudoSolver:
         """
         self.res_current = self.compute_nonlinear_residual(u)
 
+        if self.res_initial == 0:
+            relative_residual = self.res_current
+        else:
+            relative_residual = self.res_current / self.res_initial
+
         log.debug(
             f"TS {i = }  {t = :.3e}  "
-            f"residual: {self.res_current / self.res_initial:.3e} (rel)  "
+            f"residual: {relative_residual:.3e} (rel)  "
             f"{self.res_current:.3e} (abs)"
         )
 
