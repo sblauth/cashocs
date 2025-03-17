@@ -124,7 +124,9 @@ class TSPseudoSolver:
 
         self.rtol = rtol
         self.atol = atol
+        self.dtol = 1e4
         self.max_iter = max_iter
+        self.res_current = -1.0
 
         if petsc_options is None:
             self.petsc_options: _typing.KspOption = copy.deepcopy(
@@ -407,17 +409,23 @@ class TSPseudoSolver:
             u (PETSc.Vec): The current iterate.
 
         """
-        residual_norm = self.compute_nonlinear_residual(u)
+        self.res_current = self.compute_nonlinear_residual(u)
 
-        log.debug(f"TS {i = }  {t = :.3e}  residual: {residual_norm:.3e}")
+        log.debug(
+            f"TS {i = }  {t = :.3e}  "
+            f"residual: {self.res_current / self.res_initial:.3e} (rel)  "
+            f"{self.res_current:.3e} (abs)"
+        )
 
         self.rtol = cast(float, self.rtol)
         self.atol = cast(float, self.atol)
 
-        if residual_norm < np.maximum(self.rtol * self.res_initial, self.atol):
+        if self.res_current < np.maximum(self.rtol * self.res_initial, self.atol):
             ts.setConvergedReason(PETSc.TS.ConvergedReason.CONVERGED_USER)
             max_time = ts.getMaxTime()
             ts.setTime(max_time)
+        elif self.res_current > self.dtol * self.res_initial:
+            raise _exceptions.PETScTSError(-5)
 
     def solve(self) -> fenics.Function:
         """Solves the (nonlinear) problem with pseudo time stepping.
@@ -484,11 +492,18 @@ class TSPseudoSolver:
         log.end()
 
         converged_reason = ts.getConvergedReason()
-        if (
-            converged_reason < 0
-            or converged_reason == PETSc.TS.ConvergedReason.CONVERGED_ITS
-        ):
+        if converged_reason < 0:
             raise _exceptions.PETScTSError(converged_reason)
+        elif converged_reason == PETSc.TS.ConvergedReason.CONVERGED_ITS:
+            log.warning(
+                "The PETSc TS Solver converged since the maximum number of time steps "
+                "was reached before convergence of the pseudo time stepping.\n"
+                "The solution might be not converged.\n"
+                f"Current residual: {self.res_current:.3e} (abs) "
+                f"- tolerance is {self.atol:.3e}.\n"
+                f"Current residual: {self.res_current / self.res_initial:.3e} (rel) "
+                f"- tolerance is {self.rtol:.3e}."
+            )
 
         if hasattr(PETSc, "garbage_cleanup"):
             ts.destroy()
