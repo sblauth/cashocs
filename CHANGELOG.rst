@@ -12,6 +12,8 @@ of the maintenance releases, please take a look at
 
 * Add the possibility to re-compute the gradient deformation in shape optimization. To do so, the gradient deformation is first computed as before but then only the surface deformation (or the one in normal direction) is used as boundary condition for the elasticty equation to compute a new deformation. This can help to avoid numerical artifacts in the interior of the domain not related to the actual shape changes.
 
+* Update the way :py:func:`cashocs.ts_pseudo_solve` handles convergence / divergence. A new divergence tolerance is introduced. If the residual increases by a factor of 1e4, the solver automatically diverges and raises a corresponding exception. Moreover, if the solver reaches the maximum number of iterations, no exception is raised anymore. Instead, a warning is issued that the solver did not reach the specified tolerances, but converges anyway. This is in line with the convergence of the PETSc TS.
+
 * Add support for Python 3.13.
 
 * Functions with Crouzeix-Raviart elements are now interpolated into discontinuous Galerkin FEM spaces before being saved as .xdmf file so that they can be worked with.
