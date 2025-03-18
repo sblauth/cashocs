@@ -394,6 +394,13 @@ class Config(ConfigParser):
                 "test_for_intersections": {
                     "type": "bool",
                 },
+                "reextend_from_boundary": {
+                    "type": "bool",
+                },
+                "reextension_mode": {
+                    "type": "str",
+                    "possible_options": ["surface", "normal"],
+                },
             },
             "Regularization": {
                 "factor_volume": {
@@ -634,6 +641,8 @@ shape_bdry_fix_z = []
 degree_estimation = True
 global_deformation = False
 test_for_intersections = True
+reextend_from_boundary = False
+reextension_mode = surface
 
 [Regularization]
 factor_volume = 0.0

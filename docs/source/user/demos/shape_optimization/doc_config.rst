@@ -802,6 +802,30 @@ We have the parameter :ini:`test_for_intersections`, which is specified via
 If this parameter is set to `True`, cashocs will check the deformed meshes for (self) intersections, which would generate non-physical geometries and reject them - so that all generated designs are physically meaningful. This should not be set to `False`.
 
 
+The following two parameters are related to the re-extension of the gradient deformation. For this, cashocs first computes the gradient deformation
+as usual (and specified in the configuration file). Afterwards, only the surface deformation of the gradient is used to re-compute / re-extend this
+to the entire domain. To enable this behavior, the following parameter is used
+
+.. code-block:: ini
+
+    reextend_from_boundary = False
+
+The default value of this parameter is `False`, so that the gradient deformation is not re-extended. If this is set to `True`, the parameter
+
+.. code-block:: ini
+
+    reextension_mode = surface
+
+specifies, how the gradient deformation is re-extended. If this is :ini:`reextension_mode = surface` (the default), then the surface values of the
+gradient deformation are used as they are. If this is :ini:`reextension_mode = normal`, only the normal component of the gradient deformation is used
+as information for the re-extension.
+
+.. note::
+
+    Using the re-extension of the gradient deformation might improve the shape optimization, particularly if there are artifacts in the interior of
+    the domain not related to any shape changes. However, using this approach does change the gradient - so the deformation might also be suboptimal.
+
+
 .. _config_shape_regularization:
 
 Section Regularization

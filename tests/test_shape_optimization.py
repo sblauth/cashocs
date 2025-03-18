@@ -1067,3 +1067,44 @@ def test_pseudo_time_stepping():
     )
     sop.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=7)
     assert sop.solver.relative_norm <= sop.solver.rtol
+
+
+def test_reextension_surface():
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("ShapeGradient", "reextend_from_boundary", "True")
+    config.set("ShapeGradient", "reextension_mode", "surface")
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config=config)
+    sop.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=7)
+    assert sop.solver.relative_norm <= sop.solver.rtol
+
+
+def test_reextension_normal():
+    parameters["ghost_mode"] = "shared_facet"
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+        f"{dir_path}/mesh/unit_circle/mesh.xdmf"
+    )
+
+    V = FunctionSpace(mesh, "CG", 1)
+    bcs = DirichletBC(V, Constant(0), boundaries, 1)
+
+    x = SpatialCoordinate(mesh)
+    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+
+    u = Function(V)
+    p = Function(V)
+
+    F = inner(grad(u), grad(p)) * dx - f * p * dx
+    J = cashocs.IntegralFunctional(u * dx)
+
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("ShapeGradient", "reextend_from_boundary", "True")
+    config.set("ShapeGradient", "reextension_mode", "normal")
+
+    sop = cashocs.ShapeOptimizationProblem(F, bcs, J, u, p, boundaries, config=config)
+    sop.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=11)
+    assert sop.solver.relative_norm <= sop.solver.rtol
+
+    parameters["ghost_mode"] = "none"
