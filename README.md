@@ -23,7 +23,7 @@
 | cashocs/\_forms/control\_form\_handler.py                                          |      142 |       11 |     92% |30, 112-130, 146-147, 203 |
 | cashocs/\_forms/form\_handler.py                                                   |       28 |        8 |     71% |     55-63 |
 | cashocs/\_forms/general\_form\_handler.py                                          |       82 |       10 |     88% |49-55, 193, 198, 209-210 |
-| cashocs/\_forms/shape\_form\_handler.py                                            |      239 |       14 |     94% |165, 203, 359, 381-386, 421, 538, 646-657 |
+| cashocs/\_forms/shape\_form\_handler.py                                            |      270 |       23 |     91% |167, 205, 384, 406-412, 447, 564, 689-695, 705-716, 837-840 |
 | cashocs/\_forms/shape\_regularization.py                                           |      220 |       10 |     95% |202, 211, 297, 305, 399, 474, 482, 503, 631, 639 |
 | cashocs/\_optimization/\_\_init\_\_.py                                             |        0 |        0 |    100% |           |
 | cashocs/\_optimization/cost\_functional.py                                         |      129 |        4 |     97% |234, 247, 272, 432 |
@@ -58,7 +58,7 @@
 | cashocs/\_pde\_problems/control\_gradient\_problem.py                              |       41 |        4 |     90% | 77, 83-85 |
 | cashocs/\_pde\_problems/hessian\_problems.py                                       |      174 |        0 |    100% |           |
 | cashocs/\_pde\_problems/pde\_problem.py                                            |       13 |        1 |     92% |        58 |
-| cashocs/\_pde\_problems/shape\_gradient\_problem.py                                |       90 |        5 |     94% |84, 230, 233-235 |
+| cashocs/\_pde\_problems/shape\_gradient\_problem.py                                |      136 |        8 |     94% |86, 195-199, 238, 362, 365-367 |
 | cashocs/\_pde\_problems/state\_problem.py                                          |       87 |        7 |     92% |77, 82, 121, 158, 266-270 |
 | cashocs/\_typing.py                                                                |       23 |       23 |      0% |     20-67 |
 | cashocs/\_utils/\_\_init\_\_.py                                                    |       26 |        0 |    100% |           |
@@ -75,7 +75,7 @@
 | cashocs/geometry/mesh\_testing.py                                                  |       69 |        4 |     94% |175, 179-180, 237 |
 | cashocs/geometry/quality.py                                                        |       93 |        6 |     94% |308, 346, 381, 444, 474, 498 |
 | cashocs/io/\_\_init\_\_.py                                                         |       17 |        0 |    100% |           |
-| cashocs/io/config.py                                                               |      138 |        4 |     97% |33, 72, 714-715 |
+| cashocs/io/config.py                                                               |      138 |        4 |     97% |33, 72, 723-724 |
 | cashocs/io/function.py                                                             |       21 |       15 |     29% |58-73, 93-99 |
 | cashocs/io/managers.py                                                             |      253 |       17 |     93% |365, 379, 401, 632-638, 641-648, 674-678 |
 | cashocs/io/mesh.py                                                                 |      235 |       32 |     86% |91, 146-150, 283-308, 334, 363-364, 397, 553-554, 558-560, 631, 664 |
@@ -91,7 +91,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      381 |       42 |     89% |165, 266, 349-354, 454, 541-542, 672-674, 681-683, 710-744, 929, 958-960, 970-972, 986-987 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      395 |       55 |     86% |167, 269, 344-345, 439, 516-517, 532-559, 682-683, 700-702, 708-710, 742-782, 954, 981-983, 993-995, 1009-1010 |
 | cashocs/verification.py                                                            |      123 |        3 |     98% |214-215, 247 |
-|                                                                          **TOTAL** | **7510** |  **622** | **92%** |           |
+|                                                                          **TOTAL** | **7587** |  **634** | **92%** |           |
 
 
 ## Setup coverage badge
