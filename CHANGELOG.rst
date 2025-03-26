@@ -7,7 +7,7 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-2.5.0 (in development)
+2.5.0 (March 26, 2025)
 ----------------------
 
 * Add the possibility to re-compute the gradient deformation in shape optimization. To do so, the gradient deformation is first computed as before but then only the surface deformation (or the one in normal direction) is used as boundary condition for the elasticty equation to compute a new deformation. This can help to avoid numerical artifacts in the interior of the domain not related to the actual shape changes.
