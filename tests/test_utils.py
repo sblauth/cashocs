@@ -27,6 +27,8 @@ import pytest
 import cashocs
 import cashocs._cli
 from cashocs._exceptions import InputError
+import cashocs._utils
+import cashocs._utils.linalg
 
 dir_path = str(pathlib.Path(__file__).parent)
 config = cashocs.load_config(dir_path + "/config_ocp.ini")
@@ -270,3 +272,18 @@ def test_moreau_yosida_regularization():
 
     ocp.compute_state_variables()
     assert np.abs(assemble(reg) - assemble(reg_ana)) < 1e-14
+
+
+def test_l2_projection():
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(8)
+    V = FunctionSpace(mesh, "CG", 1)
+
+    x = SpatialCoordinate(mesh)
+    expr = x[0] ** 2 + x[1]
+
+    fenics_result = project(expr, V)
+    cashocs_result = cashocs._utils.l2_projection(expr, V)
+
+    assert (
+        np.max(np.abs(fenics_result.vector()[:] - cashocs_result.vector()[:])) < 1e-10
+    )
