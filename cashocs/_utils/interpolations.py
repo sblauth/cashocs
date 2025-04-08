@@ -20,6 +20,8 @@
 import fenics
 import numpy as np
 
+from cashocs._utils import linalg
+
 try:
     import ufl_legacy as ufl
     from ufl_legacy.core import expr as ufl_expr
@@ -276,10 +278,11 @@ def interpolate_by_angle(
     indicator_omega = fenics.Function(dg0_space)
     interpolate_levelset_function_to_cells(levelset_function, 1.0, 0.0, indicator_omega)
 
-    pwc_fun = fenics.project(
+    pwc_fun = linalg.l2_projection(
         form_neg * indicator_omega
         + form_pos * (fenics.Constant(1.0) - indicator_omega),
         dg0_space,
+        ksp_options={"ksp_type": "preonly", "pc_type": "jacobi"},
     )
     node_function.vector().vec().set(0.0)
     node_function.vector().apply("")
