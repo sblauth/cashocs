@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Coverage for cashocs/_utils/linalg.py: 89%</title>
+    <title>Coverage for cashocs/_utils/linalg.py: 90%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
     <link rel="stylesheet" href="style_cb_8e611ae1.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
@@ -12,7 +12,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>cashocs/_utils/linalg.py</b>:
-            <span class="pc_cov">89%</span>
+            <span class="pc_cov">90%</span>
         </h1>
         <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -54,9 +54,9 @@
             </div>
         </aside>
         <h2>
-            <span class="text">179 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">159<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">20<span class="text"> missing</span></button>
+            <span class="text">192 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">173<span class="text"> run</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">19<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">9<span class="text"> excluded</span></button>
         </h2>
         <p class="text">
@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_441e2a1d43e8a1a4___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-04-08 22:37 +0000
+            created at 2025-04-09 06:25 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -377,7 +377,7 @@
     <p class="pln"><span class="n"><a id="t295" href="#t295">295</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t296" href="#t296">296</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t297" href="#t297">297</a></span><span class="t">    <span class="key">if</span> <span class="nam">comm</span> <span class="key">is</span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t298" href="#t298">298</a></span><span class="t">        <span class="nam">comm</span> <span class="op">=</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">MPI</span><span class="op">.</span><span class="nam">comm_world</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t298" href="#t298">298</a></span><span class="t">        <span class="nam">comm</span> <span class="op">=</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">MPI</span><span class="op">.</span><span class="nam">comm_world</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t299" href="#t299">299</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t300" href="#t300">300</a></span><span class="t">    <span class="key">return</span> <span class="nam">comm</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t301" href="#t301">301</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -787,6 +787,45 @@
     <p class="pln"><span class="n"><a id="t705" href="#t705">705</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t706" href="#t706">706</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t707" href="#t707">707</a></span><span class="t">    <span class="key">return</span> <span class="nam">petsc_matrix</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t708" href="#t708">708</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t709" href="#t709">709</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t710" href="#t710">710</a></span><span class="t"><span class="key">def</span> <span class="nam">l2_projection</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t711" href="#t711">711</a></span><span class="t">    <span class="nam">expr</span><span class="op">:</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">core</span><span class="op">.</span><span class="nam">expr</span><span class="op">.</span><span class="nam">Expr</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t712" href="#t712">712</a></span><span class="t">    <span class="nam">function_space</span><span class="op">:</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">FunctionSpace</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t713" href="#t713">713</a></span><span class="t">    <span class="nam">ksp_options</span><span class="op">:</span> <span class="nam">_typing</span><span class="op">.</span><span class="nam">KspOption</span> <span class="op">|</span> <span class="key">None</span> <span class="op">=</span> <span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t714" href="#t714">714</a></span><span class="t"><span class="op">)</span> <span class="op">-></span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Function</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t715" href="#t715">715</a></span><span class="t">    <span class="str">"""Computes an L2 projection of an expression into the specified function space.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t716" href="#t716">716</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t717" href="#t717">717</a></span><span class="t"><span class="str">    Args:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t718" href="#t718">718</a></span><span class="t"><span class="str">        expr (ufl.core.expr.Expr): The expression that shall be projected.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t719" href="#t719">719</a></span><span class="t"><span class="str">        function_space (fenics.FunctionSpace): The function space into which the</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t720" href="#t720">720</a></span><span class="t"><span class="str">            projection takes place.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t721" href="#t721">721</a></span><span class="t"><span class="str">        ksp_options (_typing.KspOption | None, optional): The options for the solution</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t722" href="#t722">722</a></span><span class="t"><span class="str">            of the linear problem. If this is None, a CG method with AMG is used.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t723" href="#t723">723</a></span><span class="t"><span class="str">            Defaults to None.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t724" href="#t724">724</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t725" href="#t725">725</a></span><span class="t"><span class="str">    Returns:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t726" href="#t726">726</a></span><span class="t"><span class="str">        fenics.Function: The result of the projection.</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t727" href="#t727">727</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t728" href="#t728">728</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t729" href="#t729">729</a></span><span class="t">    <span class="nam">mesh</span> <span class="op">=</span> <span class="nam">function_space</span><span class="op">.</span><span class="nam">mesh</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t730" href="#t730">730</a></span><span class="t">    <span class="nam">dx</span> <span class="op">=</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">Measure</span><span class="op">(</span><span class="str">"dx"</span><span class="op">,</span> <span class="nam">domain</span><span class="op">=</span><span class="nam">mesh</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t731" href="#t731">731</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t732" href="#t732">732</a></span><span class="t">    <span class="nam">res</span> <span class="op">=</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Function</span><span class="op">(</span><span class="nam">function_space</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t733" href="#t733">733</a></span><span class="t">    <span class="nam">u</span> <span class="op">=</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">TrialFunction</span><span class="op">(</span><span class="nam">function_space</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t734" href="#t734">734</a></span><span class="t">    <span class="nam">v</span> <span class="op">=</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">TestFunction</span><span class="op">(</span><span class="nam">function_space</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t735" href="#t735">735</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t736" href="#t736">736</a></span><span class="t">    <span class="nam">lhs</span> <span class="op">=</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">inner</span><span class="op">(</span><span class="nam">u</span><span class="op">,</span> <span class="nam">v</span><span class="op">)</span> <span class="op">*</span> <span class="nam">dx</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t737" href="#t737">737</a></span><span class="t">    <span class="nam">rhs</span> <span class="op">=</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">inner</span><span class="op">(</span><span class="nam">expr</span><span class="op">,</span> <span class="nam">v</span><span class="op">)</span> <span class="op">*</span> <span class="nam">dx</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t738" href="#t738">738</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t739" href="#t739">739</a></span><span class="t">    <span class="nam">bcs</span><span class="op">:</span> <span class="nam">list</span><span class="op">[</span><span class="nam">fenics</span><span class="op">.</span><span class="nam">DirichletBC</span><span class="op">]</span> <span class="op">=</span> <span class="op">[</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t740" href="#t740">740</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t741" href="#t741">741</a></span><span class="t">    <span class="key">if</span> <span class="nam">ksp_options</span> <span class="key">is</span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t742" href="#t742">742</a></span><span class="t">        <span class="nam">ksp_options</span> <span class="op">=</span> <span class="nam">copy</span><span class="op">.</span><span class="nam">deepcopy</span><span class="op">(</span><span class="nam">iterative_ksp_options</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t743" href="#t743">743</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t744" href="#t744">744</a></span><span class="t">    <span class="nam">assemble_and_solve_linear</span><span class="op">(</span><span class="nam">lhs</span><span class="op">,</span> <span class="nam">rhs</span><span class="op">,</span> <span class="nam">bcs</span><span class="op">,</span> <span class="nam">fun</span><span class="op">=</span><span class="nam">res</span><span class="op">,</span> <span class="nam">ksp_options</span><span class="op">=</span><span class="nam">ksp_options</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t745" href="#t745">745</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t746" href="#t746">746</a></span><span class="t">    <span class="key">return</span> <span class="nam">res</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -796,7 +835,7 @@
             <a class="nav" href="z_441e2a1d43e8a1a4___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.6.4">coverage.py v7.6.4</a>,
-            created at 2025-04-08 22:37 +0000
+            created at 2025-04-09 06:25 +0000
         </p>
     </div>
 </footer>

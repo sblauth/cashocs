@@ -23,7 +23,7 @@
 | cashocs/\_forms/control\_form\_handler.py                                          |      142 |       11 |     92% |30, 112-130, 146-147, 203 |
 | cashocs/\_forms/form\_handler.py                                                   |       28 |        8 |     71% |     55-63 |
 | cashocs/\_forms/general\_form\_handler.py                                          |       82 |       10 |     88% |49-55, 193, 198, 209-210 |
-| cashocs/\_forms/shape\_form\_handler.py                                            |      270 |       23 |     91% |167, 205, 384, 406-412, 447, 564, 689-695, 705-716, 837-840 |
+| cashocs/\_forms/shape\_form\_handler.py                                            |      270 |       23 |     91% |167, 205, 384, 406-412, 447, 564, 690-696, 706-719, 840-843 |
 | cashocs/\_forms/shape\_regularization.py                                           |      220 |       10 |     95% |202, 211, 297, 305, 399, 474, 482, 503, 631, 639 |
 | cashocs/\_optimization/\_\_init\_\_.py                                             |        0 |        0 |    100% |           |
 | cashocs/\_optimization/cost\_functional.py                                         |      129 |        4 |     97% |234, 247, 272, 432 |
@@ -61,11 +61,11 @@
 | cashocs/\_pde\_problems/shape\_gradient\_problem.py                                |      136 |        8 |     94% |86, 195-199, 238, 362, 365-367 |
 | cashocs/\_pde\_problems/state\_problem.py                                          |       87 |        7 |     92% |77, 82, 121, 158, 266-270 |
 | cashocs/\_typing.py                                                                |       23 |       23 |      0% |     20-67 |
-| cashocs/\_utils/\_\_init\_\_.py                                                    |       26 |        0 |    100% |           |
+| cashocs/\_utils/\_\_init\_\_.py                                                    |       27 |        0 |    100% |           |
 | cashocs/\_utils/forms.py                                                           |       62 |        0 |    100% |           |
 | cashocs/\_utils/helpers.py                                                         |       71 |        1 |     99% |        69 |
-| cashocs/\_utils/interpolations.py                                                  |       43 |       18 |     58% |25, 273-446 |
-| cashocs/\_utils/linalg.py                                                          |      179 |       20 |     89% |77, 152, 298, 347-348, 408-411, 534, 671-675, 695-707 |
+| cashocs/\_utils/interpolations.py                                                  |       44 |       18 |     59% |27, 275-449 |
+| cashocs/\_utils/linalg.py                                                          |      192 |       19 |     90% |77, 152, 347-348, 408-411, 534, 671-675, 695-707 |
 | cashocs/geometry/\_\_init\_\_.py                                                   |       18 |        0 |    100% |           |
 | cashocs/geometry/boundary\_distance.py                                             |       63 |        1 |     98% |       148 |
 | cashocs/geometry/deformations.py                                                   |       66 |        5 |     92% |131-135, 143, 148, 207 |
@@ -91,7 +91,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      381 |       42 |     89% |165, 266, 349-354, 454, 541-542, 672-674, 681-683, 710-744, 929, 958-960, 970-972, 986-987 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      395 |       55 |     86% |167, 269, 344-345, 439, 516-517, 532-559, 682-683, 700-702, 708-710, 742-782, 954, 981-983, 993-995, 1009-1010 |
 | cashocs/verification.py                                                            |      123 |        3 |     98% |214-215, 247 |
-|                                                                          **TOTAL** | **7587** |  **634** | **92%** |           |
+|                                                                          **TOTAL** | **7602** |  **633** | **92%** |           |
 
 
 ## Setup coverage badge
