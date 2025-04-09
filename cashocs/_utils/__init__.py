@@ -44,6 +44,7 @@ from cashocs._utils.interpolations import interpolate_levelset_function_to_cells
 from cashocs._utils.linalg import assemble_and_solve_linear
 from cashocs._utils.linalg import assemble_petsc_system
 from cashocs._utils.linalg import Interpolator
+from cashocs._utils.linalg import l2_projection
 from cashocs._utils.linalg import setup_petsc_options
 from cashocs._utils.linalg import solve_linear_problem
 from cashocs._utils.linalg import split_linear_forms
@@ -71,6 +72,7 @@ __all__ = [
     "assemble_and_solve_linear",
     "assemble_petsc_system",
     "Interpolator",
+    "l2_projection",
     "setup_petsc_options",
     "solve_linear_problem",
     "split_linear_forms",

@@ -309,7 +309,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         else:
             self.topological_derivative_vertex.vector().vec().aypx(
                 0.0,
-                fenics.project(self.topological_derivative_pos, self.cg1_space)
+                _utils.l2_projection(self.topological_derivative_pos, self.cg1_space)
                 .vector()
                 .vec(),
             )

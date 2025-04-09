@@ -613,9 +613,10 @@ class ShapeFormHandler(form_handler.FormHandler):
             if self.config.getboolean("ShapeGradient", "inhomogeneous"):
                 self.volumes.vector().vec().aypx(
                     0.0,
-                    fenics.project(
+                    _utils.l2_projection(
                         fenics.CellVolume(self.db.geometry_db.mesh),
                         self.dg_function_space,
+                        ksp_options={"ksp_type": "preonly", "pc_type": "jacobi"},
                     )
                     .vector()
                     .vec(),
@@ -704,8 +705,10 @@ class ShapeFormHandler(form_handler.FormHandler):
         if self.update_inhomogeneous:
             self.volumes.vector().vec().aypx(
                 0.0,
-                fenics.project(
-                    fenics.CellVolume(self.db.geometry_db.mesh), self.dg_function_space
+                _utils.l2_projection(
+                    fenics.CellVolume(self.db.geometry_db.mesh),
+                    self.dg_function_space,
+                    ksp_options={"ksp_type": "preonly", "pc_type": "jacobi"},
                 )
                 .vector()
                 .vec(),

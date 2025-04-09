@@ -705,3 +705,42 @@ def scipy2petsc(
     )
 
     return petsc_matrix
+
+
+def l2_projection(
+    expr: ufl.core.expr.Expr,
+    function_space: fenics.FunctionSpace,
+    ksp_options: _typing.KspOption | None = None,
+) -> fenics.Function:
+    """Computes an L2 projection of an expression into the specified function space.
+
+    Args:
+        expr (ufl.core.expr.Expr): The expression that shall be projected.
+        function_space (fenics.FunctionSpace): The function space into which the
+            projection takes place.
+        ksp_options (_typing.KspOption | None, optional): The options for the solution
+            of the linear problem. If this is None, a CG method with AMG is used.
+            Defaults to None.
+
+    Returns:
+        fenics.Function: The result of the projection.
+
+    """
+    mesh = function_space.mesh()
+    dx = ufl.Measure("dx", domain=mesh)
+
+    res = fenics.Function(function_space)
+    u = fenics.TrialFunction(function_space)
+    v = fenics.TestFunction(function_space)
+
+    lhs = ufl.inner(u, v) * dx
+    rhs = ufl.inner(expr, v) * dx
+
+    bcs: list[fenics.DirichletBC] = []
+
+    if ksp_options is None:
+        ksp_options = copy.deepcopy(iterative_ksp_options)
+
+    assemble_and_solve_linear(lhs, rhs, bcs, fun=res, ksp_options=ksp_options)
+
+    return res
