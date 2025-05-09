@@ -268,3 +268,5 @@ class StateProblem(pde_problem.PDEProblem):
                 0.0, self.states_checkpoint[i].vector().vec()
             )
             self.states[i].vector().apply("")
+
+        log.end()
