@@ -234,6 +234,20 @@ class OptimizationProblem(abc.ABC):
             excluded_from_time_derivative,
         )
 
+        if self.config.getboolean("StateSystem", "use_adjoint_linearizations"):
+            self.adjoint_linearizations: list | None = []
+            for derivative in self.newton_linearizations:
+                if derivative is not None:
+                    args = derivative.arguments()
+                    adjoint_linearization = ufl.replace(
+                        derivative, {args[0]: args[1], args[1]: args[0]}
+                    )
+                    self.adjoint_linearizations.append(adjoint_linearization)
+                else:
+                    self.adjoint_linearizations.append(None)
+        else:
+            self.adjoint_linearizations = None
+
         if initial_function_values is not None:
             self.initial_function_values = initial_function_values
 
@@ -280,6 +294,7 @@ class OptimizationProblem(abc.ABC):
             self.general_form_handler.adjoint_form_handler,
             self.state_problem,
             linear_solver=self.adjoint_linear_solver,
+            adjoint_linearizations=self.adjoint_linearizations,
         )
         self.constraint_manager: mesh_quality_constraints.ConstraintManager | None = (
             None
