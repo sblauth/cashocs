@@ -59,7 +59,7 @@
 | cashocs/\_pde\_problems/hessian\_problems.py                                       |      174 |        0 |    100% |           |
 | cashocs/\_pde\_problems/pde\_problem.py                                            |       13 |        1 |     92% |        58 |
 | cashocs/\_pde\_problems/shape\_gradient\_problem.py                                |      136 |        8 |     94% |86, 195-199, 238, 362, 365-367 |
-| cashocs/\_pde\_problems/state\_problem.py                                          |       87 |        7 |     92% |77, 82, 121, 158, 266-270 |
+| cashocs/\_pde\_problems/state\_problem.py                                          |       88 |        8 |     91% |77, 82, 121, 158, 266-272 |
 | cashocs/\_typing.py                                                                |       23 |       23 |      0% |     20-67 |
 | cashocs/\_utils/\_\_init\_\_.py                                                    |       27 |        0 |    100% |           |
 | cashocs/\_utils/forms.py                                                           |       62 |        0 |    100% |           |
@@ -91,7 +91,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      381 |       42 |     89% |165, 266, 349-354, 454, 541-542, 672-674, 681-683, 710-744, 929, 958-960, 970-972, 986-987 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      395 |       55 |     86% |167, 269, 344-345, 439, 516-517, 532-559, 682-683, 700-702, 708-710, 742-782, 954, 981-983, 993-995, 1009-1010 |
 | cashocs/verification.py                                                            |      123 |        3 |     98% |214-215, 247 |
-|                                                                          **TOTAL** | **7614** |  **634** | **92%** |           |
+|                                                                          **TOTAL** | **7615** |  **635** | **92%** |           |
 
 
 ## Setup coverage badge
