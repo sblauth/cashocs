@@ -734,3 +734,95 @@ def test_pseudo_time_stepping(F, bcs, J, y, u, p, config_ocp):
     )
     ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=17)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+def test_adjoint_linearizations(geometry, config_ocp):
+    mesh = geometry.mesh
+    dx = geometry.dx
+
+    v_elem = VectorElement("CG", mesh.ufl_cell(), 2)
+    p_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
+    V = FunctionSpace(mesh, v_elem * p_elem)
+    W = VectorFunctionSpace(mesh, "CG", 1)
+
+    up = Function(V)
+    u, p = split(up)
+    vq = Function(V)
+    v, q = split(vq)
+    c = Function(W)
+
+    F = (
+        inner(grad(u), grad(v)) * dx
+        + dot(grad(u) * u, v) * dx
+        - p * div(v) * dx
+        - q * div(u) * dx
+        - dot(c, v) * dx
+    )
+
+    def pressure_point(x, on_boundary):
+        return near(x[0], 0) and near(x[1], 0)
+
+    bcs = cashocs.create_dirichlet_bcs(
+        V.sub(0), Constant((0, 0)), geometry.boundaries, [1, 2, 3]
+    )
+    lid_velocity = Expression(("4*x[0]*(1-x[0])", "0.0"), degree=2)
+    bcs += cashocs.create_dirichlet_bcs(V.sub(0), lid_velocity, geometry.boundaries, 4)
+    bcs += [DirichletBC(V.sub(1), Constant(0), pressure_point, method="pointwise")]
+    u_d = Expression(
+        (
+            "sqrt(pow(x[0], 2) + pow(x[1], 2))*cos(2*pi*x[1])",
+            "-sqrt(pow(x[0], 2) + pow(x[1], 2))*sin(2*pi*x[0])",
+        ),
+        degree=2,
+    )
+    J = cashocs.IntegralFunctional(Constant(0.5) * dot(u - u_d, u - u_d) * dx)
+
+    u_, p_ = TrialFunctions(V)
+    v_, q_ = TestFunctions(V)
+    dF = (
+        inner(grad(u_), grad(v_)) * dx
+        + dot(grad(u_) * u, v_) * dx
+        - p_ * div(v_) * dx
+        - q_ * div(u_) * dx
+    )
+
+    ksp_options = {
+        "snes_type": "newtonls",
+        "snes_max_it": 100,
+        "snes_monitor": None,
+        "snes_converged_reason": None,
+        "snes_linesearch_type": "basic",
+        "snes_rtol": 1e-6,
+        "snes_atol": 1e-30,
+        "ksp_type": "fgmres",
+        "ksp_max_it": 2000,
+        "ksp_rtol": 1e-3,
+        "ksp_atol": 1e-30,
+        "ksp_converged_reason": None,
+        # "ksp_monitor_true_residual": None,
+        "pc_type": "fieldsplit",
+        "pc_fieldsplit_type": "additive",
+        "fieldsplit_0_ksp_type": "preonly",
+        "fieldsplit_0_pc_type": "hypre",
+        "fieldsplit_0_pc_hypre_type": "boomeramg",
+        "fieldsplit_1_ksp_type": "preonly",
+        "fieldsplit_1_pc_type": "jacobi",
+    }
+
+    config_ocp.set("StateSystem", "backend", "petsc")
+    config_ocp.set("StateSystem", "is_linear", "False")
+    config_ocp.set("StateSystem", "use_adjoint_linearizations", "True")
+
+    ocp = cashocs.OptimalControlProblem(
+        F,
+        bcs,
+        J,
+        up,
+        c,
+        vq,
+        config=config_ocp,
+        newton_linearizations=dF,
+        ksp_options=ksp_options,
+    )
+    # ocp.compute_adjoint_variables()
+    ocp.solve(rtol=1e-2, max_iter=44)

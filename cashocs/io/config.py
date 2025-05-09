@@ -159,6 +159,9 @@ class Config(ConfigParser):
                     "type": "str",
                     "possible_options": ["cashocs", "petsc"],
                 },
+                "use_adjoint_linearizations": {
+                    "type": "bool",
+                },
             },
             "OptimizationRoutine": {
                 "algorithm": {
@@ -590,6 +593,7 @@ picard_atol = 1e-12
 picard_iter = 50
 picard_verbose = False
 backend = cashocs
+use_adjoint_linearizations = False
 
 [OptimizationRoutine]
 algorithm = none

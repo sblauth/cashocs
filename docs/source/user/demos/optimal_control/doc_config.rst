@@ -174,6 +174,19 @@ is used which can be configured with the `ksp_options` supplied by the user to t
 :py:class:`cashocs.OptimizationProblem`. An overview over possible PETSc command line options
 can be found at `<https://petsc.org/release/manualpages/SNES/>`_.
 
+The parameter :ini:`use_adjoint_linearizations` is a boolean which specifies whether the adjoint form
+of the linearization provided with `newton_linearizations` should be used to solve the adjoint equation.
+The parameter is set with the line
+
+.. code-block:: ini
+
+    use_adjoint_linearizations = False
+
+The default value is `False`. Note that one has to use a PETSc SNES solver (or pseudo time stepping)
+in order for this to make sense. Using the option `-snes_type ksponly` with the SNES solver will not
+give correct results (if the provided linearization is not the Newton linearization). The benefit of
+doing so can be significantly easier to solve linear systems at the cost of doing more "nonlinear"
+iterations, in a defect-correction setting.
 
 
 
@@ -660,6 +673,8 @@ in the following.
       - :ini:`picard_verbose = True` enables verbose output of Picard iteration
     * - :ini:`backend = cashocs`
       - specifies the backend for solving nonlinear equations, can be either :ini:`cashocs` or :ini:`petsc`
+    * - :ini:`use_adjoint_linearizations = False`
+      - if `True`, the adjoint form of the provided `newton_linearizations` will be used for the adjoint system.
 
 [OptimizationRoutine]
 *********************
