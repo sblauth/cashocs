@@ -1400,6 +1400,10 @@ in the following.
       - Estimate the required degree for quadrature of the shape derivative. This should be `True`, otherwise unexpected errors can happen.
     * - :ini:`test_for_intersections = True`
       - If enabled, the mesh is tested for intersections which would create non-physical meshes. This should always be enabled, otherwise the obtained results might be incorrect.
+    * - :ini:`reextend_from_boundary = False`
+      - If this is enabled, the gradient deformation is re-extended from the boundary.`
+    * - :ini:`reextension_mode = surface`
+      - If this is `surface`, then the surface deformation is used for reextension. If this is `normal` only the normal deformation is used.
 
 
 [Regularization]
