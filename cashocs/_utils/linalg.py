@@ -295,7 +295,7 @@ def _initialize_comm(comm: MPI.Comm | None = None) -> MPI.Comm:
 
     """
     if comm is None:
-        comm = fenics.MPI.comm_world
+        comm = MPI.COMM_WORLD
 
     return comm
 

@@ -29,6 +29,7 @@ from typing import TYPE_CHECKING
 
 import fenics
 import h5py
+from mpi4py import MPI
 import numpy as np
 
 from cashocs import _exceptions
@@ -39,8 +40,6 @@ from cashocs.geometry.measure import NamedMeasure
 from cashocs.geometry.mesh import _get_mesh_stats
 
 if TYPE_CHECKING:
-    from mpi4py import MPI
-
     from cashocs import _typing
 
 
@@ -217,7 +216,7 @@ def _import_xdmf_mesh(
     mesh_string, subdomain_string, boundaries_string = _get_mesh_paths(mesh_file)
 
     if comm is None:
-        comm = fenics.MPI.comm_world
+        comm = MPI.COMM_WORLD
 
     mesh = fenics.Mesh(comm)
     with fenics.XDMFFile(mesh.mpi_comm(), mesh_string) as xdmf_file:
@@ -291,11 +290,11 @@ def export_mesh(
         boundaries: The boundaries meshfunction corresponding to the mesh. Optional,
             default is `None`, so that no boundary information is used.
         comm: The MPI communicator used. Optional, default is `None`, so that the
-            `fenics.MPI.comm_world` is used.
+            `MPI.COMM_WORLD` is used.
 
     """
     if comm is None:
-        comm = fenics.MPI.comm_world
+        comm = MPI.COMM_WORLD
 
     _utils.check_file_extension(mesh_file, "xdmf")
 
@@ -350,7 +349,7 @@ def convert(
     args += ["--mode", mode]
 
     cli_convert(args)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
 
 def create_point_representation(
@@ -409,7 +408,7 @@ def gather_coordinates(mesh: fenics.Mesh) -> np.ndarray:
             coordinates[verts] = coords
     else:
         coordinates = np.zeros((1, 1))
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
     return coordinates
 
@@ -484,7 +483,7 @@ def check_mesh_compatibility(mesh: fenics.Mesh, original_mesh_file: str) -> None
 
     """
     num_points = 0
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         with open(original_mesh_file, encoding="utf-8") as file:
             node_info = False
             for line in file:
@@ -496,9 +495,9 @@ def check_mesh_compatibility(mesh: fenics.Mesh, original_mesh_file: str) -> None
                 if line == "$Nodes\n":
                     node_info = True
 
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
-    number_of_points = int(fenics.MPI.comm_world.bcast(num_points, root=0))
+    number_of_points = int(MPI.COMM_WORLD.bcast(num_points, root=0))
 
     if mesh.num_entities_global(0) != number_of_points:
         raise _exceptions.CashocsException(
@@ -535,9 +534,9 @@ def write_out_mesh(  # noqa: C901
 
     points = gather_coordinates(mesh)
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         parse_file(original_msh_file, out_msh_file, points, dim)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
 
 def read_mesh_from_xdmf(
@@ -582,11 +581,11 @@ def read_mesh_from_xdmf(
         )
 
     if comm is None:
-        comm = fenics.MPI.comm_world
+        comm = MPI.COMM_WORLD
 
     mesh = fenics.Mesh(comm)
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         mesh_editor = fenics.MeshEditor()
         mesh_editor.open(mesh, cell_type, tdim, gdim)
         mesh_editor.init_vertices(coordinates.shape[0])
@@ -639,22 +638,22 @@ def extract_mesh_from_xdmf(
 
     mesh = read_mesh_from_xdmf(xdmffile, step=iteration)
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         tmp = tempfile.mkdtemp(prefix="cashocs_tmp_")
     else:
         tmp = ""
-    fenics.MPI.barrier(fenics.MPI.comm_world)
-    tempdir = fenics.MPI.comm_world.bcast(tmp, root=0)
+    MPI.COMM_WORLD.barrier()
+    tempdir = MPI.COMM_WORLD.bcast(tmp, root=0)
 
     mesh_location_xdmf = f"{tempdir}/mesh.xdmf"
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
     if original_gmsh_file is None:
         try:
-            with fenics.XDMFFile(fenics.MPI.comm_world, mesh_location_xdmf) as file:
+            with fenics.XDMFFile(MPI.COMM_WORLD, mesh_location_xdmf) as file:
                 file.write(mesh, fenics.XDMFFile.Encoding.HDF5)
 
-            fenics.MPI.barrier(fenics.MPI.comm_world)
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            MPI.COMM_WORLD.barrier()
+            if MPI.COMM_WORLD.rank == 0:
                 subprocess.run(  # nosec B603, B607
                     [
                         "meshio",
@@ -667,12 +666,12 @@ def extract_mesh_from_xdmf(
                     ],
                     check=True,
                 )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            MPI.COMM_WORLD.barrier()
         finally:
-            fenics.MPI.barrier(fenics.MPI.comm_world)
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            MPI.COMM_WORLD.barrier()
+            if MPI.COMM_WORLD.rank == 0:
                 subprocess.run(["rm", "-r", tempdir], check=True)  # nosec B603, B607
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            MPI.COMM_WORLD.barrier()
 
     else:
         write_out_mesh(mesh, original_gmsh_file, outputfile)

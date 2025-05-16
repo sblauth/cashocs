@@ -23,6 +23,7 @@ import collections
 from typing import TYPE_CHECKING
 
 import fenics
+from mpi4py import MPI
 import numpy as np
 
 try:
@@ -173,7 +174,7 @@ class IntersectionTester:
         collisions = CollisionCounter.compute_collisions(self.mesh)
         if not (collisions == self.occurrences).all():
             self_intersections = True
-        list_self_intersections = fenics.MPI.comm_world.allgather(self_intersections)
+        list_self_intersections = MPI.COMM_WORLD.allgather(self_intersections)
 
         if any(list_self_intersections):
             log.debug("The mesh has self-intersecting elements after the update.")
