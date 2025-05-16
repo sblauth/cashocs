@@ -23,6 +23,7 @@ import copy
 from typing import TYPE_CHECKING
 
 import fenics
+from mpi4py import MPI
 import numpy as np
 from typing_extensions import Literal
 
@@ -210,9 +211,9 @@ class _NewtonSolver:
             f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
         )
         if self.verbose:
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            if MPI.COMM_WORLD.rank == 0:
                 print(info_str + print_str, flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            MPI.COMM_WORLD.barrier()
         else:
             log.info(info_str + print_str)
 
@@ -278,9 +279,9 @@ class _NewtonSolver:
         if self.res_0 == 0.0:  # pragma: no cover
             message = "Residual vanishes, input is already a solution."
             if self.verbose:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                if MPI.COMM_WORLD.rank == 0:
                     print(message, flush=True)
-                fenics.MPI.barrier(fenics.MPI.comm_world)
+                MPI.COMM_WORLD.barrier()
             else:
                 log.info(message)
             return self.u
@@ -341,9 +342,9 @@ class _NewtonSolver:
                 f"Newton Solver converged after {self.iterations:d} iterations."
             )
             if self.verbose:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                if MPI.COMM_WORLD.rank == 0:
                     print(convergence_message, flush=True)
-                fenics.MPI.barrier(fenics.MPI.comm_world)
+                MPI.COMM_WORLD.barrier()
             else:
                 log.info(convergence_message)
             return True

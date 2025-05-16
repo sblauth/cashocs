@@ -485,12 +485,12 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         log.debug("An exception was raised, deleting the created temporary files.")
         if (
             not self.config.getboolean("Debug", "remeshing")
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+            and self.db.geometry_db.mpi_comm.rank == 0
         ):
             subprocess.run(  # nosec B603, B607
                 ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
             )
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        self.db.geometry_db.mpi_comm.barrier()
 
     def compute_shape_gradient(self) -> list[fenics.Function]:
         """Solves the Riesz problem to determine the shape gradient.

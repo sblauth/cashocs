@@ -27,6 +27,7 @@ from typing import TYPE_CHECKING
 import weakref
 
 import fenics
+from mpi4py import MPI
 import numpy as np
 
 try:
@@ -61,7 +62,7 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
 
     """
     temp_location = f"{mesh_file[:-4]}_temp.msh"
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         with (
             open(mesh_file, encoding="utf-8") as in_file,
             open(temp_location, "w", encoding="utf-8") as temp_file,
@@ -81,7 +82,7 @@ def _remove_gmsh_parametrizations(mesh_file: str) -> None:
                     parametrizations_section = False
 
         subprocess.run(["mv", temp_location, mesh_file], check=True)  # nosec B603, B607
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
 
 def check_mesh_quality_tolerance(mesh_quality: float, tolerance: float) -> None:
@@ -233,16 +234,16 @@ class _MeshHandler:
             )
 
             if not self.db.parameter_db.is_remeshed:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                if MPI.COMM_WORLD.rank == 0:
                     remesh_directory: str = tempfile.mkdtemp(
                         prefix="cashocs_remesh_", dir=self.mesh_directory
                     )
                 else:
                     remesh_directory = ""
-                self.db.parameter_db.remesh_directory = fenics.MPI.comm_world.bcast(
+                self.db.parameter_db.remesh_directory = MPI.COMM_WORLD.bcast(
                     remesh_directory, root=0
                 )
-                fenics.MPI.barrier(fenics.MPI.comm_world)
+                MPI.COMM_WORLD.barrier()
             else:
                 self.db.parameter_db.remesh_directory = self.db.parameter_db.temp_dict[
                     "remesh_directory"
@@ -261,11 +262,11 @@ class _MeshHandler:
                 f"{self.db.parameter_db.remesh_directory}"
                 f"/mesh_{self.remesh_counter:d}.msh"
             )
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            if MPI.COMM_WORLD.rank == 0:
                 subprocess.run(  # nosec 603
                     ["cp", self.gmsh_file, self.gmsh_file_init], check=True
                 )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            MPI.COMM_WORLD.barrier()
             self.gmsh_file = self.gmsh_file_init
 
     @property
@@ -411,7 +412,7 @@ class _MeshHandler:
                 file.
 
         """
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if MPI.COMM_WORLD.rank == 0:
             with open(self.remesh_geo_file, "w", encoding="utf-8") as file:
                 temp_name = pathlib.Path(input_mesh_file).name
 
@@ -433,7 +434,7 @@ class _MeshHandler:
                         if line[:5] == "Mesh.":
                             file.write(line)
 
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        MPI.COMM_WORLD.barrier()
 
     def clean_previous_gmsh_files(self) -> None:
         """Removes the gmsh files from the previous remeshing iterations."""
@@ -441,9 +442,12 @@ class _MeshHandler:
             f"{self.db.parameter_db.remesh_directory}"
             f"/mesh_{self.remesh_counter - 1:d}.msh"
         )
-        if gmsh_file.is_file() and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if (
+            gmsh_file.is_file()
+            and MPI.COMM_WORLD.rank == 0
+        ):
             gmsh_file.unlink()
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        MPI.COMM_WORLD.barrier()
 
         gmsh_pre_remesh_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
@@ -451,33 +455,33 @@ class _MeshHandler:
         )
         if (
             gmsh_pre_remesh_file.is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+            and MPI.COMM_WORLD.rank == 0
         ):
             gmsh_pre_remesh_file.unlink()
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        MPI.COMM_WORLD.barrier()
 
         mesh_h5_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}/mesh_{self.remesh_counter-1:d}.h5"
         )
-        if mesh_h5_file.is_file() and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if mesh_h5_file.is_file() and MPI.COMM_WORLD.rank == 0:
             mesh_h5_file.unlink()
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        MPI.COMM_WORLD.barrier()
 
         mesh_xdmf_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
             f"/mesh_{self.remesh_counter-1:d}.xdmf"
         )
-        if mesh_xdmf_file.is_file() and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if mesh_xdmf_file.is_file() and MPI.COMM_WORLD.rank == 0:
             mesh_xdmf_file.unlink()
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        MPI.COMM_WORLD.barrier()
 
         boundaries_h5_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
             f"/mesh_{self.remesh_counter-1:d}_boundaries.h5"
         )
-        if boundaries_h5_file.is_file() and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if boundaries_h5_file.is_file() and MPI.COMM_WORLD.rank == 0:
             boundaries_h5_file.unlink()
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        MPI.COMM_WORLD.barrier()
 
         boundaries_xdmf_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
@@ -485,18 +489,18 @@ class _MeshHandler:
         )
         if (
             boundaries_xdmf_file.is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+            and MPI.COMM_WORLD.rank == 0
         ):
             boundaries_xdmf_file.unlink()
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        MPI.COMM_WORLD.barrier()
 
         subdomains_h5_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
             f"/mesh_{self.remesh_counter-1:d}_subdomains.h5"
         )
-        if subdomains_h5_file.is_file() and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if subdomains_h5_file.is_file() and MPI.COMM_WORLD.rank == 0:
             subdomains_h5_file.unlink()
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        MPI.COMM_WORLD.barrier()
 
         subdomains_xdmf_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
@@ -504,10 +508,10 @@ class _MeshHandler:
         )
         if (
             subdomains_xdmf_file.is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+            and MPI.COMM_WORLD.rank == 0
         ):
             subdomains_xdmf_file.unlink()
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        MPI.COMM_WORLD.barrier()
 
     def _reinitialize(self, solver: OptimizationAlgorithm) -> None:
         solver.optimization_problem.__init__(  # type: ignore # pylint: disable=C2801
@@ -585,7 +589,7 @@ class _MeshHandler:
                 "-o",
                 new_gmsh_file,
             ]
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            if MPI.COMM_WORLD.rank == 0:
                 if not self.config.getboolean("Mesh", "show_gmsh_output"):
                     subprocess.run(  # nosec 603
                         gmsh_cmd_list,
@@ -594,7 +598,7 @@ class _MeshHandler:
                     )
                 else:
                     subprocess.run(gmsh_cmd_list, check=True)  # nosec 603
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            MPI.COMM_WORLD.barrier()
 
             _remove_gmsh_parametrizations(new_gmsh_file)
 

@@ -52,14 +52,14 @@ def read_function_from_xdmf(
             case that this is ``0``, a scalar finite element is assumed. Default is 0.
         step: The checkpoint number. Default is ``0``.
         comm: The MPI communicator that shall be used. Default is `None`, which means
-            that `fenics.MPI.comm_world` is used.
+            that `MPI.comm_world` is used.
 
     Returns:
         A fenics representation of the function stored in the file.
 
     """
     if comm is None:
-        comm = fenics.MPI.comm_world
+        comm = MPI.COMM_WORLD
 
     mesh = mesh_io.read_mesh_from_xdmf(filename, step, comm)
     if vector_dim == 0:

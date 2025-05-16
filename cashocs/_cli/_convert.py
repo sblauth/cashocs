@@ -27,8 +27,8 @@ import subprocess  # nosec B404
 import time
 from typing import Optional
 
-import fenics
 import meshio
+from mpi4py import MPI
 import numpy as np
 
 from cashocs import _exceptions
@@ -253,7 +253,7 @@ def convert(argv: Optional[list[str]] = None) -> None:
 
     ostring = outputfile.rsplit(".", 1)[0]
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         with contextlib.redirect_stdout(None):
             mesh_collection = meshio.read(inputfile)
 
@@ -280,7 +280,7 @@ def convert(argv: Optional[list[str]] = None) -> None:
             topological_dimension, cell_data_dict, points, cells_dict, ostring, mode
         )
         check_for_physical_names(inputfile, topological_dimension, ostring)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
     end_time = time.time()
 

@@ -22,6 +22,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import fenics
+from mpi4py import MPI
 import numpy as np
 
 from cashocs import io
@@ -207,16 +208,16 @@ def shape_gradient_test(
     shape_derivative_h = sop.form_handler.scalar_product(shape_grad, h)
 
     coords = io.mesh.gather_coordinates(sop.mesh_handler.mesh)
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         box_lower = np.min(coords)
         box_upper = np.max(coords)
     else:
         box_lower = 0.0
         box_upper = 0.0
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
-    box_lower = fenics.MPI.comm_world.bcast(box_lower, root=0)
-    box_upper = fenics.MPI.comm_world.bcast(box_upper, root=0)
+    box_lower = MPI.COMM_WORLD.bcast(box_lower, root=0)
+    box_upper = MPI.COMM_WORLD.bcast(box_upper, root=0)
     length = box_upper - box_lower
 
     epsilons = [length * 1e-4 / 2**i for i in range(4)]
@@ -275,8 +276,8 @@ def compute_convergence_rates(
         )
         rates.append(rate)
 
-    if verbose and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if verbose and MPI.COMM_WORLD.rank == 0:
         print(f"Taylor test convergence rate: {rates}", flush=True)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
     return rates

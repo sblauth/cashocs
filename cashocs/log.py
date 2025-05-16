@@ -23,6 +23,7 @@ import datetime
 import logging
 
 import fenics
+from mpi4py import MPI
 
 
 class Logger:
@@ -60,9 +61,9 @@ class Logger:
             message (str): The message that should be logged.
 
         """
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if MPI.COMM_WORLD.rank == 0:
             self._log.log(level, self._format(message))
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        MPI.COMM_WORLD.barrier()
 
     def debug(self, message: str) -> None:
         """Issues a message at the debug level.

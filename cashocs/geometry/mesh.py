@@ -24,6 +24,7 @@ import functools
 from typing import Any, Callable, TYPE_CHECKING
 
 import fenics
+from mpi4py import MPI
 import numpy as np
 from typing_extensions import Literal
 
@@ -32,8 +33,6 @@ from cashocs import log
 from cashocs.geometry import measure
 
 if TYPE_CHECKING:
-    from mpi4py import MPI
-
     from cashocs import _typing
 
 
@@ -77,7 +76,7 @@ def _get_mesh_stats(
             """
             word = "importing" if mode.casefold() == "import" else "generating"
             worded = "imported" if mode.casefold() == "import" else "generated"
-            mpi_size = fenics.MPI.size(fenics.MPI.comm_world)
+            mpi_size = MPI.COMM_WORLD.size
             log.begin(f"{word.capitalize()} mesh.", level=log.INFO)
 
             value = func(*args, **kwargs)
@@ -150,7 +149,7 @@ def interval_mesh(
     dim = 1
 
     if comm is None:
-        comm = fenics.MPI.comm_world
+        comm = MPI.COMM_WORLD
 
     mesh = fenics.IntervalMesh(comm, n, start, end)
 
@@ -262,7 +261,7 @@ def regular_mesh(
     n = int(n)
 
     if comm is None:
-        comm = fenics.MPI.comm_world
+        comm = MPI.COMM_WORLD
 
     if length_z is None:
         sizes = [length_x, length_y]
@@ -401,7 +400,7 @@ def regular_box_mesh(
     sizes = [1.0, 1.0]
 
     if comm is None:
-        comm = fenics.MPI.comm_world
+        comm = MPI.COMM_WORLD
 
     if start_z is None and end_z is None:
         lx = end_x - start_x

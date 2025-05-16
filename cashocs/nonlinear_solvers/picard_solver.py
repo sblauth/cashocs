@@ -22,6 +22,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, TypeVar
 
 import fenics
+from mpi4py import MPI
 import numpy as np
 
 try:
@@ -161,9 +162,9 @@ def picard_iteration(
             info_str = ""
         val_str = f"{prefix}{i:4d},  {res:>13.3e},  {res/res_0:>13.3e}"
         if verbose:
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            if MPI.COMM_WORLD.rank == 0:
                 print(info_str + val_str, flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            MPI.COMM_WORLD.barrier()
         else:
             log.info(info_str + val_str)
 
