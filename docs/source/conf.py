@@ -128,7 +128,7 @@ html_theme_options = {
     ],
     "navbar_end": ["theme-switcher", "version-switcher", "navbar-icon-links"],
     "navbar_persistent": [],
-    "show_nav_level": 2,
+    "show_nav_level": 1,
     "switcher": {
         "json_url": "https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json",
         "version_match": switcher_version,
