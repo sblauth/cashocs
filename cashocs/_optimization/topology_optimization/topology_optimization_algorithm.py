@@ -461,6 +461,7 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                 break
 
             self.iteration = k
+            #ls = 0
             self.levelset_function_prev.vector().vec().aypx(
                 0.0, self.levelset_function.vector().vec()
             )
@@ -507,6 +508,7 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                 if cost_functional_new <= self.objective_value or (
                     self.projection.volume_restriction is not None and k == 0
                 ):
+                #if cost_functional_new <= self.objective_value or ls >= 5:
                     break
                 else:
                     self.stepsize *= 0.5
@@ -521,6 +523,8 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                             "topology_optimization_algorithm",
                             "Stepsize computation failed.",
                         )
+
+                #ls += 1
 
             self.iteration += 1
             if self.nonconvergence():
