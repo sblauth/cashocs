@@ -50,13 +50,13 @@ def test_convert_output_arg(dir_path):
         ]
     )
 
-    assert abs(fenics.assemble(1 * dx) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds) - 4) < 1e-14
+    assert fenics.assemble(1 * dx) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds) == pytest.approx(4.0, rel=1e-14)
 
-    assert abs(fenics.assemble(1 * ds(1)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(2)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(3)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(4)) - 1) < 1e-14
+    assert fenics.assemble(1 * ds(1)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(2)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(3)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(4)) == pytest.approx(1.0, rel=1e-14)
 
     mesh_coords = gather_coordinates(mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
@@ -99,13 +99,13 @@ def test_convert_wrapper(dir_path):
         ]
     )
 
-    assert abs(fenics.assemble(1 * dx) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds) - 4) < 1e-14
+    assert fenics.assemble(1 * dx) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds) == pytest.approx(4.0, rel=1e-14)
 
-    assert abs(fenics.assemble(1 * ds(1)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(2)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(3)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(4)) - 1) < 1e-14
+    assert fenics.assemble(1 * ds(1)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(2)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(3)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(4)) == pytest.approx(1.0, rel=1e-14)
 
     mesh_coords = gather_coordinates(mesh)
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
@@ -131,15 +131,15 @@ def test_convert3D(dir_path):
         dir_path + "/mesh/mesh3.xdmf"
     )
 
-    assert abs(fenics.assemble(1 * dx) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds) - 6) < 1e-14
+    assert fenics.assemble(1 * dx) == pytest.approx(1, rel=1e-14)
+    assert fenics.assemble(1 * ds) == pytest.approx(6, rel=1e-14)
 
-    assert abs(fenics.assemble(1 * ds(1)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(2)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(3)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(4)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(5)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(6)) - 1) < 1e-14
+    assert fenics.assemble(1 * ds(1)) == pytest.approx(1, rel=1e-14)
+    assert fenics.assemble(1 * ds(2)) == pytest.approx(1, rel=1e-14)
+    assert fenics.assemble(1 * ds(3)) == pytest.approx(1, rel=1e-14)
+    assert fenics.assemble(1 * ds(4)) == pytest.approx(1, rel=1e-14)
+    assert fenics.assemble(1 * ds(5)) == pytest.approx(1, rel=1e-14)
+    assert fenics.assemble(1 * ds(6)) == pytest.approx(1, rel=1e-14)
 
     assert pathlib.Path(f"{dir_path}/mesh/mesh3.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh3.h5").is_file()
