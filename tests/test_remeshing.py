@@ -168,6 +168,9 @@ def test_remesh_scaling():
         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
 
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
+        config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
+        config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
+        config.set("Output", "result_dir", dir_path + "/temp/")
 
         V = FunctionSpace(mesh, "CG", 1)
         u = Function(V)
@@ -195,6 +198,7 @@ def test_remesh_scaling():
         subprocess.run(
             [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
         )
+        subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
     MPI.barrier(MPI.comm_world)
 
 
