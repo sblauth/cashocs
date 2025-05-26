@@ -14,6 +14,8 @@ of the maintenance releases, please take a look at
 
 * The mesh conversion routines now only produce two .xdmf and .h5 files instead of three to save disk space. For mesh files converted with earlier versions of cashocs, the import still works and correctly recognizes the "_subdomains.xdmf" file. Converting and importing a mesh otherwise works as before, so users should not notice any difference.
 
+* Changed the way :py:func:`cashocs.io.import_function` works: Now, the name of the saved function is taken automatically. As cashocs one saves one function per .xdmf file, this should not change any workflows. Users can (and must) still specify a name in case multiple functions are saved in a single file.
+
 * New configuration file parameters:
 
   * Section StateSystem
