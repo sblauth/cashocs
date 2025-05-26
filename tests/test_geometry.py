@@ -452,6 +452,44 @@ def test_named_mesh_import():
     fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
+def test_legacy_mesh_import():
+    dir_path = str(pathlib.Path(__file__).parent)
+
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+        f"{dir_path}/mesh/physical_names/named_mesh.xdmf"
+    )
+
+    assert fenics.assemble(1 * dx) == pytest.approx(1.0)
+    assert fenics.assemble(1 * ds) == pytest.approx(4.0)
+
+    assert fenics.assemble(1 * dx(1)) == pytest.approx(1.0)
+    assert fenics.assemble(1 * ds(1)) == pytest.approx(1.0)
+    assert fenics.assemble(1 * ds(2)) == pytest.approx(2.0)
+    assert fenics.assemble(1 * ds(3)) == pytest.approx(1.0)
+
+    assert fenics.assemble(1 * dx("volume")) == pytest.approx(1.0)
+    assert fenics.assemble(1 * ds("inlet")) == pytest.approx(1.0)
+    assert fenics.assemble(1 * ds("wall")) == pytest.approx(2.0)
+    assert fenics.assemble(1 * ds("outlet")) == pytest.approx(1.0)
+
+    assert dx("volume") == dx(1)
+    assert ds("inlet") == ds(1)
+    assert ds("wall") == ds(2)
+    assert ds("outlet") == ds(3)
+
+    with pytest.raises(InputError) as e_info:
+        dx("inlet")
+        assert "subdomain_id" in str(e_info.value)
+
+    with pytest.raises(InputError) as e_info:
+        ds("volume")
+        assert "subdomain_id" in str(e_info.value)
+
+    with pytest.raises(InputError) as e_info:
+        dx("fantasy")
+        assert "subdomain_id" in str(e_info.value)
+
+
 def test_create_measure():
     mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
     V = fenics.FunctionSpace(mesh, "CG", 1)
