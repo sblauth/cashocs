@@ -25,6 +25,7 @@ from typing import TYPE_CHECKING
 import fenics
 import h5py
 
+from cashocs import _exceptions
 from cashocs.io import mesh as mesh_io
 
 if TYPE_CHECKING:
@@ -102,7 +103,16 @@ def import_function(
     h5_path = file_path.with_suffix(".h5")
     if name is None:
         with h5py.File(str(h5_path), "r") as f:
-            name = list(f.keys())[0]
+            names = list(f.keys())
+            if len(names) == 1:
+                name = names[0]
+            else:
+                raise _exceptions.InputError(
+                    "import_function",
+                    "name",
+                    "You did not specify a name for importing the function. "
+                    f"Available keys are {names}.",
+                )
 
     with fenics.XDMFFile(comm, filename) as file:
         file.read_checkpoint(function, name, step)
