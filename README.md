@@ -6,7 +6,7 @@
 |----------------------------------------------------------------------------------- | -------: | -------: | ------: | --------: |
 | cashocs/\_\_init\_\_.py                                                            |       37 |        0 |    100% |           |
 | cashocs/\_cli/\_\_init\_\_.py                                                      |        3 |        0 |    100% |           |
-| cashocs/\_cli/\_convert.py                                                         |      134 |       12 |     91% |142, 153-158, 193, 204-209, 239, 325 |
+| cashocs/\_cli/\_convert.py                                                         |      123 |       10 |     92% |119, 123-124, 164, 175-180, 210, 295 |
 | cashocs/\_cli/\_extract\_mesh.py                                                   |       22 |       16 |     27% |30-68, 78-87, 97 |
 | cashocs/\_constraints/\_\_init\_\_.py                                              |        5 |        0 |    100% |           |
 | cashocs/\_constraints/constrained\_problems.py                                     |      139 |        8 |     94% |147, 309, 324, 344-345, 547, 710, 775 |
@@ -42,7 +42,7 @@
 | cashocs/\_optimization/optimization\_algorithms/ncg.py                             |       94 |        0 |    100% |           |
 | cashocs/\_optimization/optimization\_algorithms/newton.py                          |       33 |        7 |     79% | 77-85, 91 |
 | cashocs/\_optimization/optimization\_algorithms/optimization\_algorithm.py         |      196 |       14 |     93% |234, 276-279, 295-296, 344-346, 376-387 |
-| cashocs/\_optimization/optimization\_problem.py                                    |      188 |       11 |     94% |247, 423, 485-488, 539-541, 698-699, 790-791 |
+| cashocs/\_optimization/optimization\_problem.py                                    |      188 |       12 |     94% |212, 247, 423, 485-488, 539-541, 698-699, 790-791 |
 | cashocs/\_optimization/optimization\_variable\_abstractions.py                     |       22 |        2 |     91% |   180-181 |
 | cashocs/\_optimization/shape\_optimization/\_\_init\_\_.py                         |        3 |        0 |    100% |           |
 | cashocs/\_optimization/shape\_optimization/shape\_optimization\_problem.py         |      142 |       17 |     88% |54, 275-283, 340-342, 385-386, 406, 477-480, 485-493 |
@@ -78,7 +78,7 @@
 | cashocs/io/config.py                                                               |      138 |        4 |     97% |33, 72, 727-728 |
 | cashocs/io/function.py                                                             |       21 |       15 |     29% |58-73, 93-99 |
 | cashocs/io/managers.py                                                             |      253 |       17 |     93% |365, 379, 401, 632-638, 641-648, 674-678 |
-| cashocs/io/mesh.py                                                                 |      235 |       32 |     86% |91, 146-150, 283-308, 334, 363-364, 397, 553-554, 558-560, 631, 664 |
+| cashocs/io/mesh.py                                                                 |      241 |       32 |     87% |91, 146-150, 297-322, 348, 377-378, 411, 567-568, 572-574, 645, 678 |
 | cashocs/io/output.py                                                               |       57 |        0 |    100% |           |
 | cashocs/log.py                                                                     |      115 |       14 |     88% |114, 231-232, 255-262, 271, 275, 279 |
 | cashocs/nonlinear\_solvers/\_\_init\_\_.py                                         |       11 |        0 |    100% |           |
@@ -91,7 +91,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      381 |       42 |     89% |165, 266, 349-354, 454, 541-542, 672-674, 681-683, 710-744, 929, 958-960, 970-972, 986-987 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      395 |       55 |     86% |167, 269, 344-345, 439, 516-517, 532-559, 682-683, 700-702, 708-710, 742-782, 954, 981-983, 993-995, 1009-1010 |
 | cashocs/verification.py                                                            |      123 |        3 |     98% |214-215, 247 |
-|                                                                          **TOTAL** | **7615** |  **635** | **92%** |           |
+|                                                                          **TOTAL** | **7610** |  **634** | **92%** |           |
 
 
 ## Setup coverage badge
