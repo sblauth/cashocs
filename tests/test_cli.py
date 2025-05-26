@@ -65,16 +65,12 @@ def test_convert_output_arg(dir_path):
 
     assert pathlib.Path(f"{dir_path}/mesh/test.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/test.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/test_subdomains.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/test_subdomains.h5").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/test_boundaries.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/test_boundaries.h5").is_file()
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/test.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/test.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/test_subdomains.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/test_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.h5"], check=True)
     fenics.MPI.barrier(fenics.MPI.comm_world)
@@ -118,16 +114,12 @@ def test_convert_wrapper(dir_path):
 
     assert pathlib.Path(f"{dir_path}/mesh/mesh.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.h5").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.h5").is_file()
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
     fenics.MPI.barrier(fenics.MPI.comm_world)
@@ -151,16 +143,12 @@ def test_convert3D(dir_path):
 
     assert pathlib.Path(f"{dir_path}/mesh/mesh3.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh3.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh3_subdomains.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh3_subdomains.h5").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh3_boundaries.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh3_boundaries.h5").is_file()
 
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/mesh3.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh3.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh3_subdomains.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh3_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh3_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh3_boundaries.h5"], check=True)
     fenics.MPI.barrier(fenics.MPI.comm_world)

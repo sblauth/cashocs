@@ -118,10 +118,6 @@ class FineModel(sosm.FineModel):
                 ["rm", f"{dir_path}/sm_mesh/fine_boundaries.xdmf"], check=True
             )
             subprocess.run(["rm", f"{dir_path}/sm_mesh/fine_boundaries.h5"], check=True)
-            subprocess.run(
-                ["rm", f"{dir_path}/sm_mesh/fine_subdomains.xdmf"], check=True
-            )
-            subprocess.run(["rm", f"{dir_path}/sm_mesh/fine_subdomains.h5"], check=True)
 
 
 up = Function(V)

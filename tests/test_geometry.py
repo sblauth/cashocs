@@ -86,8 +86,6 @@ def test_mesh_import(dir_path):
 
     assert pathlib.Path(f"{dir_path}/mesh/mesh.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.h5").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.h5").is_file()
     fenics.MPI.barrier(fenics.MPI.comm_world)
@@ -95,8 +93,6 @@ def test_mesh_import(dir_path):
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
     fenics.MPI.barrier(fenics.MPI.comm_world)
@@ -255,15 +251,11 @@ def test_write_mesh():
         subprocess.run(["rm", f"{dir_path}/mesh/test.msh"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/test.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/test.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/test_subdomains.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/test_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.h5"], check=True)
 
         subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
     fenics.MPI.barrier(fenics.MPI.comm_world)
@@ -443,8 +435,6 @@ def test_named_mesh_import():
 
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_subdomains.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_subdomains.h5").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh_boundaries.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh_boundaries.h5").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh_physical_groups.json").is_file()
@@ -452,10 +442,6 @@ def test_named_mesh_import():
     if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.h5"], check=True)
-        subprocess.run(
-            ["rm", f"{dir_path}/mesh/named_mesh_subdomains.xdmf"], check=True
-        )
-        subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_subdomains.h5"], check=True)
         subprocess.run(
             ["rm", f"{dir_path}/mesh/named_mesh_boundaries.xdmf"], check=True
         )

@@ -85,29 +85,6 @@ def check_mode(mode: str) -> None:
 
 
 def write_mesh(
-    topological_dimension: int, points: np.ndarray, cells_dict: dict, ostring: str
-) -> None:
-    """Write out the main mesh with meshio.
-
-    Args:
-        topological_dimension: The topological dimension of the mesh.
-        points: The array of points.
-        cells_dict: The cells_dict of the mesh.
-        ostring: The output string, containing the name and path to the output file,
-            without extension.
-
-    """
-    cells_str = "triangle"
-    if topological_dimension == 2:
-        cells_str = "triangle"
-    elif topological_dimension == 3:
-        cells_str = "tetra"
-
-    xdmf_mesh = meshio.Mesh(points=points, cells={cells_str: cells_dict[cells_str]})
-    meshio.write(f"{ostring}.xdmf", xdmf_mesh)
-
-
-def write_subdomains(
     topological_dimension: int,
     cell_data_dict: dict,
     points: np.ndarray,
@@ -115,7 +92,7 @@ def write_subdomains(
     ostring: str,
     mode: str,
 ) -> None:
-    """Writes out a xdmf file with meshio corresponding to the subdomains.
+    """Writes out a xdmf file with meshio with the mesh and corresponding subdomains.
 
     Args:
         topological_dimension: The topological dimension of the mesh.
@@ -128,11 +105,11 @@ def write_subdomains(
             one of 'physical' (the default), 'geometrical', or 'none'.
 
     """
-    cells_str = "triangle"
+    cell_type = "triangle"
     if topological_dimension == 2:
-        cells_str = "triangle"
+        cell_type = "triangle"
     elif topological_dimension == 3:
-        cells_str = "tetra"
+        cell_type = "tetra"
 
     if mode == "physical":
         dict_key = "gmsh:physical"
@@ -141,21 +118,15 @@ def write_subdomains(
     else:
         dict_key = None
 
-    if mode != "none" and dict_key in cell_data_dict.keys():
-        if cells_str in cell_data_dict[dict_key].keys():
-            subdomains = meshio.Mesh(
-                points=points,
-                cells={cells_str: cells_dict[cells_str]},
-                cell_data={"subdomains": [cell_data_dict[dict_key][cells_str]]},
-            )
-            meshio.write(f"{ostring}_subdomains.xdmf", subdomains)
-    else:
-        if pathlib.Path(f"{ostring}_subdomains.xdmf").is_file():
-            subprocess.run(  # nosec 603
-                ["rm", f"{ostring}_subdomains.xdmf"], check=True
-            )
-        if pathlib.Path(f"{ostring}_subdomains.h5").is_file():
-            subprocess.run(["rm", f"{ostring}_subdomains.h5"], check=True)  # nosec 603
+    try:
+        cell_data = {"subdomains": [cell_data_dict[dict_key][cell_type]]}
+    except KeyError:
+        cell_data = None
+
+    xdmf_mesh = meshio.Mesh(
+        points=points, cells={cell_type: cells_dict[cell_type]}, cell_data=cell_data
+    )
+    meshio.write(f"{ostring}.xdmf", xdmf_mesh)
 
 
 def write_boundaries(
@@ -302,8 +273,7 @@ def convert(argv: Optional[list[str]] = None) -> None:
             if np.abs(np.max(z_coords) - np.min(z_coords)) <= 1e-15:
                 points = points[:, :2]
 
-        write_mesh(topological_dimension, points, cells_dict, ostring)
-        write_subdomains(
+        write_mesh(
             topological_dimension, cell_data_dict, points, cells_dict, ostring, mode
         )
         write_boundaries(

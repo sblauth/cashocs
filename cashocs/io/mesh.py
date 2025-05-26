@@ -150,6 +150,20 @@ def _import_gmsh_mesh(
     return mesh_tuple
 
 
+def _get_mesh_paths(mesh_file: str) -> tuple[str, str, str]:
+    mesh_path = pathlib.Path(mesh_file)
+
+    subdomains_test_path = mesh_path.with_stem(mesh_path.stem + "_subdomains")
+    if subdomains_test_path.is_file():
+        subdomains_path = subdomains_test_path
+    else:
+        subdomains_path = mesh_path
+
+    boundaries_path = mesh_path.with_stem(mesh_path.stem + "_boundaries")
+
+    return str(mesh_path), str(subdomains_path), str(boundaries_path)
+
+
 @_get_mesh_stats(mode="import")  # pylint:disable=protected-access
 def _import_xdmf_mesh(
     mesh_file: str, comm: MPI.Comm | None = None
@@ -200,15 +214,14 @@ def _import_xdmf_mesh(
             " is not allowed anymore starting with cashocs v2.",
         )
     # Check for the file format
-    file_string = mesh_file[:-5]
+    mesh_string, subdomain_string, boundaries_string = _get_mesh_paths(mesh_file)
 
     if comm is None:
         comm = fenics.MPI.comm_world
 
     mesh = fenics.Mesh(comm)
-    xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
-    xdmf_file.read(mesh)
-    xdmf_file.close()
+    with fenics.XDMFFile(mesh.mpi_comm(), mesh_string) as xdmf_file:
+        xdmf_file.read(mesh)
 
     subdomains_mvc = fenics.MeshValueCollection(
         "size_t", mesh, mesh.geometric_dimension()
@@ -217,20 +230,21 @@ def _import_xdmf_mesh(
         "size_t", mesh, mesh.geometric_dimension() - 1
     )
 
-    subdomains_path = pathlib.Path(f"{file_string}_subdomains.xdmf")
+    subdomains_path = pathlib.Path(subdomain_string)
     if subdomains_path.is_file():
-        xdmf_subdomains = fenics.XDMFFile(mesh.mpi_comm(), str(subdomains_path))
-        xdmf_subdomains.read(subdomains_mvc, "subdomains")
-        xdmf_subdomains.close()
+        with fenics.XDMFFile(mesh.mpi_comm(), str(subdomains_path)) as xdmf_subdomains:
+            xdmf_subdomains.read(subdomains_mvc, "subdomains")
 
-    boundaries_path = pathlib.Path(f"{file_string}_boundaries.xdmf")
+    boundaries_path = pathlib.Path(boundaries_string)
     if boundaries_path.is_file():
-        xdmf_boundaries = fenics.XDMFFile(mesh.mpi_comm(), str(boundaries_path))
-        xdmf_boundaries.read(boundaries_mvc, "boundaries")
-        xdmf_boundaries.close()
+        with fenics.XDMFFile(mesh.mpi_comm(), str(boundaries_path)) as xdmf_boundaries:
+            xdmf_boundaries.read(boundaries_mvc, "boundaries")
 
     physical_groups: dict[str, dict[str, int]] | None = None
-    physical_groups_path = pathlib.Path(f"{file_string}_physical_groups.json")
+    physical_groups_path = pathlib.Path(mesh_string)
+    physical_groups_path = physical_groups_path.with_name(
+        physical_groups_path.stem + "_physical_groups.json"
+    )
     if physical_groups_path.is_file():
         with physical_groups_path.open("r", encoding="utf-8") as file:
             physical_groups = json.load(file)
