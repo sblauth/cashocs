@@ -166,8 +166,6 @@ def test_remesh_scaling():
 
     def mesh_parametrization(mesh_file):
         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-        config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
-        config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
 
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
 

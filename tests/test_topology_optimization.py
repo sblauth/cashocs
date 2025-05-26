@@ -320,9 +320,19 @@ def test_evaluate_volume(
     levelset_function,
     dJ_in,
     update_level_set,
+    config_top,
 ):
     top = cashocs.TopologyOptimizationProblem(
-        F, bcs, J, u, v, levelset_function, dJ_in, dJ_in, update_level_set
+        F,
+        bcs,
+        J,
+        u,
+        v,
+        levelset_function,
+        dJ_in,
+        dJ_in,
+        update_level_set,
+        config=config_top,
     )
     vol = top.projection.vol
     eval_vol = top.projection.evaluate(0.0, 0.0)
@@ -392,7 +402,7 @@ def test_topology_optimization_algorithms_for_cantilever_projection(
     ],
 )
 def test_projection_method_for_topology_optimization(
-    F, bcs, J, u, v, levelset_function, dJ_in, update_level_set, volume
+    F, bcs, J, u, v, levelset_function, dJ_in, update_level_set, volume, config_top
 ):
     if isinstance(volume, float):
         target = volume
@@ -410,6 +420,7 @@ def test_projection_method_for_topology_optimization(
         dJ_in,
         update_level_set,
         volume_restriction=volume,
+        config=config_top,
     )
     top.projection.project()
     projection_volume = top.projection.evaluate(0.0, 0.0)
