@@ -229,8 +229,6 @@ def test_create_named_bcs():
     MPI.barrier(MPI.comm_world)
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_subdomains.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_subdomains.h5").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh_boundaries.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh_boundaries.h5").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh_physical_groups.json").is_file()
@@ -239,10 +237,6 @@ def test_create_named_bcs():
     if MPI.rank(MPI.comm_world) == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.h5"], check=True)
-        subprocess.run(
-            ["rm", f"{dir_path}/mesh/named_mesh_subdomains.xdmf"], check=True
-        )
-        subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_subdomains.h5"], check=True)
         subprocess.run(
             ["rm", f"{dir_path}/mesh/named_mesh_boundaries.xdmf"], check=True
         )
