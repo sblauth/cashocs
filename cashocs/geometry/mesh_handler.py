@@ -437,91 +437,76 @@ class _MeshHandler:
 
     def clean_previous_gmsh_files(self) -> None:
         """Removes the gmsh files from the previous remeshing iterations."""
-        gmsh_file = (
+        gmsh_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
             f"/mesh_{self.remesh_counter - 1:d}.msh"
         )
-        if (
-            pathlib.Path(gmsh_file).is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-        ):
-            subprocess.run(["rm", gmsh_file], check=True)  # nosec 603
+        if gmsh_file.is_file() and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            gmsh_file.unlink()
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-        gmsh_pre_remesh_file = (
+        gmsh_pre_remesh_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
             f"/mesh_{self.remesh_counter-1:d}_pre_remesh.msh"
         )
         if (
-            pathlib.Path(gmsh_pre_remesh_file).is_file()
+            gmsh_pre_remesh_file.is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
-            subprocess.run(["rm", gmsh_pre_remesh_file], check=True)  # nosec 603
+            gmsh_pre_remesh_file.unlink()
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-        mesh_h5_file = (
+        mesh_h5_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}/mesh_{self.remesh_counter-1:d}.h5"
         )
-        if (
-            pathlib.Path(mesh_h5_file).is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-        ):
-            subprocess.run(["rm", mesh_h5_file], check=True)  # nosec 603
+        if mesh_h5_file.is_file() and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            mesh_h5_file.unlink()
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-        mesh_xdmf_file = (
+        mesh_xdmf_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
             f"/mesh_{self.remesh_counter-1:d}.xdmf"
         )
-        if (
-            pathlib.Path(mesh_xdmf_file).is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-        ):
-            subprocess.run(["rm", mesh_xdmf_file], check=True)  # nosec 603
+        if mesh_xdmf_file.is_file() and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            mesh_xdmf_file.unlink()
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-        boundaries_h5_file = (
+        boundaries_h5_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
             f"/mesh_{self.remesh_counter-1:d}_boundaries.h5"
         )
-        if (
-            pathlib.Path(boundaries_h5_file).is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-        ):
-            subprocess.run(["rm", boundaries_h5_file], check=True)  # nosec 603
+        if boundaries_h5_file.is_file() and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            boundaries_h5_file.unlink()
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-        boundaries_xdmf_file = (
+        boundaries_xdmf_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
             f"/mesh_{self.remesh_counter-1:d}_boundaries.xdmf"
         )
         if (
-            pathlib.Path(boundaries_xdmf_file).is_file()
+            boundaries_xdmf_file.is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
-            subprocess.run(["rm", boundaries_xdmf_file], check=True)  # nosec 603
+            boundaries_xdmf_file.unlink()
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-        subdomains_h5_file = (
+        subdomains_h5_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
             f"/mesh_{self.remesh_counter-1:d}_subdomains.h5"
         )
-        if (
-            pathlib.Path(subdomains_h5_file).is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-        ):
-            subprocess.run(["rm", subdomains_h5_file], check=True)  # nosec 603
+        if subdomains_h5_file.is_file() and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            subdomains_h5_file.unlink()
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
-        subdomains_xdmf_file = (
+        subdomains_xdmf_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
             f"/mesh_{self.remesh_counter-1:d}_subdomains.xdmf"
         )
         if (
-            pathlib.Path(subdomains_xdmf_file).is_file()
+            subdomains_xdmf_file.is_file()
             and fenics.MPI.rank(fenics.MPI.comm_world) == 0
         ):
-            subprocess.run(["rm", subdomains_xdmf_file], check=True)  # nosec 603
+            subdomains_xdmf_file.unlink()
         fenics.MPI.barrier(fenics.MPI.comm_world)
 
     def _reinitialize(self, solver: OptimizationAlgorithm) -> None:
