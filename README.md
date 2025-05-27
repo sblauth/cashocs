@@ -71,7 +71,7 @@
 | cashocs/geometry/deformations.py                                                   |       66 |        5 |     92% |131-135, 143, 148, 207 |
 | cashocs/geometry/measure.py                                                        |       40 |        1 |     98% |       203 |
 | cashocs/geometry/mesh.py                                                           |      139 |        0 |    100% |           |
-| cashocs/geometry/mesh\_handler.py                                                  |      262 |       26 |     90% |99, 241, 252, 256, 432, 434, 459, 469, 480, 491, 502, 513, 524, 539-540, 605, 696-716 |
+| cashocs/geometry/mesh\_handler.py                                                  |      262 |       26 |     90% |99, 241, 252, 256, 432, 434, 456, 463, 471, 479, 490, 498, 509, 524-525, 590, 681-701 |
 | cashocs/geometry/mesh\_testing.py                                                  |       69 |        4 |     94% |175, 179-180, 237 |
 | cashocs/geometry/quality.py                                                        |       93 |        6 |     94% |308, 346, 381, 444, 474, 498 |
 | cashocs/io/\_\_init\_\_.py                                                         |       17 |        0 |    100% |           |
