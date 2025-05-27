@@ -23,7 +23,6 @@ import collections
 from typing import TYPE_CHECKING
 
 import fenics
-from mpi4py import MPI
 import numpy as np
 
 try:
@@ -49,6 +48,7 @@ class APrioriMeshTester:
 
         """
         self.mesh = mesh
+        self.comm = self.mesh.mpi_comm()
 
         dg_function_space = fenics.FunctionSpace(self.mesh, "DG", 0)
         vector_cg_space = fenics.VectorFunctionSpace(self.mesh, "CG", 1)
@@ -139,6 +139,7 @@ class IntersectionTester:
 
         """
         self.mesh = mesh
+        self.comm = self.mesh.mpi_comm()
 
         cells = self.mesh.cells()
         vertex_ghost_offset = self.mesh.topology().ghost_offset(0)
@@ -174,7 +175,7 @@ class IntersectionTester:
         collisions = CollisionCounter.compute_collisions(self.mesh)
         if not (collisions == self.occurrences).all():
             self_intersections = True
-        list_self_intersections = MPI.COMM_WORLD.allgather(self_intersections)
+        list_self_intersections = self.comm.allgather(self_intersections)
 
         if any(list_self_intersections):
             log.debug("The mesh has self-intersecting elements after the update.")

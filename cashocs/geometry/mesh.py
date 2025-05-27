@@ -74,9 +74,16 @@ def _get_mesh_stats(
                 The wrapped function.
 
             """
+            try:
+                comm = kwargs["comm"]
+            except KeyError:
+                comm = MPI.COMM_WORLD
+            if comm is None:
+                comm = MPI.COMM_WORLD
+
             word = "importing" if mode.casefold() == "import" else "generating"
             worded = "imported" if mode.casefold() == "import" else "generated"
-            mpi_size = MPI.COMM_WORLD.size
+            mpi_size = comm.size
             log.begin(f"{word.capitalize()} mesh.", level=log.INFO)
 
             value = func(*args, **kwargs)

@@ -23,7 +23,6 @@ import copy
 from typing import TYPE_CHECKING
 
 import fenics
-from mpi4py import MPI
 import numpy as np
 from typing_extensions import Literal
 
@@ -139,6 +138,8 @@ class _NewtonSolver:
 
         # Setup increment and function for monotonicity test
         self.function_space = u.function_space()
+        self.comm = self.function_space.mesh().mpi_comm()
+
         self.du = fenics.Function(self.function_space)
         self.ddu = fenics.Function(self.function_space)
         self.u_save = fenics.Function(self.function_space)
@@ -211,9 +212,9 @@ class _NewtonSolver:
             f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
         )
         if self.verbose:
-            if MPI.COMM_WORLD.rank == 0:
+            if self.comm.rank == 0:
                 print(info_str + print_str, flush=True)
-            MPI.COMM_WORLD.barrier()
+            self.comm.barrier()
         else:
             log.info(info_str + print_str)
 
@@ -279,9 +280,9 @@ class _NewtonSolver:
         if self.res_0 == 0.0:  # pragma: no cover
             message = "Residual vanishes, input is already a solution."
             if self.verbose:
-                if MPI.COMM_WORLD.rank == 0:
+                if self.comm.rank == 0:
                     print(message, flush=True)
-                MPI.COMM_WORLD.barrier()
+                self.comm.barrier()
             else:
                 log.info(message)
             return self.u
@@ -342,9 +343,9 @@ class _NewtonSolver:
                 f"Newton Solver converged after {self.iterations:d} iterations."
             )
             if self.verbose:
-                if MPI.COMM_WORLD.rank == 0:
+                if self.comm.rank == 0:
                     print(convergence_message, flush=True)
-                MPI.COMM_WORLD.barrier()
+                self.comm.barrier()
             else:
                 log.info(convergence_message)
             return True
