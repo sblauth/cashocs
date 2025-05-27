@@ -93,6 +93,12 @@ def test_verification_remeshing():
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     MPI.barrier(MPI.comm_world)
 
+    if MPI.rank(MPI.comm_world) == 0:
+        subprocess.run(
+            [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
+        )
+    MPI.barrier(MPI.comm_world)
+
 
 @pytest.mark.skipif(
     not has_gmsh,

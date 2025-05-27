@@ -1,13 +1,1 @@
-<Xdmf Version="3.0">
-  <Domain>
-    <Grid Name="Grid">
-      <Information Name="Information" Value="0"><![CDATA[<main/>]]></Information>
-      <Geometry GeometryType="XY">
-        <DataItem DataType="Float" Dimensions="6079 2" Format="HDF" Precision="8">reference.h5:/data0</DataItem>
-      </Geometry>
-      <Topology NumberOfElements="11888" TopologyType="Triangle">
-        <DataItem DataType="Int" Dimensions="11888 3" Format="HDF" Precision="8">reference.h5:/data1</DataItem>
-      </Topology>
-    </Grid>
-  </Domain>
-</Xdmf>
+<Xdmf Version="3.0"><Domain><Grid Name="Grid"><Geometry GeometryType="XY"><DataItem DataType="Float" Dimensions="5399 2" Format="HDF" Precision="8">reference.h5:/data0</DataItem></Geometry><Topology TopologyType="Triangle" NumberOfElements="10528" NodesPerElement="3"><DataItem DataType="Int" Dimensions="10528 3" Format="HDF" Precision="8">reference.h5:/data1</DataItem></Topology><Attribute Name="subdomains" AttributeType="Scalar" Center="Cell"><DataItem DataType="Int" Dimensions="10528" Format="HDF" Precision="8">reference.h5:/data2</DataItem></Attribute></Grid></Domain></Xdmf>

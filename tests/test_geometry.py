@@ -456,7 +456,7 @@ def test_legacy_mesh_import():
     dir_path = str(pathlib.Path(__file__).parent)
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        f"{dir_path}/mesh/physical_names/named_mesh.xdmf"
+        f"{dir_path}/mesh/physical_names_legacy/named_mesh.xdmf"
     )
 
     assert fenics.assemble(1 * dx) == pytest.approx(1.0)
