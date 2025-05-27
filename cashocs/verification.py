@@ -22,7 +22,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import fenics
-from mpi4py import MPI
 import numpy as np
 
 from cashocs import io
@@ -68,11 +67,30 @@ def _initialize_control_variable(
     return u
 
 
+def _create_control_perturbation(
+    ocp: optimal_control.OptimalControlProblem,
+    h: list[fenics.Function] | None,
+    custom_rng: np.random.RandomState,
+) -> list[fenics.Function]:
+    if h is None:
+        h = []
+        for function_space in ocp.db.function_db.control_spaces:
+            temp = fenics.Function(function_space)
+            temp.vector().vec().setValues(
+                range(function_space.dim()), custom_rng.rand(function_space.dim())
+            )
+            temp.vector().apply("")
+            h.append(temp)
+
+    return h
+
+
 def control_gradient_test(
     ocp: optimal_control.OptimalControlProblem,
     u: list[fenics.Function] | None = None,
     h: list[fenics.Function] | None = None,
     rng: np.random.RandomState | None = None,
+    verbose: bool = True,
 ) -> float:
     """Performs a Taylor test to verify that the computed gradient is correct.
 
@@ -85,13 +103,14 @@ def control_gradient_test(
         h: The direction(s) for the directional (Gâteaux) derivative. If this is
             ``None``, one random direction is chosen. Default is ``None``.
         rng: A numpy random state for calculating a random direction
+        verbose: Prints the result to the console, if ``True``. Default is ``True``.
 
     Returns:
         The convergence order from the Taylor test. If this is (approximately) 2 or
         larger, everything works as expected.
 
     """
-    custom_rng = rng or np.random
+    custom_rng = rng or np.random.RandomState()
 
     initial_state = []
     for j in range(len(ocp.db.function_db.controls)):
@@ -101,16 +120,7 @@ def control_gradient_test(
         initial_state.append(temp)
 
     u = _initialize_control_variable(ocp, u)
-
-    if h is None:
-        h = []
-        for function_space in ocp.db.function_db.control_spaces:
-            temp = fenics.Function(function_space)
-            temp.vector().vec().setValues(
-                range(function_space.dim()), custom_rng.rand(function_space.dim())
-            )
-            temp.vector().apply("")
-            h.append(temp)
+    h = _create_control_perturbation(ocp, h, custom_rng)
 
     for j in range(len(ocp.db.function_db.controls)):
         ocp.db.function_db.controls[j].vector().vec().aypx(0.0, u[j].vector().vec())
@@ -152,7 +162,12 @@ def control_gradient_test(
     if np.min(residuals) < 1e-14:
         log.warning("The Taylor remainder is close to 0, results may be inaccurate.")
 
+    comm = ocp.db.geometry_db.mpi_comm
     rates = compute_convergence_rates(epsilons, residuals)
+
+    if verbose and comm.rank == 0:
+        print(f"Taylor test convergence rate: {rates}", flush=True)
+    comm.barrier()
 
     for j in range(len(ocp.db.function_db.controls)):
         ocp.db.function_db.controls[j].vector().vec().aypx(
@@ -168,6 +183,7 @@ def shape_gradient_test(
     sop: shape_optimization.ShapeOptimizationProblem,
     h: list[fenics.Function] | None = None,
     rng: np.random.RandomState | None = None,
+    verbose: bool = True,
 ) -> float:
     """Performs a Taylor test to verify that the computed shape gradient is correct.
 
@@ -176,12 +192,15 @@ def shape_gradient_test(
         h: The direction used to compute the directional derivative. If this is
             ``None``, then a random direction is used (default is ``None``).
         rng: A numpy random state for calculating a random direction
+        verbose: Prints the result to the console, if ``True``. Default is ``True``.
 
     Returns:
         The convergence order from the Taylor test. If this is (approximately) 2 or
         larger, everything works as expected.
 
     """
+    comm = sop.db.geometry_db.mpi_comm
+
     custom_rng = rng or np.random
     if h is None:
         h = [fenics.Function(sop.db.function_db.control_spaces[0])]
@@ -208,16 +227,16 @@ def shape_gradient_test(
     shape_derivative_h = sop.form_handler.scalar_product(shape_grad, h)
 
     coords = io.mesh.gather_coordinates(sop.mesh_handler.mesh)
-    if MPI.COMM_WORLD.rank == 0:
+    if comm.rank == 0:
         box_lower = np.min(coords)
         box_upper = np.max(coords)
     else:
         box_lower = 0.0
         box_upper = 0.0
-    MPI.COMM_WORLD.barrier()
+    comm.barrier()
 
-    box_lower = MPI.COMM_WORLD.bcast(box_lower, root=0)
-    box_upper = MPI.COMM_WORLD.bcast(box_upper, root=0)
+    box_lower = comm.bcast(box_lower, root=0)
+    box_upper = comm.bcast(box_upper, root=0)
     length = box_upper - box_lower
 
     epsilons = [length * 1e-4 / 2**i for i in range(4)]
@@ -251,19 +270,23 @@ def shape_gradient_test(
         log.warning("The Taylor remainder is close to 0, results may be inaccurate.")
 
     rates = compute_convergence_rates(epsilons, residuals)
+
+    if verbose and comm.rank == 0:
+        print(f"Taylor test convergence rate: {rates}", flush=True)
+    comm.barrier()
+
     result: float = rates[-1]
     return result
 
 
 def compute_convergence_rates(
-    epsilons: list[float], residuals: list[float], verbose: bool = True
+    epsilons: list[float], residuals: list[float]
 ) -> list[float]:
     """Computes the convergence rate of the Taylor test.
 
     Args:
         epsilons: The step sizes.
         residuals: The corresponding residuals.
-        verbose: Prints the result to the console, if ``True``. Default is ``True``.
 
     Returns:
         The computed convergence rates
@@ -275,9 +298,5 @@ def compute_convergence_rates(
             epsilons[i] / epsilons[i - 1]
         )
         rates.append(rate)
-
-    if verbose and MPI.COMM_WORLD.rank == 0:
-        print(f"Taylor test convergence rate: {rates}", flush=True)
-    MPI.COMM_WORLD.barrier()
 
     return rates

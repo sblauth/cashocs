@@ -282,24 +282,6 @@ def setup_fieldsplit_preconditioner(
                 ksp.setDMActive(False)
 
 
-def _initialize_comm(comm: MPI.Comm | None = None) -> MPI.Comm:
-    """Initializes the MPI communicator.
-
-    If the supplied communicator is `None`, return MPI.comm_world.
-
-    Args:
-        comm: The supplied communicator or `None`
-
-    Returns:
-        The resulting communicator.
-
-    """
-    if comm is None:
-        comm = MPI.COMM_WORLD
-
-    return comm
-
-
 def define_ksp_options(
     ksp_options: _typing.KspOption | None = None,
 ) -> _typing.KspOption:
@@ -488,7 +470,10 @@ class LinearSolver:
             comm: The MPI communicator used for distributing the mesh (in parallel).
 
         """
-        self.comm = _initialize_comm(comm)
+        if comm is None:
+            self.comm = MPI.COMM_WORLD
+        else:
+            self.comm = comm
 
     def solve(
         self,
@@ -526,6 +511,8 @@ class LinearSolver:
 
         """
         log.begin("Solving a linear system with PETSc.", level=log.DEBUG)
+        if fun is not None:
+            self.comm = fun.function_space().mesh().mpi_comm()
         ksp = PETSc.KSP().create(self.comm)
 
         A = setup_matrix_and_preconditioner(ksp, A, P)
