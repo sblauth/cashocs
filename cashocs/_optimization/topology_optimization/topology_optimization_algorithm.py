@@ -111,7 +111,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.levelset_function_prev = fenics.Function(self.cg1_space)
         self.setup_assembler()
 
-        self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
+        self.linear_solver = _utils.linalg.LinearSolver()
 
         self.projection = optimization_problem.projection
 
@@ -280,9 +280,9 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         )
         self.assembler.assemble(self.b_tensor)
         self.linear_solver.solve(
+            self.topological_derivative_vertex,
             A=self.riesz_matrix,
             b=self.b_tensor.vec(),
-            fun=self.topological_derivative_vertex,
             ksp_options=self.gradient_problem.riesz_ksp_options[0],
         )
 

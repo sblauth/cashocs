@@ -61,7 +61,8 @@ class MyLinearSolver(cashocs._utils.linalg.LinearSolver):
     def __init__(self, comm):
         super().__init__(comm)
 
-    def solve(self, A, b, fun=None, ksp_options=None, rtol=None, atol=None, P=None):
+    def solve(self, fun, A, b, ksp_options=None, rtol=None, atol=None, P=None):
+        self.comm = fun.function_space().mesh().mpi_comm()
         ksp = PETSc.KSP().create(self.comm)
         pc = ksp.getPC()
         pc.setType(PETSc.PC.Type.PYTHON)
@@ -105,5 +106,5 @@ class MyLinearSolver(cashocs._utils.linalg.LinearSolver):
 
 
 ksp_options = {"ksp_type": "cg", "ksp_monitor_true_residual": None, "ksp_view": None}
-my_linear_solver = MyLinearSolver(mesh.mpi_comm())
+my_linear_solver = MyLinearSolver()
 cashocs.linear_solve(F, u, bcs, ksp_options=ksp_options, linear_solver=my_linear_solver)

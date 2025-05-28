@@ -55,6 +55,7 @@ class APrioriMeshTester:
         dx = ufl.Measure("dx", domain=mesh)
 
         self.transformation_container = fenics.Function(vector_cg_space)
+        self.determinant_function = fenics.Function(dg_function_space)
 
         # pylint: disable=invalid-name
         self.A_prior = (
@@ -102,17 +103,19 @@ class APrioriMeshTester:
             "Testing if the mesh elements satisfy the volume change restrictions",
             level=log.DEBUG,
         )
-        comm = self.transformation_container.function_space().mesh().mpi_comm()
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
         self.transformation_container.vector().apply("")
-        x = _utils.assemble_and_solve_linear(
-            self.A_prior, self.l_prior, ksp_options=self.options_prior, comm=comm
+        _utils.assemble_and_solve_linear(
+            self.A_prior,
+            self.l_prior,
+            self.determinant_function,
+            ksp_options=self.options_prior,
         )
 
-        min_det = float(x.min()[1])
-        max_det = float(x.max()[1])
+        min_det = float(self.determinant_function.vector().vec().min()[1])
+        max_det = float(self.determinant_function.vector().vec().max()[1])
 
         result = bool((min_det >= 1 / volume_change) and (max_det <= volume_change))
 

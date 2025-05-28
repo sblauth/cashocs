@@ -51,9 +51,7 @@ class PDEProblem(abc.ABC):
         self.config = db.config
         self.has_solution: bool = False
         if linear_solver is None:
-            self.linear_solver = _utils.linalg.LinearSolver(
-                comm=self.db.geometry_db.mpi_comm
-            )
+            self.linear_solver = _utils.linalg.LinearSolver()
         else:
             self.linear_solver = linear_solver
 

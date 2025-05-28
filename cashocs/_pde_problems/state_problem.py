@@ -159,12 +159,11 @@ class StateProblem(pde_problem.PDEProblem):
                         _utils.assemble_and_solve_linear(
                             self.state_form_handler.state_eq_forms_lhs[i],
                             self.state_form_handler.state_eq_forms_rhs[i],
-                            self.bcs_list[i],
+                            self.states[i],
+                            bcs=self.bcs_list[i],
                             A=self.A_tensors[i],
                             b=self.b_tensors[i],
-                            fun=self.states[i],
                             ksp_options=self.db.parameter_db.state_ksp_options[i],
-                            comm=self.db.geometry_db.mpi_comm,
                             preconditioner_form=self.db.form_db.preconditioner_forms[i],
                             linear_solver=self.linear_solver,
                         )

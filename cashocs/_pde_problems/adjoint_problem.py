@@ -178,14 +178,13 @@ class AdjointProblem(pde_problem.PDEProblem):
                         _utils.assemble_and_solve_linear(
                             self.adjoint_form_handler.adjoint_eq_lhs[-1 - i],
                             self.adjoint_form_handler.adjoint_eq_rhs[-1 - i],
-                            self.bcs_list_ad[-1 - i],
+                            self.adjoints[-1 - i],
+                            bcs=self.bcs_list_ad[-1 - i],
                             A=self.A_tensors[-1 - i],
                             b=self.b_tensors[-1 - i],
-                            fun=self.adjoints[-1 - i],
                             ksp_options=self.db.parameter_db.adjoint_ksp_options[
                                 -1 - i
                             ],
-                            comm=self.db.geometry_db.mpi_comm,
                             preconditioner_form=self.db.form_db.preconditioner_forms[
                                 -1 - i
                             ],

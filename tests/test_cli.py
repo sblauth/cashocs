@@ -28,6 +28,10 @@ import cashocs._cli
 from cashocs.io.mesh import gather_coordinates
 
 
+@pytest.mark.skipif(
+    MPI.COMM_WORLD.size > 1,
+    reason="This test cannot be run in parallel.",
+)
 def test_convert_cli(dir_path):
     subprocess.run(
         ["cashocs-convert", f"{dir_path}/mesh/mesh.msh"],
