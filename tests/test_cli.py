@@ -28,6 +28,58 @@ import cashocs._cli
 from cashocs.io.mesh import gather_coordinates
 
 
+def test_convert_cli(dir_path):
+    subprocess.run(
+        ["cashocs-convert", f"{dir_path}/mesh/mesh.msh"],
+        check=True,
+    )
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+        dir_path + "/mesh/mesh.xdmf"
+    )
+
+    gmsh_coords = np.array(
+        [
+            [0, 0],
+            [1, 0],
+            [1, 1],
+            [0, 1],
+            [0.499999999998694, 0],
+            [1, 0.499999999998694],
+            [0.5000000000020591, 1],
+            [0, 0.5000000000020591],
+            [0.2500000000010297, 0.7500000000010296],
+            [0.3749999970924328, 0.3750000029075671],
+            [0.7187499979760099, 0.2812500030636815],
+            [0.6542968741702071, 0.6542968818888233],
+        ]
+    )
+
+    assert fenics.assemble(1 * dx) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds) == pytest.approx(4.0, rel=1e-14)
+
+    assert fenics.assemble(1 * ds(1)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(2)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(3)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(4)) == pytest.approx(1.0, rel=1e-14)
+
+    mesh_coords = gather_coordinates(mesh)
+    if MPI.COMM_WORLD.rank == 0:
+        assert np.allclose(mesh_coords, gmsh_coords)
+    MPI.COMM_WORLD.barrier()
+
+    assert pathlib.Path(f"{dir_path}/mesh/mesh.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.h5").is_file()
+
+    if MPI.COMM_WORLD.rank == 0:
+        subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
+        subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
+        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
+        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
+    MPI.COMM_WORLD.barrier()
+
+
 def test_convert_output_arg(dir_path):
     cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/test.xdmf")
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
