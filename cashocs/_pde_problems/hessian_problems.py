@@ -140,7 +140,7 @@ class HessianProblem:
         for _ in range(len(self.db.function_db.controls)):
             self.riesz_ksp_options.append(option)
 
-        self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
+        self.linear_solver = _utils.linalg.LinearSolver()
 
     def hessian_application(
         self, h: list[fenics.Function], out: list[fenics.Function]
@@ -172,10 +172,9 @@ class HessianProblem:
                 _utils.assemble_and_solve_linear(
                     self.form_handler.hessian_form_handler.sensitivity_eqs_lhs[i],
                     self.form_handler.hessian_form_handler.sensitivity_eqs_rhs[i],
-                    self.bcs_list_ad[i],
-                    fun=self.db.function_db.states_prime[i],
+                    self.db.function_db.states_prime[i],
+                    bcs=self.bcs_list_ad[i],
                     ksp_options=self.db.parameter_db.state_ksp_options[i],
-                    comm=self.db.geometry_db.mpi_comm,
                     preconditioner_form=self.db.form_db.preconditioner_forms[i],
                 )
 
@@ -185,10 +184,9 @@ class HessianProblem:
                         -1 - i
                     ],
                     self.form_handler.hessian_form_handler.w_1[-1 - i],
-                    self.bcs_list_ad[-1 - i],
-                    fun=self.db.function_db.adjoints_prime[-1 - i],
+                    self.db.function_db.adjoints_prime[-1 - i],
+                    bcs=self.bcs_list_ad[-1 - i],
                     ksp_options=self.db.parameter_db.adjoint_ksp_options[-1 - i],
-                    comm=self.db.geometry_db.mpi_comm,
                     preconditioner_form=self.db.form_db.preconditioner_forms[-1 - i],
                 )
 
@@ -229,9 +227,9 @@ class HessianProblem:
             ).vec()
 
             self.linear_solver.solve(
+                out[i],
                 A=self.form_handler.riesz_projection_matrices[i],
                 b=b,
-                fun=out[i],
                 ksp_options=self.riesz_ksp_options[i],
             )
 

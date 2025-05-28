@@ -217,8 +217,6 @@ def compute_boundary_distance_eikonal(
     function_space = fenics.FunctionSpace(mesh, "CG", 1)
     dx = measure.NamedMeasure("dx", mesh)
 
-    comm = mesh.mpi_comm()
-
     ksp_options = copy.deepcopy(_utils.linalg.iterative_ksp_options)
 
     u = fenics.TrialFunction(function_space)
@@ -249,9 +247,7 @@ def compute_boundary_distance_eikonal(
     lhs = ufl.dot(ufl.grad(u), ufl.grad(v)) * dx
     rhs = fenics.Constant(1.0) * v * dx
 
-    _utils.assemble_and_solve_linear(
-        lhs, rhs, bcs, fun=u_curr, ksp_options=ksp_options, comm=comm
-    )
+    _utils.assemble_and_solve_linear(lhs, rhs, u_curr, bcs=bcs, ksp_options=ksp_options)
 
     rhs = ufl.dot(ufl.grad(u_prev) / norm_u_prev, ufl.grad(v)) * dx
 
@@ -270,7 +266,7 @@ def compute_boundary_distance_eikonal(
         u_prev.vector().vec().aypx(0.0, u_curr.vector().vec())
         u_prev.vector().apply("")
         _utils.assemble_and_solve_linear(
-            lhs, rhs, bcs, fun=u_curr, ksp_options=ksp_options, comm=comm
+            lhs, rhs, u_curr, bcs=bcs, ksp_options=ksp_options
         )
         res = np.sqrt(fenics.assemble(residual_form))
 

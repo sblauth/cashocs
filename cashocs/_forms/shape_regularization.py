@@ -550,7 +550,7 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         if self.mu > 0:
             self.is_active = True
 
-        self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
+        self.linear_solver = _utils.linalg.LinearSolver()
         self.scale()
 
     def compute_shape_derivative(self) -> ufl.Form:
@@ -613,9 +613,9 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         fenics.assemble(self.l_curvature, tensor=self.b_curvature)
 
         self.linear_solver.solve(
+            self.kappa_curvature,
             A=self.a_curvature_matrix.mat(),
             b=self.b_curvature.vec(),
-            fun=self.kappa_curvature,
         )
 
     def scale(self) -> None:

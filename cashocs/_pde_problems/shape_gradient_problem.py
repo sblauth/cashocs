@@ -151,9 +151,9 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 self.db.function_db.gradient[0].vector().vec().set(0.0)
                 self.db.function_db.gradient[0].vector().apply("")
                 self.linear_solver.solve(
+                    self.db.function_db.gradient[0],
                     A=self.form_handler.scalar_product_matrix,
                     b=self.form_handler.fe_shape_derivative_vector.vec(),
-                    fun=self.db.function_db.gradient[0],
                     ksp_options=self.ksp_options,
                 )
                 self.form_handler.apply_shape_bcs(self.db.function_db.gradient[0])
@@ -203,9 +203,9 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 reextended_gradient
             )
             self.linear_solver.solve(
+                reextended_gradient,
                 A=self.form_handler.reextension_matrix,
                 b=self.form_handler.fe_reextension_vector.vec(),
-                fun=reextended_gradient,
                 ksp_options=self.ksp_options,
             )
             self.form_handler.apply_reextension_bcs(reextended_gradient)

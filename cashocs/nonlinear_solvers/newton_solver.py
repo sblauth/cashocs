@@ -180,7 +180,7 @@ class _NewtonSolver:
         self.P_fenics = fenics.PETScMatrix(self.comm)
 
         if linear_solver is None:
-            self.linear_solver = _utils.linalg.LinearSolver(self.comm)
+            self.linear_solver = _utils.linalg.LinearSolver()
         else:
             self.linear_solver = linear_solver
 
@@ -305,9 +305,9 @@ class _NewtonSolver:
 
             self._compute_eta_inexact()
             self.linear_solver.solve(
+                self.du,
                 A=self.A_matrix,
                 b=self.b,
-                fun=self.du,
                 ksp_options=self.ksp_options,
                 rtol=self.eta,
                 atol=self.atol / 10.0,
@@ -413,9 +413,9 @@ class _NewtonSolver:
                 self.u.vector().apply("")
                 self._compute_residual()
                 self.linear_solver.solve(
+                    self.ddu,
                     A=self.A_matrix,
                     b=self.b,
-                    fun=self.ddu,
                     ksp_options=self.ksp_options,
                     rtol=self.eta,
                     atol=self.atol / 10.0,

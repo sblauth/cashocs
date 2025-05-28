@@ -345,7 +345,6 @@ def solve_linear_problem(
     ksp_options: _typing.KspOption | None = None,
     rtol: float | None = None,
     atol: float | None = None,
-    comm: MPI.Comm | None = None,
     P: PETSc.Mat | None = None,  # pylint: disable=invalid-name
     linear_solver: LinearSolver | None = None,
 ) -> PETSc.Vec:
@@ -388,35 +387,38 @@ def solve_linear_problem(
     )
 
     if linear_solver is None:
-        linear_solver = LinearSolver(comm)
+        linear_solver = LinearSolver()
 
-    return linear_solver.solve(A, b, fun, ksp_options, rtol, atol, P)
+    return linear_solver.solve(
+        fun, A=A, b=b, ksp_options=ksp_options, rtol=rtol, atol=atol, P=P
+    )
 
 
 def assemble_and_solve_linear(
     lhs_form: ufl.Form,
     rhs_form: ufl.Form,
+    function: fenics.Function,
     bcs: fenics.DirichletBC | list[fenics.DirichletBC] | None = None,
     A: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
     b: fenics.PETScVector | None = None,
-    fun: fenics.Function | None = None,
     ksp_options: _typing.KspOption | None = None,
     rtol: float | None = None,
     atol: float | None = None,
-    comm: MPI.Comm | None = None,
     preconditioner_form: ufl.Form | None = None,
     linear_solver: LinearSolver | None = None,
-) -> PETSc.Vec:
+) -> None:
     """Assembles and solves a linear system.
+
+    Note that the solution is stored in the fenics.Function `function`, which is
+    a required input parameter to this function.
 
     Args:
         lhs_form: The UFL form for the left-hand side of the linear equation.
         rhs_form: The UFL form for the right-hand side of the linear equation.
+        function: The function which will be solution of the problem.
         bcs: A list of Dirichlet boundary conditions.
         A: A matrix into which the lhs is assembled. Default is ``None``.
         b: A vector into which the rhs is assembled. Default is ``None``.
-        fun: The function which will be solution of the problem. If this is
-            None, then a new vector will be created (and returned).
         ksp_options: The options for the PETSc ksp object. If this is None (the default)
             a direct method is used.
         rtol: The relative tolerance used in case an iterative solver is used for
@@ -425,7 +427,6 @@ def assemble_and_solve_linear(
         atol: The absolute tolerance used in case an iterative solver is used for
             solving the linear problem. Overrides the specification in the ksp object
             and ksp_options.
-        comm: The MPI communicator for solving the problem.
         preconditioner_form: The UFL for assembling the preconditioner. Must be a
             bilinear form.
         linear_solver: The LinearSolver used to solve the problem.
@@ -445,57 +446,42 @@ def assemble_and_solve_linear(
     )
 
     if linear_solver is None:
-        linear_solver = LinearSolver(comm)
+        linear_solver = LinearSolver()
 
-    solution = linear_solver.solve(
+    linear_solver.solve(
+        function,
         A=A_matrix,
         b=b_vector,
-        fun=fun,
         ksp_options=ksp_options,
         rtol=rtol,
         atol=atol,
         P=P_matrix,
     )
 
-    return solution
-
 
 class LinearSolver:
     """A solver for linear problems arising from discretized PDEs."""
 
-    def __init__(self, comm: MPI.Comm | None = None) -> None:
-        """Initializes the linear solver.
-
-        Args:
-            comm: The MPI communicator used for distributing the mesh (in parallel).
-
-        """
-        if comm is None:
-            self.comm = MPI.COMM_WORLD
-        else:
-            self.comm = comm
-
     def solve(
         self,
+        function: fenics.Function,
         A: PETSc.Mat | None = None,  # pylint: disable=invalid-name
         b: PETSc.Vec | None = None,
-        fun: fenics.Function | None = None,
         ksp_options: _typing.KspOption | None = None,
         rtol: float | None = None,
         atol: float | None = None,
         P: PETSc.Mat | None = None,  # pylint: disable=invalid-name
-    ) -> PETSc.Vec:
+    ) -> None:
         """Solves a finite dimensional linear problem arising from a discretized PDE.
 
         Args:
+            function: The function which will store the solution of the problem.
             A: The PETSc matrix corresponding to the left-hand side of the problem. If
                 this is None, then the matrix stored in the ksp object is used. Raises
                 an error if no matrix is stored. Default is None.
             b: The PETSc vector corresponding to the right-hand side of the problem.
                 If this is None, then a zero right-hand side is assumed, and a zero
                 vector is returned. Default is None.
-            fun: The function which will store the solution of the problem. If this is
-                None, then a new vector will be created (and returned).
             ksp_options: The options for the PETSc ksp object. If this is None (the
                 default) a direct method is used.
             rtol: The relative tolerance used in case an iterative solver is used for
@@ -511,23 +497,20 @@ class LinearSolver:
 
         """
         log.begin("Solving a linear system with PETSc.", level=log.DEBUG)
-        if fun is not None:
-            self.comm = fun.function_space().mesh().mpi_comm()
+        self.comm = function.function_space().mesh().mpi_comm()
         ksp = PETSc.KSP().create(self.comm)
 
         A = setup_matrix_and_preconditioner(ksp, A, P)
 
         if b is None:
-            return A.createVecRight()
+            function.vector().vec().set(0.0)
+            function.vector().apply("")
 
-        if fun is None:
-            x = A.createVecRight()
-        else:
-            x = fun.vector().vec()
+        x = function.vector().vec()
 
         options = define_ksp_options(ksp_options)
 
-        setup_fieldsplit_preconditioner(fun, ksp, options)
+        setup_fieldsplit_preconditioner(function, ksp, options)
         setup_petsc_options([ksp], [options])
 
         ksp.setTolerances(rtol=rtol, atol=atol)
@@ -542,11 +525,9 @@ class LinearSolver:
             PETSc.garbage_cleanup(comm=self.comm)
             PETSc.garbage_cleanup()
 
-        if fun is not None:
-            fun.vector().apply("")
+        function.vector().apply("")
 
         log.end()
-        return x
 
 
 class Interpolator:
@@ -728,6 +709,6 @@ def l2_projection(
     if ksp_options is None:
         ksp_options = copy.deepcopy(iterative_ksp_options)
 
-    assemble_and_solve_linear(lhs, rhs, bcs, fun=res, ksp_options=ksp_options)
+    assemble_and_solve_linear(lhs, rhs, res, bcs=bcs, ksp_options=ksp_options)
 
     return res

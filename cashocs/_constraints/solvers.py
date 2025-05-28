@@ -208,10 +208,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         lhs = trial * test * measure
         rhs = project_term * test * measure
 
-        comm = self.cg_function_space.mesh().mpi_comm()
-        _utils.assemble_and_solve_linear(
-            lhs, rhs, A=A_tensor, b=b_tensor, fun=multiplier, comm=comm
-        )
+        _utils.assemble_and_solve_linear(lhs, rhs, multiplier, A=A_tensor, b=b_tensor)
 
     def _update_cost_functional(self) -> None:
         """Updates the cost functional with new weights."""

@@ -100,7 +100,7 @@ def linear_solve(
         P_matrix = None  # pylint: disable=invalid-name
 
     if linear_solver is None:
-        linear_solver = _utils.linalg.LinearSolver(comm)
-    linear_solver.solve(A=A_matrix, b=b, fun=u, ksp_options=ksp_options, P=P_matrix)
+        linear_solver = _utils.linalg.LinearSolver()
+    linear_solver.solve(u, A=A_matrix, b=b, ksp_options=ksp_options, P=P_matrix)
 
     return u

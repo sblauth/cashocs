@@ -158,6 +158,7 @@ class _MeshHandler:
         }
         self.trial_dg0 = fenics.TrialFunction(self.db.function_db.dg_function_space)
         self.test_dg0 = fenics.TestFunction(self.db.function_db.dg_function_space)
+        self.norm_function = fenics.Function(self.db.function_db.dg_function_space)
         self.search_direction_container = fenics.Function(
             self.db.function_db.control_spaces[0]
         )
@@ -348,14 +349,14 @@ class _MeshHandler:
                 0.0, search_direction[0].vector().vec()
             )
             self.search_direction_container.vector().apply("")
-            x = _utils.assemble_and_solve_linear(
+            _utils.assemble_and_solve_linear(
                 self.a_frobenius,
                 self.l_frobenius,
+                self.norm_function,
                 ksp_options=self.options_frobenius,
-                comm=self.db.geometry_db.mpi_comm,
             )
 
-            frobenius_norm = x.max()[1]
+            frobenius_norm = self.norm_function.vector().vec().max()[1]
             beta_armijo = self.config.getfloat("LineSearch", "beta_armijo")
 
             return int(

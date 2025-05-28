@@ -191,21 +191,19 @@ class Stiffness:
         """
         if not self.use_distance_mu:
             if self.inhomogeneous_mu:
-                x = _utils.assemble_and_solve_linear(
+                _utils.assemble_and_solve_linear(
                     self.A_mu,
                     self.l_mu,
-                    self.bcs_mu,
+                    self.mu_lame,
+                    bcs=self.bcs_mu,
                     A=self.A_mu_matrix,
                     b=self.b_mu,
                     ksp_options=self.options_mu,
-                    comm=self.mesh.mpi_comm(),
                 )
 
                 if self.config.getboolean("ShapeGradient", "use_sqrt_mu"):
-                    x.sqrtabs()
-
-                self.mu_lame.vector().vec().aypx(0.0, x)
-                self.mu_lame.vector().apply("")
+                    self.mu_lame.sqrtabs()
+                    self.mu_lame.vector().apply("")
 
             else:
                 self.mu_lame.vector().vec().set(

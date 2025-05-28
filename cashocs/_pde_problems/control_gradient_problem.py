@@ -107,9 +107,9 @@ class ControlGradientProblem(pde_problem.PDEProblem):
             for i in range(len(self.db.function_db.gradient)):
                 self.form_handler.assemblers[i].assemble(self.b_tensors[i])
                 self.linear_solver.solve(
+                    self.db.function_db.gradient[i],
                     A=self.form_handler.riesz_projection_matrices[i],
                     b=self.b_tensors[i].vec(),
-                    fun=self.db.function_db.gradient[i],
                     ksp_options=self.riesz_ksp_options[i],
                 )
 
