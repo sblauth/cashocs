@@ -52,6 +52,20 @@ class Logger:
         self._group_stack: list[str] = []
         self._level_stack: list[int] = []
 
+        self.comm = MPI.COMM_WORLD
+
+    def set_comm(self, comm: MPI.Comm) -> None:
+        """Sets the MPI communicator used for logging.
+
+        This should be the same that is supplied for the mesh generation, otherwise
+        the program could hang indefinitely.
+
+        Args:
+            comm (MPI.Comm): The MPI communicator for logging.
+
+        """
+        self.comm = comm
+
     def log(self, level: int, message: str) -> None:
         """Use the logging functionality of the logger to log to (various) handlers.
 
@@ -61,9 +75,9 @@ class Logger:
             message (str): The message that should be logged.
 
         """
-        if MPI.COMM_WORLD.rank == 0:
+        if self.comm.rank == 0:
             self._log.log(level, self._format(message))
-        MPI.COMM_WORLD.barrier()
+        self.comm.barrier()
 
     def debug(self, message: str) -> None:
         """Issues a message at the debug level.
@@ -296,6 +310,7 @@ add_logfile = cashocs_logger.add_logfile
 add_timestamps = cashocs_logger.add_timestamps
 remove_timestamps = cashocs_logger.remove_timestamps
 add_handler = cashocs_logger.add_handler
+set_comm = cashocs_logger.set_comm
 
 
 class LogLevel:
