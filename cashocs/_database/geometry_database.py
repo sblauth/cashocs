@@ -58,7 +58,7 @@ class GeometryDatabase:
         """
         self.mesh: fenics.Mesh = function_db.state_spaces[0].mesh()
         self.dx: ufl.Measure = ufl.Measure("dx", self.mesh)
-        self.mpi_comm: MPI.Intracomm = self.mesh.mpi_comm()
+        self.mpi_comm: MPI.Comm = self.mesh.mpi_comm()
 
         self.function_db = function_db
         self.parameter_db = parameter_db
