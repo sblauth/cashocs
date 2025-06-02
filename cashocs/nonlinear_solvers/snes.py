@@ -260,7 +260,6 @@ class SNESSolver:
         if hasattr(PETSc, "garbage_cleanup"):
             snes.destroy()
             PETSc.garbage_cleanup(comm=self.comm)
-            PETSc.garbage_cleanup()
 
         return self.u
 

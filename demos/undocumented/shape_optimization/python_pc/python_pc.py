@@ -97,7 +97,6 @@ class MyLinearSolver(cashocs._utils.linalg.LinearSolver):
         if hasattr(PETSc, "garbage_cleanup"):
             ksp.destroy()
             PETSc.garbage_cleanup(comm=self.comm)
-            PETSc.garbage_cleanup()
 
         if fun is not None:
             fun.vector().apply("")

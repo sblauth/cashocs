@@ -530,7 +530,6 @@ class LinearSolver:
         if hasattr(PETSc, "garbage_cleanup"):
             ksp.destroy()
             PETSc.garbage_cleanup(comm=self.comm)
-            PETSc.garbage_cleanup()
 
         function.vector().apply("")
 
