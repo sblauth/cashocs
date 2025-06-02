@@ -624,7 +624,6 @@ class XDMFFileManager(IOManager):
             append = True
 
         mesh = function.function_space().mesh()
-        comm = mesh.mpi_comm()
 
         if function.function_space().ufl_element().family() in [
             "Real",
@@ -650,7 +649,7 @@ class XDMFFileManager(IOManager):
 
         function.rename(function_name, function_name)
 
-        with fenics.XDMFFile(comm, filename) as file:
+        with fenics.XDMFFile(self.comm, filename) as file:
             file.parameters["flush_output"] = True
             file.parameters["functions_share_mesh"] = False
             file.write_checkpoint(

@@ -513,7 +513,6 @@ class TSPseudoSolver:
         if hasattr(PETSc, "garbage_cleanup"):
             ts.destroy()
             PETSc.garbage_cleanup(comm=self.comm)
-            PETSc.garbage_cleanup()
 
         return self.u
 
