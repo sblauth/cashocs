@@ -83,6 +83,8 @@ class Stiffness:
         self.shape_bdry_def = shape_bdry_def
         self.shape_bdry_fix = shape_bdry_fix
 
+        self.comm = self.mesh.mpi_comm()
+
         self.inhomogeneous_mu = False
 
         self.dx = ufl.Measure("dx", self.mesh)
@@ -93,8 +95,8 @@ class Stiffness:
         self.cg_function_space = self.mu_lame.function_space()
         self.distance = fenics.Function(self.cg_function_space)
 
-        self.A_mu_matrix = fenics.PETScMatrix()  # pylint: disable=invalid-name
-        self.b_mu = fenics.PETScVector()
+        self.A_mu_matrix = fenics.PETScMatrix(self.comm)  # pylint: disable=invalid-name
+        self.b_mu = fenics.PETScVector(self.comm)
         self.options_mu: _typing.KspOption = {}
 
         self._setup_mu_computation()
@@ -333,9 +335,11 @@ class ShapeFormHandler(form_handler.FormHandler):
             self.riesz_scalar_product, self.shape_derivative, self.bcs_shape
         )
 
-        self.fe_scalar_product_matrix = fenics.PETScMatrix()
+        self.fe_scalar_product_matrix = fenics.PETScMatrix(self.db.geometry_db.mpi_comm)
         self.scalar_product_matrix = self.fe_scalar_product_matrix.mat()
-        self.fe_shape_derivative_vector = fenics.PETScVector()
+        self.fe_shape_derivative_vector = fenics.PETScVector(
+            self.db.geometry_db.mpi_comm
+        )
 
         if self.config.getboolean("ShapeGradient", "reextend_from_boundary"):
             self.bcs_extension = self._setup_bcs_extension()
@@ -354,9 +358,13 @@ class ShapeFormHandler(form_handler.FormHandler):
             _, self.assembler_extension = self.setup_assembler(
                 self.riesz_scalar_product, zero_source, self.bcs_extension
             )
-            self.fe_reextension_matrix = fenics.PETScMatrix()
+            self.fe_reextension_matrix = fenics.PETScMatrix(
+                self.db.geometry_db.mpi_comm
+            )
             self.reextension_matrix: PETSc.Mat = self.fe_reextension_matrix.mat()
-            self.fe_reextension_vector: fenics.PETScVector = fenics.PETScVector()
+            self.fe_reextension_vector: fenics.PETScVector = fenics.PETScVector(
+                self.db.geometry_db.mpi_comm
+            )
 
         self.update_scalar_product()
         self.p_laplace_form = self._compute_p_laplacian_forms()

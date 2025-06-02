@@ -103,17 +103,21 @@ class HessianProblem:
 
         # pylint: disable=invalid-name
         self.state_A_tensors = [
-            fenics.PETScMatrix() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScMatrix(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
         self.state_b_tensors = [
-            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScVector(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
         # pylint: disable=invalid-name
         self.adjoint_A_tensors = [
-            fenics.PETScMatrix() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScMatrix(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
         self.adjoint_b_tensors = [
-            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScVector(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
 
         self.state_dim = self.db.parameter_db.state_dim

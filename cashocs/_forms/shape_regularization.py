@@ -525,8 +525,8 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         self.ds = ufl.Measure("ds", self.mesh)
         self.spatial_coordinate = fenics.SpatialCoordinate(self.mesh)
 
-        self.a_curvature_matrix = fenics.PETScMatrix()
-        self.b_curvature = fenics.PETScVector()
+        self.a_curvature_matrix = fenics.PETScMatrix(self.db.geometry_db.mpi_comm)
+        self.b_curvature = fenics.PETScVector(self.db.geometry_db.mpi_comm)
 
         self.mu = self.config.getfloat("Regularization", "factor_curvature")
         self.kappa_curvature = fenics.Function(self.db.function_db.control_spaces[0])

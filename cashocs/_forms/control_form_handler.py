@@ -132,7 +132,7 @@ class ControlFormHandler(form_handler.FormHandler):
         fenics_scalar_product_matrices = []
 
         for i in range(len(self.assemblers)):
-            fenics_matrix = fenics.PETScMatrix()
+            fenics_matrix = fenics.PETScMatrix(self.db.geometry_db.mpi_comm)
             fenics_scalar_product_matrices.append(fenics_matrix)
 
             self.assemblers[i].assemble(fenics_matrix)

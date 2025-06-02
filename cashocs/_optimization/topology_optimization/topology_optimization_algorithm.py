@@ -189,11 +189,11 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
                 form_compiler_parameters={"quadrature_degree": estimated_degree},
             )
 
-        self.fenics_matrix = fenics.PETScMatrix()
+        self.fenics_matrix = fenics.PETScMatrix(self.db.geometry_db.mpi_comm)
         self.assembler.assemble(self.fenics_matrix)
         self.fenics_matrix.ident_zeros()
         self.riesz_matrix = self.fenics_matrix.mat()
-        self.b_tensor = fenics.PETScVector()
+        self.b_tensor = fenics.PETScVector(self.db.geometry_db.mpi_comm)
 
     @abc.abstractmethod
     def run(self) -> None:

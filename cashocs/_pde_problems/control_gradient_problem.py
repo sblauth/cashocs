@@ -89,7 +89,8 @@ class ControlGradientProblem(pde_problem.PDEProblem):
                 self.riesz_ksp_options.append(option)
 
         self.b_tensors = [
-            fenics.PETScVector() for _ in range(len(self.db.function_db.gradient))
+            fenics.PETScVector(self.db.geometry_db.mpi_comm)
+            for _ in range(len(self.db.function_db.gradient))
         ]
 
     def solve(self) -> list[fenics.Function]:
