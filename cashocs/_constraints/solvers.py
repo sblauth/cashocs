@@ -173,9 +173,10 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         """
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.gamma = 0.25
+        comm = constrained_problem.db.geometry_db.mpi_comm
         # pylint: disable=invalid-name
-        self.A_tensors = [fenics.PETScMatrix() for _ in range(self.constraint_dim)]
-        self.b_tensors = [fenics.PETScVector() for _ in range(self.constraint_dim)]
+        self.A_tensors = [fenics.PETScMatrix(comm) for _ in range(self.constraint_dim)]
+        self.b_tensors = [fenics.PETScVector(comm) for _ in range(self.constraint_dim)]
         self.solver_name = "Augmented Lagrangian"
         self.inner_cost_functional_form: list[_typing.CostFunctional] = []
 

@@ -333,8 +333,10 @@ class _PLaplaceProjector:
         dx = self.db.geometry_db.dx
         self.mu_lame = gradient_problem.form_handler.mu_lame
 
-        self.A_tensor = fenics.PETScMatrix()  # pylint: disable=invalid-name
-        self.b_tensor = fenics.PETScVector()
+        self.A_tensor = fenics.PETScMatrix(  # pylint: disable=invalid-name
+            self.db.geometry_db.mpi_comm
+        )
+        self.b_tensor = fenics.PETScVector(self.db.geometry_db.mpi_comm)
 
         self.form_list = []
         for p in self.p_list:

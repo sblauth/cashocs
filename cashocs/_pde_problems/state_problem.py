@@ -99,13 +99,16 @@ class StateProblem(pde_problem.PDEProblem):
 
         # pylint: disable=invalid-name
         self.A_tensors = [
-            fenics.PETScMatrix() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScMatrix(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
         self.b_tensors = [
-            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScVector(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
         self.res_j_tensors = [
-            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScVector(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
 
         self._number_of_solves = 0

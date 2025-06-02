@@ -110,6 +110,7 @@ def assemble_petsc_system(
     A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
     b_tensor: fenics.PETScVector | None = None,
     preconditioner_form: ufl.Form | None = None,
+    comm: MPI.Comm | None = None,
 ) -> tuple[PETSc.Mat, PETSc.Vec, PETSc.Mat]:
     """Assembles a system symmetrically and converts objects to PETSc format.
 
@@ -121,6 +122,7 @@ def assemble_petsc_system(
         b_tensor: A vector into which the result is assembled. Default is ``None``.
         preconditioner_form: The UFL form for assembling the preconditioner. Must
             be a bilinear form.
+        comm: The MPI communicator for the problem.
 
     Returns:
         A tuple (A, b), where A is the matrix of the linear system, and b is the vector
@@ -133,11 +135,14 @@ def assemble_petsc_system(
 
     """
     log.begin("Assembling the forms into a linear system.", level=log.DEBUG)
+    if comm is None:
+        comm = MPI.COMM_WORLD
+
     mod_lhs_form = forms_module.bilinear_boundary_form_modification([lhs_form])[0]
     if A_tensor is None:
-        A_tensor = fenics.PETScMatrix()
+        A_tensor = fenics.PETScMatrix(comm)
     if b_tensor is None:
-        b_tensor = fenics.PETScVector()
+        b_tensor = fenics.PETScVector(comm)
 
     try:
         fenics.assemble_system(
@@ -436,6 +441,7 @@ def assemble_and_solve_linear(
 
     """
     # pylint: disable=invalid-name
+    comm = function.function_space().mesh().mpi_comm()
     A_matrix, b_vector, P_matrix = assemble_petsc_system(
         lhs_form,
         rhs_form,
@@ -443,6 +449,7 @@ def assemble_and_solve_linear(
         A_tensor=A,
         b_tensor=b,
         preconditioner_form=preconditioner_form,
+        comm=comm,
     )
 
     if linear_solver is None:
