@@ -292,7 +292,8 @@ def export_mesh(
             default is `None`, so that no subdomain information is used.
         boundaries: The boundaries meshfunction corresponding to the mesh. Optional,
             default is `None`, so that no boundary information is used.
-        comm: The MPI communicator used. Optional, default is `None`.
+        comm: The MPI communicator used. Optional, default is `None`. This argument is
+            deprecated and will be removed in the future.
 
     """
     comm = mesh.mpi_comm()
