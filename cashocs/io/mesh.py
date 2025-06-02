@@ -165,7 +165,7 @@ def _get_mesh_paths(mesh_file: str) -> tuple[str, str, str]:
     return str(mesh_path), str(subdomains_path), str(boundaries_path)
 
 
-@_get_mesh_stats(mode="import")  # pylint:disable=protected-access
+@_get_mesh_stats("import")  # pylint:disable=protected-access
 def _import_xdmf_mesh(
     mesh_file: str, comm: MPI.Comm | None = None
 ) -> _typing.MeshTuple:

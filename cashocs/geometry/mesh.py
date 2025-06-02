@@ -37,7 +37,7 @@ if TYPE_CHECKING:
 
 
 def _get_mesh_stats(
-    mode: Literal["import", "generate"] = "import",
+    mode: Literal["import", "generate"],
 ) -> Callable[..., Callable[..., _typing.MeshTuple]]:
     """A decorator for mesh importing / generating function which logs stats.
 
@@ -74,10 +74,14 @@ def _get_mesh_stats(
                 The wrapped function.
 
             """
-            try:
+            comm = None
+            if "comm" in kwargs.keys():  # pylint: disable=consider-iterating-dictionary
                 comm = kwargs["comm"]
-            except KeyError:
-                comm = MPI.COMM_WORLD
+            else:
+                for arg in args:
+                    if isinstance(arg, MPI.Comm):
+                        comm = arg
+
             if comm is None:
                 comm = MPI.COMM_WORLD
 
@@ -105,7 +109,7 @@ def _get_mesh_stats(
     return decorator_stats
 
 
-@_get_mesh_stats(mode="generate")
+@_get_mesh_stats("generate")
 def interval_mesh(
     n: int = 10,
     start: float = 0.0,
@@ -196,7 +200,7 @@ def interval_mesh(
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
 
-@_get_mesh_stats(mode="generate")
+@_get_mesh_stats("generate")
 def regular_mesh(
     n: int = 10,
     length_x: float = 1.0,
@@ -339,7 +343,7 @@ def regular_mesh(
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
 
-@_get_mesh_stats(mode="generate")
+@_get_mesh_stats("generate")
 def regular_box_mesh(
     n: int = 10,
     start_x: float = 0.0,
