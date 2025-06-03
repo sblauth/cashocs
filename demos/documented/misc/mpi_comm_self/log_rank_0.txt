@@ -1,0 +1,43 @@
+Start: Importing mesh.
+----------------------
+  Successfully imported 2-dimensional mesh on 1 CPU(s).
+  Mesh contains 713 vertices and 1,340 cells of type triangle.
+Finish: Importing mesh. -- Elapsed time: 0:00:00.071075
+
+Start: Solving the shape optimization problem.
+----------------------------------------------
+  
+  iter,  cost function,  rel. grad. norm,  abs. grad. norm,  mesh qlty,  step size,  
+  
+     0,     -1.099e-02,        1.000e+00,        4.395e-01,  6.391e-01,  1.000e+00,  
+  
+     1,     -4.697e-02,        7.893e-01,        3.469e-01,  6.240e-01,  1.000e+00,  
+     2,     -7.733e-02,        2.423e-01,        1.065e-01,  6.225e-01,  1.000e+00,  
+     3,     -8.353e-02,        1.394e-01,        6.126e-02,  6.171e-01,  1.000e+00,  
+     4,     -8.925e-02,        8.277e-02,        3.638e-02,  6.061e-01,  1.000e+00,  
+     5,     -9.149e-02,        4.417e-02,        1.941e-02,  5.913e-01,  1.000e+00,  
+     6,     -9.282e-02,        3.097e-02,        1.361e-02,  5.631e-01,  1.000e+00,  
+     7,     -9.356e-02,        1.285e-02,        5.647e-03,  5.354e-01,  1.000e+00,  
+     8,     -9.366e-02,        1.867e-02,        8.204e-03,  5.132e-01,  1.000e+00,  
+     9,     -9.369e-02,        8.783e-03,        3.860e-03,  5.088e-01,  5.000e-01,  
+  
+  iter,  cost function,  rel. grad. norm,  abs. grad. norm,  mesh qlty,  step size,  
+  
+    10,     -9.370e-02,        6.187e-03,        2.719e-03,  5.093e-01,  1.000e+00,  
+    11,     -9.372e-02,        8.110e-03,        3.564e-03,  5.026e-01,  1.000e+00,  
+    12,     -9.373e-02,        7.034e-03,        3.092e-03,  4.919e-01,  1.000e+00,  
+    13,     -9.374e-02,        3.530e-03,        1.551e-03,  4.902e-01,  1.000e+00,  
+  
+  Optimization was successful.
+  Statistics:
+      total iterations:   13
+      final cost function: -9.374e-02
+      final rel. grad. norm: 3.530e-03
+      final abs. grad. norm: 1.551e-03
+      final mesh qlty: 4.902e-01
+      final step size: 1.000e+00
+      total number of state systems solved:   15
+      total number of adjoint systems solved:   14
+  
+Finish: Solving the shape optimization problem. -- Elapsed time: 0:00:00.563147
+

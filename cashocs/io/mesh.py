@@ -864,7 +864,7 @@ class MeshConverter:
                 None.
             mode (str, optional): The mode used to define the subdomains and
                 boundaries. This can be either "physical" or "geometrical". Defaults to
-                    "physical".
+                "physical".
             quiet (bool, optional): A boolean flag which indicates whether the method
                 should produce output to stdout. Defaults to False.
 
