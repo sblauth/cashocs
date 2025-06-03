@@ -28,8 +28,9 @@
 # different right-hand sides, one for the global process 0 and another for all other
 # processes.
 #
-# For an overview over MPI, we recommend the website [MPI Tutorial](https://mpitutorial.com/)
-# as well as the [documentation of the Python package mpi4py](https://mpi4py.readthedocs.io).
+# For an overview over MPI, we recommend the website
+# [MPI Tutorial](https://mpitutorial.com/) as well as the
+# [documentation of the Python package mpi4py](https://mpi4py.readthedocs.io).
 #
 # ## Implementation
 #
@@ -38,9 +39,8 @@
 # corresponding config can be found in {download}`config.ini
 # </../../demos/documented/misc/mpi_comm_self/config.ini>`.
 #
-# ### MPI Initialization
 #
-# To initialize our MPI communicator, we first import the relevant Python modules.
+# We first import the relevant Python modules.
 
 # +
 from fenics import *
@@ -53,6 +53,8 @@ import cashocs
 
 # Note that we import the {python}`mpi4py` module, whose documentation can be found
 # [here](https://mpi4py.readthedocs.io).
+#
+# ### MPI Initialization
 #
 # Next, we define the communicator we want to use
 
@@ -154,7 +156,7 @@ sop.solve(algorithm="bfgs")
 #
 # From the output we observe that we, indeed, solve two different problems with
 # different right-hand sides. Additionally, we can see in the two produced log files
-# that each MPI process did, in fact, different things.
+# that each MPI process did, in fact, do different things.
 #
 # The results are visualized in the following with matplotlib:
 
