@@ -9,3 +9,7 @@
 .. role:: cpp(code)
     :language: cpp
     :class: highlight
+
+.. role:: bash(code)
+    :language: bash
+    :class: highlight

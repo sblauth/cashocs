@@ -9,3 +9,4 @@ In this part of the tutorial, we showcase several other features of cashocs, whi
    
    demo_logging.md
    demo_xdmf_io.md
+   demo_mpi_comm_self.md
