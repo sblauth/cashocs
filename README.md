@@ -6,8 +6,8 @@
 |----------------------------------------------------------------------------------- | -------: | -------: | ------: | --------: |
 | cashocs/\_\_init\_\_.py                                                            |       38 |        0 |    100% |           |
 | cashocs/\_cli/\_\_init\_\_.py                                                      |        3 |        0 |    100% |           |
-| cashocs/\_cli/\_convert.py                                                         |       22 |        1 |     95% |        81 |
-| cashocs/\_cli/\_extract\_mesh.py                                                   |       22 |       16 |     27% |30-68, 78-87, 97 |
+| cashocs/\_cli/\_convert.py                                                         |       22 |        1 |     95% |        92 |
+| cashocs/\_cli/\_extract\_mesh.py                                                   |       22 |       16 |     27% |30-69, 79-88, 98 |
 | cashocs/\_constraints/\_\_init\_\_.py                                              |        5 |        0 |    100% |           |
 | cashocs/\_constraints/constrained\_problems.py                                     |      139 |        8 |     94% |147, 309, 324, 344-345, 547, 710, 775 |
 | cashocs/\_constraints/constraints.py                                               |       81 |        0 |    100% |           |
