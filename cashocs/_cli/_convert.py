@@ -22,8 +22,7 @@
 import argparse
 from typing import Optional
 
-from mpi4py import MPI
-
+from cashocs import mpi
 from cashocs.io import mesh as iomesh
 
 
@@ -74,7 +73,7 @@ def convert(argv: Optional[list[str]] = None) -> None:
     mode = args.mode
     quiet = args.quiet
 
-    mesh_converter = iomesh.MeshConverter(MPI.COMM_WORLD)
+    mesh_converter = iomesh.MeshConverter(mpi.COMM_WORLD)
     mesh_converter.convert(inputfile, outputfile=outputfile, mode=mode, quiet=quiet)
 
 

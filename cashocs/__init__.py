@@ -27,6 +27,7 @@ The documentation for cashocs can be found `here <https://cashocs.readthedocs.io
 from cashocs import geometry
 from cashocs import io
 from cashocs import log
+from cashocs import mpi
 from cashocs import nonlinear_solvers
 from cashocs import space_mapping
 from cashocs import verification
@@ -136,6 +137,7 @@ __all__ = [
     "geometry",
     "io",
     "log",
+    "mpi",
     "nonlinear_solvers",
     "space_mapping",
     "verification",

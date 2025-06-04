@@ -35,6 +35,7 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import log
+from cashocs import mpi
 from cashocs._utils import forms as forms_module
 
 if TYPE_CHECKING:
@@ -136,7 +137,7 @@ def assemble_petsc_system(
     """
     log.begin("Assembling the forms into a linear system.", level=log.DEBUG)
     if comm is None:
-        comm = MPI.COMM_WORLD
+        comm = mpi.COMM_WORLD
 
     mod_lhs_form = forms_module.bilinear_boundary_form_modification([lhs_form])[0]
     if A_tensor is None:

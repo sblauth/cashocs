@@ -38,6 +38,7 @@ import numpy as np
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import log
+from cashocs import mpi
 from cashocs.geometry.measure import NamedMeasure
 from cashocs.geometry.mesh import _get_mesh_stats
 
@@ -180,7 +181,7 @@ def _import_xdmf_mesh(
     Args:
         mesh_file: The location of the mesh file in .xdmf file format.
         comm: MPI communicator that is to be used for creating the mesh. If this is
-            `None`, then MPI.COMM_WORLD is used.
+            `None`, then COMM_WORLD is used.
 
     Returns:
         A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported
@@ -219,7 +220,7 @@ def _import_xdmf_mesh(
     mesh_string, subdomain_string, boundaries_string = _get_mesh_paths(mesh_file)
 
     if comm is None:
-        comm = MPI.COMM_WORLD
+        comm = mpi.COMM_WORLD
 
     mesh = fenics.Mesh(comm)
     with fenics.XDMFFile(mesh.mpi_comm(), mesh_string) as xdmf_file:
@@ -544,7 +545,7 @@ def read_mesh_from_xdmf(
         filename: The filename to the .xdmf file.
         step: The checkpoint number. Default is ``0``.
         comm: MPI communicator that is to be used for creating the mesh. If this is
-            `None`, then MPI.COMM_WORLD is used.
+            `None`, then COMM_WORLD is used.
 
     Returns:
         The corresponding mesh for the checkpoint number.
@@ -578,7 +579,7 @@ def read_mesh_from_xdmf(
         )
 
     if comm is None:
-        comm = MPI.COMM_WORLD
+        comm = mpi.COMM_WORLD
 
     mesh = fenics.Mesh(comm)
 
@@ -683,11 +684,11 @@ class MeshConverter:
 
         Args:
             comm (MPI.Comm | None): The MPI.Comm used for parallelization. If this is
-                None, MPI.COMM_WORLD is used.
+                None, COMM_WORLD is used.
 
         """
         if comm is None:
-            self.comm = MPI.COMM_WORLD
+            self.comm = mpi.COMM_WORLD
         else:
             self.comm = comm
 

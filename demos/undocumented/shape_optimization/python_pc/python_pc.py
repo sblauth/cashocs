@@ -58,9 +58,6 @@ class JacobiPC:
 
 # Setup the custom linear solver with python PC
 class MyLinearSolver(cashocs._utils.linalg.LinearSolver):
-    def __init__(self, comm):
-        super().__init__(comm)
-
     def solve(self, fun, A, b, ksp_options=None, rtol=None, atol=None, P=None):
         self.comm = fun.function_space().mesh().mpi_comm()
         ksp = PETSc.KSP().create(self.comm)

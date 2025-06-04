@@ -21,9 +21,14 @@ from __future__ import annotations
 
 import datetime
 import logging
+from typing import TYPE_CHECKING
 
 import fenics
-from mpi4py import MPI
+
+from cashocs import mpi
+
+if TYPE_CHECKING:
+    from mpi4py import MPI
 
 
 class Logger:
@@ -52,7 +57,7 @@ class Logger:
         self._group_stack: list[str] = []
         self._level_stack: list[int] = []
 
-        self.comm = MPI.COMM_WORLD
+        self.comm = mpi.COMM_WORLD
 
     def set_comm(self, comm: MPI.Comm) -> None:
         """Sets the MPI communicator used for logging.
