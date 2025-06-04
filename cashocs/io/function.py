@@ -26,6 +26,7 @@ import fenics
 import h5py
 
 from cashocs import _exceptions
+from cashocs import mpi
 from cashocs.io import mesh as mesh_io
 
 if TYPE_CHECKING:
@@ -52,14 +53,14 @@ def read_function_from_xdmf(
             case that this is ``0``, a scalar finite element is assumed. Default is 0.
         step: The checkpoint number. Default is ``0``.
         comm: The MPI communicator that shall be used. Default is `None`, which means
-            that `MPI.comm_world` is used.
+            that COMM_WORLD is used.
 
     Returns:
         A fenics representation of the function stored in the file.
 
     """
     if comm is None:
-        comm = MPI.COMM_WORLD
+        comm = mpi.COMM_WORLD
 
     mesh = mesh_io.read_mesh_from_xdmf(filename, step, comm)
     if vector_dim == 0:

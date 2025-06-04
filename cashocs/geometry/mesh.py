@@ -30,6 +30,7 @@ from typing_extensions import Literal
 
 from cashocs import _exceptions
 from cashocs import log
+from cashocs import mpi
 from cashocs.geometry import measure
 
 if TYPE_CHECKING:
@@ -83,7 +84,7 @@ def _get_mesh_stats(
                         comm = arg
 
             if comm is None:
-                comm = MPI.COMM_WORLD
+                comm = mpi.COMM_WORLD
 
             word = "importing" if mode.casefold() == "import" else "generating"
             worded = "imported" if mode.casefold() == "import" else "generated"
@@ -160,7 +161,7 @@ def interval_mesh(
     dim = 1
 
     if comm is None:
-        comm = MPI.COMM_WORLD
+        comm = mpi.COMM_WORLD
 
     mesh = fenics.IntervalMesh(comm, n, start, end)
 
@@ -272,7 +273,7 @@ def regular_mesh(
     n = int(n)
 
     if comm is None:
-        comm = MPI.COMM_WORLD
+        comm = mpi.COMM_WORLD
 
     if length_z is None:
         sizes = [length_x, length_y]
@@ -411,7 +412,7 @@ def regular_box_mesh(
     sizes = [1.0, 1.0]
 
     if comm is None:
-        comm = MPI.COMM_WORLD
+        comm = mpi.COMM_WORLD
 
     if start_z is None and end_z is None:
         lx = end_x - start_x
