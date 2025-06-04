@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_3345f743571c4583_shape_variable_abstractions_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.8.1">coverage.py v7.8.1</a>,
-            created at 2025-06-03 22:39 +0000
+            created at 2025-06-04 09:36 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -567,12 +567,12 @@
     <p class="mis show_mis"><span class="n"><a id="t485" href="#t485">485</a></span><span class="t">        <span class="nam">log</span><span class="op">.</span><span class="nam">debug</span><span class="op">(</span><span class="str">"An exception was raised, deleting the created temporary files."</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t486" href="#t486">486</a></span><span class="t">        <span class="key">if</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t487" href="#t487">487</a></span><span class="t">            <span class="key">not</span> <span class="nam">self</span><span class="op">.</span><span class="nam">config</span><span class="op">.</span><span class="nam">getboolean</span><span class="op">(</span><span class="str">"Debug"</span><span class="op">,</span> <span class="str">"remeshing"</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t488" href="#t488">488</a></span><span class="t">            <span class="key">and</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">MPI</span><span class="op">.</span><span class="nam">rank</span><span class="op">(</span><span class="nam">fenics</span><span class="op">.</span><span class="nam">MPI</span><span class="op">.</span><span class="nam">comm_world</span><span class="op">)</span> <span class="op">==</span> <span class="num">0</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t488" href="#t488">488</a></span><span class="t">            <span class="key">and</span> <span class="nam">self</span><span class="op">.</span><span class="nam">db</span><span class="op">.</span><span class="nam">geometry_db</span><span class="op">.</span><span class="nam">mpi_comm</span><span class="op">.</span><span class="nam">rank</span> <span class="op">==</span> <span class="num">0</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t489" href="#t489">489</a></span><span class="t">        <span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="mis show_mis"><span class="n"><a id="t490" href="#t490">490</a></span><span class="t">            <span class="nam">subprocess</span><span class="op">.</span><span class="nam">run</span><span class="op">(</span>  <span class="com"># nosec B603, B607</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t491" href="#t491">491</a></span><span class="t">                <span class="op">[</span><span class="str">"rm"</span><span class="op">,</span> <span class="str">"-r"</span><span class="op">,</span> <span class="nam">self</span><span class="op">.</span><span class="nam">db</span><span class="op">.</span><span class="nam">parameter_db</span><span class="op">.</span><span class="nam">remesh_directory</span><span class="op">]</span><span class="op">,</span> <span class="nam">check</span><span class="op">=</span><span class="key">False</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t492" href="#t492">492</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="mis show_mis"><span class="n"><a id="t493" href="#t493">493</a></span><span class="t">        <span class="nam">fenics</span><span class="op">.</span><span class="nam">MPI</span><span class="op">.</span><span class="nam">barrier</span><span class="op">(</span><span class="nam">fenics</span><span class="op">.</span><span class="nam">MPI</span><span class="op">.</span><span class="nam">comm_world</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t493" href="#t493">493</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">db</span><span class="op">.</span><span class="nam">geometry_db</span><span class="op">.</span><span class="nam">mpi_comm</span><span class="op">.</span><span class="nam">barrier</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t494" href="#t494">494</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t495" href="#t495">495</a></span><span class="t">    <span class="key">def</span> <span class="nam">compute_shape_gradient</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span> <span class="op">-></span> <span class="nam">list</span><span class="op">[</span><span class="nam">fenics</span><span class="op">.</span><span class="nam">Function</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t496" href="#t496">496</a></span><span class="t">        <span class="str">"""Solves the Riesz problem to determine the shape gradient.</span>&nbsp;</span><span class="r"></span></p>
@@ -681,7 +681,7 @@
             <a class="nav" href="z_3345f743571c4583_shape_variable_abstractions_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.8.1">coverage.py v7.8.1</a>,
-            created at 2025-06-03 22:39 +0000
+            created at 2025-06-04 09:36 +0000
         </p>
     </div>
 </footer>
