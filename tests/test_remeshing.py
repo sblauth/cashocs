@@ -164,6 +164,74 @@ def test_remeshing():
     MPI.barrier(MPI.comm_world)
 
 
+@pytest.mark.skipif(
+    not has_gmsh,
+    reason="This test requires Gmsh.",
+)
+def test_remeshing_with_quantile_quality():
+    dir_path = str(pathlib.Path(__file__).parent)
+    mesh_file = f"{dir_path}/mesh/remesh/mesh.xdmf"
+
+    def mesh_parametrization(mesh_file):
+        config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
+        config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
+        config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
+        config.set("Output", "result_dir", dir_path + "/temp/")
+        config.set("MeshQuality", "type", "quantile")
+        config.set("MeshQuality", "quantile", "0.05")
+        config.set("MeshQuality", "tol_lower", "0.4")
+        config.set("MeshQuality", "tol_upper", "0.45")
+        config.set("Debug", "remeshing", "True")
+
+        mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
+
+        V = FunctionSpace(mesh, "CG", 1)
+        u = Function(V)
+        p = Function(V)
+
+        x = SpatialCoordinate(mesh)
+        f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+
+        e = inner(grad(u), grad(p)) * dx - f * p * dx
+        bcs = DirichletBC(V, Constant(0), boundaries, 1)
+
+        J = cashocs.IntegralFunctional(u * dx)
+
+        args = (e, bcs, J, u, p, boundaries, config)
+        kwargs = {}
+
+        return args, kwargs
+
+    sop = cashocs.ShapeOptimizationProblem(mesh_parametrization, mesh_file)
+    sop.solve()
+
+    MPI.barrier(MPI.comm_world)
+    assert any(
+        folder.name.startswith("cashocs_remesh_")
+        for folder in pathlib.Path(f"{dir_path}/mesh/remesh").iterdir()
+    )
+
+    assert pathlib.Path(dir_path + "/temp").is_dir()
+    assert pathlib.Path(dir_path + "/temp/checkpoints").is_dir()
+    assert pathlib.Path(dir_path + "/temp/history.txt").is_file()
+    assert pathlib.Path(dir_path + "/temp/history.json").is_file()
+    assert pathlib.Path(dir_path + "/temp/optimized_mesh.msh").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/adjoint_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/adjoint_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/state_0.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/state_0.h5").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/shape_gradient.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/temp/checkpoints/shape_gradient.h5").is_file()
+
+    MPI.barrier(MPI.comm_world)
+    if MPI.rank(MPI.comm_world) == 0:
+        subprocess.run(
+            [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
+        )
+        subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
+    MPI.barrier(MPI.comm_world)
+
+
 def test_remesh_scaling():
     dir_path = str(pathlib.Path(__file__).parent)
     rng = np.random.RandomState(300696)
