@@ -55,9 +55,9 @@ def compute_mesh_quality(
         quantile: The quantile which shall be used to compute the mesh quality.
 
     Notes:
-        One can specify a quantile when using :py:`quality_type="quantile"` and
-        specifying :py:`quantile=q`, where :math:`q \in [0,1]` is some probability for
-        the quantile to compute. That means that the computed quality
+        One can specify a quantile when using :python:`quality_type="quantile"` and
+        specifying :python:`quantile=q`, where :math:`q \in [0,1]` is some probability
+        for the quantile to compute. That means that the computed quality
         :math:`Q \in [0,1]` satisfies the following relation: :math:`100q \%` of all
         mesh cells have a quality lower than :math:`Q`, whereas :math:`100(1-q) \%` of
         all mesh cells have a quality greater than :math:`Q`. In particular,
