@@ -19,13 +19,15 @@ import ast
 import importlib
 import pathlib
 import sys
+from unittest import mock
 
 
 def import_from_path(module_name, file_path):
-    spec = importlib.util.spec_from_file_location(module_name, file_path)
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[module_name] = module
-    spec.loader.exec_module(module)
+    with mock.patch("sys.modules"):
+        spec = importlib.util.spec_from_file_location(module_name, file_path)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = module
+        spec.loader.exec_module(module)
     return module
 
 
