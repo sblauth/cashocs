@@ -16,6 +16,10 @@ of the maintenance releases, please take a look at
 
 * Changed the way :py:func:`cashocs.io.import_function` works: Now, the name of the saved function is taken automatically. As cashocs one saves one function per .xdmf file, this should not change any workflows. Users can (and must) still specify a name in case multiple functions are saved in a single file.
 
+* The MPI usage of cashocs has been improved. Now, a duplicate of COMM_WORLD is used by default if the user does not specify another MPI communicator.
+
+* Two additional demos have been added which describe how custom MPI communicators can be used with cashocs. They can be found at `<https://cashocs.readthedocs.io/en/stable/user/demos/misc/demo_mpi_comm_self/>`_ and `<https://cashocs.readthedocs.io/en/stable/user/demos/misc/demo_mpi_custom/>`_.
+
 * New configuration file parameters:
 
   * Section StateSystem
