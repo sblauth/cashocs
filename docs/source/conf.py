@@ -16,10 +16,11 @@ import sys
 sys.path.insert(0, os.path.abspath("../.."))
 sys.path.insert(0, os.path.abspath("."))
 
+import document_cli
 import jupytext_process
 
 jupytext_process.process()
-
+document_cli.process()
 
 # -- Project information -----------------------------------------------------
 
@@ -118,7 +119,7 @@ html_theme = "pydata_sphinx_theme"
 html_logo = "logo.jpg"
 html_theme_options = {
     "github_url": "https://github.com/sblauth/cashocs",
-    "header_links_before_dropdown": 5,
+    "header_links_before_dropdown": 6,
     "icon_links": [
         {
             "name": "PyPI",
