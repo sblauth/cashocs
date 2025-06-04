@@ -496,7 +496,18 @@ class Config(ConfigParser):
                 },
                 "type": {
                     "type": "str",
-                    "possible_options": ["min", "avg", "minimum", "average"],
+                    "possible_options": [
+                        "min",
+                        "avg",
+                        "q",
+                        "minimum",
+                        "average",
+                        "quantile",
+                    ],
+                },
+                "quantile": {
+                    "type": "float",
+                    "attributes": ["non_negative", "less_than_one"],
                 },
                 "remesh_iter": {
                     "type": "int",
@@ -691,6 +702,7 @@ tol_lower = 0.0
 tol_upper = 1e-15
 measure = skewness
 type = min
+quantile = 0.0
 volume_change = inf
 angle_change = inf
 remesh_iter = 0

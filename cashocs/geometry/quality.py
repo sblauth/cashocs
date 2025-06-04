@@ -42,8 +42,9 @@ def compute_mesh_quality(
     mesh: fenics.Mesh,
     quality_type: str = "min",
     quality_measure: str = "skewness",
+    quantile: float = 0.0,
 ) -> float:
-    """This computes the mesh quality of a given mesh.
+    r"""This computes the mesh quality of a given mesh.
 
     Args:
         mesh: The mesh whose quality shall be computed.
@@ -51,6 +52,18 @@ def compute_mesh_quality(
             quality or average quality over all mesh cells, default is 'min'.
         quality_measure: The type of quality measure which is used to compute the
             quality measure, default is 'skewness'
+        quantile: The quantile which shall be used to compute the mesh quality.
+
+    Notes:
+        One can specify a quantile when using :py:`quality_type="quantile"` and
+        specifying :py:`quantile=q`, where :math:`q \in [0,1]` is some probability for
+        the quantile to compute. That means that the computed quality
+        :math:`Q \in [0,1]` satisfies the following relation: :math:`100q \%` of all
+        mesh cells have a quality lower than :math:`Q`, whereas :math:`100(1-q) \%` of
+        all mesh cells have a quality greater than :math:`Q`. In particular,
+        :math:`q = 0.5` will return the median of the mesh quality. This can be used to
+        control the mesh quality (for remeshing) when the minimum quality is too strict
+        but the average quality too coarse.
 
     Returns:
         The quality of the mesh, in the interval :math:`[0,1]`, where 0 is the worst,
@@ -68,6 +81,10 @@ def compute_mesh_quality(
         quality = MeshQuality.min(quality_calculators[quality_measure], mesh)
     elif quality_type == "avg":
         quality = MeshQuality.avg(quality_calculators[quality_measure], mesh)
+    elif quality_type == "quantile":
+        quality = MeshQuality.quantile(
+            quality_calculators[quality_measure], mesh, quantile
+        )
     else:
         raise _exceptions.InputError(
             "cashocs.geometry.quality.compute_mesh_quality",
@@ -492,6 +509,35 @@ class MeshQuality:
 
         if comm.rank == 0:
             qual = float(np.average(quality_list))
+        else:
+            qual = None
+
+        quality = float(comm.bcast(qual, root=0))
+
+        return quality
+
+    @classmethod
+    def quantile(
+        cls, calculator: MeshQualityCalculator, mesh: fenics.Mesh, quantile: float
+    ) -> float:
+        """Computes the mesh quality based on a given quantile.
+
+        Args:
+            calculator (MeshQualityCalculator): The calculator used to compute the mesh
+                quality.
+            mesh (fenics.Mesh): The computational mesh.
+            quantile (float): The desired quantile for which the mesh quality should
+                be computed.
+
+        Returns:
+            float: The mesh quality according to the specified quantile.
+
+        """
+        quality_list = calculator.compute(mesh)
+        comm = mesh.mpi_comm()
+
+        if comm.rank == 0:
+            qual = float(np.quantile(quality_list, quantile))
         else:
             qual = None
 

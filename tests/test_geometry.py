@@ -153,8 +153,14 @@ def test_mesh_quality_2D():
     min_max_angle = cashocs.compute_mesh_quality(mesh, "min", "maximum_angle")
     min_radius_ratios = cashocs.compute_mesh_quality(mesh, "min", "radius_ratios")
     avg_radius_ratios = cashocs.compute_mesh_quality(mesh, "avg", "radius_ratios")
+    q_radius_ratios = cashocs.compute_mesh_quality(
+        mesh, "quantile", "radius_ratios", quantile=0.351
+    )
     min_condition = cashocs.compute_mesh_quality(mesh, "min", "condition_number")
     avg_condition = cashocs.compute_mesh_quality(mesh, "avg", "condition_number")
+    q_condition = cashocs.compute_mesh_quality(
+        mesh, "quantile", "condition_number", quantile=0.75189
+    )
 
     assert (
         abs(min_max_angle - cashocs.compute_mesh_quality(mesh, "avg", "maximum_angle"))
@@ -169,14 +175,23 @@ def test_mesh_quality_2D():
         abs(min_max_angle - cashocs.compute_mesh_quality(mesh, "min", "skewness"))
         < 1e-14
     )
+    assert (
+        abs(
+            min_max_angle
+            - cashocs.compute_mesh_quality(mesh, "quantile", "skewness", quantile=0.167)
+        )
+        < 1e-14
+    )
 
     assert abs(min_radius_ratios - avg_radius_ratios) < 1e-14
+    assert abs(min_radius_ratios - q_radius_ratios) < 1e-14
     assert (
         abs(min_radius_ratios - np.min(fenics.MeshQuality.radius_ratio_min_max(mesh)))
         < 1e-14
     )
 
     assert abs(min_condition - avg_condition) < 1e-14
+    assert abs(min_condition - q_condition) < 1e-14
     assert abs(min_condition - 0.4714045207910318) < 1e-14
 
 
@@ -204,12 +219,27 @@ def test_mesh_quality_3D():
     min_max_angle = cashocs.compute_mesh_quality(mesh, "min", "maximum_angle")
     min_radius_ratios = cashocs.compute_mesh_quality(mesh, "min", "radius_ratios")
     avg_radius_ratios = cashocs.compute_mesh_quality(mesh, "avg", "radius_ratios")
+    q_radius_ratios = cashocs.compute_mesh_quality(
+        mesh, "quantile", "radius_ratios", quantile=0.615
+    )
     min_condition = cashocs.compute_mesh_quality(mesh, "min", "condition_number")
     avg_condition = cashocs.compute_mesh_quality(mesh, "avg", "condition_number")
+    q_condition = cashocs.compute_mesh_quality(
+        mesh, "quantile", "condition_number", quantile=0.91576
+    )
     min_skewness = cashocs.compute_mesh_quality(mesh, "min", "skewness")
 
     assert (
         abs(min_max_angle - cashocs.compute_mesh_quality(mesh, "avg", "maximum_angle"))
+        < 1e-14
+    )
+    assert (
+        abs(
+            min_max_angle
+            - cashocs.compute_mesh_quality(
+                mesh, "quantile", "maximum_angle", quantile=0.715
+            )
+        )
         < 1e-14
     )
     assert abs(min_max_angle - r) < 1e-14
@@ -218,15 +248,24 @@ def test_mesh_quality_3D():
         abs(min_skewness - cashocs.compute_mesh_quality(mesh, "avg", "skewness"))
         < 1e-14
     )
+    assert (
+        abs(
+            min_skewness
+            - cashocs.compute_mesh_quality(mesh, "quantile", "skewness", quantile=0.14)
+        )
+        < 1e-14
+    )
     assert abs(min_skewness - q) < 1e-14
 
     assert abs(min_radius_ratios - avg_radius_ratios) < 1e-14
+    assert abs(min_radius_ratios - q_radius_ratios) < 1e-14
     assert (
         abs(min_radius_ratios - np.min(fenics.MeshQuality.radius_ratio_min_max(mesh)))
         < 1e-14
     )
 
     assert abs(min_condition - avg_condition) < 1e-14
+    assert abs(min_condition - q_condition) < 1e-14
     assert abs(min_condition - 0.3162277660168379) < 1e-14
 
 
