@@ -29,7 +29,7 @@ from cashocs.io import mesh as iomesh
 def _generate_parser() -> argparse.ArgumentParser:
     """Returns a parser for command line arguments."""
     parser = argparse.ArgumentParser(
-        prog="cashocs-convert", description="Convert GMSH to XDMF."
+        prog="cashocs-convert", description="Convert a Gmsh mesh to XDMF."
     )
     parser.add_argument(
         "infile", type=str, help="GMSH file to be converted, has to end in .msh"
@@ -38,18 +38,29 @@ def _generate_parser() -> argparse.ArgumentParser:
         "-o",
         "--outfile",
         type=str,
-        help="XDMF file to which the mesh shall be converted, has to end in .xdmf",
+        help="XDMF output file, has to end in .xdmf. "
+        "If this is not given, then the output will be the same as the input, "
+        "but with .xdmf suffix.",
         default=None,
         metavar="outfile",
     )
-    parser.add_argument("-q", "--quiet", action="store_true")
+    parser.add_argument(
+        "-q",
+        "--quiet",
+        action="store_true",
+        help="Whether or not to show information on stdout.",
+    )
     parser.add_argument(
         "-m",
         "--mode",
         action="store",
         type=str,
         help="The mode used to define the subdomains and boundaries. "
-        "This can be either 'physical', 'geometrical' or 'none'.",
+        "This can be either 'physical', 'geometrical' or 'none'. "
+        "If the mode is 'physical', then the physical groups defined in the Gmsh file "
+        "are used. "
+        "If this is 'geometrical', then the geometrical groups defined in the Gmsh "
+        "file are used. If this is 'none', no information is used.",
         default="physical",
         metavar="mode",
     )

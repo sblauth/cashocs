@@ -19,6 +19,7 @@ cashocs is a finite element software for the automated solution of shape optimiz
    About <about/index>
    User Guide <user/index>
    API Reference <api/index>
+   CLI Reference <cli/index>
    Development <development/index>
    release_notes
 
