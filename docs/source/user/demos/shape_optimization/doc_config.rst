@@ -1057,15 +1057,25 @@ Available options are
 (see :py:class:`MeshQuality <cashocs.MeshQuality>` for a detailed description).
 The default value is given by :ini:`measure = skewness`.
 
-The parameter :ini:`type` determines, whether the minimum quality over all
-elements (:ini:`type = min`) or the average quality over all elements (:ini:`type = avg`)
-shall be used. This is set via 
+The parameter :ini:`type` determines, which kind of mesh quality is used. It can
+be :ini:`type = min`, so that the minimum quality of all cells is considered,
+:ini:`type = avg`, so that the average quality of all mesh cells is considered,
+or :ini:`type = quantile`, which allows the user to specify a quantile and use
+the quality associated with the quantile. This is set via
 
 .. code-block:: ini
 
     type = min
 
-and defaults to :ini:`type = min`.
+and defaults to :ini:`type = min`. In order to specify the quantile for :ini:`type = quantile`, we have the following parameter
+
+.. code-block:: ini
+
+    quantile = 0.0
+
+with which the quantile is set. Note that :ini:`quantile = 0.5` computes the median of the mesh quality, i.e., half of the mesh cells
+have a lower quality while the other half has a higher quality. For a general quantile :math:`q`, the quality computed means that
+:math:`100q \%` of all cells have a lower quality, while :math:`100(1-q) \%` of all cells have a higher quality.
 
 Finally, we have the parameter :ini:`remesh_iter` in which the user can specify after how many iterations a remeshing should be performed. It is given by
 
@@ -1461,7 +1471,9 @@ in the following.
     * - :ini:`measure = skewness`
       - determines which quality measure is used
     * - :ini:`type = min`
-      - determines if minimal or average quality is considered
+      - determines if minimal, average, or quantile quality is considered
+    * - :ini:`quantile = 0.0`
+      - specifies the quantile if :ini:`type = quantile` is used.
     * - :ini:`remesh_iter`
       - When set to a value > 0, remeshing is performed every :ini:`remesh_iter` iterations.
 

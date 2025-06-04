@@ -138,9 +138,13 @@ class _MeshHandler:
         self.mesh_quality_measure = self.config.get("MeshQuality", "measure")
 
         self.mesh_quality_type = self.config.get("MeshQuality", "type")
+        self.quality_quantile = self.config.getfloat("MeshQuality", "quantile")
 
         self.current_mesh_quality: float = quality.compute_mesh_quality(
-            self.mesh, self.mesh_quality_type, self.mesh_quality_measure
+            self.mesh,
+            quality_type=self.mesh_quality_type,
+            quality_measure=self.mesh_quality_measure,
+            quantile=self.quality_quantile,
         )
 
         if not self.db.parameter_db.is_remeshed:
@@ -286,7 +290,10 @@ class _MeshHandler:
                 test_for_intersections=self.test_for_intersections,
             )
             self.current_mesh_quality = quality.compute_mesh_quality(
-                self.mesh, self.mesh_quality_type, self.mesh_quality_measure
+                self.mesh,
+                quality_type=self.mesh_quality_type,
+                quality_measure=self.mesh_quality_measure,
+                quantile=self.quality_quantile,
             )
             if success_flag:
                 log.debug(
@@ -616,13 +623,15 @@ class _MeshHandler:
 
         mesh_quality_measure = self.db.config.get("MeshQuality", "measure")
         mesh_quality_type = self.db.config.get("MeshQuality", "type")
+        quality_quantile = self.db.config.getfloat("MeshQuality", "quantile")
 
         mesh = solver.optimization_problem.states[0].function_space().mesh()
 
         current_mesh_quality = quality.compute_mesh_quality(
             mesh,
-            mesh_quality_type,
-            mesh_quality_measure,
+            quality_type=mesh_quality_type,
+            quality_measure=mesh_quality_measure,
+            quantile=quality_quantile,
         )
 
         check_mesh_quality_tolerance(current_mesh_quality, mesh_quality_tol_upper)
