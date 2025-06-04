@@ -71,11 +71,11 @@
 | cashocs/geometry/deformations.py                                                   |       66 |        5 |     92% |131-135, 143, 148, 207 |
 | cashocs/geometry/measure.py                                                        |       40 |        1 |     98% |       203 |
 | cashocs/geometry/mesh.py                                                           |      149 |        2 |     99% |    80, 84 |
-| cashocs/geometry/mesh\_handler.py                                                  |      264 |       26 |     90% |66, 210, 221, 225, 401, 403, 422, 429, 437, 445, 453, 461, 469, 484-485, 550, 641-661 |
+| cashocs/geometry/mesh\_handler.py                                                  |      266 |       26 |     90% |66, 214, 225, 229, 408, 410, 429, 436, 444, 452, 460, 468, 476, 491-492, 557, 650-670 |
 | cashocs/geometry/mesh\_testing.py                                                  |       71 |        4 |     94% |180, 184-185, 242 |
-| cashocs/geometry/quality.py                                                        |       93 |        6 |     94% |308, 346, 381, 442, 472, 496 |
+| cashocs/geometry/quality.py                                                        |      104 |        7 |     93% |325, 363, 398, 459, 489, 513, 542 |
 | cashocs/io/\_\_init\_\_.py                                                         |       17 |        0 |    100% |           |
-| cashocs/io/config.py                                                               |      138 |        4 |     97% |33, 72, 727-728 |
+| cashocs/io/config.py                                                               |      138 |        4 |     97% |33, 72, 739-740 |
 | cashocs/io/function.py                                                             |       32 |       22 |     31% |62-77, 100-121 |
 | cashocs/io/managers.py                                                             |      252 |       17 |     93% |366, 380, 402, 632-638, 641-648, 673-677 |
 | cashocs/io/mesh.py                                                                 |      338 |       39 |     88% |93, 148-152, 300-324, 372-373, 405, 564-565, 569-571, 643, 674, 744, 748-749, 789, 800-805, 836 |
@@ -92,7 +92,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      381 |       42 |     89% |165, 266, 349-354, 454, 541-542, 672-674, 681-683, 710-744, 929, 958-960, 970-972, 986-987 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      395 |       55 |     86% |167, 269, 344-345, 439, 516-517, 532-559, 682-683, 700-702, 708-710, 742-782, 954, 981-983, 993-995, 1009-1010 |
 | cashocs/verification.py                                                            |      131 |        3 |     98% |234-235, 267 |
-|                                                                          **TOTAL** | **7638** |  **645** | **92%** |           |
+|                                                                          **TOTAL** | **7651** |  **646** | **92%** |           |
 
 
 ## Setup coverage badge
