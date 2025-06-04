@@ -20,11 +20,17 @@ of the maintenance releases, please take a look at
 
 * Two additional demos have been added which describe how custom MPI communicators can be used with cashocs. They can be found at `<https://cashocs.readthedocs.io/en/stable/user/demos/misc/demo_mpi_comm_self/>`_ and `<https://cashocs.readthedocs.io/en/stable/user/demos/misc/demo_mpi_custom/>`_.
 
+* Add the possibility to compute the mesh quality based on a quantile. This can be useful for remeshing, where the minimum approach is too strict and the maximum approach too coarse.
+
 * New configuration file parameters:
 
   * Section StateSystem
 
     * :ini:`use_adjoint_linearizations` is a boolean flag which specifies, whether or not the adjoint form of the `newton_linearizations` should be used to solve the adjoint system.
+
+  * Section MeshQuality
+
+    * :ini:`quantile` is a user-specified quantile for which the mesh quality is computed. For example, :ini:`quantile = 0.5` uses the median mesh quality.
 
 
 
