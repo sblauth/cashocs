@@ -67,7 +67,7 @@
 | cashocs/\_utils/interpolations.py                                                  |       44 |       18 |     59% |27, 275-449 |
 | cashocs/\_utils/linalg.py                                                          |      185 |       21 |     89% |78, 140, 158, 332-333, 390-393, 508-509, 640-644, 664-676 |
 | cashocs/geometry/\_\_init\_\_.py                                                   |       18 |        0 |    100% |           |
-| cashocs/geometry/boundary\_distance.py                                             |       62 |        1 |     98% |       148 |
+| cashocs/geometry/boundary\_distance.py                                             |       63 |        1 |     98% |       155 |
 | cashocs/geometry/deformations.py                                                   |       66 |        5 |     92% |131-135, 143, 148, 207 |
 | cashocs/geometry/measure.py                                                        |       40 |        1 |     98% |       203 |
 | cashocs/geometry/mesh.py                                                           |      149 |        2 |     99% |    80, 84 |
@@ -92,7 +92,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      381 |       42 |     89% |165, 266, 349-354, 454, 541-542, 672-674, 681-683, 710-744, 929, 958-960, 970-972, 986-987 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      395 |       55 |     86% |167, 269, 344-345, 439, 516-517, 532-559, 682-683, 700-702, 708-710, 742-782, 954, 981-983, 993-995, 1009-1010 |
 | cashocs/verification.py                                                            |      131 |        3 |     98% |234-235, 267 |
-|                                                                          **TOTAL** | **7650** |  **646** | **92%** |           |
+|                                                                          **TOTAL** | **7651** |  **646** | **92%** |           |
 
 
 ## Setup coverage badge
