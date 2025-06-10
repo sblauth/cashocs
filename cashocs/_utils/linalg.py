@@ -314,16 +314,13 @@ def setup_matrix_and_preconditioner(
     ksp: PETSc.KSP,
     A: PETSc.Mat | None = None,  # pylint: disable=invalid-name
     P: PETSc.Mat | None = None,  # pylint: disable=invalid-name
-) -> PETSc.Mat:
+) -> None:
     """Set up the system matrix and preconditioner for a linear solve.
 
     Args:
         ksp: The KSP object used to solve the problem.
         A: The system matrix or `None`.
         P: The preconditioner matrix or `None`.
-
-    Returns:
-        The system matrix.
 
     """
     if A is not None:
@@ -340,8 +337,6 @@ def setup_matrix_and_preconditioner(
                 "The KSP object has to be initialized with some Matrix in case A is "
                 "None.",
             )
-
-    return A
 
 
 def solve_linear_problem(
@@ -507,8 +502,7 @@ class LinearSolver:
         log.begin("Solving a linear system with PETSc.", level=log.DEBUG)
         self.comm = function.function_space().mesh().mpi_comm()
         ksp = PETSc.KSP().create(self.comm)
-
-        A = setup_matrix_and_preconditioner(ksp, A, P)
+        setup_matrix_and_preconditioner(ksp, A, P)
 
         if b is None:
             function.vector().vec().set(0.0)
