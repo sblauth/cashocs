@@ -30,6 +30,7 @@ except ImportError:
     import ufl
 import numpy as np
 
+from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import nonlinear_solvers
 from cashocs.geometry import measure
@@ -91,6 +92,12 @@ def compute_boundary_distance(
             boundary_idcs=boundary_idcs,
             tol=tol,
             max_iter=max_iter,
+        )
+    else:
+        raise _exceptions.InputError(
+            "compute_boundary_distance",
+            "method",
+            "The method can only be 'poisson' or 'eikonal'.",
         )
 
 
