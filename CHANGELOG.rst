@@ -7,8 +7,8 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-2.6.0 (in development)
-----------------------
+2.6.0 (June 26, 2025)
+---------------------
 
 * Add the possibility to use the adjoint form of the user-provided `newton_linearizations`: For example, if a Picard iteration is used to solve the nonlinear state system, then the adjoint of the Picard linearization can be used to solve the adjoint system. This may require more "nonlinear" or defect-correction iterations, but may yield linear systems that are significatly easier to solve. This is controlled with the configuration parameter :ini:`use_adjoint_linearizations` in the Section StateSystem.
 
