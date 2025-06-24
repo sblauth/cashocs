@@ -1,12 +1,15 @@
 name: Tests (macos, serial)
 
 on:
+  push:
+    branches:
+      - 'release/**'
   workflow_dispatch:
   schedule:
     - cron: '17 0 * * *'
 
 permissions: read-all
-    
+
 jobs:
   serial_tests:
     name: Test (py=${{ matrix.python-version}}, macos-13)
