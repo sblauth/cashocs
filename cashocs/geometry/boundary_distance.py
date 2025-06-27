@@ -133,8 +133,7 @@ def compute_boundary_distance_poisson(
             functions. Defaults to 0.0.
 
     Returns:
-        fenics.Function: A fenics function representing an approximation of the
-            distance to the boundary.
+        A fenics function representing an approximation of the distance to the boundary.
 
     """
     cg1_space = fenics.FunctionSpace(mesh, "CG", 1)

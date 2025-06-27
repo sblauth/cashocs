@@ -471,7 +471,7 @@ class OptimizationProblem(abc.ABC):
                 stepping. Example: Pressure for incompressible flow. Default is None.
 
         Returns:
-            list[list[int]] | list[None]: The parsed parameter.
+            The parsed parameter.
 
         """
         if excluded_from_time_derivative is None:

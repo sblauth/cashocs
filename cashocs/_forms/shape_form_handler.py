@@ -580,8 +580,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         """Defines the DirichletBCs for the re-extensions of the gradient deformation.
 
         Returns:
-            list[fenics.DirichletBC]: The list of boundary conditions for re-extending
-                the gradient deformation.
+            The list of boundary conditions for re-extending the gradient deformation.
 
         """
         all_boundaries = (

@@ -191,8 +191,8 @@ class Logger:
         """Generate a timedelta between the start and end time.
 
         Returns:
-            datetime.timedelta: The timedelta between the :py:func:`cashocs.log.begin`
-            and :py:func:`cashocs.log.end` calls.
+            The timedelta between the :py:func:`cashocs.log.begin` and
+            :py:func:`cashocs.log.end` calls.
 
         """
         start_time = self._time_stack.pop()
@@ -214,7 +214,7 @@ class Logger:
         """Retrieves a message from the message stack.
 
         Returns:
-            str: The message that was on the top of the message stack.
+            The message that was on the top of the message stack.
 
         """
         return self._group_stack.pop()
@@ -232,7 +232,7 @@ class Logger:
         """Retrieves the log level from the level stack.
 
         Returns:
-            int: The log level that was on top of the level stack.
+            The log level that was on top of the level stack.
 
         """
         return self._level_stack.pop()
@@ -244,7 +244,7 @@ class Logger:
             message (str): The input string which should be formatted.
 
         Returns:
-            str: The formatted string.
+            The formatted string.
 
         """
         if self._use_timestamp:
@@ -269,7 +269,7 @@ class Logger:
                 Defaults to logging.DEBUG.
 
         Returns:
-            logging.FileHandler: The file handler for the log file.
+            The file handler for the log file.
 
         """
         if filename in self._logfiles:
