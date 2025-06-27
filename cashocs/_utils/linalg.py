@@ -692,7 +692,7 @@ def l2_projection(
             Defaults to None.
 
     Returns:
-        fenics.Function: The result of the projection.
+        The result of the projection.
 
     """
     mesh = function_space.mesh()

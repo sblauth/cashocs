@@ -530,7 +530,7 @@ class MeshQuality:
                 be computed.
 
         Returns:
-            float: The mesh quality according to the specified quantile.
+            The mesh quality according to the specified quantile.
 
         """
         quality_list = calculator.compute(mesh)

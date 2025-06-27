@@ -698,9 +698,6 @@ class MeshConverter:
         Args:
             mode: The mode that should be used for the conversion.
 
-        Returns:
-            Raises an exception if the supplied mode is not supported.
-
         """
         if mode not in ["physical", "geometrical", "none"]:
             raise _exceptions.CashocsException(

@@ -240,7 +240,7 @@ def tag_to_int(mesh: fenics.Mesh, tag: int | str, tag_type: str) -> int:
             boundary (either internal or external).
 
     Returns:
-        int: The integer tag corresponding to the supplied tag.
+        The integer tag corresponding to the supplied tag.
 
     """
     if isinstance(tag, int):

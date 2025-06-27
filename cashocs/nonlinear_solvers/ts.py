@@ -436,7 +436,7 @@ class TSPseudoSolver:
         """Solves the (nonlinear) problem with pseudo time stepping.
 
         Returns:
-            fenics.Function: The solution obtained by the solver.
+            The solution obtained by the solver.
 
         """
         log.begin("Solving the PDE system with pseudo time stepping.")
