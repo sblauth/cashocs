@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Coverage for cashocs/geometry/quality.py: 93%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
-    <link rel="stylesheet" href="style_cb_81f8c14c.css" type="text/css">
+    <link rel="stylesheet" href="style_cb_6b508a39.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
 </head>
 <body class="pyfile">
@@ -64,8 +64,8 @@
             <a id="indexLink" class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a id="nextFileLink" class="nav" href="z_87edaf8237400e17___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-23 22:41 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.10.0">coverage.py v7.10.0</a>,
+            created at 2025-07-24 22:41 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -121,11 +121,11 @@
     <p class="pln"><span class="n"><a id="t39" href="#t39">39</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t40" href="#t40">40</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t41" href="#t41">41</a></span><span class="t"><span class="key">def</span> <span class="nam">compute_mesh_quality</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t42" href="#t42">42</a></span><span class="t">    <span class="nam">mesh</span><span class="op">:</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Mesh</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t43" href="#t43">43</a></span><span class="t">    <span class="nam">quality_type</span><span class="op">:</span> <span class="nam">str</span> <span class="op">=</span> <span class="str">"min"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t44" href="#t44">44</a></span><span class="t">    <span class="nam">quality_measure</span><span class="op">:</span> <span class="nam">str</span> <span class="op">=</span> <span class="str">"skewness"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t45" href="#t45">45</a></span><span class="t">    <span class="nam">quantile</span><span class="op">:</span> <span class="nam">float</span> <span class="op">=</span> <span class="num">0.0</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t46" href="#t46">46</a></span><span class="t"><span class="op">)</span> <span class="op">-></span> <span class="nam">float</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t42" href="#t42">42</a></span><span class="t">    <span class="nam">mesh</span><span class="op">:</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Mesh</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t43" href="#t43">43</a></span><span class="t">    <span class="nam">quality_type</span><span class="op">:</span> <span class="nam">str</span> <span class="op">=</span> <span class="str">"min"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t44" href="#t44">44</a></span><span class="t">    <span class="nam">quality_measure</span><span class="op">:</span> <span class="nam">str</span> <span class="op">=</span> <span class="str">"skewness"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t45" href="#t45">45</a></span><span class="t">    <span class="nam">quantile</span><span class="op">:</span> <span class="nam">float</span> <span class="op">=</span> <span class="num">0.0</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t46" href="#t46">46</a></span><span class="t"><span class="op">)</span> <span class="op">-></span> <span class="nam">float</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t47" href="#t47">47</a></span><span class="t">    <span class="str">r"""This computes the mesh quality of a given mesh.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t48" href="#t48">48</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t49" href="#t49">49</a></span><span class="t"><span class="str">    Args:</span>&nbsp;</span><span class="r"></span></p>
@@ -153,11 +153,11 @@
     <p class="pln"><span class="n"><a id="t71" href="#t71">71</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t72" href="#t72">72</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t73" href="#t73">73</a></span><span class="t">    <span class="nam">quality_calculators</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t74" href="#t74">74</a></span><span class="t">        <span class="str">"skewness"</span><span class="op">:</span> <span class="nam">SkewnessCalculator</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t75" href="#t75">75</a></span><span class="t">        <span class="str">"maximum_angle"</span><span class="op">:</span> <span class="nam">MaximumAngleCalculator</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t76" href="#t76">76</a></span><span class="t">        <span class="str">"radius_ratios"</span><span class="op">:</span> <span class="nam">RadiusRatiosCalculator</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t77" href="#t77">77</a></span><span class="t">        <span class="str">"condition_number"</span><span class="op">:</span> <span class="nam">ConditionNumberCalculator</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t78" href="#t78">78</a></span><span class="t">    <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t74" href="#t74">74</a></span><span class="t">        <span class="str">"skewness"</span><span class="op">:</span> <span class="nam">SkewnessCalculator</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t75" href="#t75">75</a></span><span class="t">        <span class="str">"maximum_angle"</span><span class="op">:</span> <span class="nam">MaximumAngleCalculator</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t76" href="#t76">76</a></span><span class="t">        <span class="str">"radius_ratios"</span><span class="op">:</span> <span class="nam">RadiusRatiosCalculator</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t77" href="#t77">77</a></span><span class="t">        <span class="str">"condition_number"</span><span class="op">:</span> <span class="nam">ConditionNumberCalculator</span><span class="op">(</span><span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t78" href="#t78">78</a></span><span class="t">    <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t79" href="#t79">79</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t80" href="#t80">80</a></span><span class="t">    <span class="key">if</span> <span class="nam">quality_type</span> <span class="op">==</span> <span class="str">"min"</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t81" href="#t81">81</a></span><span class="t">        <span class="nam">quality</span> <span class="op">=</span> <span class="nam">MeshQuality</span><span class="op">.</span><span class="nam">min</span><span class="op">(</span><span class="nam">quality_calculators</span><span class="op">[</span><span class="nam">quality_measure</span><span class="op">]</span><span class="op">,</span> <span class="nam">mesh</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -165,14 +165,14 @@
     <p class="run"><span class="n"><a id="t83" href="#t83">83</a></span><span class="t">        <span class="nam">quality</span> <span class="op">=</span> <span class="nam">MeshQuality</span><span class="op">.</span><span class="nam">avg</span><span class="op">(</span><span class="nam">quality_calculators</span><span class="op">[</span><span class="nam">quality_measure</span><span class="op">]</span><span class="op">,</span> <span class="nam">mesh</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t84" href="#t84">84</a></span><span class="t">    <span class="key">elif</span> <span class="nam">quality_type</span> <span class="op">==</span> <span class="str">"quantile"</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t85" href="#t85">85</a></span><span class="t">        <span class="nam">quality</span> <span class="op">=</span> <span class="nam">MeshQuality</span><span class="op">.</span><span class="nam">quantile</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t86" href="#t86">86</a></span><span class="t">            <span class="nam">quality_calculators</span><span class="op">[</span><span class="nam">quality_measure</span><span class="op">]</span><span class="op">,</span> <span class="nam">mesh</span><span class="op">,</span> <span class="nam">quantile</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t87" href="#t87">87</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t86" href="#t86">86</a></span><span class="t">            <span class="nam">quality_calculators</span><span class="op">[</span><span class="nam">quality_measure</span><span class="op">]</span><span class="op">,</span> <span class="nam">mesh</span><span class="op">,</span> <span class="nam">quantile</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t87" href="#t87">87</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t88" href="#t88">88</a></span><span class="t">    <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="exc show_exc"><span class="n"><a id="t89" href="#t89">89</a></span><span class="t">        <span class="key">raise</span> <span class="nam">_exceptions</span><span class="op">.</span><span class="nam">InputError</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t90" href="#t90">90</a></span><span class="t">            <span class="str">"cashocs.geometry.quality.compute_mesh_quality"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t91" href="#t91">91</a></span><span class="t">            <span class="str">"quality_type"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t92" href="#t92">92</a></span><span class="t">            <span class="str">"quality_type must be either 'min' or 'avg'."</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t93" href="#t93">93</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t90" href="#t90">90</a></span><span class="t">            <span class="str">"cashocs.geometry.quality.compute_mesh_quality"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t91" href="#t91">91</a></span><span class="t">            <span class="str">"quality_type"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t92" href="#t92">92</a></span><span class="t">            <span class="str">"quality_type must be either 'min' or 'avg'."</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t93" href="#t93">93</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t94" href="#t94">94</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t95" href="#t95">95</a></span><span class="t">    <span class="key">return</span> <span class="nam">quality</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t96" href="#t96">96</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -181,175 +181,175 @@
     <p class="pln"><span class="n"><a id="t99" href="#t99">99</a></span><span class="t">    <span class="str">"""Interface for calculating mesh quality."""</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t100" href="#t100">100</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t101" href="#t101">101</a></span><span class="t">    <span class="nam">_cpp_code_mesh_quality</span> <span class="op">=</span> <span class="str">"""</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t102" href="#t102">102</a></span><span class="t"><span class="str">    #include &lt;pybind11/pybind11.h></span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t103" href="#t103">103</a></span><span class="t"><span class="str">    #include &lt;pybind11/eigen.h></span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t104" href="#t104">104</a></span><span class="t"><span class="str">    namespace py = pybind11;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t105" href="#t105">105</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t106" href="#t106">106</a></span><span class="t"><span class="str">    #include &lt;dolfin/mesh/Mesh.h></span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t107" href="#t107">107</a></span><span class="t"><span class="str">    #include &lt;dolfin/mesh/Vertex.h></span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t108" href="#t108">108</a></span><span class="t"><span class="str">    #include &lt;dolfin/mesh/MeshFunction.h></span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t109" href="#t109">109</a></span><span class="t"><span class="str">    #include &lt;dolfin/mesh/Cell.h></span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t110" href="#t110">110</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t111" href="#t111">111</a></span><span class="t"><span class="str">    using namespace dolfin;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t112" href="#t112">112</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t113" href="#t113">113</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t114" href="#t114">114</a></span><span class="t"><span class="str">    void angles_triangle(const Cell&amp; cell, std::vector&lt;double>&amp; angs)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t115" href="#t115">115</a></span><span class="t"><span class="str">    {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t116" href="#t116">116</a></span><span class="t"><span class="str">      const Mesh&amp; mesh = cell.mesh();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t117" href="#t117">117</a></span><span class="t"><span class="str">      angs.resize(3);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t118" href="#t118">118</a></span><span class="t"><span class="str">      const std::size_t i0 = cell.entities(0)[0];</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t119" href="#t119">119</a></span><span class="t"><span class="str">      const std::size_t i1 = cell.entities(0)[1];</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t120" href="#t120">120</a></span><span class="t"><span class="str">      const std::size_t i2 = cell.entities(0)[2];</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t121" href="#t121">121</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t122" href="#t122">122</a></span><span class="t"><span class="str">      const Point p0 = Vertex(mesh, i0).point();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t123" href="#t123">123</a></span><span class="t"><span class="str">      const Point p1 = Vertex(mesh, i1).point();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t124" href="#t124">124</a></span><span class="t"><span class="str">      const Point p2 = Vertex(mesh, i2).point();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t125" href="#t125">125</a></span><span class="t"><span class="str">      Point e0 = p1 - p0;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t126" href="#t126">126</a></span><span class="t"><span class="str">      Point e1 = p2 - p0;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t127" href="#t127">127</a></span><span class="t"><span class="str">      Point e2 = p2 - p1;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t128" href="#t128">128</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t129" href="#t129">129</a></span><span class="t"><span class="str">      e0 /= e0.norm();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t130" href="#t130">130</a></span><span class="t"><span class="str">      e1 /= e1.norm();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t131" href="#t131">131</a></span><span class="t"><span class="str">      e2 /= e2.norm();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t132" href="#t132">132</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t133" href="#t133">133</a></span><span class="t"><span class="str">      angs[0] = acos(e0.dot(e1));</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t134" href="#t134">134</a></span><span class="t"><span class="str">      angs[1] = acos(-e0.dot(e2));</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t135" href="#t135">135</a></span><span class="t"><span class="str">      angs[2] = acos(e1.dot(e2));</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t136" href="#t136">136</a></span><span class="t"><span class="str">    }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t137" href="#t137">137</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t138" href="#t138">138</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t139" href="#t139">139</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t140" href="#t140">140</a></span><span class="t"><span class="str">    void dihedral_angles(const Cell&amp; cell, std::vector&lt;double>&amp; angs)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t141" href="#t141">141</a></span><span class="t"><span class="str">    {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t142" href="#t142">142</a></span><span class="t"><span class="str">      const Mesh&amp; mesh = cell.mesh();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t143" href="#t143">143</a></span><span class="t"><span class="str">      angs.resize(6);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t144" href="#t144">144</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t145" href="#t145">145</a></span><span class="t"><span class="str">      const std::size_t i0 = cell.entities(0)[0];</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t146" href="#t146">146</a></span><span class="t"><span class="str">      const std::size_t i1 = cell.entities(0)[1];</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t147" href="#t147">147</a></span><span class="t"><span class="str">      const std::size_t i2 = cell.entities(0)[2];</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t148" href="#t148">148</a></span><span class="t"><span class="str">      const std::size_t i3 = cell.entities(0)[3];</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t149" href="#t149">149</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t150" href="#t150">150</a></span><span class="t"><span class="str">      const Point p0 = Vertex(mesh, i0).point();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t151" href="#t151">151</a></span><span class="t"><span class="str">      const Point p1 = Vertex(mesh, i1).point();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t152" href="#t152">152</a></span><span class="t"><span class="str">      const Point p2 = Vertex(mesh, i2).point();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t153" href="#t153">153</a></span><span class="t"><span class="str">      const Point p3 = Vertex(mesh, i3).point();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t154" href="#t154">154</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t155" href="#t155">155</a></span><span class="t"><span class="str">      const Point e0 = p1 - p0;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t156" href="#t156">156</a></span><span class="t"><span class="str">      const Point e1 = p2 - p0;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t157" href="#t157">157</a></span><span class="t"><span class="str">      const Point e2 = p3 - p0;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t158" href="#t158">158</a></span><span class="t"><span class="str">      const Point e3 = p2 - p1;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t159" href="#t159">159</a></span><span class="t"><span class="str">      const Point e4 = p3 - p1;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t160" href="#t160">160</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t161" href="#t161">161</a></span><span class="t"><span class="str">      Point n0 = e0.cross(e1);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t162" href="#t162">162</a></span><span class="t"><span class="str">      Point n1 = e0.cross(e2);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t163" href="#t163">163</a></span><span class="t"><span class="str">      Point n2 = e1.cross(e2);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t164" href="#t164">164</a></span><span class="t"><span class="str">      Point n3 = e3.cross(e4);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t165" href="#t165">165</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t166" href="#t166">166</a></span><span class="t"><span class="str">      n0 /= n0.norm();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t167" href="#t167">167</a></span><span class="t"><span class="str">      n1 /= n1.norm();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t168" href="#t168">168</a></span><span class="t"><span class="str">      n2 /= n2.norm();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t169" href="#t169">169</a></span><span class="t"><span class="str">      n3 /= n3.norm();</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t170" href="#t170">170</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t171" href="#t171">171</a></span><span class="t"><span class="str">      angs[0] = acos(n0.dot(n1));</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t172" href="#t172">172</a></span><span class="t"><span class="str">      angs[1] = acos(-n0.dot(n2));</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t173" href="#t173">173</a></span><span class="t"><span class="str">      angs[2] = acos(n1.dot(n2));</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t174" href="#t174">174</a></span><span class="t"><span class="str">      angs[3] = acos(n0.dot(n3));</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t175" href="#t175">175</a></span><span class="t"><span class="str">      angs[4] = acos(n1.dot(-n3));</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t176" href="#t176">176</a></span><span class="t"><span class="str">      angs[5] = acos(n2.dot(n3));</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t177" href="#t177">177</a></span><span class="t"><span class="str">    }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t178" href="#t178">178</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t179" href="#t179">179</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t180" href="#t180">180</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t181" href="#t181">181</a></span><span class="t"><span class="str">    dolfin::MeshFunction&lt;double></span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t182" href="#t182">182</a></span><span class="t"><span class="str">    skewness(std::shared_ptr&lt;const Mesh> mesh)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t183" href="#t183">183</a></span><span class="t"><span class="str">    {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t184" href="#t184">184</a></span><span class="t"><span class="str">      MeshFunction&lt;double> cf(mesh, mesh->topology().dim(), 0.0);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t185" href="#t185">185</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t186" href="#t186">186</a></span><span class="t"><span class="str">      double opt_angle;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t187" href="#t187">187</a></span><span class="t"><span class="str">      std::vector&lt;double> angs;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t188" href="#t188">188</a></span><span class="t"><span class="str">      std::vector&lt;double> quals;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t189" href="#t189">189</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t190" href="#t190">190</a></span><span class="t"><span class="str">      for (CellIterator cell(*mesh); !cell.end(); ++cell)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t191" href="#t191">191</a></span><span class="t"><span class="str">      {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t192" href="#t192">192</a></span><span class="t"><span class="str">        if (cell->dim() == 2)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t193" href="#t193">193</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t194" href="#t194">194</a></span><span class="t"><span class="str">          quals.resize(3);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t195" href="#t195">195</a></span><span class="t"><span class="str">          angles_triangle(*cell, angs);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t196" href="#t196">196</a></span><span class="t"><span class="str">          opt_angle = DOLFIN_PI / 3.0;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t197" href="#t197">197</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t198" href="#t198">198</a></span><span class="t"><span class="str">        else if (cell->dim() == 3)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t199" href="#t199">199</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t200" href="#t200">200</a></span><span class="t"><span class="str">          quals.resize(6);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t201" href="#t201">201</a></span><span class="t"><span class="str">          dihedral_angles(*cell, angs);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t202" href="#t202">202</a></span><span class="t"><span class="str">          opt_angle = acos(1.0/3.0);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t203" href="#t203">203</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t204" href="#t204">204</a></span><span class="t"><span class="str">        else</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t205" href="#t205">205</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t206" href="#t206">206</a></span><span class="t"><span class="str">          dolfin_error(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t207" href="#t207">207</a></span><span class="t"><span class="str">            "cashocs_quality.cpp", "skewness", "Not a valid dimension for the mesh."</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t208" href="#t208">208</a></span><span class="t"><span class="str">          );</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t209" href="#t209">209</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t210" href="#t210">210</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t211" href="#t211">211</a></span><span class="t"><span class="str">        for (unsigned int i = 0; i &lt; angs.size(); ++i)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t212" href="#t212">212</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t213" href="#t213">213</a></span><span class="t"><span class="str">          quals[i] = 1 - std::max(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t214" href="#t214">214</a></span><span class="t"><span class="str">            (angs[i] - opt_angle) / (DOLFIN_PI - opt_angle),</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t215" href="#t215">215</a></span><span class="t"><span class="str">            (opt_angle - angs[i]) / opt_angle</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t216" href="#t216">216</a></span><span class="t"><span class="str">          );</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t217" href="#t217">217</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t218" href="#t218">218</a></span><span class="t"><span class="str">        cf[*cell] = *std::min_element(quals.begin(), quals.end());</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t219" href="#t219">219</a></span><span class="t"><span class="str">      }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t220" href="#t220">220</a></span><span class="t"><span class="str">      return cf;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t221" href="#t221">221</a></span><span class="t"><span class="str">    }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t222" href="#t222">222</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t223" href="#t223">223</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t224" href="#t224">224</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t225" href="#t225">225</a></span><span class="t"><span class="str">    dolfin::MeshFunction&lt;double></span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t226" href="#t226">226</a></span><span class="t"><span class="str">    maximum_angle(std::shared_ptr&lt;const Mesh> mesh)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t227" href="#t227">227</a></span><span class="t"><span class="str">    {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t228" href="#t228">228</a></span><span class="t"><span class="str">      MeshFunction&lt;double> cf(mesh, mesh->topology().dim(), 0.0);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t229" href="#t229">229</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t230" href="#t230">230</a></span><span class="t"><span class="str">      double opt_angle;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t231" href="#t231">231</a></span><span class="t"><span class="str">      std::vector&lt;double> angs;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t232" href="#t232">232</a></span><span class="t"><span class="str">      std::vector&lt;double> quals;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t233" href="#t233">233</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t234" href="#t234">234</a></span><span class="t"><span class="str">      for (CellIterator cell(*mesh); !cell.end(); ++cell)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t235" href="#t235">235</a></span><span class="t"><span class="str">      {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t236" href="#t236">236</a></span><span class="t"><span class="str">        if (cell->dim() == 2)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t237" href="#t237">237</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t238" href="#t238">238</a></span><span class="t"><span class="str">          quals.resize(3);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t239" href="#t239">239</a></span><span class="t"><span class="str">          angles_triangle(*cell, angs);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t240" href="#t240">240</a></span><span class="t"><span class="str">          opt_angle = DOLFIN_PI / 3.0;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t241" href="#t241">241</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t242" href="#t242">242</a></span><span class="t"><span class="str">        else if (cell->dim() == 3)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t243" href="#t243">243</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t244" href="#t244">244</a></span><span class="t"><span class="str">          quals.resize(6);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t245" href="#t245">245</a></span><span class="t"><span class="str">          dihedral_angles(*cell, angs);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t246" href="#t246">246</a></span><span class="t"><span class="str">          opt_angle = acos(1.0/3.0);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t247" href="#t247">247</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t248" href="#t248">248</a></span><span class="t"><span class="str">        else</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t249" href="#t249">249</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t250" href="#t250">250</a></span><span class="t"><span class="str">          dolfin_error(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t251" href="#t251">251</a></span><span class="t"><span class="str">            "cashocs_quality.cpp", "maximum_angle", "Not a valid spatial dimension."</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t252" href="#t252">252</a></span><span class="t"><span class="str">          );</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t253" href="#t253">253</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t254" href="#t254">254</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t255" href="#t255">255</a></span><span class="t"><span class="str">        for (unsigned int i = 0; i &lt; angs.size(); ++i)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t256" href="#t256">256</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t257" href="#t257">257</a></span><span class="t"><span class="str">          quals[i] = 1 - std::max((angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), 0.0);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t258" href="#t258">258</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t259" href="#t259">259</a></span><span class="t"><span class="str">        cf[*cell] = *std::min_element(quals.begin(), quals.end());</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t260" href="#t260">260</a></span><span class="t"><span class="str">      }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t261" href="#t261">261</a></span><span class="t"><span class="str">      return cf;</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t262" href="#t262">262</a></span><span class="t"><span class="str">    }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t263" href="#t263">263</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t264" href="#t264">264</a></span><span class="t"><span class="str">    PYBIND11_MODULE(SIGNATURE, m)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t265" href="#t265">265</a></span><span class="t"><span class="str">    {</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t266" href="#t266">266</a></span><span class="t"><span class="str">      m.def("skewness", &amp;skewness);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t267" href="#t267">267</a></span><span class="t"><span class="str">      m.def("maximum_angle", &amp;maximum_angle);</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t268" href="#t268">268</a></span><span class="t"><span class="str">    }</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t269" href="#t269">269</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t270" href="#t270">270</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t102" href="#t102">102</a></span><span class="t"><span class="str">    #include &lt;pybind11/pybind11.h></span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t103" href="#t103">103</a></span><span class="t"><span class="str">    #include &lt;pybind11/eigen.h></span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t104" href="#t104">104</a></span><span class="t"><span class="str">    namespace py = pybind11;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t105" href="#t105">105</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t106" href="#t106">106</a></span><span class="t"><span class="str">    #include &lt;dolfin/mesh/Mesh.h></span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t107" href="#t107">107</a></span><span class="t"><span class="str">    #include &lt;dolfin/mesh/Vertex.h></span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t108" href="#t108">108</a></span><span class="t"><span class="str">    #include &lt;dolfin/mesh/MeshFunction.h></span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t109" href="#t109">109</a></span><span class="t"><span class="str">    #include &lt;dolfin/mesh/Cell.h></span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t110" href="#t110">110</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t111" href="#t111">111</a></span><span class="t"><span class="str">    using namespace dolfin;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t112" href="#t112">112</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t113" href="#t113">113</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t114" href="#t114">114</a></span><span class="t"><span class="str">    void angles_triangle(const Cell&amp; cell, std::vector&lt;double>&amp; angs)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t115" href="#t115">115</a></span><span class="t"><span class="str">    {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t116" href="#t116">116</a></span><span class="t"><span class="str">      const Mesh&amp; mesh = cell.mesh();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t117" href="#t117">117</a></span><span class="t"><span class="str">      angs.resize(3);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t118" href="#t118">118</a></span><span class="t"><span class="str">      const std::size_t i0 = cell.entities(0)[0];</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t119" href="#t119">119</a></span><span class="t"><span class="str">      const std::size_t i1 = cell.entities(0)[1];</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t120" href="#t120">120</a></span><span class="t"><span class="str">      const std::size_t i2 = cell.entities(0)[2];</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t121" href="#t121">121</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t122" href="#t122">122</a></span><span class="t"><span class="str">      const Point p0 = Vertex(mesh, i0).point();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t123" href="#t123">123</a></span><span class="t"><span class="str">      const Point p1 = Vertex(mesh, i1).point();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t124" href="#t124">124</a></span><span class="t"><span class="str">      const Point p2 = Vertex(mesh, i2).point();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t125" href="#t125">125</a></span><span class="t"><span class="str">      Point e0 = p1 - p0;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t126" href="#t126">126</a></span><span class="t"><span class="str">      Point e1 = p2 - p0;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t127" href="#t127">127</a></span><span class="t"><span class="str">      Point e2 = p2 - p1;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t128" href="#t128">128</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t129" href="#t129">129</a></span><span class="t"><span class="str">      e0 /= e0.norm();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t130" href="#t130">130</a></span><span class="t"><span class="str">      e1 /= e1.norm();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t131" href="#t131">131</a></span><span class="t"><span class="str">      e2 /= e2.norm();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t132" href="#t132">132</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t133" href="#t133">133</a></span><span class="t"><span class="str">      angs[0] = acos(e0.dot(e1));</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t134" href="#t134">134</a></span><span class="t"><span class="str">      angs[1] = acos(-e0.dot(e2));</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t135" href="#t135">135</a></span><span class="t"><span class="str">      angs[2] = acos(e1.dot(e2));</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t136" href="#t136">136</a></span><span class="t"><span class="str">    }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t137" href="#t137">137</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t138" href="#t138">138</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t139" href="#t139">139</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t140" href="#t140">140</a></span><span class="t"><span class="str">    void dihedral_angles(const Cell&amp; cell, std::vector&lt;double>&amp; angs)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t141" href="#t141">141</a></span><span class="t"><span class="str">    {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t142" href="#t142">142</a></span><span class="t"><span class="str">      const Mesh&amp; mesh = cell.mesh();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t143" href="#t143">143</a></span><span class="t"><span class="str">      angs.resize(6);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t144" href="#t144">144</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t145" href="#t145">145</a></span><span class="t"><span class="str">      const std::size_t i0 = cell.entities(0)[0];</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t146" href="#t146">146</a></span><span class="t"><span class="str">      const std::size_t i1 = cell.entities(0)[1];</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t147" href="#t147">147</a></span><span class="t"><span class="str">      const std::size_t i2 = cell.entities(0)[2];</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t148" href="#t148">148</a></span><span class="t"><span class="str">      const std::size_t i3 = cell.entities(0)[3];</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t149" href="#t149">149</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t150" href="#t150">150</a></span><span class="t"><span class="str">      const Point p0 = Vertex(mesh, i0).point();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t151" href="#t151">151</a></span><span class="t"><span class="str">      const Point p1 = Vertex(mesh, i1).point();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t152" href="#t152">152</a></span><span class="t"><span class="str">      const Point p2 = Vertex(mesh, i2).point();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t153" href="#t153">153</a></span><span class="t"><span class="str">      const Point p3 = Vertex(mesh, i3).point();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t154" href="#t154">154</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t155" href="#t155">155</a></span><span class="t"><span class="str">      const Point e0 = p1 - p0;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t156" href="#t156">156</a></span><span class="t"><span class="str">      const Point e1 = p2 - p0;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t157" href="#t157">157</a></span><span class="t"><span class="str">      const Point e2 = p3 - p0;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t158" href="#t158">158</a></span><span class="t"><span class="str">      const Point e3 = p2 - p1;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t159" href="#t159">159</a></span><span class="t"><span class="str">      const Point e4 = p3 - p1;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t160" href="#t160">160</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t161" href="#t161">161</a></span><span class="t"><span class="str">      Point n0 = e0.cross(e1);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t162" href="#t162">162</a></span><span class="t"><span class="str">      Point n1 = e0.cross(e2);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t163" href="#t163">163</a></span><span class="t"><span class="str">      Point n2 = e1.cross(e2);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t164" href="#t164">164</a></span><span class="t"><span class="str">      Point n3 = e3.cross(e4);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t165" href="#t165">165</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t166" href="#t166">166</a></span><span class="t"><span class="str">      n0 /= n0.norm();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t167" href="#t167">167</a></span><span class="t"><span class="str">      n1 /= n1.norm();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t168" href="#t168">168</a></span><span class="t"><span class="str">      n2 /= n2.norm();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t169" href="#t169">169</a></span><span class="t"><span class="str">      n3 /= n3.norm();</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t170" href="#t170">170</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t171" href="#t171">171</a></span><span class="t"><span class="str">      angs[0] = acos(n0.dot(n1));</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t172" href="#t172">172</a></span><span class="t"><span class="str">      angs[1] = acos(-n0.dot(n2));</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t173" href="#t173">173</a></span><span class="t"><span class="str">      angs[2] = acos(n1.dot(n2));</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t174" href="#t174">174</a></span><span class="t"><span class="str">      angs[3] = acos(n0.dot(n3));</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t175" href="#t175">175</a></span><span class="t"><span class="str">      angs[4] = acos(n1.dot(-n3));</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t176" href="#t176">176</a></span><span class="t"><span class="str">      angs[5] = acos(n2.dot(n3));</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t177" href="#t177">177</a></span><span class="t"><span class="str">    }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t178" href="#t178">178</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t179" href="#t179">179</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t180" href="#t180">180</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t181" href="#t181">181</a></span><span class="t"><span class="str">    dolfin::MeshFunction&lt;double></span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t182" href="#t182">182</a></span><span class="t"><span class="str">    skewness(std::shared_ptr&lt;const Mesh> mesh)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t183" href="#t183">183</a></span><span class="t"><span class="str">    {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t184" href="#t184">184</a></span><span class="t"><span class="str">      MeshFunction&lt;double> cf(mesh, mesh->topology().dim(), 0.0);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t185" href="#t185">185</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t186" href="#t186">186</a></span><span class="t"><span class="str">      double opt_angle;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t187" href="#t187">187</a></span><span class="t"><span class="str">      std::vector&lt;double> angs;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t188" href="#t188">188</a></span><span class="t"><span class="str">      std::vector&lt;double> quals;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t189" href="#t189">189</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t190" href="#t190">190</a></span><span class="t"><span class="str">      for (CellIterator cell(*mesh); !cell.end(); ++cell)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t191" href="#t191">191</a></span><span class="t"><span class="str">      {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t192" href="#t192">192</a></span><span class="t"><span class="str">        if (cell->dim() == 2)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t193" href="#t193">193</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t194" href="#t194">194</a></span><span class="t"><span class="str">          quals.resize(3);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t195" href="#t195">195</a></span><span class="t"><span class="str">          angles_triangle(*cell, angs);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t196" href="#t196">196</a></span><span class="t"><span class="str">          opt_angle = DOLFIN_PI / 3.0;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t197" href="#t197">197</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t198" href="#t198">198</a></span><span class="t"><span class="str">        else if (cell->dim() == 3)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t199" href="#t199">199</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t200" href="#t200">200</a></span><span class="t"><span class="str">          quals.resize(6);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t201" href="#t201">201</a></span><span class="t"><span class="str">          dihedral_angles(*cell, angs);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t202" href="#t202">202</a></span><span class="t"><span class="str">          opt_angle = acos(1.0/3.0);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t203" href="#t203">203</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t204" href="#t204">204</a></span><span class="t"><span class="str">        else</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t205" href="#t205">205</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t206" href="#t206">206</a></span><span class="t"><span class="str">          dolfin_error(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t207" href="#t207">207</a></span><span class="t"><span class="str">            "cashocs_quality.cpp", "skewness", "Not a valid dimension for the mesh."</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t208" href="#t208">208</a></span><span class="t"><span class="str">          );</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t209" href="#t209">209</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t210" href="#t210">210</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t211" href="#t211">211</a></span><span class="t"><span class="str">        for (unsigned int i = 0; i &lt; angs.size(); ++i)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t212" href="#t212">212</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t213" href="#t213">213</a></span><span class="t"><span class="str">          quals[i] = 1 - std::max(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t214" href="#t214">214</a></span><span class="t"><span class="str">            (angs[i] - opt_angle) / (DOLFIN_PI - opt_angle),</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t215" href="#t215">215</a></span><span class="t"><span class="str">            (opt_angle - angs[i]) / opt_angle</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t216" href="#t216">216</a></span><span class="t"><span class="str">          );</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t217" href="#t217">217</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t218" href="#t218">218</a></span><span class="t"><span class="str">        cf[*cell] = *std::min_element(quals.begin(), quals.end());</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t219" href="#t219">219</a></span><span class="t"><span class="str">      }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t220" href="#t220">220</a></span><span class="t"><span class="str">      return cf;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t221" href="#t221">221</a></span><span class="t"><span class="str">    }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t222" href="#t222">222</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t223" href="#t223">223</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t224" href="#t224">224</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t225" href="#t225">225</a></span><span class="t"><span class="str">    dolfin::MeshFunction&lt;double></span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t226" href="#t226">226</a></span><span class="t"><span class="str">    maximum_angle(std::shared_ptr&lt;const Mesh> mesh)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t227" href="#t227">227</a></span><span class="t"><span class="str">    {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t228" href="#t228">228</a></span><span class="t"><span class="str">      MeshFunction&lt;double> cf(mesh, mesh->topology().dim(), 0.0);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t229" href="#t229">229</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t230" href="#t230">230</a></span><span class="t"><span class="str">      double opt_angle;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t231" href="#t231">231</a></span><span class="t"><span class="str">      std::vector&lt;double> angs;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t232" href="#t232">232</a></span><span class="t"><span class="str">      std::vector&lt;double> quals;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t233" href="#t233">233</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t234" href="#t234">234</a></span><span class="t"><span class="str">      for (CellIterator cell(*mesh); !cell.end(); ++cell)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t235" href="#t235">235</a></span><span class="t"><span class="str">      {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t236" href="#t236">236</a></span><span class="t"><span class="str">        if (cell->dim() == 2)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t237" href="#t237">237</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t238" href="#t238">238</a></span><span class="t"><span class="str">          quals.resize(3);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t239" href="#t239">239</a></span><span class="t"><span class="str">          angles_triangle(*cell, angs);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t240" href="#t240">240</a></span><span class="t"><span class="str">          opt_angle = DOLFIN_PI / 3.0;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t241" href="#t241">241</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t242" href="#t242">242</a></span><span class="t"><span class="str">        else if (cell->dim() == 3)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t243" href="#t243">243</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t244" href="#t244">244</a></span><span class="t"><span class="str">          quals.resize(6);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t245" href="#t245">245</a></span><span class="t"><span class="str">          dihedral_angles(*cell, angs);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t246" href="#t246">246</a></span><span class="t"><span class="str">          opt_angle = acos(1.0/3.0);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t247" href="#t247">247</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t248" href="#t248">248</a></span><span class="t"><span class="str">        else</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t249" href="#t249">249</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t250" href="#t250">250</a></span><span class="t"><span class="str">          dolfin_error(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t251" href="#t251">251</a></span><span class="t"><span class="str">            "cashocs_quality.cpp", "maximum_angle", "Not a valid spatial dimension."</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t252" href="#t252">252</a></span><span class="t"><span class="str">          );</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t253" href="#t253">253</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t254" href="#t254">254</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t255" href="#t255">255</a></span><span class="t"><span class="str">        for (unsigned int i = 0; i &lt; angs.size(); ++i)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t256" href="#t256">256</a></span><span class="t"><span class="str">        {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t257" href="#t257">257</a></span><span class="t"><span class="str">          quals[i] = 1 - std::max((angs[i] - opt_angle) / (DOLFIN_PI - opt_angle), 0.0);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t258" href="#t258">258</a></span><span class="t"><span class="str">        }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t259" href="#t259">259</a></span><span class="t"><span class="str">        cf[*cell] = *std::min_element(quals.begin(), quals.end());</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t260" href="#t260">260</a></span><span class="t"><span class="str">      }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t261" href="#t261">261</a></span><span class="t"><span class="str">      return cf;</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t262" href="#t262">262</a></span><span class="t"><span class="str">    }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t263" href="#t263">263</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t264" href="#t264">264</a></span><span class="t"><span class="str">    PYBIND11_MODULE(SIGNATURE, m)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t265" href="#t265">265</a></span><span class="t"><span class="str">    {</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t266" href="#t266">266</a></span><span class="t"><span class="str">      m.def("skewness", &amp;skewness);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t267" href="#t267">267</a></span><span class="t"><span class="str">      m.def("maximum_angle", &amp;maximum_angle);</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t268" href="#t268">268</a></span><span class="t"><span class="str">    }</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t269" href="#t269">269</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t270" href="#t270">270</a></span><span class="t"><span class="str">    """</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t271" href="#t271">271</a></span><span class="t">    <span class="nam">_quality_object</span> <span class="op">=</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">compile_cpp_code</span><span class="op">(</span><span class="nam">_cpp_code_mesh_quality</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t272" href="#t272">272</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="exc show_exc"><span class="n"><a id="t273" href="#t273">273</a></span><span class="t">    <span class="op">@</span><span class="nam">abc</span><span class="op">.</span><span class="nam">abstractmethod</span>&nbsp;</span><span class="r"></span></p>
@@ -436,8 +436,8 @@
     <p class="run"><span class="n"><a id="t354" href="#t354">354</a></span><span class="t">        <span class="nam">comm</span> <span class="op">=</span> <span class="nam">mesh</span><span class="op">.</span><span class="nam">mpi_comm</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t355" href="#t355">355</a></span><span class="t">        <span class="nam">ghost_offset</span> <span class="op">=</span> <span class="nam">mesh</span><span class="op">.</span><span class="nam">topology</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">ghost_offset</span><span class="op">(</span><span class="nam">mesh</span><span class="op">.</span><span class="nam">topology</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">dim</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t356" href="#t356">356</a></span><span class="t">        <span class="nam">maximum_angle_array</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">_quality_object</span><span class="op">.</span><span class="nam">maximum_angle</span><span class="op">(</span><span class="nam">mesh</span><span class="op">)</span><span class="op">.</span><span class="nam">array</span><span class="op">(</span><span class="op">)</span><span class="op">[</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t357" href="#t357">357</a></span><span class="t">            <span class="op">:</span><span class="nam">ghost_offset</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t358" href="#t358">358</a></span><span class="t">        <span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t357" href="#t357">357</a></span><span class="t">            <span class="op">:</span><span class="nam">ghost_offset</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t358" href="#t358">358</a></span><span class="t">        <span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t359" href="#t359">359</a></span><span class="t">        <span class="nam">maximum_angle_list</span><span class="op">:</span> <span class="nam">np</span><span class="op">.</span><span class="nam">ndarray</span> <span class="op">=</span> <span class="nam">comm</span><span class="op">.</span><span class="nam">gather</span><span class="op">(</span><span class="nam">maximum_angle_array</span><span class="op">,</span> <span class="nam">root</span><span class="op">=</span><span class="num">0</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t360" href="#t360">360</a></span><span class="t">        <span class="key">if</span> <span class="nam">comm</span><span class="op">.</span><span class="nam">rank</span> <span class="op">==</span> <span class="num">0</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t361" href="#t361">361</a></span><span class="t">            <span class="nam">maximum_angle_list</span> <span class="op">=</span> <span class="nam">np</span><span class="op">.</span><span class="nam">concatenate</span><span class="op">(</span><span class="nam">maximum_angle_list</span><span class="op">,</span> <span class="nam">axis</span><span class="op">=</span><span class="key">None</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -471,8 +471,8 @@
     <p class="run"><span class="n"><a id="t389" href="#t389">389</a></span><span class="t">        <span class="nam">comm</span> <span class="op">=</span> <span class="nam">mesh</span><span class="op">.</span><span class="nam">mpi_comm</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t390" href="#t390">390</a></span><span class="t">        <span class="nam">ghost_offset</span> <span class="op">=</span> <span class="nam">mesh</span><span class="op">.</span><span class="nam">topology</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">ghost_offset</span><span class="op">(</span><span class="nam">mesh</span><span class="op">.</span><span class="nam">topology</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">dim</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t391" href="#t391">391</a></span><span class="t">        <span class="nam">radius_ratios_array</span> <span class="op">=</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">MeshQuality</span><span class="op">.</span><span class="nam">radius_ratios</span><span class="op">(</span><span class="nam">mesh</span><span class="op">)</span><span class="op">.</span><span class="nam">array</span><span class="op">(</span><span class="op">)</span><span class="op">[</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t392" href="#t392">392</a></span><span class="t">            <span class="op">:</span><span class="nam">ghost_offset</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t393" href="#t393">393</a></span><span class="t">        <span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t392" href="#t392">392</a></span><span class="t">            <span class="op">:</span><span class="nam">ghost_offset</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t393" href="#t393">393</a></span><span class="t">        <span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t394" href="#t394">394</a></span><span class="t">        <span class="nam">radius_ratios_list</span><span class="op">:</span> <span class="nam">np</span><span class="op">.</span><span class="nam">ndarray</span> <span class="op">=</span> <span class="nam">comm</span><span class="op">.</span><span class="nam">gather</span><span class="op">(</span><span class="nam">radius_ratios_array</span><span class="op">,</span> <span class="nam">root</span><span class="op">=</span><span class="num">0</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t395" href="#t395">395</a></span><span class="t">        <span class="key">if</span> <span class="nam">comm</span><span class="op">.</span><span class="nam">rank</span> <span class="op">==</span> <span class="num">0</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t396" href="#t396">396</a></span><span class="t">            <span class="nam">radius_ratios_list</span> <span class="op">=</span> <span class="nam">np</span><span class="op">.</span><span class="nam">concatenate</span><span class="op">(</span><span class="nam">radius_ratios_list</span><span class="op">,</span> <span class="nam">axis</span><span class="op">=</span><span class="key">None</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -504,26 +504,26 @@
     <p class="run"><span class="n"><a id="t422" href="#t422">422</a></span><span class="t">        <span class="nam">inv</span> <span class="op">=</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">JacobianInverse</span><span class="op">(</span><span class="nam">mesh</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t423" href="#t423">423</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t424" href="#t424">424</a></span><span class="t">        <span class="nam">options</span><span class="op">:</span> <span class="nam">_typing</span><span class="op">.</span><span class="nam">KspOption</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t425" href="#t425">425</a></span><span class="t">            <span class="str">"ksp_type"</span><span class="op">:</span> <span class="str">"preonly"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t426" href="#t426">426</a></span><span class="t">            <span class="str">"pc_type"</span><span class="op">:</span> <span class="str">"jacobi"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t427" href="#t427">427</a></span><span class="t">            <span class="str">"pc_jacobi_type"</span><span class="op">:</span> <span class="str">"diagonal"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t428" href="#t428">428</a></span><span class="t">            <span class="str">"ksp_rtol"</span><span class="op">:</span> <span class="num">1e-16</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t429" href="#t429">429</a></span><span class="t">            <span class="str">"ksp_atol"</span><span class="op">:</span> <span class="num">1e-20</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t430" href="#t430">430</a></span><span class="t">            <span class="str">"ksp_max_it"</span><span class="op">:</span> <span class="num">1000</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t431" href="#t431">431</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t425" href="#t425">425</a></span><span class="t">            <span class="str">"ksp_type"</span><span class="op">:</span> <span class="str">"preonly"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t426" href="#t426">426</a></span><span class="t">            <span class="str">"pc_type"</span><span class="op">:</span> <span class="str">"jacobi"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t427" href="#t427">427</a></span><span class="t">            <span class="str">"pc_jacobi_type"</span><span class="op">:</span> <span class="str">"diagonal"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t428" href="#t428">428</a></span><span class="t">            <span class="str">"ksp_rtol"</span><span class="op">:</span> <span class="num">1e-16</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t429" href="#t429">429</a></span><span class="t">            <span class="str">"ksp_atol"</span><span class="op">:</span> <span class="num">1e-20</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t430" href="#t430">430</a></span><span class="t">            <span class="str">"ksp_max_it"</span><span class="op">:</span> <span class="num">1000</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t431" href="#t431">431</a></span><span class="t">        <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t432" href="#t432">432</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t433" href="#t433">433</a></span><span class="t">        <span class="nam">dx</span> <span class="op">=</span> <span class="nam">measure</span><span class="op">.</span><span class="nam">NamedMeasure</span><span class="op">(</span><span class="str">"dx"</span><span class="op">,</span> <span class="nam">mesh</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t434" href="#t434">434</a></span><span class="t">        <span class="nam">lhs</span> <span class="op">=</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t435" href="#t435">435</a></span><span class="t">            <span class="nam">fenics</span><span class="op">.</span><span class="nam">TrialFunction</span><span class="op">(</span><span class="nam">function_space_dg0</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t436" href="#t436">436</a></span><span class="t">            <span class="op">*</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">TestFunction</span><span class="op">(</span><span class="nam">function_space_dg0</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t437" href="#t437">437</a></span><span class="t">            <span class="op">*</span> <span class="nam">dx</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t438" href="#t438">438</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t435" href="#t435">435</a></span><span class="t">            <span class="nam">fenics</span><span class="op">.</span><span class="nam">TrialFunction</span><span class="op">(</span><span class="nam">function_space_dg0</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t436" href="#t436">436</a></span><span class="t">            <span class="op">*</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">TestFunction</span><span class="op">(</span><span class="nam">function_space_dg0</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t437" href="#t437">437</a></span><span class="t">            <span class="op">*</span> <span class="nam">dx</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t438" href="#t438">438</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t439" href="#t439">439</a></span><span class="t">        <span class="nam">rhs</span> <span class="op">=</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t440" href="#t440">440</a></span><span class="t">            <span class="nam">ufl</span><span class="op">.</span><span class="nam">sqrt</span><span class="op">(</span><span class="nam">ufl</span><span class="op">.</span><span class="nam">inner</span><span class="op">(</span><span class="nam">jac</span><span class="op">,</span> <span class="nam">jac</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t441" href="#t441">441</a></span><span class="t">            <span class="op">*</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">sqrt</span><span class="op">(</span><span class="nam">ufl</span><span class="op">.</span><span class="nam">inner</span><span class="op">(</span><span class="nam">inv</span><span class="op">,</span> <span class="nam">inv</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t442" href="#t442">442</a></span><span class="t">            <span class="op">*</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">TestFunction</span><span class="op">(</span><span class="nam">function_space_dg0</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t443" href="#t443">443</a></span><span class="t">            <span class="op">*</span> <span class="nam">dx</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t444" href="#t444">444</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t440" href="#t440">440</a></span><span class="t">            <span class="nam">ufl</span><span class="op">.</span><span class="nam">sqrt</span><span class="op">(</span><span class="nam">ufl</span><span class="op">.</span><span class="nam">inner</span><span class="op">(</span><span class="nam">jac</span><span class="op">,</span> <span class="nam">jac</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t441" href="#t441">441</a></span><span class="t">            <span class="op">*</span> <span class="nam">ufl</span><span class="op">.</span><span class="nam">sqrt</span><span class="op">(</span><span class="nam">ufl</span><span class="op">.</span><span class="nam">inner</span><span class="op">(</span><span class="nam">inv</span><span class="op">,</span> <span class="nam">inv</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t442" href="#t442">442</a></span><span class="t">            <span class="op">*</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">TestFunction</span><span class="op">(</span><span class="nam">function_space_dg0</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t443" href="#t443">443</a></span><span class="t">            <span class="op">*</span> <span class="nam">dx</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t444" href="#t444">444</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t445" href="#t445">445</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t446" href="#t446">446</a></span><span class="t">        <span class="nam">cond</span> <span class="op">=</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Function</span><span class="op">(</span><span class="nam">function_space_dg0</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t447" href="#t447">447</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -600,8 +600,8 @@
     <p class="pln"><span class="n"><a id="t518" href="#t518">518</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t519" href="#t519">519</a></span><span class="t">    <span class="op">@</span><span class="nam">classmethod</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t520" href="#t520">520</a></span><span class="t">    <span class="key">def</span> <span class="nam">quantile</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t521" href="#t521">521</a></span><span class="t">        <span class="nam">cls</span><span class="op">,</span> <span class="nam">calculator</span><span class="op">:</span> <span class="nam">MeshQualityCalculator</span><span class="op">,</span> <span class="nam">mesh</span><span class="op">:</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Mesh</span><span class="op">,</span> <span class="nam">quantile</span><span class="op">:</span> <span class="nam">float</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t522" href="#t522">522</a></span><span class="t">    <span class="op">)</span> <span class="op">-></span> <span class="nam">float</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t521" href="#t521">521</a></span><span class="t">        <span class="nam">cls</span><span class="op">,</span> <span class="nam">calculator</span><span class="op">:</span> <span class="nam">MeshQualityCalculator</span><span class="op">,</span> <span class="nam">mesh</span><span class="op">:</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Mesh</span><span class="op">,</span> <span class="nam">quantile</span><span class="op">:</span> <span class="nam">float</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t522" href="#t522">522</a></span><span class="t">    <span class="op">)</span> <span class="op">-></span> <span class="nam">float</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t523" href="#t523">523</a></span><span class="t">        <span class="str">"""Computes the mesh quality based on a given quantile.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t524" href="#t524">524</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t525" href="#t525">525</a></span><span class="t"><span class="str">        Args:</span>&nbsp;</span><span class="r"></span></p>
@@ -634,8 +634,8 @@
             <a class="nav" href="index.html">&Hat; index</a> &nbsp; &nbsp;
             <a class="nav" href="z_87edaf8237400e17___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
-            <a class="nav" href="https://coverage.readthedocs.io/en/7.9.2">coverage.py v7.9.2</a>,
-            created at 2025-07-23 22:41 +0000
+            <a class="nav" href="https://coverage.readthedocs.io/en/7.10.0">coverage.py v7.10.0</a>,
+            created at 2025-07-24 22:41 +0000
         </p>
     </div>
 </footer>
