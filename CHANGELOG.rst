@@ -7,6 +7,12 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
+2.7.0 (in development)
+----------------------
+
+
+
+
 2.6.0 (June 26, 2025)
 ---------------------
 

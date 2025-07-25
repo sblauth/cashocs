@@ -219,8 +219,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         """Computes the projection of the gradient deformation on the normal vector.
 
         Returns:
-            fenics.Function: The normal component gradient deformation in normal
-                direction.
+            The normal component gradient deformation in normal direction.
 
         """
         mesh = self.db.geometry_db.mesh
