@@ -138,7 +138,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                 or self.db.parameter_db.state_dim == 1
             ):
                 for i in range(self.db.parameter_db.state_dim):
-                    eftd = self.excluded_from_time_derivative[i]
+                    eftd = self.excluded_from_time_derivative[-1 - i]
                     if "ts" in _utils.get_petsc_prefixes(
                         self.db.parameter_db.adjoint_ksp_options[-1 - i]
                     ):
