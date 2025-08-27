@@ -10,7 +10,7 @@ of the maintenance releases, please take a look at
 2.7.0 (in development)
 ----------------------
 
-
+* The function :py:func:`cashocs.load_config` now raises an exception instead of only issuing a warning if the specified configuration file is not found.
 
 
 2.6.0 (June 26, 2025)
