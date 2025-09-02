@@ -221,7 +221,7 @@ class SNESSolver:
 
     def solve(self) -> fenics.Function:
         """Solves the nonlinear problem with PETSc's SNES."""
-        log.begin("Solving the nonlinear PDE system with PETSc SNES.")
+        log.begin("Solving the nonlinear PDE system with PETSc SNES.", level=log.DEBUG)
         snes = PETSc.SNES().create()
 
         snes.setFunction(self.assemble_function, self.residual_petsc)

@@ -14,7 +14,16 @@ of the maintenance releases, please take a look at
 
 * Revert the way :py:func:`cashocs.ts_pseudo_solve` handles convergence after the maximum number of iterations. Now, when the maximum number of (pseudo) time steps is reached, an exception is raised. This reverts the change introduced in version 2.5. This is more in line with the behavior of the SNES solver, which the pseudo time stepping relaxes. Also, this means that users are encouraged to actually reach the desired level of convergence with the pseudo time stepping solver.
 
-* Update the logging: Introduce a new log level `PROFILE` which is used to log performance profiling information. This helps to de-clutter the debug and info logs.
+* Update the logging behavior of cashocs:
+
+  * Introduce a new log level `PROFILE` which is used to log performance profiling information. This helps to de-clutter the debug and info logs.
+
+  * Most (inner) solver calls, which are responsible for logging the solves of PDEs are now in the debug level. Also, all logs the solvers would have sent by default are now turned off and have to be enabled, if required, either through supplying the corresponding PETSc command line options (for the PETSc solver backend) or the configuration file (for the cashocs solver backend).
+
+  * Timestamps for the logs are now enabled by default. If you want to change this, you can use :py:func:`cashocs.log.remove_timestamps`
+
+* For :py:func:`cashocs.ts_pseudo_solve`, there is the possibility to specify the PETSc command line option `ts_monitor`. This will activate the cashocs-implemented monitor for the pseudo time stepping and not use the default TS monitor, as one would expect. Output of the function can be toggled this way, completely analogous to :py:func:`cashocs.snes_solve`.
+
 
 
 2.6.0 (June 26, 2025)

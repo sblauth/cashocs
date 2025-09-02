@@ -440,7 +440,7 @@ class TSPseudoSolver:
             The solution obtained by the solver.
 
         """
-        log.begin("Solving the PDE system with pseudo time stepping.")
+        log.begin("Solving the PDE system with pseudo time stepping.", level=log.DEBUG)
         ts = PETSc.TS().create()
         ts.setProblemType(ts.ProblemType.NONLINEAR)
 

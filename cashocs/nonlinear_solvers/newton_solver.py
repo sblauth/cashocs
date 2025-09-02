@@ -216,7 +216,7 @@ class _NewtonSolver:
                 print(info_str + print_str, flush=True)
             self.comm.barrier()
         else:
-            log.info(info_str + print_str)
+            log.debug(info_str + print_str)
 
     @log.profile_to_log("assembling the Jacobian for Newton's method")
     def _assemble_matrix(self) -> None:
@@ -271,7 +271,9 @@ class _NewtonSolver:
             A solution of the nonlinear problem.
 
         """
-        log.begin("Solving the nonlinear PDE system with Newton's method.")
+        log.begin(
+            "Solving the nonlinear PDE system with Newton's method.", level=log.DEBUG
+        )
         self._compute_residual()
 
         self.res_0 = self.residual.norm(self.norm_type)
@@ -282,7 +284,7 @@ class _NewtonSolver:
                     print(message, flush=True)
                 self.comm.barrier()
             else:
-                log.info(message)
+                log.debug(message)
             return self.u
 
         self.res = self.res_0
@@ -345,7 +347,7 @@ class _NewtonSolver:
                     print(convergence_message, flush=True)
                 self.comm.barrier()
             else:
-                log.info(convergence_message)
+                log.debug(convergence_message)
             return True
 
         else:
