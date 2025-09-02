@@ -20,8 +20,9 @@
 from __future__ import annotations
 
 import datetime
+import functools
 import logging
-from typing import TYPE_CHECKING
+from typing import Callable, ParamSpec, TYPE_CHECKING, TypeVar
 
 import fenics
 
@@ -29,6 +30,25 @@ from cashocs import mpi
 
 if TYPE_CHECKING:
     from mpi4py import MPI
+
+
+class LogLevel:
+    """Stores the various log levels of cashocs."""
+
+    PROFILE = logging.DEBUG - 1
+    DEBUG = logging.DEBUG
+    INFO = logging.INFO
+    WARNING = logging.WARNING
+    ERROR = logging.ERROR
+    CRITICAL = logging.CRITICAL
+
+
+PROFILE = logging.DEBUG - 1
+DEBUG = logging.DEBUG
+INFO = logging.INFO
+WARNING = logging.WARNING
+ERROR = logging.ERROR
+CRITICAL = logging.CRITICAL
 
 
 class Logger:
@@ -47,7 +67,7 @@ class Logger:
 
         self._log = logging.getLogger(name)
         self._log.addHandler(h)
-        self._log.setLevel(logging.DEBUG)
+        self._log.setLevel(PROFILE)
 
         self._logfiles: dict[str, logging.FileHandler] = {}
         self._indent_level = 0
@@ -83,6 +103,15 @@ class Logger:
         if self.comm.rank == 0:
             self._log.log(level, self._format(message))
         self.comm.barrier()
+
+    def profile(self, message: str) -> None:
+        """Issues a message at the profile level.
+
+        Args:
+            message (str): The message that should be logged.
+
+        """
+        self.log(PROFILE, message)
 
     def debug(self, message: str) -> None:
         """Issues a message at the debug level.
@@ -301,6 +330,7 @@ class Logger:
 
 cashocs_logger = Logger("cashocs")
 
+profile = cashocs_logger.profile
 debug = cashocs_logger.debug
 info = cashocs_logger.info
 warning = cashocs_logger.warning
@@ -317,23 +347,35 @@ remove_timestamps = cashocs_logger.remove_timestamps
 add_handler = cashocs_logger.add_handler
 set_comm = cashocs_logger.set_comm
 
-
-class LogLevel:
-    """Stores the various log levels of cashocs."""
-
-    DEBUG = logging.DEBUG
-    INFO = logging.INFO
-    WARNING = logging.WARNING
-    ERROR = logging.ERROR
-    CRITICAL = logging.CRITICAL
-
-
-DEBUG = logging.DEBUG
-INFO = logging.INFO
-WARNING = logging.WARNING
-ERROR = logging.ERROR
-CRITICAL = logging.CRITICAL
-
 fenics.set_log_level(fenics.LogLevel.WARNING)
 logging.getLogger("UFL").setLevel(logging.WARNING)
 logging.getLogger("FFC").setLevel(logging.WARNING)
+
+
+P = ParamSpec("P")
+T = TypeVar("T")
+
+
+def profile_to_log(action: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    """Logs the performance profile of a function.
+
+    Args:
+        action (str): A string describing what the function does.
+
+    """
+
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
+        @functools.wraps(func)
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+            start_time = datetime.datetime.now()
+
+            result = func(*args, **kwargs)
+
+            end_time = datetime.datetime.now()
+            elapsed_time = end_time - start_time
+            cashocs_logger.profile(f"Elapsed time for {action}: {elapsed_time}.\n")
+            return result
+
+        return wrapper
+
+    return decorator

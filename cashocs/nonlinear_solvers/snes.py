@@ -43,6 +43,7 @@ default_snes_options: _typing.KspOption = {
     "snes_atol": 1e-10,
     "snes_rtol": 1e-10,
     "snes_max_it": 50,
+    "snes_monitor": None,
 }
 
 
@@ -159,6 +160,7 @@ class SNESSolver:
             )
             self.residual_shift = fenics.PETScVector(self.comm)
 
+    @log.profile_to_log("assembling the residual for SNES")
     def assemble_function(
         self,
         snes: PETSc.SNES,  # pylint: disable=unused-argument
@@ -173,7 +175,6 @@ class SNESSolver:
             f: The vector in which the function evaluation is stored.
 
         """
-        log.begin("Assembling the residual for Newton's method.", level=log.DEBUG)
         self.u.vector().vec().aypx(0.0, x)
         self.u.vector().apply("")
         f = fenics.PETScVector(f)
@@ -186,8 +187,8 @@ class SNESSolver:
         ):
             self.assembler_shift.assemble(self.residual_shift, self.u.vector())
             f[:] -= self.residual_shift[:]
-        log.end()
 
+    @log.profile_to_log("assembling the Jacobian for SNES")
     def assemble_jacobian(
         self,
         snes: PETSc.SNES,  # pylint: disable=unused-argument
@@ -205,7 +206,6 @@ class SNESSolver:
 
         """
         if not self.is_preassembled:
-            log.begin("Assembling the Jacobian for Newton's method.", level=log.DEBUG)
             self.u.vector().vec().aypx(0.0, x)
             self.u.vector().apply("")
 
@@ -217,7 +217,6 @@ class SNESSolver:
                 P = fenics.PETScMatrix(P)  # pylint: disable=invalid-name
                 self.assembler_pc.assemble(P)
                 P.ident_zeros()
-            log.end()
         else:
             self.is_preassembled = False
 

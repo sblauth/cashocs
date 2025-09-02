@@ -69,6 +69,14 @@ class FineModel(abc.ABC):
         """
         self.mesh = fenics.Mesh(mesh)
 
+    @log.profile_to_log("simulating the fine model")
+    def simulate(self) -> None:
+        """Simulates the fine model.
+
+        This is done in this method so it can be decorated for logging purposes.
+        """
+        self.solve_and_evaluate()
+
     @abc.abstractmethod
     def solve_and_evaluate(self) -> None:
         """Solves and evaluates the fine model.
@@ -588,9 +596,7 @@ class SpaceMappingProblem:
         log.begin("Solving the space mapping problem.")
         self._compute_initial_guess()
 
-        log.begin("Simulating the fine model.")
-        self.fine_model.solve_and_evaluate()
-        log.end()
+        self.fine_model.simulate()
 
         self.parameter_extraction._solve(  # pylint: disable=protected-access
             self.iteration
@@ -719,9 +725,7 @@ class SpaceMappingProblem:
                     "possible due to intersections"
                 )
 
-            log.begin("Simulating the fine model.")
-            self.fine_model.solve_and_evaluate()
-            log.end()
+            self.fine_model.simulate()
 
             self.parameter_extraction._solve(  # pylint: disable=protected-access
                 self.iteration
@@ -753,9 +757,7 @@ class SpaceMappingProblem:
                 self.transformation.vector().apply("")
                 success = self.deformation_handler_fine.move_mesh(self.transformation)
                 if success:
-                    log.begin("Simulating the fine model.")
-                    self.fine_model.solve_and_evaluate()
-                    log.end()
+                    self.fine_model.simulate()
 
                     # pylint: disable=protected-access
                     self.parameter_extraction._solve(self.iteration)
