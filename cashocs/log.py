@@ -71,7 +71,7 @@ class Logger:
 
         self._logfiles: dict[str, logging.FileHandler] = {}
         self._indent_level = 0
-        self._use_timestamp = False
+        self._use_timestamp = True
 
         self._time_stack: list[datetime.datetime] = []
         self._group_stack: list[str] = []
@@ -277,13 +277,13 @@ class Logger:
 
         """
         if self._use_timestamp:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+            timestamp = datetime.datetime.now().isoformat()
             timestamp = timestamp + " | "
         else:
             timestamp = ""
 
         indent = 2 * self._indent_level * " "
-        return "\n".join([indent + timestamp + line for line in message.split("\n")])
+        return "\n".join([timestamp + indent + line for line in message.split("\n")])
 
     def add_logfile(
         self, filename: str, mode: str = "a", level: int = logging.DEBUG

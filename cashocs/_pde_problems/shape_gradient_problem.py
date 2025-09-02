@@ -369,7 +369,10 @@ class _PLaplaceProjector:
 
     def solve(self) -> None:
         """Solves the p-Laplace problem for computing the shape gradient."""
-        log.begin("Computing the gradient deformation with the p-Laplace approach.")
+        log.begin(
+            "Computing the gradient deformation with the p-Laplace approach.",
+            level=log.DEBUG,
+        )
 
         self.solution.vector().vec().set(0.0)
         self.solution.vector().apply("")
