@@ -246,7 +246,7 @@ class TSPseudoSolver:
         else:
             self.MP_petsc = None
 
-    @log.profile_to_log("assembling the residual for pseudo time stepping")
+    @log.profile_execution_time("assembling the residual for pseudo time stepping")
     def assemble_residual(
         self,
         ts: PETSc.TS,  # pylint: disable=unused-argument
@@ -279,7 +279,7 @@ class TSPseudoSolver:
 
         f.scale(-1)
 
-    @log.profile_to_log("assembling the Jacobian for pseudo time stepping")
+    @log.profile_execution_time("assembling the Jacobian for pseudo time stepping")
     def assemble_jacobian(
         self,
         ts: PETSc.TS,  # pylint: disable=unused-argument

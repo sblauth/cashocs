@@ -35,7 +35,7 @@ if TYPE_CHECKING:
 class LogLevel:
     """Stores the various log levels of cashocs."""
 
-    PROFILE = logging.DEBUG - 1
+    TRACE = logging.DEBUG - 5
     DEBUG = logging.DEBUG
     INFO = logging.INFO
     WARNING = logging.WARNING
@@ -43,12 +43,14 @@ class LogLevel:
     CRITICAL = logging.CRITICAL
 
 
-PROFILE = logging.DEBUG - 1
+TRACE = logging.DEBUG - 5
 DEBUG = logging.DEBUG
 INFO = logging.INFO
 WARNING = logging.WARNING
 ERROR = logging.ERROR
 CRITICAL = logging.CRITICAL
+
+logging.addLevelName(TRACE, "TRACE")
 
 
 class Logger:
@@ -67,7 +69,7 @@ class Logger:
 
         self._log = logging.getLogger(name)
         self._log.addHandler(h)
-        self._log.setLevel(PROFILE)
+        self._log.setLevel(TRACE)
 
         self._logfiles: dict[str, logging.FileHandler] = {}
         self._indent_level = 0
@@ -104,14 +106,14 @@ class Logger:
             self._log.log(level, self._format(message))
         self.comm.barrier()
 
-    def profile(self, message: str) -> None:
-        """Issues a message at the profile level.
+    def trace(self, message: str) -> None:
+        """Issues a message at the trace level.
 
         Args:
             message (str): The message that should be logged.
 
         """
-        self.log(PROFILE, message)
+        self.log(TRACE, message)
 
     def debug(self, message: str) -> None:
         """Issues a message at the debug level.
@@ -330,7 +332,7 @@ class Logger:
 
 cashocs_logger = Logger("cashocs")
 
-profile = cashocs_logger.profile
+trace = cashocs_logger.trace
 debug = cashocs_logger.debug
 info = cashocs_logger.info
 warning = cashocs_logger.warning
@@ -356,11 +358,17 @@ P = ParamSpec("P")
 T = TypeVar("T")
 
 
-def profile_to_log(action: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
-    """Logs the performance profile of a function.
+def profile_execution_time(
+    action: str, level: int = TRACE
+) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    """Profiles the execution time of a function.
+
+    This decorator is used to determine how long it takes to complete a function call.
+    The output consists of log calls specified by the log level.
 
     Args:
         action (str): A string describing what the function does.
+        level (int): The log level for the output of the profiling.
 
     """
 
@@ -373,7 +381,7 @@ def profile_to_log(action: str) -> Callable[[Callable[P, T]], Callable[P, T]]:
 
             end_time = datetime.datetime.now()
             elapsed_time = end_time - start_time
-            cashocs_logger.profile(f"Elapsed time for {action}: {elapsed_time}.\n")
+            cashocs_logger.log(level, f"Elapsed time for {action}: {elapsed_time}.\n")
             return result
 
         return wrapper

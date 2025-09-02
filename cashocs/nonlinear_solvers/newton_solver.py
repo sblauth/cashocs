@@ -218,7 +218,7 @@ class _NewtonSolver:
         else:
             log.debug(info_str + print_str)
 
-    @log.profile_to_log("assembling the Jacobian for Newton's method")
+    @log.profile_execution_time("assembling the Jacobian for Newton's method")
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
         self.assembler.assemble(self.A_fenics)
@@ -375,7 +375,7 @@ class _NewtonSolver:
                 "Maximum number of iterations were exceeded.",
             )
 
-    @log.profile_to_log("assembling the residual for Newton's method")
+    @log.profile_execution_time("assembling the residual for Newton's method")
     def _compute_residual(self) -> None:
         """Computes the residual of the nonlinear system."""
         self.residual = fenics.PETScVector(self.comm)
