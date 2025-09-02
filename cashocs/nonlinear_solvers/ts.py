@@ -244,6 +244,7 @@ class TSPseudoSolver:
         else:
             self.MP_petsc = None
 
+    @log.profile_to_log("assembling the residual for pseudo time stepping")
     def assemble_residual(
         self,
         ts: PETSc.TS,  # pylint: disable=unused-argument
@@ -260,7 +261,6 @@ class TSPseudoSolver:
             f (PETSc.Vec): The vector in which the residual is stored.
 
         """
-        log.begin("Assembling the residual for pseudo time stepping.", level=log.DEBUG)
         self.u.vector().vec().aypx(0.0, u)
         self.u.vector().apply("")
 
@@ -276,8 +276,8 @@ class TSPseudoSolver:
             f[:] -= self.residual_shift[:]
 
         f.scale(-1)
-        log.end()
 
+    @log.profile_to_log("assembling the Jacobian for pseudo time stepping")
     def assemble_jacobian(
         self,
         ts: PETSc.TS,  # pylint: disable=unused-argument
@@ -296,7 +296,6 @@ class TSPseudoSolver:
             P (PETSc.Mat): The matrix for storing the preconditioner.
 
         """
-        log.begin("Assembling the Jacobian for pseudo time stepping.", level=log.DEBUG)
         self.u.vector().vec().aypx(0.0, u)
         self.u.vector().apply("")
 
@@ -316,8 +315,6 @@ class TSPseudoSolver:
             P_petsc = fenics.as_backend_type(P).mat()  # pylint: disable=invalid-name,
             P_petsc.scale(-1)
             P_petsc.assemble()
-
-        log.end()
 
     def assemble_i_function(
         self,
@@ -416,7 +413,7 @@ class TSPseudoSolver:
         else:
             relative_residual = self.res_current / self.res_initial
 
-        log.debug(
+        log.info(
             f"TS {i = }  {t = :.3e}  "
             f"residual: {relative_residual:.3e} (rel)  "
             f"{self.res_current:.3e} (abs)"

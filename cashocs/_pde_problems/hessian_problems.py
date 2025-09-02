@@ -305,7 +305,7 @@ class HessianProblem:
         rsold = self.form_handler.scalar_product(self.residual, self.residual)
         eps_0 = np.sqrt(rsold)
 
-        for _ in range(self.max_it_inner_newton):
+        for i in range(self.max_it_inner_newton):
             self.reduced_hessian_application(self.p, self.q)
 
             self.box_constraints.restrictor.restrict_to_active_set(self.p, self.temp1)
@@ -327,7 +327,7 @@ class HessianProblem:
 
             rsnew = self.form_handler.scalar_product(self.residual, self.residual)
             eps = np.sqrt(rsnew)
-            log.debug(f"Residual of the CG method: {eps/eps_0:.3e} (relative)")
+            log.debug(f"{i = }  Residual of the CG method: {eps/eps_0:.3e} (relative)")
             if eps < self.inner_newton_atol + self.inner_newton_rtol * eps_0:
                 break
 
@@ -392,7 +392,7 @@ class HessianProblem:
             eps = np.sqrt(
                 self.form_handler.scalar_product(self.residual, self.residual)
             )
-            log.debug(f"Residual of the CR method: {eps/eps_0:.3e} (relative)")
+            log.debug(f"{i = }  Residual of the CR method: {eps/eps_0:.3e} (relative)")
             if (
                 eps < self.inner_newton_atol + self.inner_newton_rtol * eps_0
                 or i == self.max_it_inner_newton - 1

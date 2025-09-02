@@ -104,6 +104,7 @@ def split_linear_forms(forms: list[ufl.Form]) -> tuple[list[ufl.Form], list[ufl.
     return lhs_list, rhs_list
 
 
+@log.profile_to_log("assembling the linear system")
 def assemble_petsc_system(
     lhs_form: ufl.Form,
     rhs_form: ufl.Form,
@@ -135,7 +136,6 @@ def assemble_petsc_system(
         allows for well-posed problems on the boundary etc.
 
     """
-    log.begin("Assembling the forms into a linear system.", level=log.DEBUG)
     if comm is None:
         comm = mpi.COMM_WORLD
 
@@ -184,8 +184,6 @@ def assemble_petsc_system(
 
     A = A_tensor.mat()  # pylint: disable=invalid-name
     b = b_tensor.vec()
-
-    log.end()
 
     return A, b, P
 
@@ -465,6 +463,7 @@ def assemble_and_solve_linear(
 class LinearSolver:
     """A solver for linear problems arising from discretized PDEs."""
 
+    @log.profile_to_log("solving the linear system with PETSc KSP")
     def solve(
         self,
         function: fenics.Function,
@@ -499,7 +498,6 @@ class LinearSolver:
             The solution vector.
 
         """
-        log.begin("Solving a linear system with PETSc.", level=log.DEBUG)
         self.comm = function.function_space().mesh().mpi_comm()
         ksp = PETSc.KSP().create(self.comm)
         setup_matrix_and_preconditioner(ksp, A, P)
@@ -527,8 +525,6 @@ class LinearSolver:
             PETSc.garbage_cleanup(comm=self.comm)
 
         function.vector().apply("")
-
-        log.end()
 
 
 class Interpolator:

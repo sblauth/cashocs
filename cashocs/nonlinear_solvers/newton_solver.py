@@ -218,9 +218,9 @@ class _NewtonSolver:
         else:
             log.info(info_str + print_str)
 
+    @log.profile_to_log("assembling the Jacobian for Newton's method")
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
-        log.begin("Assembling the Jacobian for Newton's method.", level=log.DEBUG)
         self.assembler.assemble(self.A_fenics)
         self.A_fenics.ident_zeros()
         self.A_matrix = fenics.as_backend_type(  # pylint: disable=invalid-name
@@ -235,8 +235,6 @@ class _NewtonSolver:
             ).mat()
         else:
             self.P_matrix = None
-
-        log.end()
 
     def _compute_eta_inexact(self) -> None:
         """Computes the parameter ``eta`` for the inexact Newton method."""
@@ -375,9 +373,9 @@ class _NewtonSolver:
                 "Maximum number of iterations were exceeded.",
             )
 
+    @log.profile_to_log("assembling the residual for Newton's method")
     def _compute_residual(self) -> None:
         """Computes the residual of the nonlinear system."""
-        log.begin("Assembling the residual for Newton's method.", level=log.DEBUG)
         self.residual = fenics.PETScVector(self.comm)
         self.assembler.assemble(self.residual, self.u.vector())
         if (
@@ -389,7 +387,6 @@ class _NewtonSolver:
             self.residual[:] -= self.residual_shift[:]
 
         self.b = fenics.as_backend_type(self.residual).vec()
-        log.end()
 
     def _compute_convergence_tolerance(self) -> float:
         """Computes the tolerance for the Newton solver.

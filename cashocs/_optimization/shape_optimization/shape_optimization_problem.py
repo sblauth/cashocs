@@ -231,11 +231,12 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         if self.uses_custom_scalar_product and self.config.getboolean(
             "ShapeGradient", "use_p_laplacian"
         ):
-            log.warning(
+            raise _exceptions.InputError(
+                "cashocs.ShapeOptimizationProblem",
+                "shape_scalar_product",
                 "You have supplied a custom scalar product and set the parameter "
-                "``use_p_laplacian`` in the config file."
-                "cashocs will use the supplied scalar product and not the "
-                "p-Laplacian to compute the shape gradient."
+                "``use_p_laplacian`` in the config file.\n"
+                "These options are mutually exclusive. Please disable one of them.",
             )
 
         self.shape_regularization = _forms.shape_regularization.ShapeRegularization(

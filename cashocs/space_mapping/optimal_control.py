@@ -58,6 +58,14 @@ class FineModel(abc.ABC):
     controls: list[fenics.Function]
     cost_functional_value: float
 
+    @log.profile_to_log("simulating the fine model")
+    def simulate(self) -> None:
+        """Simulates the fine model.
+
+        This is done in this method so it can be decorated for logging purposes.
+        """
+        self.solve_and_evaluate()
+
     @abc.abstractmethod
     def solve_and_evaluate(self) -> None:
         """Solves and evaluates the fine model.
@@ -559,9 +567,7 @@ class SpaceMappingProblem:
         log.begin("Solving the space mapping problem.")
         self._compute_intial_guess()
 
-        log.begin("Simulating the fine model.")
-        self.fine_model.solve_and_evaluate()
-        log.end()
+        self.fine_model.simulate()
 
         self.parameter_extraction._solve(  # pylint: disable=protected-access
             self.iteration
@@ -693,9 +699,7 @@ class SpaceMappingProblem:
                 )
                 self.x[i].vector().apply("")
 
-            log.begin("Simulating the fine model.")
-            self.fine_model.solve_and_evaluate()
-            log.end()
+            self.fine_model.simulate()
 
             self.parameter_extraction._solve(  # pylint: disable=protected-access
                 self.iteration,
@@ -721,9 +725,7 @@ class SpaceMappingProblem:
                     )
                     self.x[i].vector().apply("")
 
-                log.begin("Simulating the fine model.")
-                self.fine_model.solve_and_evaluate()
-                log.end()
+                self.fine_model.simulate()
 
                 self.parameter_extraction._solve(  # pylint: disable=protected-access
                     self.iteration,

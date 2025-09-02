@@ -141,20 +141,24 @@ class ArmijoLineSearch(line_search.LineSearch):
                     dropped_idx,
                 )
             )
-            log.debug(f"Using a stepsize of {self.stepsize:.3e}.")
 
             current_function_value = solver.objective_value
             objective_step = self._compute_objective_at_new_iterate(
                 current_function_value
             )
-            log.debug(f"Cost function value at tentative step: {objective_step:.3e}")
+            log.debug(
+                f"Stepsize: {self.stepsize:.3e}  -"
+                f"  Tentative cost function value: {objective_step:.3e}"
+            )
 
             decrease_measure = self._compute_decrease_measure(search_direction)
 
             if self._satisfies_armijo_condition(
                 objective_step, current_function_value, decrease_measure
             ):
-                log.debug("Stepsize satisfies the Armijo decrease condition.")
+                log.debug(
+                    "Accepting tentative step based on Armijo decrease condition."
+                )
                 if self.optimization_variable_abstractions.requires_remeshing():
                     log.debug(
                         "The mesh quality was sufficient for accepting the step, "
@@ -173,7 +177,9 @@ class ArmijoLineSearch(line_search.LineSearch):
                 break
 
             else:
-                log.debug("Stepsize does not satisfy the Armijo decrease condition.")
+                log.debug(
+                    "Rejecting tentative step based on Armijo decrease condition."
+                )
                 self.stepsize /= self.beta_armijo
                 self.optimization_variable_abstractions.revert_variable_update()
 
