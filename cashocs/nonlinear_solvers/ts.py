@@ -197,6 +197,8 @@ class TSPseudoSolver:
             self.excluded_from_time_derivative = excluded_from_time_derivative
         self._setup_mass_matrix()
 
+        self.has_monitor_output = "ts_monitor" in self.petsc_options
+
     def _setup_mass_matrix(self) -> None:
         """Sets up the mass matrix for the time derivative."""
         space = self.u.function_space()
@@ -413,11 +415,13 @@ class TSPseudoSolver:
         else:
             relative_residual = self.res_current / self.res_initial
 
-        log.info(
+        monitor_str = (
             f"TS {i = }  {t = :.3e}  "
             f"residual: {relative_residual:.3e} (rel)  "
             f"{self.res_current:.3e} (abs)"
         )
+        if self.comm.rank == 0 and self.has_monitor_output:
+            print(monitor_str, flush=True)
 
         self.rtol = cast(float, self.rtol)
         self.atol = cast(float, self.atol)
@@ -472,9 +476,15 @@ class TSPseudoSolver:
 
         self.res_initial = self.compute_nonlinear_residual(self.u.vector().vec())
         ts.setTime(0.0)
-        ts.setMonitor(self.monitor)
 
-        _utils.setup_petsc_options([ts], [self.petsc_options])
+        ts.setMonitor(self.monitor)
+        reduced_petsc_options = {
+            key: value
+            for key, value in self.petsc_options.items()
+            if key != "ts_monitor"
+        }
+
+        _utils.setup_petsc_options([ts], [reduced_petsc_options])
         if self.rtol is None:
             self.rtol = ts.getSNES().rtol
         if self.atol is None:

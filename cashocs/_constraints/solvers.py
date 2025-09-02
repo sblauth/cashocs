@@ -393,7 +393,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         while True:
             self.iterations += 1
 
-            log.debug(f"mu = {self.mu:.3e}  lambda = {self.lmbd:.3e}")
+            log.debug(f"mu = {self.mu:.3e}  lambda = {self.lmbd}")
 
             self._update_cost_functional()
 

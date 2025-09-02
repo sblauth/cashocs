@@ -43,7 +43,6 @@ default_snes_options: _typing.KspOption = {
     "snes_atol": 1e-10,
     "snes_rtol": 1e-10,
     "snes_max_it": 50,
-    "snes_monitor": None,
 }
 
 
