@@ -14,6 +14,8 @@ of the maintenance releases, please take a look at
 
 * Revert the way :py:func:`cashocs.ts_pseudo_solve` handles convergence after the maximum number of iterations. Now, when the maximum number of (pseudo) time steps is reached, an exception is raised. This reverts the change introduced in version 2.5. This is more in line with the behavior of the SNES solver, which the pseudo time stepping relaxes. Also, this means that users are encouraged to actually reach the desired level of convergence with the pseudo time stepping solver.
 
+* Update the logging: Introduce a new log level `PROFILE` which is used to log performance profiling information. This helps to de-clutter the debug and info logs.
+
 
 2.6.0 (June 26, 2025)
 ---------------------
