@@ -165,7 +165,7 @@ def picard_iteration(
                 print(info_str + val_str, flush=True)
             comm.barrier()
         else:
-            log.info(info_str + val_str)
+            log.debug(info_str + val_str)
 
         if res <= tol:
             break
