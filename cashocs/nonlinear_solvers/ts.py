@@ -501,14 +501,14 @@ class TSPseudoSolver:
             raise _exceptions.PETScTSError(converged_reason)
         elif converged_reason == PETSc.TS.ConvergedReason.CONVERGED_ITS:
             log.warning(
-                "The PETSc TS Solver converged since the maximum number of time steps "
-                "was reached before convergence of the pseudo time stepping.\n"
-                "The solution might be not converged.\n"
-                f"Current residual: {self.res_current:.3e} (abs) "
+                "The PETSc TS Solver diverged since the maximum number of pseudo time "
+                "steps was reached before convergence of the pseudo time stepping.\n"
+                f"Current absolute residual: {self.res_current:.3e} "
                 f"- tolerance is {self.atol:.3e}.\n"
-                f"Current residual: {self.res_current / self.res_initial:.3e} (rel) "
+                f"Current relative residual: {self.res_current / self.res_initial:.3e} "
                 f"- tolerance is {self.rtol:.3e}."
             )
+            raise _exceptions.PETScTSError(converged_reason)
 
         if hasattr(PETSc, "garbage_cleanup"):
             ts.destroy()
