@@ -192,6 +192,7 @@ class PETScTSError(PETScError):
         """
         super().__init__(error_code, message)
         self.error_dict = {
+            2: " (ts_converged_its, reached maximum number of steps)",
             -1: " (ts_diverged_nonlinear_solve)",
             -2: " (ts_diverged_step_rejected)",
             -3: " (ts_forward_diverged_linear_solve)",
