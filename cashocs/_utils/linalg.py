@@ -104,7 +104,7 @@ def split_linear_forms(forms: list[ufl.Form]) -> tuple[list[ufl.Form], list[ufl.
     return lhs_list, rhs_list
 
 
-@log.profile_to_log("assembling the linear system")
+@log.profile_execution_time("assembling the linear system")
 def assemble_petsc_system(
     lhs_form: ufl.Form,
     rhs_form: ufl.Form,
@@ -463,7 +463,7 @@ def assemble_and_solve_linear(
 class LinearSolver:
     """A solver for linear problems arising from discretized PDEs."""
 
-    @log.profile_to_log("solving the linear system with PETSc KSP")
+    @log.profile_execution_time("solving the linear system with PETSc KSP")
     def solve(
         self,
         function: fenics.Function,

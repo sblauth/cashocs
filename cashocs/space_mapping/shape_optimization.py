@@ -69,7 +69,7 @@ class FineModel(abc.ABC):
         """
         self.mesh = fenics.Mesh(mesh)
 
-    @log.profile_to_log("simulating the fine model")
+    @log.profile_execution_time("simulating the fine model")
     def simulate(self) -> None:
         """Simulates the fine model.
 

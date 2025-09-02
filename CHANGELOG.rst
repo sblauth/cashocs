@@ -16,7 +16,7 @@ of the maintenance releases, please take a look at
 
 * Update the logging behavior of cashocs:
 
-  * Introduce a new log level `PROFILE` which is used to log performance profiling information. This helps to de-clutter the debug and info logs.
+  * Introduce a new log level `TRACE` which is mainly used to log performance profiling information. This helps to de-clutter the debug and info logs. Trace level messages detail, e.g., the time it takes to assemble and solve linear systems.
 
   * Most (inner) solver calls, which are responsible for logging the solves of PDEs are now in the debug level. Also, all logs the solvers would have sent by default are now turned off and have to be enabled, if required, either through supplying the corresponding PETSc command line options (for the PETSc solver backend) or the configuration file (for the cashocs solver backend).
 

@@ -80,7 +80,7 @@ class APrioriMeshTester:
             "ksp_max_it": 1000,
         }
 
-    @log.profile_to_log("testing the volume change restrictions")
+    @log.profile_execution_time("testing the volume change restrictions")
     def test(self, transformation: fenics.Function, volume_change: float) -> bool:
         r"""Check the quality of the transformation before the actual mesh is moved.
 
@@ -157,7 +157,7 @@ class IntersectionTester:
             [self.cell_counter[i] for i in range(vertex_ghost_offset)]
         )
 
-    @log.profile_to_log("testing for self-intersecting mesh cells")
+    @log.profile_execution_time("testing for self-intersecting mesh cells")
     def test(self) -> bool:
         """Checks the quality of the transformation after the actual mesh is moved.
 

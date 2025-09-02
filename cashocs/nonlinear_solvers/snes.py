@@ -159,7 +159,7 @@ class SNESSolver:
             )
             self.residual_shift = fenics.PETScVector(self.comm)
 
-    @log.profile_to_log("assembling the residual for SNES")
+    @log.profile_execution_time("assembling the residual for SNES")
     def assemble_function(
         self,
         snes: PETSc.SNES,  # pylint: disable=unused-argument
@@ -187,7 +187,7 @@ class SNESSolver:
             self.assembler_shift.assemble(self.residual_shift, self.u.vector())
             f[:] -= self.residual_shift[:]
 
-    @log.profile_to_log("assembling the Jacobian for SNES")
+    @log.profile_execution_time("assembling the Jacobian for SNES")
     def assemble_jacobian(
         self,
         snes: PETSc.SNES,  # pylint: disable=unused-argument
