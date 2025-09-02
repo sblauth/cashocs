@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>Coverage for cashocs/nonlinear_solvers/ts.py: 86%</title>
+    <title>Coverage for cashocs/nonlinear_solvers/ts.py: 85%</title>
     <link rel="icon" sizes="32x32" href="favicon_32_cb_58284776.png">
     <link rel="stylesheet" href="style_cb_6b508a39.css" type="text/css">
     <script src="coverage_html_cb_6fb7b396.js" defer></script>
@@ -12,7 +12,7 @@
     <div class="content">
         <h1>
             <span class="text">Coverage for </span><b>cashocs/nonlinear_solvers/ts.py</b>:
-            <span class="pc_cov">86%</span>
+            <span class="pc_cov">85%</span>
         </h1>
         <aside id="help_panel_wrapper">
             <input id="help_panel_state" type="checkbox">
@@ -54,9 +54,9 @@
             </div>
         </aside>
         <h2>
-            <span class="text">196 statements &nbsp;</span>
+            <span class="text">197 statements &nbsp;</span>
             <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">168<span class="text"> run</span></button>
-            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">28<span class="text"> missing</span></button>
+            <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">29<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">3<span class="text"> excluded</span></button>
         </h2>
         <p class="text">
@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_ba5ee730b666e6af___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.5">coverage.py v7.10.5</a>,
-            created at 2025-09-02 06:29 +0000
+            created at 2025-09-02 07:42 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -583,14 +583,14 @@
     <p class="mis show_mis"><span class="n"><a id="t501" href="#t501">501</a></span><span class="t">            <span class="key">raise</span> <span class="nam">_exceptions</span><span class="op">.</span><span class="nam">PETScTSError</span><span class="op">(</span><span class="nam">converged_reason</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t502" href="#t502">502</a></span><span class="t">        <span class="key">elif</span> <span class="nam">converged_reason</span> <span class="op">==</span> <span class="nam">PETSc</span><span class="op">.</span><span class="nam">TS</span><span class="op">.</span><span class="nam">ConvergedReason</span><span class="op">.</span><span class="nam">CONVERGED_ITS</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="exc show_exc"><span class="n"><a id="t503" href="#t503">503</a></span><span class="t">            <span class="nam">log</span><span class="op">.</span><span class="nam">warning</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="exc exc2 show_exc"><span class="n"><a id="t504" href="#t504">504</a></span><span class="t">                <span class="str">"The PETSc TS Solver converged since the maximum number of time steps "</span>&nbsp;</span><span class="r"></span></p>
-    <p class="exc exc2 show_exc"><span class="n"><a id="t505" href="#t505">505</a></span><span class="t">                <span class="str">"was reached before convergence of the pseudo time stepping.\n"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="exc exc2 show_exc"><span class="n"><a id="t506" href="#t506">506</a></span><span class="t">                <span class="str">"The solution might be not converged.\n"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="exc exc2 show_exc"><span class="n"><a id="t507" href="#t507">507</a></span><span class="t">                <span class="fst">f"</span><span class="fst">Current residual: </span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">res_current</span><span class="op">:</span><span class="fst">.3e</span><span class="op">}</span><span class="fst"> (abs) </span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="exc exc2 show_exc"><span class="n"><a id="t508" href="#t508">508</a></span><span class="t">                <span class="fst">f"</span><span class="fst">- tolerance is </span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">atol</span><span class="op">:</span><span class="fst">.3e</span><span class="op">}</span><span class="fst">.\n</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="exc exc2 show_exc"><span class="n"><a id="t509" href="#t509">509</a></span><span class="t">                <span class="fst">f"</span><span class="fst">Current residual: </span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">res_current</span> <span class="op">/</span> <span class="nam">self</span><span class="op">.</span><span class="nam">res_initial</span><span class="op">:</span><span class="fst">.3e</span><span class="op">}</span><span class="fst"> (rel) </span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="exc exc2 show_exc"><span class="n"><a id="t510" href="#t510">510</a></span><span class="t">                <span class="fst">f"</span><span class="fst">- tolerance is </span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">rtol</span><span class="op">:</span><span class="fst">.3e</span><span class="op">}</span><span class="fst">.</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="exc exc2 show_exc"><span class="n"><a id="t511" href="#t511">511</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t504" href="#t504">504</a></span><span class="t">                <span class="str">"The PETSc TS Solver diverged since the maximum number of pseudo time "</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t505" href="#t505">505</a></span><span class="t">                <span class="str">"steps was reached before convergence of the pseudo time stepping.\n"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t506" href="#t506">506</a></span><span class="t">                <span class="fst">f"</span><span class="fst">Current absolute residual: </span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">res_current</span><span class="op">:</span><span class="fst">.3e</span><span class="op">}</span><span class="fst"> </span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t507" href="#t507">507</a></span><span class="t">                <span class="fst">f"</span><span class="fst">- tolerance is </span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">atol</span><span class="op">:</span><span class="fst">.3e</span><span class="op">}</span><span class="fst">.\n</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t508" href="#t508">508</a></span><span class="t">                <span class="fst">f"</span><span class="fst">Current relative residual: </span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">res_current</span> <span class="op">/</span> <span class="nam">self</span><span class="op">.</span><span class="nam">res_initial</span><span class="op">:</span><span class="fst">.3e</span><span class="op">}</span><span class="fst"> </span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t509" href="#t509">509</a></span><span class="t">                <span class="fst">f"</span><span class="fst">- tolerance is </span><span class="op">{</span><span class="nam">self</span><span class="op">.</span><span class="nam">rtol</span><span class="op">:</span><span class="fst">.3e</span><span class="op">}</span><span class="fst">.</span><span class="fst">"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t510" href="#t510">510</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="mis show_mis"><span class="n"><a id="t511" href="#t511">511</a></span><span class="t">            <span class="key">raise</span> <span class="nam">_exceptions</span><span class="op">.</span><span class="nam">PETScTSError</span><span class="op">(</span><span class="nam">converged_reason</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t512" href="#t512">512</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t513" href="#t513">513</a></span><span class="t">        <span class="key">if</span> <span class="nam">hasattr</span><span class="op">(</span><span class="nam">PETSc</span><span class="op">,</span> <span class="str">"garbage_cleanup"</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t514" href="#t514">514</a></span><span class="t">            <span class="nam">ts</span><span class="op">.</span><span class="nam">destroy</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
@@ -689,7 +689,7 @@
             <a class="nav" href="z_ba5ee730b666e6af___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.5">coverage.py v7.10.5</a>,
-            created at 2025-09-02 06:29 +0000
+            created at 2025-09-02 07:42 +0000
         </p>
     </div>
 </footer>
