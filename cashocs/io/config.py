@@ -27,7 +27,7 @@ from typing import Any
 from cashocs import _exceptions
 
 try:
-    import cashocs_extensions  # pylint: disable=unused-import # noqa: F401
+    import cashocs_extensions  # pylint: disable=unused-import
 
     has_cashocs_extensions = True
 except ImportError:

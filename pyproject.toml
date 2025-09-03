@@ -156,9 +156,23 @@ select = [
   "D", # pydocstyle
   "C90", # mccabe
   "UP", # pyupgrade
-  "B", # flake8bugbear
-  "NPY" # numpy
+  "B", # flake8-bugbear
+  "ANN", # flake8-annotations
+  "FA", # flake8-future-annotations
+  "LOG", # flake8-logging
+  "S", # flake8-bandit
+  "NPY", # numpy
+  "PD", # pandas-vet
+  "FURB", # refurb
+  "RUF100",
+]
+
+ignore = [
+"ANN401",
 ]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10

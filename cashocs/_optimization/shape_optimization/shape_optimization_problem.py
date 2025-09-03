@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import functools
 import gc
-import subprocess  # nosec B404
+import subprocess
 from typing import Callable, TYPE_CHECKING
 
 import dolfin.function.argument
@@ -488,8 +488,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             not self.config.getboolean("Debug", "remeshing")
             and self.db.geometry_db.mpi_comm.rank == 0
         ):
-            subprocess.run(  # nosec B603, B607
-                ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
+            subprocess.run(  # noqa: S603
+                ["rm", "-r", self.db.parameter_db.remesh_directory],  # noqa: S607
+                check=False,
             )
         self.db.geometry_db.mpi_comm.barrier()
 

@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import pathlib
-import subprocess  # nosec B404
+import subprocess
 import tempfile
 from typing import TYPE_CHECKING
 import weakref
@@ -235,8 +235,9 @@ class _MeshHandler:
                 f"/mesh_{self.remesh_counter:d}.msh"
             )
             if self.comm.rank == 0:
-                subprocess.run(  # nosec 603
-                    ["cp", self.gmsh_file, self.gmsh_file_init], check=True
+                subprocess.run(  # noqa: S603
+                    ["cp", self.gmsh_file, self.gmsh_file_init],  # noqa: S607
+                    check=True,
                 )
             self.comm.barrier()
             self.gmsh_file = self.gmsh_file_init
@@ -553,13 +554,13 @@ class _MeshHandler:
             ]
             if self.comm.rank == 0:
                 if not self.config.getboolean("Mesh", "show_gmsh_output"):
-                    subprocess.run(  # nosec 603
+                    subprocess.run(  # noqa: S603
                         gmsh_cmd_list,
                         check=True,
                         stdout=subprocess.DEVNULL,
                     )
                 else:
-                    subprocess.run(gmsh_cmd_list, check=True)  # nosec 603
+                    subprocess.run(gmsh_cmd_list, check=True)  # noqa: S603
             self.comm.barrier()
 
             self._remove_gmsh_parametrizations(new_gmsh_file)
@@ -699,7 +700,7 @@ class _MeshHandler:
                     if line == "$EndParametrizations\n":
                         parametrizations_section = False
 
-            subprocess.run(
-                ["mv", temp_location, mesh_file], check=True
-            )  # nosec B603, B607
+            subprocess.run(  # noqa: S603
+                ["mv", temp_location, mesh_file], check=True  # noqa: S607
+            )
         self.comm.barrier()

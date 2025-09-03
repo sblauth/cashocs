@@ -59,7 +59,7 @@ class FineModel(abc.ABC):
 
     cost_functional_value: float
 
-    def __init__(self, mesh: fenics.Mesh):
+    def __init__(self, mesh: fenics.Mesh) -> None:
         """Initializes self.
 
         Args:
@@ -117,7 +117,7 @@ class CoarseModel:
         adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
         newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
         excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
-    ):
+    ) -> None:
         """Initializes self.
 
         Args:

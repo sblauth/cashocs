@@ -19,8 +19,9 @@
 
 """Mesh conversion from GMSH .msh to .xdmf."""
 
+from __future__ import annotations
+
 import argparse
-from typing import Optional
 
 from cashocs import mpi
 from cashocs.io import mesh as iomesh
@@ -68,7 +69,7 @@ def _generate_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def convert(argv: Optional[list[str]] = None) -> None:
+def convert(argv: list[str] | None = None) -> None:
     """Converts a Gmsh .msh file to a .xdmf mesh file.
 
     Args:
