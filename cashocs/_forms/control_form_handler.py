@@ -210,7 +210,7 @@ class ControlFormHandler(form_handler.FormHandler):
 class HessianFormHandler:
     """Form handler for second order forms and hessians."""
 
-    def __init__(self, db: database.Database):
+    def __init__(self, db: database.Database) -> None:
         """Initializes the form handler for the second derivatives.
 
         Args:

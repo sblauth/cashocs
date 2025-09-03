@@ -19,8 +19,9 @@
 
 """Extract mesh files from .xdmf files."""
 
+from __future__ import annotations
+
 import argparse
-from typing import Optional
 
 from cashocs.io import mesh as iomesh
 
@@ -69,7 +70,7 @@ def _generate_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def extract_mesh(argv: Optional[list[str]] = None) -> None:
+def extract_mesh(argv: list[str] | None = None) -> None:
     """Wrapper for calling :py:func:`cashocs.io.extract_mesh` from command line.
 
     Args:

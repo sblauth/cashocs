@@ -43,7 +43,7 @@ class FormDatabase:
         state_forms: list[ufl.Form],
         bcs_list: list[list[fenics.DirichletBC]],
         preconditioner_forms: list[ufl.Form],
-    ):
+    ) -> None:
         """Initializes the form database.
 
         Args:

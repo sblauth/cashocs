@@ -64,7 +64,7 @@ class Stiffness:
         boundaries: fenics.MeshFunction,
         shape_bdry_def: list[int | str],
         shape_bdry_fix: list[int | str],
-    ):
+    ) -> None:
         """Class for managing the stiffness parameter for shape optimization.
 
         Args:

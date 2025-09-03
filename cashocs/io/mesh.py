@@ -24,7 +24,7 @@ import contextlib
 import gc
 import json
 import pathlib
-import subprocess  # nosec B404
+import subprocess
 import tempfile
 import time
 from typing import TYPE_CHECKING
@@ -502,7 +502,7 @@ def check_mesh_compatibility(mesh: fenics.Mesh, original_mesh_file: str) -> None
         )
 
 
-def write_out_mesh(  # noqa: C901
+def write_out_mesh(
     mesh: fenics.Mesh, original_msh_file: str, out_msh_file: str
 ) -> None:
     """Writes out mesh as Gmsh .msh file.
@@ -652,8 +652,8 @@ def extract_mesh_from_xdmf(
                 file.write(mesh, fenics.XDMFFile.Encoding.HDF5)
 
             if comm.rank == 0:
-                subprocess.run(  # nosec B603, B607
-                    [
+                subprocess.run(  # noqa: S603
+                    [  # noqa: S607
                         "meshio",
                         "convert",
                         "--output-format",
@@ -667,7 +667,7 @@ def extract_mesh_from_xdmf(
             comm.barrier()
         finally:
             if comm.rank == 0:
-                subprocess.run(["rm", "-r", tempdir], check=True)  # nosec B603, B607
+                subprocess.run(["rm", "-r", tempdir], check=True)  # noqa: S603, S607
             comm.barrier()
 
     else:
@@ -679,7 +679,7 @@ def extract_mesh_from_xdmf(
 class MeshConverter:
     """Converter from Gmsh to XDMF."""
 
-    def __init__(self, comm: MPI.Comm | None):
+    def __init__(self, comm: MPI.Comm | None) -> None:
         """Initializes the mesh converter.
 
         Args:
@@ -795,13 +795,13 @@ class MeshConverter:
                 meshio.write(f"{ostring}_boundaries.xdmf", xdmf_boundaries)
         else:
             if pathlib.Path(f"{ostring}_boundaries.xdmf").is_file():
-                subprocess.run(  # nosec 603
-                    ["rm", f"{ostring}_boundaries.xdmf"], check=True
+                subprocess.run(  # noqa: S603
+                    ["rm", f"{ostring}_boundaries.xdmf"], check=True  # noqa: S607
                 )
             if pathlib.Path(f"{ostring}_boundaries.h5").is_file():
-                subprocess.run(
-                    ["rm", f"{ostring}_boundaries.h5"], check=True
-                )  # nosec 603
+                subprocess.run(  # noqa: S603
+                    ["rm", f"{ostring}_boundaries.h5"], check=True  # noqa: S607
+                )
 
     def check_for_physical_names(
         self, inputfile: str, topological_dimension: int, ostring: str

@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 class APrioriMeshTester:
     """A class for testing the mesh before it is modified."""
 
-    def __init__(self, mesh: fenics.Mesh):
+    def __init__(self, mesh: fenics.Mesh) -> None:
         """Initializes the mesh tester.
 
         Args:

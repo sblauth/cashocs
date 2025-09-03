@@ -23,7 +23,7 @@ import abc
 import json
 import os
 import shutil
-import subprocess  # nosec B404
+import subprocess
 from typing import cast, TYPE_CHECKING
 
 import fenics
@@ -147,7 +147,7 @@ def generate_output_str(db: database.Database, precision: int) -> str:
 class IOManager(abc.ABC):
     """Abstract base class for input / output management."""
 
-    def __init__(self, db: database.Database, result_dir: str):
+    def __init__(self, db: database.Database, result_dir: str) -> None:
         """Initializes self.
 
         Args:
@@ -363,8 +363,9 @@ class TempFileManager(IOManager):
                 and self.db.parameter_db.temp_dict
                 and self.comm.rank == 0
             ):
-                subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.db.parameter_db.remesh_directory], check=True
+                subprocess.run(  # noqa: S603
+                    ["rm", "-r", self.db.parameter_db.remesh_directory],  # noqa: S607
+                    check=True,
                 )
             self.comm.barrier()
 
