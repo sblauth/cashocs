@@ -12,13 +12,6 @@ repos:
     hooks:
       - id: isort
 
-  - repo: https://github.com/PyCQA/pydocstyle
-    rev: 6.3.0
-    hooks:
-      - id: pydocstyle
-        additional_dependencies: ["tomli"]
-        files: cashocs/
-
   - repo: https://github.com/PyCQA/pylint
     rev: v3.3.8
     hooks:
