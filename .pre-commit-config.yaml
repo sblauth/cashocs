@@ -55,5 +55,5 @@ repos:
     rev: v0.12.11
     hooks:
       # Run the linter.
-      - id: ruff
+      - id: ruff-check
         files: cashocs/
