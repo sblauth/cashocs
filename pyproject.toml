@@ -84,9 +84,6 @@ all = ["cashocs[tests,docs]"]
 [tool.setuptools.packages]
 find = {}
 
-[tool.black]
-line_length = 88
-
 [tool.isort]
 profile = "black"
 skip_gitignore = "True"

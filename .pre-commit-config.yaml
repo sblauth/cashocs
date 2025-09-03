@@ -7,11 +7,6 @@ repos:
     hooks:
       - id: pyroma
 
-  - repo: https://github.com/psf/black
-    rev: 25.1.0
-    hooks:
-      - id: black
-
   - repo: https://github.com/PyCQA/isort
     rev: 6.0.1
     hooks:
@@ -44,4 +39,6 @@ repos:
     hooks:
       # Run the linter.
       - id: ruff-check
+        files: cashocs/
+      - id: ruff-format
         files: cashocs/
