@@ -22,7 +22,7 @@ from __future__ import annotations
 import datetime
 import functools
 import logging
-from typing import Callable, ParamSpec, TYPE_CHECKING, TypeVar
+from typing import Any, Callable, TYPE_CHECKING, TypeVar
 
 import fenics
 
@@ -354,13 +354,13 @@ logging.getLogger("UFL").setLevel(logging.WARNING)
 logging.getLogger("FFC").setLevel(logging.WARNING)
 
 
-P = ParamSpec("P")
+P = TypeVar("P")
 T = TypeVar("T")
 
 
 def profile_execution_time(
     action: str, level: int = TRACE
-) -> Callable[[Callable[P, T]], Callable[P, T]]:
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """Profiles the execution time of a function.
 
     This decorator is used to determine how long it takes to complete a function call.
@@ -372,9 +372,9 @@ def profile_execution_time(
 
     """
 
-    def decorator(func: Callable[P, T]) -> Callable[P, T]:
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @functools.wraps(func)
-        def wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+        def wrapper(*args: Any, **kwargs: Any) -> T:
             start_time = datetime.datetime.now()
 
             result = func(*args, **kwargs)
