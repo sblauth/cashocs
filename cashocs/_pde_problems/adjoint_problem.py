@@ -103,7 +103,6 @@ class AdjointProblem(pde_problem.PDEProblem):
                 "no_adjoint_solves"
                 in self.db.parameter_db.temp_dict["output_dict"].keys()
             ):
-
                 self.number_of_solves: int = self.db.parameter_db.temp_dict[
                     "output_dict"
                 ]["no_adjoint_solves"][-1]

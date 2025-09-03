@@ -209,7 +209,7 @@ class _NewtonSolver:
         print_str = (
             f"{self.iterations:4d},  "
             f"{self.res:>13.3e} ({self.atol:.2e}),  "
-            f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
+            f"{self.res / self.res_0:>13.3e} ({self.rtol:.2e})"
         )
         if self.verbose:
             if self.comm.rank == 0:
