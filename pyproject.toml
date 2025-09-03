@@ -97,10 +97,6 @@ group_by_package = "True"
 known_first_party = ["cashocs"]
 known_third_party = ["fenics", "ufl", "numpy"]
 
-[tool.pydocstyle]
-convention = "google"
-match_dir = "cashocs/"
-
 [tool.coverage.run]
 source = ["cashocs"]
 relative_files = true
@@ -162,6 +158,8 @@ select = [
   "PD", # pandas-vet
   "FURB", # refurb
   "RUF100",
+  "RUF101",
+  "RUF200",
 ]
 
 ignore = [
