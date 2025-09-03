@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_85e3b9fd6dafb371_shape_form_handler_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.5">coverage.py v7.10.5</a>,
-            created at 2025-09-03 07:46 +0000
+            created at 2025-09-03 09:45 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -140,7 +140,7 @@
     <p class="run"><span class="n"><a id="t58" href="#t58">58</a></span><span class="t"><span class="key">class</span> <span class="nam">GeneralFormHandler</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t59" href="#t59">59</a></span><span class="t">    <span class="str">"""Manages weak state and adjoint forms."""</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t60" href="#t60">60</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t61" href="#t61">61</a></span><span class="t">    <span class="key">def</span> <span class="nam">__init__</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">db</span><span class="op">:</span> <span class="nam">database</span><span class="op">.</span><span class="nam">Database</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t61" href="#t61">61</a></span><span class="t">    <span class="key">def</span> <span class="nam">__init__</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">db</span><span class="op">:</span> <span class="nam">database</span><span class="op">.</span><span class="nam">Database</span><span class="op">)</span> <span class="op">-></span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t62" href="#t62">62</a></span><span class="t">        <span class="str">"""Initializes self.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t63" href="#t63">63</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t64" href="#t64">64</a></span><span class="t"><span class="str">        Args:</span>&nbsp;</span><span class="r"></span></p>
@@ -162,7 +162,7 @@
     <p class="run"><span class="n"><a id="t80" href="#t80">80</a></span><span class="t">    <span class="nam">state_eq_forms_lhs</span><span class="op">:</span> <span class="nam">list</span><span class="op">[</span><span class="nam">ufl</span><span class="op">.</span><span class="nam">Form</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t81" href="#t81">81</a></span><span class="t">    <span class="nam">state_eq_forms_rhs</span><span class="op">:</span> <span class="nam">list</span><span class="op">[</span><span class="nam">ufl</span><span class="op">.</span><span class="nam">Form</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t82" href="#t82">82</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t83" href="#t83">83</a></span><span class="t">    <span class="key">def</span> <span class="nam">__init__</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">db</span><span class="op">:</span> <span class="nam">database</span><span class="op">.</span><span class="nam">Database</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t83" href="#t83">83</a></span><span class="t">    <span class="key">def</span> <span class="nam">__init__</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">db</span><span class="op">:</span> <span class="nam">database</span><span class="op">.</span><span class="nam">Database</span><span class="op">)</span> <span class="op">-></span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t84" href="#t84">84</a></span><span class="t">        <span class="str">"""Initializes the state form handler.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t85" href="#t85">85</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t86" href="#t86">86</a></span><span class="t"><span class="str">        Args:</span>&nbsp;</span><span class="r"></span></p>
@@ -231,7 +231,7 @@
     <p class="run"><span class="n"><a id="t149" href="#t149">149</a></span><span class="t">    <span class="nam">adjoint_eq_forms</span><span class="op">:</span> <span class="nam">list</span><span class="op">[</span><span class="nam">ufl</span><span class="op">.</span><span class="nam">Form</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t150" href="#t150">150</a></span><span class="t">    <span class="nam">linear_adjoint_eq_forms</span><span class="op">:</span> <span class="nam">list</span><span class="op">[</span><span class="nam">ufl</span><span class="op">.</span><span class="nam">Form</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t151" href="#t151">151</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t152" href="#t152">152</a></span><span class="t">    <span class="key">def</span> <span class="nam">__init__</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">db</span><span class="op">:</span> <span class="nam">database</span><span class="op">.</span><span class="nam">Database</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t152" href="#t152">152</a></span><span class="t">    <span class="key">def</span> <span class="nam">__init__</span><span class="op">(</span><span class="nam">self</span><span class="op">,</span> <span class="nam">db</span><span class="op">:</span> <span class="nam">database</span><span class="op">.</span><span class="nam">Database</span><span class="op">)</span> <span class="op">-></span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t153" href="#t153">153</a></span><span class="t">        <span class="str">"""Initializes the adjoint form handler.</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t154" href="#t154">154</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t155" href="#t155">155</a></span><span class="t"><span class="str">        Args:</span>&nbsp;</span><span class="r"></span></p>
@@ -333,7 +333,7 @@
             <a class="nav" href="z_85e3b9fd6dafb371_shape_form_handler_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.5">coverage.py v7.10.5</a>,
-            created at 2025-09-03 07:46 +0000
+            created at 2025-09-03 09:45 +0000
         </p>
     </div>
 </footer>
