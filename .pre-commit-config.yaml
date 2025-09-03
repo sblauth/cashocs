@@ -6,35 +6,42 @@ repos:
     rev: "5.0"
     hooks:
       - id: pyroma
+
   - repo: https://github.com/psf/black
     rev: 25.1.0
     hooks:
       - id: black
+
   - repo: https://github.com/PyCQA/isort
     rev: 6.0.1
     hooks:
       - id: isort
+
   - repo: https://github.com/PyCQA/pydocstyle
     rev: 6.3.0
     hooks:
       - id: pydocstyle
         additional_dependencies: ["tomli"]
         files: cashocs/
+
   - repo: https://github.com/PyCQA/flake8
     rev: 7.3.0
     hooks:
       - id: flake8
         files: cashocs/
+
   - repo: https://github.com/PyCQA/bandit
     rev: 1.8.6
     hooks:
       - id: bandit
         files: cashocs/
+
   - repo: https://github.com/PyCQA/pylint
     rev: v3.3.8
     hooks:
       - id: pylint
         files: cashocs/
+
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.17.1
     hooks:
@@ -42,13 +49,6 @@ repos:
         files: cashocs/
         additional_dependencies: ["numpy"]
         args: [--config-file, pyproject.toml]
-  - repo: https://github.com/PyCQA/prospector
-    rev: v1.17.3
-    hooks:
-      - id: prospector
-        additional_dependencies:
-          - ".[with_mypy,with_bandit,with_pyroma]"
-        files: cashocs/
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
     # Ruff version.
