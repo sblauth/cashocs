@@ -159,6 +159,7 @@ class SNESSolver:
             )
             self.residual_shift = fenics.PETScVector(self.comm)
 
+    @log.profile_execution_time("assembling the residual for SNES")
     def assemble_function(
         self,
         snes: PETSc.SNES,  # pylint: disable=unused-argument
@@ -173,7 +174,6 @@ class SNESSolver:
             f: The vector in which the function evaluation is stored.
 
         """
-        log.begin("Assembling the residual for Newton's method.", level=log.DEBUG)
         self.u.vector().vec().aypx(0.0, x)
         self.u.vector().apply("")
         f = fenics.PETScVector(f)
@@ -186,8 +186,8 @@ class SNESSolver:
         ):
             self.assembler_shift.assemble(self.residual_shift, self.u.vector())
             f[:] -= self.residual_shift[:]
-        log.end()
 
+    @log.profile_execution_time("assembling the Jacobian for SNES")
     def assemble_jacobian(
         self,
         snes: PETSc.SNES,  # pylint: disable=unused-argument
@@ -205,7 +205,6 @@ class SNESSolver:
 
         """
         if not self.is_preassembled:
-            log.begin("Assembling the Jacobian for Newton's method.", level=log.DEBUG)
             self.u.vector().vec().aypx(0.0, x)
             self.u.vector().apply("")
 
@@ -217,13 +216,12 @@ class SNESSolver:
                 P = fenics.PETScMatrix(P)  # pylint: disable=invalid-name
                 self.assembler_pc.assemble(P)
                 P.ident_zeros()
-            log.end()
         else:
             self.is_preassembled = False
 
     def solve(self) -> fenics.Function:
         """Solves the nonlinear problem with PETSc's SNES."""
-        log.begin("Solving the nonlinear PDE system with PETSc SNES.")
+        log.begin("Solving the nonlinear PDE system with PETSc SNES.", level=log.DEBUG)
         snes = PETSc.SNES().create()
 
         snes.setFunction(self.assemble_function, self.residual_petsc)

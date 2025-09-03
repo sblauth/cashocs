@@ -25,6 +25,7 @@ import fenics
 import numpy as np
 
 from cashocs import _forms
+from cashocs import log
 from cashocs._optimization import optimization_variable_abstractions
 
 if TYPE_CHECKING:
@@ -117,6 +118,7 @@ class ShapeVariableAbstractions(
                 stepsize, 0.0, search_direction[0].vector().vec()
             )
             self.deformation.vector().apply("")
+            log.debug(f"Stepsize for mesh update: {stepsize:.3e}")
             if self.mesh_handler.move_mesh(self.deformation):
                 if (
                     self.mesh_handler.current_mesh_quality

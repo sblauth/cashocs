@@ -98,7 +98,7 @@ def test_2_laplacian(config_sop, geometry, e, bcs, J, u, p, initial_coordinates)
     )
     sop1.solve(algorithm="gd", rtol=1e-2, max_iter=22)
 
-    config_sop.set("ShapeGradient", "use_p_laplacian", "True")
+    config_sop.set("ShapeGradient", "use_p_laplacian", "False")
     geometry.mesh.coordinates()[:, :] = initial_coordinates
     geometry.mesh.bounding_box_tree().build(geometry.mesh)
     sop2 = cashocs.ShapeOptimizationProblem(

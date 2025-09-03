@@ -393,8 +393,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         while True:
             self.iterations += 1
 
-            log.debug(f"mu = {self.mu}")
-            log.debug(f"lambda = {self.lmbd}")
+            log.debug(f"mu = {self.mu:.3e}  lambda = {self.lmbd}")
 
             self._update_cost_functional()
 
@@ -481,7 +480,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         while True:
             self.iterations += 1
 
-            log.debug(f"mu = {self.mu}")
+            log.debug(f"mu = {self.mu:.3e}")
 
             self._update_cost_functional()
 

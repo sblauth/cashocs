@@ -281,7 +281,6 @@ class _MeshHandler:
             raise _exceptions.CashocsException("Not a valid mesh transformation")
 
         if not self.a_priori_tester.test(transformation, self.volume_change):
-            log.debug("Mesh transformation rejected due to a priori check.")
             return False
         else:
             success_flag = self.deformation_handler.move_mesh(

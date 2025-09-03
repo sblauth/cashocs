@@ -197,6 +197,8 @@ class TSPseudoSolver:
             self.excluded_from_time_derivative = excluded_from_time_derivative
         self._setup_mass_matrix()
 
+        self.has_monitor_output = "ts_monitor" in self.petsc_options
+
     def _setup_mass_matrix(self) -> None:
         """Sets up the mass matrix for the time derivative."""
         space = self.u.function_space()
@@ -244,6 +246,7 @@ class TSPseudoSolver:
         else:
             self.MP_petsc = None
 
+    @log.profile_execution_time("assembling the residual for pseudo time stepping")
     def assemble_residual(
         self,
         ts: PETSc.TS,  # pylint: disable=unused-argument
@@ -260,7 +263,6 @@ class TSPseudoSolver:
             f (PETSc.Vec): The vector in which the residual is stored.
 
         """
-        log.begin("Assembling the residual for pseudo time stepping.", level=log.DEBUG)
         self.u.vector().vec().aypx(0.0, u)
         self.u.vector().apply("")
 
@@ -276,8 +278,8 @@ class TSPseudoSolver:
             f[:] -= self.residual_shift[:]
 
         f.scale(-1)
-        log.end()
 
+    @log.profile_execution_time("assembling the Jacobian for pseudo time stepping")
     def assemble_jacobian(
         self,
         ts: PETSc.TS,  # pylint: disable=unused-argument
@@ -296,7 +298,6 @@ class TSPseudoSolver:
             P (PETSc.Mat): The matrix for storing the preconditioner.
 
         """
-        log.begin("Assembling the Jacobian for pseudo time stepping.", level=log.DEBUG)
         self.u.vector().vec().aypx(0.0, u)
         self.u.vector().apply("")
 
@@ -316,8 +317,6 @@ class TSPseudoSolver:
             P_petsc = fenics.as_backend_type(P).mat()  # pylint: disable=invalid-name,
             P_petsc.scale(-1)
             P_petsc.assemble()
-
-        log.end()
 
     def assemble_i_function(
         self,
@@ -416,11 +415,13 @@ class TSPseudoSolver:
         else:
             relative_residual = self.res_current / self.res_initial
 
-        log.debug(
+        monitor_str = (
             f"TS {i = }  {t = :.3e}  "
             f"residual: {relative_residual:.3e} (rel)  "
             f"{self.res_current:.3e} (abs)"
         )
+        if self.comm.rank == 0 and self.has_monitor_output:
+            print(monitor_str, flush=True)
 
         self.rtol = cast(float, self.rtol)
         self.atol = cast(float, self.atol)
@@ -439,7 +440,7 @@ class TSPseudoSolver:
             The solution obtained by the solver.
 
         """
-        log.begin("Solving the PDE system with pseudo time stepping.")
+        log.begin("Solving the PDE system with pseudo time stepping.", level=log.DEBUG)
         ts = PETSc.TS().create()
         ts.setProblemType(ts.ProblemType.NONLINEAR)
 
@@ -475,9 +476,15 @@ class TSPseudoSolver:
 
         self.res_initial = self.compute_nonlinear_residual(self.u.vector().vec())
         ts.setTime(0.0)
-        ts.setMonitor(self.monitor)
 
-        _utils.setup_petsc_options([ts], [self.petsc_options])
+        ts.setMonitor(self.monitor)
+        reduced_petsc_options = {
+            key: value
+            for key, value in self.petsc_options.items()
+            if key != "ts_monitor"
+        }
+
+        _utils.setup_petsc_options([ts], [reduced_petsc_options])
         if self.rtol is None:
             self.rtol = ts.getSNES().rtol
         if self.atol is None:
