@@ -354,7 +354,6 @@ logging.getLogger("UFL").setLevel(logging.WARNING)
 logging.getLogger("FFC").setLevel(logging.WARNING)
 
 
-P = TypeVar("P")
 T = TypeVar("T")
 
 
