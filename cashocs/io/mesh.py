@@ -796,11 +796,13 @@ class MeshConverter:
         else:
             if pathlib.Path(f"{ostring}_boundaries.xdmf").is_file():
                 subprocess.run(  # noqa: S603
-                    ["rm", f"{ostring}_boundaries.xdmf"], check=True  # noqa: S607
+                    ["rm", f"{ostring}_boundaries.xdmf"],  # noqa: S607
+                    check=True,
                 )
             if pathlib.Path(f"{ostring}_boundaries.h5").is_file():
                 subprocess.run(  # noqa: S603
-                    ["rm", f"{ostring}_boundaries.h5"], check=True  # noqa: S607
+                    ["rm", f"{ostring}_boundaries.h5"],  # noqa: S607
+                    check=True,
                 )
 
     def check_for_physical_names(

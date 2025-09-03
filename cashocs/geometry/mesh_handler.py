@@ -423,22 +423,24 @@ class _MeshHandler:
 
         gmsh_pre_remesh_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
-            f"/mesh_{self.remesh_counter-1:d}_pre_remesh.msh"
+            f"/mesh_{self.remesh_counter - 1:d}_pre_remesh.msh"
         )
         if gmsh_pre_remesh_file.is_file() and self.comm.rank == 0:
             gmsh_pre_remesh_file.unlink()
         self.comm.barrier()
 
         mesh_h5_file = pathlib.Path(
-            f"{self.db.parameter_db.remesh_directory}/mesh_{self.remesh_counter-1:d}.h5"
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter - 1:d}.h5"
         )
+
         if mesh_h5_file.is_file() and self.comm.rank == 0:
             mesh_h5_file.unlink()
         self.comm.barrier()
 
         mesh_xdmf_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
-            f"/mesh_{self.remesh_counter-1:d}.xdmf"
+            f"/mesh_{self.remesh_counter - 1:d}.xdmf"
         )
         if mesh_xdmf_file.is_file() and self.comm.rank == 0:
             mesh_xdmf_file.unlink()
@@ -446,7 +448,7 @@ class _MeshHandler:
 
         boundaries_h5_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
-            f"/mesh_{self.remesh_counter-1:d}_boundaries.h5"
+            f"/mesh_{self.remesh_counter - 1:d}_boundaries.h5"
         )
         if boundaries_h5_file.is_file() and self.comm.rank == 0:
             boundaries_h5_file.unlink()
@@ -454,7 +456,7 @@ class _MeshHandler:
 
         boundaries_xdmf_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
-            f"/mesh_{self.remesh_counter-1:d}_boundaries.xdmf"
+            f"/mesh_{self.remesh_counter - 1:d}_boundaries.xdmf"
         )
         if boundaries_xdmf_file.is_file() and self.comm.rank == 0:
             boundaries_xdmf_file.unlink()
@@ -462,7 +464,7 @@ class _MeshHandler:
 
         subdomains_h5_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
-            f"/mesh_{self.remesh_counter-1:d}_subdomains.h5"
+            f"/mesh_{self.remesh_counter - 1:d}_subdomains.h5"
         )
         if subdomains_h5_file.is_file() and self.comm.rank == 0:
             subdomains_h5_file.unlink()
@@ -470,7 +472,7 @@ class _MeshHandler:
 
         subdomains_xdmf_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
-            f"/mesh_{self.remesh_counter-1:d}_subdomains.xdmf"
+            f"/mesh_{self.remesh_counter - 1:d}_subdomains.xdmf"
         )
         if subdomains_xdmf_file.is_file() and self.comm.rank == 0:
             subdomains_xdmf_file.unlink()
@@ -701,6 +703,7 @@ class _MeshHandler:
                         parametrizations_section = False
 
             subprocess.run(  # noqa: S603
-                ["mv", temp_location, mesh_file], check=True  # noqa: S607
+                ["mv", temp_location, mesh_file],  # noqa: S607
+                check=True,
             )
         self.comm.barrier()

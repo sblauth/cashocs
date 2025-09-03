@@ -17,7 +17,6 @@
 
 """Polynomial line search algorithm."""
 
-
 from __future__ import annotations
 
 import collections
@@ -310,8 +309,8 @@ class PolynomialLineSearch(line_search.LineSearch):
             )
             * np.array(
                 [
-                    [alpha_vals[0] ** 2, -alpha_vals[1] ** 2],
-                    [-alpha_vals[0] ** 3, alpha_vals[1] ** 3],
+                    [alpha_vals[0] ** 2, -(alpha_vals[1] ** 2)],
+                    [-(alpha_vals[0] ** 3), alpha_vals[1] ** 3],
                 ]
             )
             @ np.array(
