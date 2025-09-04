@@ -24,6 +24,8 @@ of the maintenance releases, please take a look at
 
 * For :py:func:`cashocs.ts_pseudo_solve`, there is the possibility to specify the PETSc command line option `ts_monitor`. This will activate the cashocs-implemented monitor for the pseudo time stepping and not use the default TS monitor, as one would expect. Output of the function can be toggled this way, completely analogous to :py:func:`cashocs.snes_solve`.
 
+* For optimal control problems: Using linear discontinous Lagrange elements for the control variable for box-constrained problems is now also possible (constant DG elements were already allowed in previous versions).
+
 
 
 2.6.0 (June 26, 2025)
