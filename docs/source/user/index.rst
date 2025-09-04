@@ -7,14 +7,6 @@ Welcome to the cashocs tutorial. In the following, we present several example
 programs that showcase how cashocs can be used to solve optimal control,
 shape optimization, and topology optimization problems.
 
-.. include:: ../../../README.rst
-    :start-after: readme_start_disclaimer
-    :end-before: readme_end_disclaimer
-
-However, we will also provide links to either the underlying theory of PDE
-constrained optimization or to the relevant documentation of FEniCS in this
-tutorial.
-
 Note, that an overview over cashocs and its capabilities can be found in `Blauth, cashocs: A Computational, Adjoint-Based
 Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_.
 
@@ -29,6 +21,14 @@ Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx
    demos/cashocs_as_solver/index
    demos/misc/index
 
+
+.. include:: ../../../README.rst
+    :start-after: readme_start_disclaimer
+    :end-before: readme_end_disclaimer
+
+However, we will also provide links to either the underlying theory of PDE
+constrained optimization or to the relevant documentation of FEniCS in this
+tutorial.
 
 .. note::
 
