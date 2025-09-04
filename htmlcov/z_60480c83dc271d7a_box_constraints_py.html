@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_60480c83dc271d7a_control_variable_abstractions_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.5">coverage.py v7.10.5</a>,
-            created at 2025-09-03 22:35 +0000
+            created at 2025-09-04 06:48 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -221,7 +221,7 @@
     <p class="run run2"><span class="n"><a id="t139" href="#t139">139</a></span><span class="t">                            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t140" href="#t140">140</a></span><span class="t">                            <span class="key">or</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t141" href="#t141">141</a></span><span class="t">                                <span class="nam">sub_elem</span><span class="op">.</span><span class="nam">family</span><span class="op">(</span><span class="op">)</span> <span class="op">==</span> <span class="str">"Discontinuous Lagrange"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t142" href="#t142">142</a></span><span class="t">                                <span class="key">and</span> <span class="nam">sub_elem</span><span class="op">.</span><span class="nam">degree</span><span class="op">(</span><span class="op">)</span> <span class="op">==</span> <span class="num">0</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t142" href="#t142">142</a></span><span class="t">                                <span class="key">and</span> <span class="nam">sub_elem</span><span class="op">.</span><span class="nam">degree</span><span class="op">(</span><span class="op">)</span> <span class="op">&lt;=</span> <span class="num">1</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t143" href="#t143">143</a></span><span class="t">                            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t144" href="#t144">144</a></span><span class="t">                        <span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="exc show_exc"><span class="n"><a id="t145" href="#t145">145</a></span><span class="t">                            <span class="key">raise</span> <span class="nam">_exceptions</span><span class="op">.</span><span class="nam">InputError</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
@@ -232,8 +232,8 @@
     <p class="exc exc2 show_exc"><span class="n"><a id="t150" href="#t150">150</a></span><span class="t">                                <span class="str">"controls"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="exc exc2 show_exc"><span class="n"><a id="t151" href="#t151">151</a></span><span class="t">                                <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="exc exc2 show_exc"><span class="n"><a id="t152" href="#t152">152</a></span><span class="t">                                    <span class="str">"Control constraints are only implemented for "</span>&nbsp;</span><span class="r"></span></p>
-    <p class="exc exc2 show_exc"><span class="n"><a id="t153" href="#t153">153</a></span><span class="t">                                    <span class="str">"linear Lagrange, constant Discontinuous Lagrange, "</span>&nbsp;</span><span class="r"></span></p>
-    <p class="exc exc2 show_exc"><span class="n"><a id="t154" href="#t154">154</a></span><span class="t">                                    <span class="str">"and Real elements."</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t153" href="#t153">153</a></span><span class="t">                                    <span class="str">"linear Lagrange, constant and linear discontinuous"</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t154" href="#t154">154</a></span><span class="t">                                    <span class="str">" Lagrange, and Real elements."</span>&nbsp;</span><span class="r"></span></p>
     <p class="exc exc2 show_exc"><span class="n"><a id="t155" href="#t155">155</a></span><span class="t">                                <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="exc exc2 show_exc"><span class="n"><a id="t156" href="#t156">156</a></span><span class="t">                            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t157" href="#t157">157</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -246,7 +246,7 @@
     <p class="run run2"><span class="n"><a id="t164" href="#t164">164</a></span><span class="t">                        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t165" href="#t165">165</a></span><span class="t">                        <span class="key">or</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t166" href="#t166">166</a></span><span class="t">                            <span class="nam">control_element</span><span class="op">.</span><span class="nam">family</span><span class="op">(</span><span class="op">)</span> <span class="op">==</span> <span class="str">"Discontinuous Lagrange"</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t167" href="#t167">167</a></span><span class="t">                            <span class="key">and</span> <span class="nam">control_element</span><span class="op">.</span><span class="nam">degree</span><span class="op">(</span><span class="op">)</span> <span class="op">==</span> <span class="num">0</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t167" href="#t167">167</a></span><span class="t">                            <span class="key">and</span> <span class="nam">control_element</span><span class="op">.</span><span class="nam">degree</span><span class="op">(</span><span class="op">)</span> <span class="op">&lt;=</span> <span class="num">1</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t168" href="#t168">168</a></span><span class="t">                        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t169" href="#t169">169</a></span><span class="t">                    <span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="exc show_exc"><span class="n"><a id="t170" href="#t170">170</a></span><span class="t">                        <span class="key">raise</span> <span class="nam">_exceptions</span><span class="op">.</span><span class="nam">InputError</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
@@ -257,8 +257,8 @@
     <p class="exc exc2 show_exc"><span class="n"><a id="t175" href="#t175">175</a></span><span class="t">                            <span class="str">"controls"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="exc exc2 show_exc"><span class="n"><a id="t176" href="#t176">176</a></span><span class="t">                            <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="exc exc2 show_exc"><span class="n"><a id="t177" href="#t177">177</a></span><span class="t">                                <span class="str">"Control constraints are only implemented for "</span>&nbsp;</span><span class="r"></span></p>
-    <p class="exc exc2 show_exc"><span class="n"><a id="t178" href="#t178">178</a></span><span class="t">                                <span class="str">"linear Lagrange, constant Discontinuous Lagrange, "</span>&nbsp;</span><span class="r"></span></p>
-    <p class="exc exc2 show_exc"><span class="n"><a id="t179" href="#t179">179</a></span><span class="t">                                <span class="str">"and Real elements."</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t178" href="#t178">178</a></span><span class="t">                                <span class="str">"linear Lagrange, constant and linear discontinuous "</span>&nbsp;</span><span class="r"></span></p>
+    <p class="exc exc2 show_exc"><span class="n"><a id="t179" href="#t179">179</a></span><span class="t">                                <span class="str">"Lagrange, and Real elements."</span>&nbsp;</span><span class="r"></span></p>
     <p class="exc exc2 show_exc"><span class="n"><a id="t180" href="#t180">180</a></span><span class="t">                            <span class="op">)</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="exc exc2 show_exc"><span class="n"><a id="t181" href="#t181">181</a></span><span class="t">                        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t182" href="#t182">182</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -442,7 +442,7 @@
             <a class="nav" href="z_60480c83dc271d7a_control_variable_abstractions_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.5">coverage.py v7.10.5</a>,
-            created at 2025-09-03 22:35 +0000
+            created at 2025-09-04 06:48 +0000
         </p>
     </div>
 </footer>
