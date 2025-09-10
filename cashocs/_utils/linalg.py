@@ -233,6 +233,7 @@ def setup_fieldsplit_preconditioner(
     if fun is not None:
         if "pc_type" in options.keys() and options["pc_type"] == "fieldsplit":
             function_space = fun.function_space()
+            comm = function_space.mesh().mpi_comm()
             if not function_space.num_sub_spaces() > 1:
                 raise _exceptions.InputError(
                     "cashocs._utils.solve_linear_problem",
@@ -265,7 +266,7 @@ def setup_fieldsplit_preconditioner(
                     for i in range(num_sub_spaces)
                 ]
 
-                section = PETSc.Section().create()
+                section = PETSc.Section().create(comm)
                 section.setNumFields(num_sub_spaces)
 
                 for i in range(num_sub_spaces):
@@ -278,7 +279,7 @@ def setup_fieldsplit_preconditioner(
                         section.setFieldDof(i - offset, field_idx, 1)
                 section.setUp()
 
-                dm = PETSc.DMShell().create()
+                dm = PETSc.DMShell().create(comm)
                 dm.setDefaultSection(section)
                 dm.setUp()
 
@@ -516,13 +517,14 @@ class LinearSolver:
         ksp.setTolerances(rtol=rtol, atol=atol)
 
         ksp.solve(b, x)
-
-        if ksp.getConvergedReason() < 0:
-            raise _exceptions.PETScKSPError(ksp.getConvergedReason())
+        converged_reason = ksp.getConvergedReason()
 
         if hasattr(PETSc, "garbage_cleanup"):
             ksp.destroy()
             PETSc.garbage_cleanup(comm=self.comm)
+
+        if converged_reason < 0:
+            raise _exceptions.PETScKSPError(converged_reason)
 
         function.vector().apply("")
 

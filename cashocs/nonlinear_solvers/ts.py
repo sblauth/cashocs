@@ -336,9 +336,7 @@ class TSPseudoSolver:
             f (PETSc.Vec): The vector for storing the IFunction.
 
         """
-        res = self.mass_matrix_petsc.createVecLeft()
-        self.mass_matrix_petsc.mult(u_dot, res)
-        f.aypx(0.0, res)
+        self.mass_matrix_petsc.mult(u_dot, f)
         f.assemble()
 
     def assemble_mass_matrix(
@@ -431,7 +429,26 @@ class TSPseudoSolver:
             max_time = ts.getMaxTime()
             ts.setTime(max_time)
         elif self.res_current > self.dtol * self.res_initial:
+            if hasattr(PETSc, "garbage_cleanup"):
+                self._destroy_petsc_objects()
+                ts.destroy()
+                PETSc.garbage_cleanup(comm=self.comm)
             raise _exceptions.PETScTSError(-5)
+
+    def _destroy_petsc_objects(self) -> None:
+        self.residual_convergence.vec().destroy()
+
+        self.M_petsc.destroy()
+        self.mass_matrix_petsc.destroy()
+
+        if self.P_petsc is not None:
+            self.P_petsc.destroy()
+
+        if self.residual_shift is not None:
+            self.residual_shift.destroy()
+
+        if self.MP_petsc is not None:
+            self.MP_petsc.destroy()
 
     def solve(self) -> fenics.Function:
         """Solves the (nonlinear) problem with pseudo time stepping.
@@ -441,7 +458,7 @@ class TSPseudoSolver:
 
         """
         log.begin("Solving the PDE system with pseudo time stepping.", level=log.DEBUG)
-        ts = PETSc.TS().create()
+        ts = PETSc.TS().create(self.comm)
         ts.setProblemType(ts.ProblemType.NONLINEAR)
 
         ts.setIFunction(self.assemble_i_function, self.mass_application_petsc)
@@ -497,13 +514,18 @@ class TSPseudoSolver:
         x.vector().apply("")
 
         ts.solve(x.vector().vec())
+        converged_reason = ts.getConvergedReason()
 
         self.u.vector().vec().aypx(0.0, x.vector().vec())
         self.u.vector().apply("")
 
         log.end()
 
-        converged_reason = ts.getConvergedReason()
+        if hasattr(PETSc, "garbage_cleanup"):
+            self._destroy_petsc_objects()
+            ts.destroy()
+            PETSc.garbage_cleanup(comm=self.comm)
+
         if converged_reason < 0:
             raise _exceptions.PETScTSError(converged_reason)
         elif converged_reason == PETSc.TS.ConvergedReason.CONVERGED_ITS:
@@ -516,10 +538,6 @@ class TSPseudoSolver:
                 f"- tolerance is {self.rtol:.3e}."
             )
             raise _exceptions.PETScTSError(converged_reason)
-
-        if hasattr(PETSc, "garbage_cleanup"):
-            ts.destroy()
-            PETSc.garbage_cleanup(comm=self.comm)
 
         return self.u
 
