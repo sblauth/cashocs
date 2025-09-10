@@ -380,7 +380,8 @@ class _PLaplaceProjector:
             petsc_options: _typing.KspOption = {
                 "snes_type": "newtonls",
                 "snes_linesearch_type": "basic",
-                "snes_ksp_ew": True,
+                "snes_ksp_ew": None,
+                "snes_ksp_ew_rtolmax": 1e-1,
             }
             petsc_options.update(self.ksp_options)
 
