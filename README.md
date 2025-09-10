@@ -65,7 +65,7 @@
 | cashocs/\_utils/forms.py                                                           |       62 |        0 |    100% |           |
 | cashocs/\_utils/helpers.py                                                         |       71 |        1 |     99% |        69 |
 | cashocs/\_utils/interpolations.py                                                  |       44 |       18 |     59% |27, 275-449 |
-| cashocs/\_utils/linalg.py                                                          |      183 |       21 |     89% |78, 140, 158, 330-331, 388-391, 506-507, 636-640, 660-672 |
+| cashocs/\_utils/linalg.py                                                          |      185 |       21 |     89% |78, 140, 158, 331-332, 389-392, 507-508, 638-642, 662-674 |
 | cashocs/geometry/\_\_init\_\_.py                                                   |       18 |        0 |    100% |           |
 | cashocs/geometry/boundary\_distance.py                                             |       63 |        1 |     98% |       154 |
 | cashocs/geometry/deformations.py                                                   |       64 |        4 |     94% |130, 139, 144, 203 |
@@ -86,13 +86,13 @@
 | cashocs/nonlinear\_solvers/linear\_solver.py                                       |       35 |        7 |     80% |     88-96 |
 | cashocs/nonlinear\_solvers/newton\_solver.py                                       |      195 |       26 |     87% |123-128, 168-171, 190-193, 231-233, 260, 265, 318-320, 359, 367-373, 388-389, 401, 403, 436-437 |
 | cashocs/nonlinear\_solvers/picard\_solver.py                                       |       82 |        7 |     91% |54-57, 164-166, 174 |
-| cashocs/nonlinear\_solvers/snes.py                                                 |      106 |       10 |     91% |114-119, 144-148, 216-218, 256 |
-| cashocs/nonlinear\_solvers/ts.py                                                   |      199 |       30 |     85% |132-135, 140-145, 175-179, 188-191, 197, 228, 230, 243, 277-278, 313-319, 374-376, 424, 434, 493, 508, 518 |
+| cashocs/nonlinear\_solvers/snes.py                                                 |      106 |       10 |     91% |114-119, 144-148, 216-218, 260 |
+| cashocs/nonlinear\_solvers/ts.py                                                   |      212 |       37 |     83% |132-135, 140-145, 175-179, 188-191, 197, 228, 230, 243, 277-278, 313-319, 372-374, 422, 432-436, 445, 448, 451, 510, 530, 540 |
 | cashocs/space\_mapping/\_\_init\_\_.py                                             |        3 |        0 |    100% |           |
 | cashocs/space\_mapping/optimal\_control.py                                         |      378 |       40 |     89% |173, 274, 357-362, 462, 549-550, 678-680, 687-689, 714-746, 931, 960-962, 972-974, 988-989 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      392 |       53 |     86% |175, 277, 352-353, 447, 524-525, 540-567, 688-689, 706-708, 714-716, 746-784, 956, 983-985, 995-997, 1011-1012 |
 | cashocs/verification.py                                                            |      131 |        3 |     98% |234-235, 267 |
-|                                                                          **TOTAL** | **7657** |  **643** | **92%** |           |
+|                                                                          **TOTAL** | **7672** |  **650** | **92%** |           |
 
 
 ## Setup coverage badge
