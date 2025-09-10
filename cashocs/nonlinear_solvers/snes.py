@@ -222,7 +222,7 @@ class SNESSolver:
     def solve(self) -> fenics.Function:
         """Solves the nonlinear problem with PETSc's SNES."""
         log.begin("Solving the nonlinear PDE system with PETSc SNES.", level=log.DEBUG)
-        snes = PETSc.SNES().create()
+        snes = PETSc.SNES().create(self.comm)
 
         snes.setFunction(self.assemble_function, self.residual_petsc)
         snes.setJacobian(self.assemble_jacobian, self.A_petsc, self.P_petsc)
@@ -245,19 +245,19 @@ class SNESSolver:
         x.vector().apply("")
 
         snes.solve(None, x.vector().vec())
+        converged_reason = snes.getConvergedReason()
+
+        if hasattr(PETSc, "garbage_cleanup"):
+            snes.destroy()
+            PETSc.garbage_cleanup(comm=self.comm)
 
         self.u.vector().vec().setArray(x.vector().vec())
         self.u.vector().apply("")
 
         log.end()
 
-        converged_reason = snes.getConvergedReason()
         if converged_reason < 0:
             raise _exceptions.PETScSNESError(converged_reason)
-
-        if hasattr(PETSc, "garbage_cleanup"):
-            snes.destroy()
-            PETSc.garbage_cleanup(comm=self.comm)
 
         return self.u
 
