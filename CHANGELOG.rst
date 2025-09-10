@@ -26,6 +26,9 @@ of the maintenance releases, please take a look at
 
 * For optimal control problems: Using linear discontinous Lagrange elements for the control variable for box-constrained problems is now also possible (constant DG elements were already allowed in previous versions).
 
+* Fix a memory leak with PETSc and petsc4py.´
+
+* Update the documentation of the configuration parameters. Now, the summary is shown at the top and the width of the columns has been adapted to be consistent throughout.
 
 
 2.6.0 (June 26, 2025)
