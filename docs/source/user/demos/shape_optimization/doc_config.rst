@@ -8,33 +8,391 @@ discusss the corresponding parameters.
 
 For shape optimization problems, the config file is a lot larger compared to the :ref:`config files
 for optimal control <config_optimal_control>`.
-However, several important parameters are shared between both _typing of optimization
+However, several important parameters are shared between both kinds of optimization
 problems.
-
-A general config file for shape optimization has the following sections
-:ref:`Mesh <config_shape_mesh>`, :ref:`StateSystem <config_shape_state_equation>`,
-:ref:`OptimizationRoutine <config_shape_optimization_routine>`, :ref:`AlgoLBFGS <config_shape_algolbfgs>`,
-:ref:`AlgoCG <config_shape_algocg>`,
-:ref:`ShapeGradient <config_shape_shape_gradient>`,
-:ref:`Regularization <config_shape_regularization>`, :ref:`MeshQuality <config_shape_mesh_quality>`
-and :ref:`Output <config_shape_output>`. We go over these
-sections and each parameter in them in the following.
 
 As in :ref:`config_optimal_control`, we refer to the `documentation of the
 configparser module <https://docs.python.org/3/library/configparser.html>`_ for
 a detailed description of how these config files can be structured. Moreover,
 we remark that cashocs has a default behavior for almost all of these
 parameters, which is triggered when they are **NOT** specified in the config file,
-and we will discuss this behavior for each parameter in this tutorial. For a
-summary over all parameters and their default values look at
-:ref:`the end of this page <config_shape_summary>`.
+and we will discuss this behavior for each parameter in this tutorial.
 
+For the sake of brevity, we begin with a summary of all parameters and their default
+values before going deeper into detail on all of them below. New users might want
+to skip the summary and continue directly at
+:ref:`the detailed description <config_shape_detailed>`.
+
+
+
+.. _config_shape_summary:
+
+Summary
+-------
+
+An overview over all parameters and their default values can be found
+in the following.
+
+
+Mesh
+****
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`mesh_file`
+      - Only needed for remeshing
+    * - :ini:`gmsh_file`
+      - Only needed for remeshing
+    * - :ini:`geo_file`
+      - Only needed for remeshing
+    * - :ini:`remesh = False`
+      - if :ini:`remesh = True`, remeshing is enabled; this feature is experimental, use with care
+    * - :ini:`show_gmsh_output = False`
+      - if :ini:`show_gmsh_output = True`, shows the output of GMSH during remeshing in the console
+
+
+
+StateSystem
+***********
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`is_linear = False`
+      - using :ini:`is_linear = True` gives an error for nonlinear problems
+    * - :ini:`newton_rtol = 1e-11`
+      - relative tolerance for Newton's method
+    * - :ini:`newton_atol = 1e-13`
+      - absolute tolerance for Newton's method
+    * - :ini:`newton_iter = 50`
+      - maximum iterations for Newton's method
+    * - :ini:`newton_damped = False`
+      - if :ini:`newton_damped = True`, damping is enabled
+    * - :ini:`newton_inexact = False`
+      - if :ini:`newton_inexact = True`, an inexact Newton's method is used
+    * - :ini:`newton_verbose = False`
+      - :ini:`newton_verbose = True` enables verbose output of Newton's method
+    * - :ini:`picard_iteration = False`
+      - :ini:`picard_iteration = True` enables Picard iteration; only has an effect for multiple
+        variables
+    * - :ini:`picard_rtol = 1e-10`
+      - relative tolerance for Picard iteration
+    * - :ini:`picard_atol = 1e-12`
+      - absolute tolerance for Picard iteration
+    * - :ini:`picard_iter = 50`
+      - maximum iterations for Picard iteration
+    * - :ini:`picard_verbose = False`
+      - :ini:`picard_verbose = True` enables verbose output of Picard iteration
+    * - :ini:`backend = cashocs`
+      - specifies the backend for solving nonlinear equations, can be either :ini:`cashocs` or :ini:`petsc`
+    * - :ini:`use_adjoint_linearizations = False`
+      - if `True`, the adjoint form of the provided `newton_linearizations` will be used for the adjoint system.
+
+
+
+OptimizationRoutine
+*******************
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`algorithm`
+      - has to be specified by the user; see :py:meth:`solve <cashocs.OptimalControlProblem.solve>`
+    * - :ini:`rtol = 1e-3`
+      - relative tolerance for the optimization algorithm
+    * - :ini:`atol = 0.0`
+      - absolute tolerance for the optimization algorithm
+    * - :ini:`max_iter = 100`
+      - maximum iterations for the optimization algorithm
+    * - :ini:`gradient_method = direct`
+      - specifies the solver for computing the gradient, can be either :ini:`gradient_method = direct` or :ini:`gradient_method = iterative`
+    * - :ini:`gradient_tol = 1e-9`
+      - the relative tolerance in case an iterative solver is used to compute the gradient.
+    * - :ini:`soft_exit = False`
+      - if :ini:`soft_exit = True`, the optimization algorithm does not raise an exception if
+        it did not converge
+
+
+LineSearch
+**********
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`method = armijo`
+      - :ini:`method = armijo` is a simple backtracking line search, whereas :ini:`method = polynomial` uses polynomial models to compute trial stepsizes.
+    * - :ini:`initial_stepsize = 1.0`
+      - initial stepsize for the first iteration in the Armijo rule
+    * - :ini:`epsilon_armijo = 1e-4`
+      -
+    * - :ini:`beta_armijo = 2.0`
+      -
+    * - :ini:`safeguard_stepsize = True`
+      - De(-activates) a safeguard against poor scaling
+    * - :ini:`polynomial_model = cubic`
+      - This specifies, whether a cubic or quadratic model is used for computing trial stepsizes
+    * - :ini:`factor_high = 0.5`
+      - Safeguard for stepsize, upper bound
+    * - :ini:`factor_low = 0.1`
+      - Safeguard for stepsize, lower bound
+    * - :ini:`fail_if_not_converged = False`
+      - if this is :ini:`True`, then the line search fails if the state system can not be solved at the new iterate
+
+AlgoLBFGS
+*********
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`bfgs_memory_size = 5`
+      - memory size of the L-BFGS method
+    * - :ini:`use_bfgs_scaling = True`
+      - if :ini:`use_bfgs_scaling = True`, uses a scaled identity mapping as initial guess for the inverse Hessian
+    * - :ini:`bfgs_periodic_restart = 0`
+      - specifies, after how many iterations the method is restarted. If this is 0, no restarting is done.
+    * - :ini:`damped = False`
+      - specifies whether damping for the BFGS method should be used to enforce the curvature condition and prevent restarting
+
+AlgoCG
+******
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`cg_method = FR`
+      - specifies which nonlinear CG method is used
+    * - :ini:`cg_periodic_restart = False`
+      - if :ini:`cg_periodic_restart = True`, enables periodic restart of NCG method
+    * - :ini:`cg_periodic_its = 10`
+      - specifies, after how many iterations the NCG method is restarted, if applicable
+    * - :ini:`cg_relative_restart = False`
+      - if :ini:`cg_relative_restart = True`, enables restart of NCG method based on a relative criterion
+    * - :ini:`cg_restart_tol = 0.25`
+      - the tolerance of the relative restart criterion, if applicable
+
+
+
+ShapeGradient
+*************
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`shape_bdry_def = []`
+      - list of indices for the deformable boundaries
+    * - :ini:`shape_bdry_fix = []`
+      - list of indices for the fixed boundaries
+    * - :ini:`shape_bdry_fix_x = []`
+      - list of indices for boundaries with fixed x values
+    * - :ini:`shape_bdry_fix_y = []`
+      - list of indices for boundaries with fixed y values
+    * - :ini:`shape_bdry_fix_z = []`
+      - list of indices for boundaries with fixed z values
+    * - :ini:`fixed_dimensions = []`
+      - a list of coordinates which should be fixed during the shape optimization (x=0, y=1, etc.)
+    * - :ini:`use_pull_back = True`
+      - if :ini:`use_pull_back = False`, shape derivative might be wrong; no pull-back for the material derivative is performed;
+        only use with caution
+    * - :ini:`lambda_lame = 0.0`
+      - value of the first Lamé parameter for the elasticity equations
+    * - :ini:`damping_factor = 0.0`
+      - value of the damping parameter for the elasticity equations
+    * - :ini:`mu_def = 1.0`
+      - value of the second Lamé parameter on the deformable boundaries
+    * - :ini:`mu_fix = 1.0`
+      - value of the second Lamé parameter on the fixed boundaries
+    * - :ini:`use_sqrt_mu = False`
+      - if :ini:`use_sqrt_mu = True`, uses the square root of the computed ``mu_lame``; might be good for 3D problems
+    * - :ini:`inhomogeneous = False`
+      - if :ini:`inhomogeneous = True`, uses inhomogeneous elasticity equations, weighted by the local mesh size
+    * - :ini:`update_inhomogeneous = False`
+      - if :ini:`update_inhomogeneous = True` and :ini:`inhomogeneous=True`, then the weighting with the local mesh size is updated as the mesh is deformed.
+    * - :ini:`inhomogeneous_exponent = 1.0`
+      - The exponent for the inhomogeneous mesh stiffness
+    * - :ini:`use_distance_mu = False`
+      - if :ini:`use_distance_mu = True`, the value of the second Lamé parameter is computed via the distance to the boundary
+    * - :ini:`dist_min = 1.0`
+      - Specifies the distance to the boundary, until which :math:`\mu` is given by :ini:`mu_min`
+    * - :ini:`dist_max = 1.0`
+      - Specifies the distance to the boundary, until which :math:`\mu` is given by :ini:`mu_max`
+    * - :ini:`mu_min = 1.0`
+      - The value of :math:`\mu` for a boundary distance smaller than :ini:`dist_min`
+    * - :ini:`mu_max = 1.0`
+      - The value of :math:`\mu` for a boundary distance larger than :ini:`dist_max`
+    * - :ini:`boundaries_dist = []`
+      - The indices of the boundaries, which shall be used to compute the distance, :ini:`boundaries_dist = []` means that all boundaries are considered
+    * - :ini:`distance_method = eikonal`
+      - The method for computing the distance to the boundary. Can be either :ini:`eikonal` or :ini:`poisson`
+    * - :ini:`smooth_mu = False`
+      - If false, a linear (continuous) interpolation between :ini:`mu_min` and :ini:`mu_max` is used, otherwise a cubic :math:`C^1` interpolant is used
+    * - :ini:`use_p_laplacian = False`
+      - If :ini:`use_p_laplacian = True`, then the :math:`p`-Laplacian is used to compute the shape gradient
+    * - :ini:`p_laplacian_power = 2`
+      - The parameter :math:`p` of the :math:`p`-Laplacian
+    * - :ini:`p_laplacian_stabilization = 0.0`
+      - The stabilization parameter for the :math:`p`-Laplacian problem. No stabilization is used when this is :ini:`p_laplacian_stabilization = 0.0`.
+    * - :ini:`global_deformation = False`
+      - Computes the global deformation from initial to optimized mesh. This can lead to unexpected errors, use with care.
+    * - :ini:`degree_estimation = True`
+      - Estimate the required degree for quadrature of the shape derivative. This should be `True`, otherwise unexpected errors can happen.
+    * - :ini:`test_for_intersections = True`
+      - If enabled, the mesh is tested for intersections which would create non-physical meshes. This should always be enabled, otherwise the obtained results might be incorrect.
+    * - :ini:`reextend_from_boundary = False`
+      - If this is enabled, the gradient deformation is re-extended from the boundary.`
+    * - :ini:`reextension_mode = surface`
+      - If this is `surface`, then the surface deformation is used for reextension. If this is `normal` only the normal deformation is used.
+
+
+Regularization
+**************
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`factor_volume = 0.0`
+      - value of the regularization parameter for volume regularization; needs to be non-negative
+    * - :ini:`target_volume = 0.0`
+      - prescribed volume for the volume regularization
+    * - :ini:`use_initial_volume = False`
+      - if :ini:`use_initial_volume = True` uses the volume of the initial geometry as prescribed volume
+    * - :ini:`factor_surface = 0.0`
+      - value of the regularization parameter for surface regularization; needs to be non-negative
+    * - :ini:`target_surface = 0.0`
+      - prescribed surface for the surface regularization
+    * - :ini:`use_initial_surface = False`
+      - if :ini:`use_initial_surface = True` uses the surface area of the initial geometry as prescribed surface
+    * - :ini:`factor_curvature = 0.0`
+      - value of the regularization parameter for curvature regularization; needs to be non-negative
+    * - :ini:`factor_barycenter = 0.0`
+      - value of the regularization parameter for barycenter regularization; needs to be non-negative
+    * - :ini:`target_barycenter = [0.0, 0.0, 0.0]`
+      - prescribed barycenter for the barycenter regularization
+    * - :ini:`use_initial_barycenter = False`
+      - if :ini:`use_initial_barycenter = True` uses the barycenter of the initial geometry as prescribed barycenter
+    * - :ini:`use_relative_scaling = False`
+      - if :ini:`use_relative_scaling = True`, the regularization terms are scaling so that they have the magnitude specified in the respective factor for the initial iteration.
+
+
+
+MeshQuality
+***********
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`volume_change = inf`
+      - determines by what factor the volume of a cell is allowed to change within a single deformation
+    * - :ini:`angle_change = inf`
+      - determines how much the angles of a cell are allowed to change within a single deformation
+    * - :ini:`tol_lower = 0.0`
+      - if the mesh quality is lower than this tolerance, the state system is not solved
+        for the Armijo rule, instead step size is decreased
+    * - :ini:`tol_upper = 1e-15`
+      - if the mesh quality is between :ini:`tol_lower` and :ini:`tol_upper`, the state
+        system will still be solved for the Armijo rule. If the accepted step yields a quality
+        lower than this, algorithm is terminated (or remeshing is initiated)
+    * - :ini:`measure = skewness`
+      - determines which quality measure is used
+    * - :ini:`type = min`
+      - determines if minimal, average, or quantile quality is considered
+    * - :ini:`quantile = 0.0`
+      - specifies the quantile if :ini:`type = quantile` is used.
+    * - :ini:`remesh_iter = 0`
+      - When set to a value > 0, remeshing is performed every :ini:`remesh_iter` iterations.
+
+Output
+******
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`verbose = True`
+      - if :ini:`verbose = True`, the history of the optimization is printed to the console
+    * - :ini:`save_results = True`
+      - if :ini:`save_results = True`, the history of the optimization is saved to a .json file
+    * - :ini:`save_txt = True`
+      - if :ini:`save_txt = True`, the history of the optimization is saved to a human readable .txt file
+    * - :ini:`save_state = False`
+      - if :ini:`save_state = True`, the history of the state variables over the optimization is
+        saved in .xdmf files
+    * - :ini:`save_adjoint = False`
+      - if :ini:`save_adjoint = True`, the history of the adjoint variables over the optimization is
+        saved in .xdmf files
+    * - :ini:`save_gradient = False`
+      - if :ini:`save_gradient = True`, the history of the shape gradient over the optimization is saved in .xdmf files
+    * - :ini:`save_mesh = False`
+      - if :ini:`save_mesh = True`, saves the mesh in each iteration of the optimization; only available for GMSH input
+    * - :ini:`result_dir = ./results`
+      - path to the directory, where the output should be placed
+    * - :ini:`precision = 3`
+      - number of significant digits to be printed
+    * - :ini:`time_suffix = False`
+      - Boolean flag, which adds a suffix to :ini:`result_dir` based on the current time
+
+
+.. _config_shape_detailed:
+
+Detailed Description
+--------------------
+
+Let us now give a detailed description over all parameters available for configuring cashocs' behavior.
 
 
 .. _config_shape_mesh:
 
-Section Mesh
-------------
+Mesh
+****
 
 The mesh section is, in contrast to the corresponding one for optimal control problems,
 more important and also has more parameters. However, its primary importance is for
@@ -102,8 +460,8 @@ and are only really required for remeshing. You can safely leave them out of you
 
 .. _config_shape_state_equation:
 
-Section StateSystem
----------------------
+StateSystem
+***********
 
 The StateSystem section is in complete analogy to :ref:`the corresponding one for optimal control problems <config_ocp_state_system>`. For the
 sake of completeness, we briefly recall the parameters here, anyway.
@@ -246,8 +604,8 @@ iterations, in a defect-correction setting.
 
 .. _config_shape_optimization_routine:
 
-Section OptimizationRoutine
----------------------------
+OptimizationRoutine
+*******************
 
 The section OptimizationRoutine also closely resembles :ref:`the one for optimal control
 problems <config_ocp_optimization_routine>`. Again, we will take a brief look at all parameters here
@@ -353,8 +711,8 @@ and is set to :ini:`soft_exit = False` by default.
 
 .. _config_sop_linesearch:
 
-Section LineSearch
-------------------
+LineSearch
+**********
 
 In this section, parameters regarding the line search can be specified. The type of the line search can be chosen via the parameter
 
@@ -391,8 +749,8 @@ which determines, whether the line search is terminated if the state system cann
 
 .. _config_shape_algolbfgs:
 
-Section AlgoLBFGS
------------------
+AlgoLBFGS
+*********
 
 Next, we discuss the parameters relevant for the limited memory BFGS method. For details
 regarding this method, we refer to `Schulz, Siebenborn, and Welker, Efficient PDE Constrained Shape Optimization Based on Steklov-Poincaré-Type Metrics
@@ -436,8 +794,8 @@ This parameter is a boolean flag, which indicates whether Powell's damping (on H
 
 .. _config_shape_algocg:
 
-Section AlgoCG
---------------
+AlgoCG
+******
 
 The following parameters are used to define the behavior of the nonlinear conjugate
 gradient methods for shape optimization. For more details on this, we refer to the
@@ -501,8 +859,8 @@ is given by :ini:`cg_relative_restart = False` and :ini:`cg_restart_tol = 0.25`.
 
 .. _config_shape_shape_gradient:
 
-Section ShapeGradient
----------------------
+ShapeGradient
+*************
 
 After we have specified the behavior of the solution algorithm, this section
 is used to specify parameters relevant to the computation of the shape gradient.
@@ -841,8 +1199,8 @@ as information for the re-extension.
 
 .. _config_shape_regularization:
 
-Section Regularization
-----------------------
+Regularization
+**************
 
 In this section, the parameters for shape regularizations are specified. For a
 detailed discussion of their usage, we refer to :ref:`demo_regularization`.
@@ -973,8 +1331,8 @@ useful in case the cost functional is also scaled (see :ref:`demo_scaling`).
 
 .. _config_shape_mesh_quality:
 
-Section MeshQuality
--------------------
+MeshQuality
+***********
 
 This section details the parameters that influence the quality of the
 computational mesh. First, we have the lines
@@ -1087,8 +1445,8 @@ where :ini:`remesh_iter = 0` means that no automatic remeshing is performed (thi
 
 .. _config_shape_output:
 
-Section Output
---------------
+Output
+******
 
 In this section, the parameters for the output of the algorithm, either in the terminal
 or as files, are specified. First, we have the parameter :ini:`verbose`. This is used to toggle the output of the
@@ -1182,328 +1540,3 @@ Moreover, we have the parameter :ini:`time_suffix`, which adds a suffix to the r
 	time_suffix = False
 
 
-
-.. _config_shape_summary:
-
-Summary
--------
-
-Finally, an overview over all parameters and their default values can be found
-in the following.
-
-
-[Mesh]
-******
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`mesh_file`
-      - Only needed for remeshing
-    * - :ini:`gmsh_file`
-      - Only needed for remeshing
-    * - :ini:`geo_file`
-      - Only needed for remeshing
-    * - :ini:`remesh = False`
-      - if :ini:`remesh = True`, remeshing is enabled; this feature is experimental, use with care
-    * - :ini:`show_gmsh_output = False`
-      - if :ini:`show_gmsh_output = True`, shows the output of GMSH during remeshing in the console
-
-
-
-[StateSystem]
-*************
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`is_linear = False`
-      - using :ini:`is_linear = True` gives an error for nonlinear problems
-    * - :ini:`newton_rtol = 1e-11`
-      - relative tolerance for Newton's method
-    * - :ini:`newton_atol = 1e-13`
-      - absolute tolerance for Newton's method
-    * - :ini:`newton_iter = 50`
-      - maximum iterations for Newton's method
-    * - :ini:`newton_damped = False`
-      - if :ini:`newton_damped = True`, damping is enabled
-    * - :ini:`newton_inexact = False`
-      - if :ini:`newton_inexact = True`, an inexact Newton's method is used
-    * - :ini:`newton_verbose = False`
-      - :ini:`newton_verbose = True` enables verbose output of Newton's method
-    * - :ini:`picard_iteration = False`
-      - :ini:`picard_iteration = True` enables Picard iteration; only has an effect for multiple
-        variables
-    * - :ini:`picard_rtol = 1e-10`
-      - relative tolerance for Picard iteration
-    * - :ini:`picard_atol = 1e-12`
-      - absolute tolerance for Picard iteration
-    * - :ini:`picard_iter = 50`
-      - maximum iterations for Picard iteration
-    * - :ini:`picard_verbose = False`
-      - :ini:`picard_verbose = True` enables verbose output of Picard iteration
-    * - :ini:`backend = cashocs`
-      - specifies the backend for solving nonlinear equations, can be either :ini:`cashocs` or :ini:`petsc`
-    * - :ini:`use_adjoint_linearizations = False`
-      - if `True`, the adjoint form of the provided `newton_linearizations` will be used for the adjoint system.
-
-
-
-[OptimizationRoutine]
-*********************
-
-.. list-table::
-  :header-rows: 1
-
-  * - Parameter = Default value
-    - Remarks
-  * - :ini:`algorithm`
-    - has to be specified by the user; see :py:meth:`solve <cashocs.OptimalControlProblem.solve>`
-  * - :ini:`rtol = 1e-3`
-    - relative tolerance for the optimization algorithm
-  * - :ini:`atol = 0.0`
-    - absolute tolerance for the optimization algorithm
-  * - :ini:`max_iter = 100`
-    - maximum iterations for the optimization algorithm
-  * - :ini:`gradient_method = direct`
-    - specifies the solver for computing the gradient, can be either :ini:`gradient_method = direct` or :ini:`gradient_method = iterative`
-  * - :ini:`gradient_tol = 1e-9`
-    - the relative tolerance in case an iterative solver is used to compute the gradient.
-  * - :ini:`soft_exit = False`
-    - if :ini:`soft_exit = True`, the optimization algorithm does not raise an exception if
-      it did not converge
-
-      
-[LineSearch]
-************
-
-.. list-table::
-    :header-rows: 1
-    
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`method = armijo`
-      - :ini:`method = armijo` is a simple backtracking line search, whereas :ini:`method = polynomial` uses polynomial models to compute trial stepsizes.
-    * - :ini:`initial_stepsize = 1.0`
-      - initial stepsize for the first iteration in the Armijo rule
-    * - :ini:`epsilon_armijo = 1e-4`
-      -
-    * - :ini:`beta_armijo = 2.0`
-      -
-    * - :ini:`safeguard_stepsize = True`
-      - De(-activates) a safeguard against poor scaling
-    * - :ini:`polynomial_model = cubic`
-      - This specifies, whether a cubic or quadratic model is used for computing trial stepsizes
-    * - :ini:`factor_high = 0.5`
-      - Safeguard for stepsize, upper bound
-    * - :ini:`factor_low = 0.1`
-      - Safeguard for stepsize, lower bound
-    * - :ini:`fail_if_not_converged = False`
-      - if this is :ini:`True`, then the line search fails if the state system can not be solved at the new iterate
-      
-[AlgoLBFGS]
-***********
-
-.. list-table::
-  :header-rows: 1
-
-  * - Parameter = Default value
-    - Remarks
-  * - :ini:`bfgs_memory_size = 5`
-    - memory size of the L-BFGS method
-  * - :ini:`use_bfgs_scaling = True`
-    - if :ini:`use_bfgs_scaling = True`, uses a scaled identity mapping as initial guess for the inverse Hessian
-  * - :ini:`bfgs_periodic_restart = 0`
-    - specifies, after how many iterations the method is restarted. If this is 0, no restarting is done.
-  * - :ini:`damped = False`
-    - specifies whether damping for the BFGS method should be used to enforce the curvature condition and prevent restarting
-
-[AlgoCG]
-********
-
-.. list-table::
-  :header-rows: 1
-
-  * - Parameter = Default value
-    - Remarks
-  * - :ini:`cg_method = FR`
-    - specifies which nonlinear CG method is used
-  * - :ini:`cg_periodic_restart = False`
-    - if :ini:`cg_periodic_restart = True`, enables periodic restart of NCG method
-  * - :ini:`cg_periodic_its = 10`
-    - specifies, after how many iterations the NCG method is restarted, if applicable
-  * - :ini:`cg_relative_restart = False`
-    - if :ini:`cg_relative_restart = True`, enables restart of NCG method based on a relative criterion
-  * - :ini:`cg_restart_tol = 0.25`
-    - the tolerance of the relative restart criterion, if applicable
-
-
-
-[ShapeGradient]
-***************
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`shape_bdry_def = []`
-      - list of indices for the deformable boundaries
-    * - :ini:`shape_bdry_fix = []`
-      - list of indices for the fixed boundaries
-    * - :ini:`shape_bdry_fix_x = []`
-      - list of indices for boundaries with fixed x values
-    * - :ini:`shape_bdry_fix_y = []`
-      - list of indices for boundaries with fixed y values
-    * - :ini:`shape_bdry_fix_z = []`
-      - list of indices for boundaries with fixed z values
-    * - :ini:`fixed_dimensions = []`
-      - a list of coordinates which should be fixed during the shape optimization (x=0, y=1, etc.)
-    * - :ini:`use_pull_back = True`
-      - if :ini:`use_pull_back = False`, shape derivative might be wrong; no pull-back for the material derivative is performed;
-        only use with caution
-    * - :ini:`lambda_lame = 0.0`
-      - value of the first Lamé parameter for the elasticity equations
-    * - :ini:`damping_factor = 0.0`
-      - value of the damping parameter for the elasticity equations
-    * - :ini:`mu_def = 1.0`
-      - value of the second Lamé parameter on the deformable boundaries
-    * - :ini:`mu_fix = 1.0`
-      - value of the second Lamé parameter on the fixed boundaries
-    * - :ini:`use_sqrt_mu = False`
-      - if :ini:`use_sqrt_mu = True`, uses the square root of the computed ``mu_lame``; might be good for 3D problems
-    * - :ini:`inhomogeneous = False`
-      - if :ini:`inhomogeneous = True`, uses inhomogeneous elasticity equations, weighted by the local mesh size
-    * - :ini:`update_inhomogeneous = False`
-      - if :ini:`update_inhomogeneous = True` and :ini:`inhomogeneous=True`, then the weighting with the local mesh size is updated as the mesh is deformed.
-    * - :ini:`inhomogeneous_exponent = 1.0`
-      - The exponent for the inhomogeneous mesh stiffness
-    * - :ini:`use_distance_mu = False`
-      - if :ini:`use_distance_mu = True`, the value of the second Lamé parameter is computed via the distance to the boundary
-    * - :ini:`dist_min = 1.0`
-      - Specifies the distance to the boundary, until which :math:`\mu` is given by :ini:`mu_min`
-    * - :ini:`dist_max = 1.0`
-      - Specifies the distance to the boundary, until which :math:`\mu` is given by :ini:`mu_max`
-    * - :ini:`mu_min = 1.0`
-      - The value of :math:`\mu` for a boundary distance smaller than :ini:`dist_min`
-    * - :ini:`mu_max = 1.0`
-      - The value of :math:`\mu` for a boundary distance larger than :ini:`dist_max`
-    * - :ini:`boundaries_dist = []`
-      - The indices of the boundaries, which shall be used to compute the distance, :ini:`boundaries_dist = []` means that all boundaries are considered
-    * - :ini:`distance_method = eikonal`
-      - The method for computing the distance to the boundary. Can be either :ini:`eikonal` or :ini:`poisson`
-    * - :ini:`smooth_mu = False`
-      - If false, a linear (continuous) interpolation between :ini:`mu_min` and :ini:`mu_max` is used, otherwise a cubic :math:`C^1` interpolant is used
-    * - :ini:`use_p_laplacian = False`
-      - If :ini:`use_p_laplacian = True`, then the :math:`p`-Laplacian is used to compute the shape gradient
-    * - :ini:`p_laplacian_power = 2`
-      - The parameter :math:`p` of the :math:`p`-Laplacian
-    * - :ini:`p_laplacian_stabilization = 0.0`
-      - The stabilization parameter for the :math:`p`-Laplacian problem. No stabilization is used when this is :ini:`p_laplacian_stabilization = 0.0`.
-    * - :ini:`global_deformation = False`
-      - Computes the global deformation from initial to optimized mesh. This can lead to unexpected errors, use with care.
-    * - :ini:`degree_estimation = True`
-      - Estimate the required degree for quadrature of the shape derivative. This should be `True`, otherwise unexpected errors can happen.
-    * - :ini:`test_for_intersections = True`
-      - If enabled, the mesh is tested for intersections which would create non-physical meshes. This should always be enabled, otherwise the obtained results might be incorrect.
-    * - :ini:`reextend_from_boundary = False`
-      - If this is enabled, the gradient deformation is re-extended from the boundary.`
-    * - :ini:`reextension_mode = surface`
-      - If this is `surface`, then the surface deformation is used for reextension. If this is `normal` only the normal deformation is used.
-
-
-[Regularization]
-****************
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`factor_volume = 0.0`
-      - value of the regularization parameter for volume regularization; needs to be non-negative
-    * - :ini:`target_volume = 0.0`
-      - prescribed volume for the volume regularization
-    * - :ini:`use_initial_volume = False`
-      - if :ini:`use_initial_volume = True` uses the volume of the initial geometry as prescribed volume
-    * - :ini:`factor_surface = 0.0`
-      - value of the regularization parameter for surface regularization; needs to be non-negative
-    * - :ini:`target_surface = 0.0`
-      - prescribed surface for the surface regularization
-    * - :ini:`use_initial_surface = False`
-      - if :ini:`use_initial_surface = True` uses the surface area of the initial geometry as prescribed surface
-    * - :ini:`factor_curvature = 0.0`
-      - value of the regularization parameter for curvature regularization; needs to be non-negative
-    * - :ini:`factor_barycenter = 0.0`
-      - value of the regularization parameter for barycenter regularization; needs to be non-negative
-    * - :ini:`target_barycenter = [0.0, 0.0, 0.0]`
-      - prescribed barycenter for the barycenter regularization
-    * - :ini:`use_initial_barycenter = False`
-      - if :ini:`use_initial_barycenter = True` uses the barycenter of the initial geometry as prescribed barycenter
-    * - :ini:`use_relative_scaling = False`
-      - if :ini:`use_relative_scaling = True`, the regularization terms are scaling so that they have the magnitude specified in the respective factor for the initial iteration.
-
-
-
-[MeshQuality]
-*************
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`volume_change = inf`
-      - determines by what factor the volume of a cell is allowed to change within a single deformation
-    * - :ini:`angle_change = inf`
-      - determines how much the angles of a cell are allowed to change within a single deformation
-    * - :ini:`tol_lower = 0.0`
-      - if the mesh quality is lower than this tolerance, the state system is not solved
-        for the Armijo rule, instead step size is decreased
-    * - :ini:`tol_upper = 1e-15`
-      - if the mesh quality is between :ini:`tol_lower` and :ini:`tol_upper`, the state
-        system will still be solved for the Armijo rule. If the accepted step yields a quality
-        lower than this, algorithm is terminated (or remeshing is initiated)
-    * - :ini:`measure = skewness`
-      - determines which quality measure is used
-    * - :ini:`type = min`
-      - determines if minimal, average, or quantile quality is considered
-    * - :ini:`quantile = 0.0`
-      - specifies the quantile if :ini:`type = quantile` is used.
-    * - :ini:`remesh_iter`
-      - When set to a value > 0, remeshing is performed every :ini:`remesh_iter` iterations.
-
-[Output]
-********
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`verbose = True`
-      - if :ini:`verbose = True`, the history of the optimization is printed to the console
-    * - :ini:`save_results = True`
-      - if :ini:`save_results = True`, the history of the optimization is saved to a .json file
-    * - :ini:`save_txt = True`
-      - if :ini:`save_txt = True`, the history of the optimization is saved to a human readable .txt file
-    * - :ini:`save_state = False`
-      - if :ini:`save_state = True`, the history of the state variables over the optimization is
-        saved in .xdmf files
-    * - :ini:`save_adjoint = False`
-      - if :ini:`save_adjoint = True`, the history of the adjoint variables over the optimization is
-        saved in .xdmf files
-    * - :ini:`save_gradient = False`
-      - if :ini:`save_gradient = True`, the history of the shape gradient over the optimization is saved in .xdmf files
-    * - :ini:`save_mesh = False`
-      - if :ini:`save_mesh = True`, saves the mesh in each iteration of the optimization; only available for GMSH input
-    * - :ini:`result_dir = ./results`
-      - path to the directory, where the output should be placed
-    * - :ini:`precision = 3`
-      - number of significant digits to be printed
-    * - :ini:`time_suffix = False`
-      - Boolean flag, which adds a suffix to :ini:`result_dir` based on the current time
