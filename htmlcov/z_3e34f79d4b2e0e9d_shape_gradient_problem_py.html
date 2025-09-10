@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_3e34f79d4b2e0e9d_state_problem_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.5">coverage.py v7.10.5</a>,
-            created at 2025-09-10 10:24 +0000
+            created at 2025-09-10 12:08 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -462,21 +462,22 @@
     <p class="run"><span class="n"><a id="t380" href="#t380">380</a></span><span class="t">            <span class="nam">petsc_options</span><span class="op">:</span> <span class="nam">_typing</span><span class="op">.</span><span class="nam">KspOption</span> <span class="op">=</span> <span class="op">{</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t381" href="#t381">381</a></span><span class="t">                <span class="str">"snes_type"</span><span class="op">:</span> <span class="str">"newtonls"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t382" href="#t382">382</a></span><span class="t">                <span class="str">"snes_linesearch_type"</span><span class="op">:</span> <span class="str">"basic"</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t383" href="#t383">383</a></span><span class="t">                <span class="str">"snes_ksp_ew"</span><span class="op">:</span> <span class="key">True</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t384" href="#t384">384</a></span><span class="t">            <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t385" href="#t385">385</a></span><span class="t">            <span class="nam">petsc_options</span><span class="op">.</span><span class="nam">update</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">ksp_options</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t386" href="#t386">386</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t387" href="#t387">387</a></span><span class="t">            <span class="nam">nonlinear_solvers</span><span class="op">.</span><span class="nam">snes_solve</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t388" href="#t388">388</a></span><span class="t">                <span class="nam">nonlinear_form</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t389" href="#t389">389</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">solution</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t390" href="#t390">390</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">bcs_shape</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t391" href="#t391">391</a></span><span class="t">                <span class="nam">petsc_options</span><span class="op">=</span><span class="nam">petsc_options</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t392" href="#t392">392</a></span><span class="t">                <span class="nam">shift</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">shape_derivative</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t393" href="#t393">393</a></span><span class="t">                <span class="nam">A_tensor</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">A_tensor</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t394" href="#t394">394</a></span><span class="t">                <span class="nam">b_tensor</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">b_tensor</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t395" href="#t395">395</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t396" href="#t396">396</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t397" href="#t397">397</a></span><span class="t">        <span class="nam">log</span><span class="op">.</span><span class="nam">end</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t383" href="#t383">383</a></span><span class="t">                <span class="str">"snes_ksp_ew"</span><span class="op">:</span> <span class="key">None</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t384" href="#t384">384</a></span><span class="t">                <span class="str">"snes_ksp_ew_rtolmax"</span><span class="op">:</span> <span class="num">1e-1</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t385" href="#t385">385</a></span><span class="t">            <span class="op">}</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t386" href="#t386">386</a></span><span class="t">            <span class="nam">petsc_options</span><span class="op">.</span><span class="nam">update</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">ksp_options</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t387" href="#t387">387</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t388" href="#t388">388</a></span><span class="t">            <span class="nam">nonlinear_solvers</span><span class="op">.</span><span class="nam">snes_solve</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t389" href="#t389">389</a></span><span class="t">                <span class="nam">nonlinear_form</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t390" href="#t390">390</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">solution</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t391" href="#t391">391</a></span><span class="t">                <span class="nam">self</span><span class="op">.</span><span class="nam">bcs_shape</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t392" href="#t392">392</a></span><span class="t">                <span class="nam">petsc_options</span><span class="op">=</span><span class="nam">petsc_options</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t393" href="#t393">393</a></span><span class="t">                <span class="nam">shift</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">shape_derivative</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t394" href="#t394">394</a></span><span class="t">                <span class="nam">A_tensor</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">A_tensor</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t395" href="#t395">395</a></span><span class="t">                <span class="nam">b_tensor</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">b_tensor</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t396" href="#t396">396</a></span><span class="t">            <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t397" href="#t397">397</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t398" href="#t398">398</a></span><span class="t">        <span class="nam">log</span><span class="op">.</span><span class="nam">end</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -486,7 +487,7 @@
             <a class="nav" href="z_3e34f79d4b2e0e9d_state_problem_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.10.5">coverage.py v7.10.5</a>,
-            created at 2025-09-10 10:24 +0000
+            created at 2025-09-10 12:08 +0000
         </p>
     </div>
 </footer>
