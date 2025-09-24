@@ -47,7 +47,7 @@ cashocs is based on the finite element package `FEniCS
 to treat general PDE constrained optimization problems, in particular, shape
 optimization and optimal control problems.
 
-To get started with cashocs, take a look at `cashocs in a nutshell <https://cashocs.readthedocs.io/en/stable/about/nutshell/>`_ as well as the in-depth `cashocs tutorial <https://cashocs.readthedocs.io/en/stable/user/>`_. There, the core concepts and functionalities of cashocs are explained.
+To get started with cashocs, take a look at `cashocs in a nutshell <https://cashocs.readthedocs.io/en/stable/about/nutshell/>`_ as well as the in-depth `tutorial <https://cashocs.readthedocs.io/en/stable/user/>`_. There, the core concepts and functionalities of cashocs are explained.
 
 An overview over cashocs and its capabilities can be found in `Blauth - cashocs: A Computational, Adjoint-Based
 Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_ and `Blauth - Version 2.0 - cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2023.101577>`_. Moreover, note that
