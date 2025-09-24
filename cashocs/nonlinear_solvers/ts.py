@@ -198,6 +198,7 @@ class TSPseudoSolver:
         self._setup_mass_matrix()
 
         self.has_monitor_output = "ts_monitor" in self.petsc_options
+        self.ts_converged_its = "ts_converged_its" in self.petsc_options
 
     def _setup_mass_matrix(self) -> None:
         """Sets up the mass matrix for the time derivative."""
@@ -498,7 +499,7 @@ class TSPseudoSolver:
         reduced_petsc_options = {
             key: value
             for key, value in self.petsc_options.items()
-            if key != "ts_monitor"
+            if key not in ["ts_monitor", "ts_converged_its"]
         }
 
         _utils.setup_petsc_options([ts], [reduced_petsc_options])
@@ -529,15 +530,8 @@ class TSPseudoSolver:
         if converged_reason < 0:
             raise _exceptions.PETScTSError(converged_reason)
         elif converged_reason == PETSc.TS.ConvergedReason.CONVERGED_ITS:
-            log.warning(
-                "The PETSc TS Solver diverged since the maximum number of pseudo time "
-                "steps was reached before convergence of the pseudo time stepping.\n"
-                f"Current absolute residual: {self.res_current:.3e} "
-                f"- tolerance is {self.atol:.3e}.\n"
-                f"Current relative residual: {self.res_current / self.res_initial:.3e} "
-                f"- tolerance is {self.rtol:.3e}."
-            )
-            raise _exceptions.PETScTSError(converged_reason)
+            if not self.ts_converged_its:
+                raise _exceptions.PETScTSError(converged_reason)
 
         return self.u
 

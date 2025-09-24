@@ -12,7 +12,7 @@ of the maintenance releases, please take a look at
 
 * The function :py:func:`cashocs.load_config` now raises an exception instead of only issuing a warning if the specified configuration file is not found.
 
-* Revert the way :py:func:`cashocs.ts_pseudo_solve` handles convergence after the maximum number of iterations. Now, when the maximum number of (pseudo) time steps is reached, an exception is raised. This reverts the change introduced in version 2.5. This is more in line with the behavior of the SNES solver, which the pseudo time stepping relaxes. Also, this means that users are encouraged to actually reach the desired level of convergence with the pseudo time stepping solver.
+* Revert the way :py:func:`cashocs.ts_pseudo_solve` handles convergence after the maximum number of iterations: By default, once the maximum number of (pseudo) time steps is reached, an exception is raised. This reverts the changes introduced in version 2.5 and is in line with the behavior of SNES and KSP solvers - and the pseudo time stepping can be seen as relaxation. However, an cashocs-only PETSc option `ts_converged_its` has been added. If this is set, then the pseudo time stepping is considered as converged once the maximum number of iterations is reached. Note that this parameter does not have any value, so that it should be supplied as `"ts_converged_its": None` in the corresponding dictionary.
 
 * Update the logging behavior of cashocs:
 
@@ -63,7 +63,7 @@ of the maintenance releases, please take a look at
 
 * Add the possibility to re-compute the gradient deformation in shape optimization. To do so, the gradient deformation is first computed as before but then only the surface deformation (or the one in normal direction) is used as boundary condition for the elasticty equation to compute a new deformation. This can help to avoid numerical artifacts in the interior of the domain not related to the actual shape changes.
 
-* Update the way :py:func:`cashocs.ts_pseudo_solve` handles convergence / divergence. A new divergence tolerance is introduced. If the residual increases by a factor of 1e4, the solver automatically diverges and raises a corresponding exception. Moreover, if the solver reaches the maximum number of iterations, no exception is raised anymore. Instead, a warning is issued that the solver did not reach the specified tolerances, but converges anyway. This is in line with the convergence of the PETSc TS.
+* Update the way :py:func:`cashocs.ts_pseudo_solve` handles convergence / divergence. A new divergence tolerance is introduced. If the residual increases by a factor of 1e4, the solver automatically diverges and raises a corresponding exception. Moreover, if the solver reaches the maximum number of iterations, no exception is raised anymore. Instead, a warning is issued that the solver did not reach the specified tolerances, but converges anyway. This is in line with the convergence of the PETSc TS. Note that the latter behavior is changed in version 2.7, where the PETSc option `ts_converged_its` is introduced to indicate convergence after the maximum number of iterations.
 
 * Add support for Python 3.13.
 
