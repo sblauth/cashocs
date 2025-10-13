@@ -17,7 +17,7 @@ RUN micromamba install -y -n base -c conda-forge \
       coverage \
       mpich \
       scipy \
-      python=3.13 && \
+      python=3.14 && \
    micromamba clean --all --yes
 
 ARG MAMBA_DOCKERFILE_ACTIVATE=1
