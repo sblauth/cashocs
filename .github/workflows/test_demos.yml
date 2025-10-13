@@ -10,6 +10,11 @@ on:
 
 permissions: read-all
 
+env:
+  OMP_NUM_THREADS: 1
+  SCOTCH_DETERMINISTIC: 1
+  SCOTCH_RANDOM_FIXED_SEED: 1
+
 jobs:
   serial_demos:
     name: Serial demos
@@ -45,8 +50,6 @@ jobs:
         pip install .[all]
     
     - name: Run demos
-      env: 
-        OMP_NUM_THREADS: 2
       run: |
         python3 -m pytest -vv demos/test.py
 
@@ -86,7 +89,5 @@ jobs:
         pip install .[all]
         
     - name: Run demos in parallel
-      env:
-        OMP_NUM_THREADS: 1
       run: |
         python3 -m pytest -vv demos/test_mpi.py

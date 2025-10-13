@@ -14,6 +14,8 @@ jobs:
     container:
       image: ghcr.io/sblauth/cashocs:main
       options: --user=root
+    env:
+      OMP_NUM_THREADS: 1
 
     steps:
     - name: Delete current installation in docker image
