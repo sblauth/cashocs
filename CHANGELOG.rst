@@ -7,8 +7,13 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-2.7.0 (in development)
+2.8.0 (in development)
 ----------------------
+
+
+
+2.7.0 (September 24, 2025)
+--------------------------
 
 * The function :py:func:`cashocs.load_config` now raises an exception instead of only issuing a warning if the specified configuration file is not found.
 
