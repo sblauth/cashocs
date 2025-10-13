@@ -10,6 +10,9 @@ on:
 
 permissions: read-all
 
+env:
+  OMP_NUM_THREADS: 1
+
 jobs:
   serial_tests:
     name: Test (py=${{ matrix.python-version}}, macos-13)
@@ -47,8 +50,6 @@ jobs:
         pip install .[all]
 
     - name: Run tests
-      env: 
-        OMP_NUM_THREADS: 2
       run: |
         python3 -m pytest -vv tests/
  
