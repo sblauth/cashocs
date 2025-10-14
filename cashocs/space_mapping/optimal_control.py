@@ -36,14 +36,13 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _utils
+from cashocs import io
 from cashocs import log
 from cashocs._database import database
 from cashocs._optimization.optimal_control import optimal_control_problem as ocp
-from cashocs.io import output
 
 if TYPE_CHECKING:
     from cashocs import _typing
-    from cashocs import io
 
 
 class FineModel(abc.ABC):
@@ -488,7 +487,7 @@ class SpaceMappingProblem:
             self.coarse_model.preconditioner_forms,  # type: ignore
         )
 
-        self.output_manager = output.OutputManager(self.db)
+        self.output_manager = io.output.OutputManager(self.db)
 
         self.eps = 1.0
         self.converged = False
