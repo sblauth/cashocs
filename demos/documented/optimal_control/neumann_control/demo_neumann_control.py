@@ -163,4 +163,5 @@ plt.tight_layout()
 # -
 
 # and the output should look like this
-# ![](/../../demos/documented/optimal_control/neumann_control/img_neumann_control.png)
+# :::{image} /../../demos/documented/optimal_control/neumann_control/img_neumann_control.png
+# :::

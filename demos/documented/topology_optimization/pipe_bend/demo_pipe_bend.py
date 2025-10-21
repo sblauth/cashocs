@@ -285,7 +285,8 @@ plt.tight_layout()
 # -
 
 # and the results looks as follows
-# ![](/../../demos/documented/topology_optimization/pipe_bend/img_pipe_bend.png)
+# :::{image} /../../demos/documented/topology_optimization/pipe_bend/img_pipe_bend.png
+# :::
 #
 # :::{note}
 # Note that this design is not final due to the following: First, the tolerance for

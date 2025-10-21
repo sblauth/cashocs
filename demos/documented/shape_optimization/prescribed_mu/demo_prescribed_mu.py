@@ -185,4 +185,5 @@ plt.tight_layout()
 # -
 
 # The results should look like this
-# ![](/../../demos/documented/shape_optimization/prescribed_mu/img_prescribed_mu.png)
+# :::{image} /../../demos/documented/shape_optimization/prescribed_mu/img_prescribed_mu.png
+# :::

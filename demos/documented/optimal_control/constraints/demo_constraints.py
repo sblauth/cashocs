@@ -219,4 +219,5 @@ plt.tight_layout()
 # -
 
 # and the result should look like this
-# ![](/../../demos/documented/optimal_control/constraints/img_constraints.png)
+# :::{image} /../../demos/documented/optimal_control/constraints/img_constraints.png
+# :::

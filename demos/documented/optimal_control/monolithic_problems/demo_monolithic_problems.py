@@ -203,4 +203,5 @@ plt.tight_layout()
 # -
 
 # so that the output should look like this
-# ![](/../../demos/documented/optimal_control/monolithic_problems/img_monolithic_problems.png)
+# :::{image} /../../demos/documented/optimal_control/monolithic_problems/img_monolithic_problems.png
+# :::

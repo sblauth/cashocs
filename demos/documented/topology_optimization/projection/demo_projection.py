@@ -253,4 +253,5 @@ plt.tight_layout()
 # -
 #
 # and the result looks like this
-# ![](/../../demos/documented/topology_optimization/projection/img_projection.png)
+# :::{image} /../../demos/documented/topology_optimization/projection/img_projection.png
+# :::
