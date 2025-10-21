@@ -191,7 +191,8 @@ plt.tight_layout()
 # -
 
 # and the output should look as follows
-# ![](/../../demos/documented/optimal_control/multiple_variables/img_multiple_variables.png)
+# :::{image} /../../demos/documented/optimal_control/multiple_variables/img_multiple_variables.png
+# :::
 #
 # :::{note}
 # Note, that the error between $z$ and $z_d$ is significantly larger

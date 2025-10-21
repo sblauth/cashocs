@@ -210,7 +210,8 @@ plt.tight_layout()
 
 # The result is, of course, completely identical to the one of {ref}`demo_shape_poisson`
 # and looks as follows
-# ![](/../../demos/documented/cashocs_as_solver/shape_solver/img_shape_solver.png)
+# :::{image} /../../demos/documented/cashocs_as_solver/shape_solver/img_shape_solver.png
+# :::
 #
 # :::{note}
 # In case multiple state equations are used, the corresponding adjoint systems

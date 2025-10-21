@@ -252,4 +252,5 @@ plt.tight_layout()
 # -
 
 # and the resulting output should look like
-# ![](/../../demos/documented/optimal_control/dirichlet_control/img_dirichlet_control.png)
+# :::{image} /../../demos/documented/optimal_control/dirichlet_control/img_dirichlet_control.png
+# :::

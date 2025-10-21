@@ -228,4 +228,5 @@ plt.tight_layout()
 # -
 
 # and the results are given below
-# ![](/../../demos/documented/optimal_control/pre_post_callbacks/img_pre_post_callbacks.png)
+# :::{image} /../../demos/documented/optimal_control/pre_post_callbacks/img_pre_post_callbacks.png
+# :::
