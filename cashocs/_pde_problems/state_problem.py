@@ -99,13 +99,16 @@ class StateProblem(pde_problem.PDEProblem):
 
         # pylint: disable=invalid-name
         self.A_tensors = [
-            fenics.PETScMatrix() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScMatrix(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
         self.b_tensors = [
-            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScVector(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
         self.res_j_tensors = [
-            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScVector(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
 
         self._number_of_solves = 0
@@ -159,12 +162,11 @@ class StateProblem(pde_problem.PDEProblem):
                         _utils.assemble_and_solve_linear(
                             self.state_form_handler.state_eq_forms_lhs[i],
                             self.state_form_handler.state_eq_forms_rhs[i],
-                            self.bcs_list[i],
+                            self.states[i],
+                            bcs=self.bcs_list[i],
                             A=self.A_tensors[i],
                             b=self.b_tensors[i],
-                            fun=self.states[i],
                             ksp_options=self.db.parameter_db.state_ksp_options[i],
-                            comm=self.db.geometry_db.mpi_comm,
                             preconditioner_form=self.db.form_db.preconditioner_forms[i],
                             linear_solver=self.linear_solver,
                         )
@@ -268,3 +270,5 @@ class StateProblem(pde_problem.PDEProblem):
                 0.0, self.states_checkpoint[i].vector().vec()
             )
             self.states[i].vector().apply("")
+
+        log.end()

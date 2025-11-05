@@ -163,7 +163,8 @@ plt.tight_layout()
 # -
 
 # and the result should look like this
-# ![](/../../demos/documented/shape_optimization/shape_poisson/img_shape_poisson.png)
+# :::{image} /../../demos/documented/shape_optimization/shape_poisson/img_shape_poisson.png
+# :::
 #
 # :::{note}
 # As in {ref}`demo_poisson` we can specify some keyword

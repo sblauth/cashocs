@@ -24,21 +24,21 @@ import functools
 from typing import Any, Callable, TYPE_CHECKING
 
 import fenics
+from mpi4py import MPI
 import numpy as np
 from typing_extensions import Literal
 
 from cashocs import _exceptions
 from cashocs import log
+from cashocs import mpi
 from cashocs.geometry import measure
 
 if TYPE_CHECKING:
-    from mpi4py import MPI
-
     from cashocs import _typing
 
 
 def _get_mesh_stats(
-    mode: Literal["import", "generate"] = "import",
+    mode: Literal["import", "generate"],
 ) -> Callable[..., Callable[..., _typing.MeshTuple]]:
     """A decorator for mesh importing / generating function which logs stats.
 
@@ -75,9 +75,20 @@ def _get_mesh_stats(
                 The wrapped function.
 
             """
+            comm = None
+            if "comm" in kwargs.keys():  # pylint: disable=consider-iterating-dictionary
+                comm = kwargs["comm"]
+            else:
+                for arg in args:
+                    if isinstance(arg, MPI.Comm):
+                        comm = arg
+
+            if comm is None:
+                comm = mpi.COMM_WORLD
+
             word = "importing" if mode.casefold() == "import" else "generating"
             worded = "imported" if mode.casefold() == "import" else "generated"
-            mpi_size = fenics.MPI.size(fenics.MPI.comm_world)
+            mpi_size = comm.size
             log.begin(f"{word.capitalize()} mesh.", level=log.INFO)
 
             value = func(*args, **kwargs)
@@ -99,7 +110,7 @@ def _get_mesh_stats(
     return decorator_stats
 
 
-@_get_mesh_stats(mode="generate")
+@_get_mesh_stats("generate")
 def interval_mesh(
     n: int = 10,
     start: float = 0.0,
@@ -150,7 +161,7 @@ def interval_mesh(
     dim = 1
 
     if comm is None:
-        comm = fenics.MPI.comm_world
+        comm = mpi.COMM_WORLD
 
     mesh = fenics.IntervalMesh(comm, n, start, end)
 
@@ -190,7 +201,7 @@ def interval_mesh(
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
 
-@_get_mesh_stats(mode="generate")
+@_get_mesh_stats("generate")
 def regular_mesh(
     n: int = 10,
     length_x: float = 1.0,
@@ -262,7 +273,7 @@ def regular_mesh(
     n = int(n)
 
     if comm is None:
-        comm = fenics.MPI.comm_world
+        comm = mpi.COMM_WORLD
 
     if length_z is None:
         sizes = [length_x, length_y]
@@ -333,7 +344,7 @@ def regular_mesh(
     return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
 
-@_get_mesh_stats(mode="generate")
+@_get_mesh_stats("generate")
 def regular_box_mesh(
     n: int = 10,
     start_x: float = 0.0,
@@ -401,7 +412,7 @@ def regular_box_mesh(
     sizes = [1.0, 1.0]
 
     if comm is None:
-        comm = fenics.MPI.comm_world
+        comm = mpi.COMM_WORLD
 
     if start_z is None and end_z is None:
         lx = end_x - start_x

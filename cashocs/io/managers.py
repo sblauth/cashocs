@@ -23,7 +23,7 @@ import abc
 import json
 import os
 import shutil
-import subprocess  # nosec B404
+import subprocess
 from typing import cast, TYPE_CHECKING
 
 import fenics
@@ -147,7 +147,7 @@ def generate_output_str(db: database.Database, precision: int) -> str:
 class IOManager(abc.ABC):
     """Abstract base class for input / output management."""
 
-    def __init__(self, db: database.Database, result_dir: str):
+    def __init__(self, db: database.Database, result_dir: str) -> None:
         """Initializes self.
 
         Args:
@@ -156,6 +156,7 @@ class IOManager(abc.ABC):
 
         """
         self.db = db
+        self.comm = self.db.geometry_db.mpi_comm
         self.result_dir = result_dir
 
         self.config = self.db.config
@@ -232,10 +233,10 @@ class ResultManager(IOManager):
 
     def post_process(self) -> None:
         """Saves the history of the optimization to a .json file."""
-        if self.save_results and fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if self.save_results and self.comm.rank == 0:
             with open(f"{self.result_dir}/history.json", "w", encoding="utf-8") as file:
                 json.dump(self.output_dict, file, indent=4)
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        self.comm.barrier()
 
 
 class ConsoleManager(IOManager):
@@ -261,9 +262,9 @@ class ConsoleManager(IOManager):
         """Prints the output string to the console."""
         message = generate_output_str(self.db, self.precision)
         if self.verbose:
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            if self.comm.rank == 0:
                 print(message, flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            self.comm.barrier()
         else:
             log.info(message)
 
@@ -271,9 +272,9 @@ class ConsoleManager(IOManager):
         """Prints the summary in the console."""
         message = generate_summary_str(self.db, self.precision)
         if self.verbose:
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            if self.comm.rank == 0:
                 print(message, flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            self.comm.barrier()
         else:
             log.info(message)
 
@@ -303,7 +304,7 @@ class FileManager(IOManager):
 
     def output(self) -> None:
         """Saves the output string in a file."""
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if self.comm.rank == 0:
             if self.db.parameter_db.optimization_state["iteration"] == 0:
                 file_attr = "w"
             else:
@@ -313,14 +314,14 @@ class FileManager(IOManager):
                 f"{self.result_dir}/history.txt", file_attr, encoding="utf-8"
             ) as file:
                 file.write(f"{generate_output_str(self.db, self.precision)}\n")
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        self.comm.barrier()
 
     def output_summary(self) -> None:
         """Save the summary in a file."""
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if self.comm.rank == 0:
             with open(f"{self.result_dir}/history.txt", "a", encoding="utf-8") as file:
                 file.write(generate_summary_str(self.db, self.precision))
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        self.comm.barrier()
 
     def post_process(self) -> None:
         """The output operation which is performed as part of the postprocessing.
@@ -360,12 +361,13 @@ class TempFileManager(IOManager):
                 self.config.getboolean("Mesh", "remesh")
                 and not self.config.getboolean("Debug", "remeshing")
                 and self.db.parameter_db.temp_dict
-                and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+                and self.comm.rank == 0
             ):
-                subprocess.run(  # nosec B603, B607
-                    ["rm", "-r", self.db.parameter_db.remesh_directory], check=True
+                subprocess.run(  # noqa: S603
+                    ["rm", "-r", self.db.parameter_db.remesh_directory],  # noqa: S607
+                    check=True,
                 )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            self.comm.barrier()
 
 
 class MeshManager(IOManager):
@@ -623,7 +625,6 @@ class XDMFFileManager(IOManager):
             append = True
 
         mesh = function.function_space().mesh()
-        comm = mesh.mpi_comm()
 
         if function.function_space().ufl_element().family() in [
             "Real",
@@ -637,9 +638,19 @@ class XDMFFileManager(IOManager):
                 space = fenics.FunctionSpace(mesh, "CG", 1)
             function = fenics.interpolate(function, space)
 
+        elif function.function_space().ufl_element().family() == "Crouzeix-Raviart":
+            degree = function.function_space().ufl_element().degree()
+            if len(function.ufl_shape) > 0:
+                space = fenics.VectorFunctionSpace(
+                    mesh, "DG", degree, dim=function.ufl_shape[0]
+                )
+            else:
+                space = fenics.FunctionSpace(mesh, "DG", degree)
+            function = fenics.interpolate(function, space)
+
         function.rename(function_name, function_name)
 
-        with fenics.XDMFFile(comm, filename) as file:
+        with fenics.XDMFFile(self.comm, filename) as file:
             file.parameters["flush_output"] = True
             file.parameters["functions_share_mesh"] = False
             file.write_checkpoint(
@@ -649,7 +660,6 @@ class XDMFFileManager(IOManager):
                 fenics.XDMFFile.Encoding.HDF5,
                 append,
             )
-        fenics.MPI.barrier(comm)
 
     def output(self) -> None:
         """Saves the variables to xdmf files."""
@@ -658,7 +668,7 @@ class XDMFFileManager(IOManager):
         iteration = int(self.db.parameter_db.optimization_state["iteration"])
 
         if iteration == 0:
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            if self.comm.rank == 0:
                 directory = f"{self.result_dir}/checkpoints/"
                 for files in os.listdir(directory):
                     path = os.path.join(directory, files)
@@ -667,7 +677,7 @@ class XDMFFileManager(IOManager):
                     except OSError:
                         os.remove(path)
 
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            self.comm.barrier()
 
         self._save_states(iteration)
         self._save_controls(iteration)

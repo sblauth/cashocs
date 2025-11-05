@@ -22,7 +22,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import fenics
-import mpi4py.MPI
 
 from cashocs import _utils
 
@@ -32,6 +31,7 @@ except ImportError:
     import ufl
 
 if TYPE_CHECKING:
+    from mpi4py import MPI
     from petsc4py import PETSc
 
     from cashocs._database import function_database
@@ -58,7 +58,7 @@ class GeometryDatabase:
         """
         self.mesh: fenics.Mesh = function_db.state_spaces[0].mesh()
         self.dx: ufl.Measure = ufl.Measure("dx", self.mesh)
-        self.mpi_comm: mpi4py.MPI.Intracomm = self.mesh.mpi_comm()
+        self.mpi_comm: MPI.Comm = self.mesh.mpi_comm()
 
         self.function_db = function_db
         self.parameter_db = parameter_db

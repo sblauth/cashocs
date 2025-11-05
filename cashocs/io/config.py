@@ -25,10 +25,9 @@ import pathlib
 from typing import Any
 
 from cashocs import _exceptions
-from cashocs import log
 
 try:
-    import cashocs_extensions  # pylint: disable=unused-import # noqa: F401
+    import cashocs_extensions  # pylint: disable=unused-import
 
     has_cashocs_extensions = True
 except ImportError:
@@ -158,6 +157,9 @@ class Config(ConfigParser):
                 "backend": {
                     "type": "str",
                     "possible_options": ["cashocs", "petsc"],
+                },
+                "use_adjoint_linearizations": {
+                    "type": "bool",
                 },
             },
             "OptimizationRoutine": {
@@ -394,6 +396,13 @@ class Config(ConfigParser):
                 "test_for_intersections": {
                     "type": "bool",
                 },
+                "reextend_from_boundary": {
+                    "type": "bool",
+                },
+                "reextension_mode": {
+                    "type": "str",
+                    "possible_options": ["surface", "normal"],
+                },
             },
             "Regularization": {
                 "factor_volume": {
@@ -486,7 +495,18 @@ class Config(ConfigParser):
                 },
                 "type": {
                     "type": "str",
-                    "possible_options": ["min", "avg", "minimum", "average"],
+                    "possible_options": [
+                        "min",
+                        "avg",
+                        "q",
+                        "minimum",
+                        "average",
+                        "quantile",
+                    ],
+                },
+                "quantile": {
+                    "type": "float",
+                    "attributes": ["non_negative", "less_than_one"],
                 },
                 "remesh_iter": {
                     "type": "int",
@@ -583,6 +603,7 @@ picard_atol = 1e-12
 picard_iter = 50
 picard_verbose = False
 backend = cashocs
+use_adjoint_linearizations = False
 
 [OptimizationRoutine]
 algorithm = none
@@ -634,6 +655,8 @@ shape_bdry_fix_z = []
 degree_estimation = True
 global_deformation = False
 test_for_intersections = True
+reextend_from_boundary = False
+reextension_mode = surface
 
 [Regularization]
 factor_volume = 0.0
@@ -678,6 +701,7 @@ tol_lower = 0.0
 tol_upper = 1e-15
 measure = skewness
 type = min
+quantile = 0.0
 volume_change = inf
 angle_change = inf
 remesh_iter = 0
@@ -719,9 +743,11 @@ restart = False
             if file.is_file():
                 self.read(config_file)
             else:
-                log.warning(
+                raise _exceptions.InputError(
+                    "cashocs.Config",
+                    "config_file",
                     f"Could not find the specified config file {config_file}. "
-                    "Using cashocs default config instead."
+                    "Please supply a path to an existing configuration file.",
                 )
 
     def getlist(self, section: str, option: str, **kwargs: Any) -> list:

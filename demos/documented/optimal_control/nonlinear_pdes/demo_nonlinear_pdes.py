@@ -139,4 +139,5 @@ plt.tight_layout()
 # -
 
 # and the result looks as follows
-# ![](/../../demos/documented/optimal_control/nonlinear_pdes/img_nonlinear_pdes.png)
+# :::{image} /../../demos/documented/optimal_control/nonlinear_pdes/img_nonlinear_pdes.png
+# :::

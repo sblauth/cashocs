@@ -17,8 +17,7 @@
 
 """Space mapping algorithms."""
 
-from cashocs.space_mapping import optimal_control  # noqa: F401
-from cashocs.space_mapping import shape_optimization  # noqa: F401
-from cashocs.space_mapping import topology_optimization
+from cashocs.space_mapping import optimal_control
+from cashocs.space_mapping import shape_optimization
 
-__all__ = ["optimal_control", "shape_optimization", "topology_optimization"]
+__all__ = ["optimal_control", "shape_optimization"]

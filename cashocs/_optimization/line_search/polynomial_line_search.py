@@ -17,7 +17,6 @@
 
 """Polynomial line search algorithm."""
 
-
 from __future__ import annotations
 
 import collections
@@ -160,10 +159,9 @@ class PolynomialLineSearch(line_search.LineSearch):
             self.state_problem.has_solution = False
             objective_step = self.cost_functional.evaluate()
             self.f_vals.append(objective_step)
-
             log.debug(
-                f"Line search - Trial stepsize {self.stepsize:.3e} - "
-                f"Function value {objective_step:.3e}"
+                f"Stepsize: {self.stepsize:.3e}  -"
+                f"  Tentative cost function value: {objective_step:.3e}"
             )
 
             decrease_measure = self._compute_decrease_measure(search_direction)
@@ -171,7 +169,9 @@ class PolynomialLineSearch(line_search.LineSearch):
             if self._satisfies_armijo_condition(
                 solver, objective_step, current_function_value, decrease_measure
             ):
-                log.debug("Stepsize satisfies the Armijo decrease condition.")
+                log.debug(
+                    "Accepting tentative step based on Armijo decrease condition."
+                )
                 if self.optimization_variable_abstractions.requires_remeshing():
                     log.debug(
                         "The mesh quality was sufficient for accepting the step, "
@@ -190,7 +190,9 @@ class PolynomialLineSearch(line_search.LineSearch):
                 break
 
             else:
-                log.debug("Stepsize does not satisfy the Armijo decrease condition.")
+                log.debug(
+                    "Rejecting tentative step based on Armijo decrease condition."
+                )
                 self.stepsize = self._compute_polynomial_stepsize(
                     current_function_value,
                     decrease_measure,
@@ -307,8 +309,8 @@ class PolynomialLineSearch(line_search.LineSearch):
             )
             * np.array(
                 [
-                    [alpha_vals[0] ** 2, -alpha_vals[1] ** 2],
-                    [-alpha_vals[0] ** 3, alpha_vals[1] ** 3],
+                    [alpha_vals[0] ** 2, -(alpha_vals[1] ** 2)],
+                    [-(alpha_vals[0] ** 3), alpha_vals[1] ** 3],
                 ]
             )
             @ np.array(

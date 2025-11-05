@@ -22,6 +22,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import fenics
+import ufl
 
 from cashocs import _utils
 from cashocs import log
@@ -43,6 +44,7 @@ class AdjointProblem(pde_problem.PDEProblem):
         adjoint_form_handler: _forms.AdjointFormHandler,
         state_problem: sp.StateProblem,
         linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linearizations: list[ufl.Form] | None = None,
     ) -> None:
         """Initializes self.
 
@@ -53,6 +55,8 @@ class AdjointProblem(pde_problem.PDEProblem):
                 linearize the problem.
             linear_solver: The linear solver (KSP) which is used to solve the linear
                 systems arising from the discretized PDE.
+            adjoint_linearizations: The UFL form of the linearization to be employed for
+                solving the adjoint system. Defaults to None.
 
         """
         super().__init__(db, linear_solver=linear_solver)
@@ -63,6 +67,10 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.excluded_from_time_derivative = (
             self.state_problem.excluded_from_time_derivative
         )
+        if adjoint_linearizations is not None:
+            self.adjoint_linearizations = adjoint_linearizations
+        else:
+            self.adjoint_linearizations = [None] * self.db.parameter_db.state_dim
 
         self.adjoints = self.db.function_db.adjoints
         self.bcs_list_ad = self.adjoint_form_handler.bcs_list_ad
@@ -95,7 +103,6 @@ class AdjointProblem(pde_problem.PDEProblem):
                 "no_adjoint_solves"
                 in self.db.parameter_db.temp_dict["output_dict"].keys()
             ):
-
                 self.number_of_solves: int = self.db.parameter_db.temp_dict[
                     "output_dict"
                 ]["no_adjoint_solves"][-1]
@@ -130,7 +137,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                 or self.db.parameter_db.state_dim == 1
             ):
                 for i in range(self.db.parameter_db.state_dim):
-                    eftd = self.excluded_from_time_derivative[i]
+                    eftd = self.excluded_from_time_derivative[-1 - i]
                     if "ts" in _utils.get_petsc_prefixes(
                         self.db.parameter_db.adjoint_ksp_options[-1 - i]
                     ):
@@ -138,6 +145,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                             self.adjoint_form_handler.adjoint_eq_forms[-1 - i],
                             self.adjoints[-1 - i],
                             self.bcs_list_ad[-1 - i],
+                            derivative=self.adjoint_linearizations[-1 - i],
                             petsc_options=self.db.parameter_db.adjoint_ksp_options[
                                 -1 - i
                             ],
@@ -148,18 +156,34 @@ class AdjointProblem(pde_problem.PDEProblem):
                             ],
                             excluded_from_time_derivative=eftd,
                         )
+                    elif self.db.config.getboolean(
+                        "StateSystem", "use_adjoint_linearizations"
+                    ):
+                        nonlinear_solvers.snes_solve(
+                            self.adjoint_form_handler.adjoint_eq_forms[-1 - i],
+                            self.adjoints[-1 - i],
+                            self.bcs_list_ad[-1 - i],
+                            derivative=self.adjoint_linearizations[-1 - i],
+                            petsc_options=self.db.parameter_db.adjoint_ksp_options[
+                                -1 - i
+                            ],
+                            A_tensor=self.A_tensors[-1 - i],
+                            b_tensor=self.b_tensors[-1 - i],
+                            preconditioner_form=self.db.form_db.preconditioner_forms[
+                                -1 - i
+                            ],
+                        )
                     else:
                         _utils.assemble_and_solve_linear(
                             self.adjoint_form_handler.adjoint_eq_lhs[-1 - i],
                             self.adjoint_form_handler.adjoint_eq_rhs[-1 - i],
-                            self.bcs_list_ad[-1 - i],
+                            self.adjoints[-1 - i],
+                            bcs=self.bcs_list_ad[-1 - i],
                             A=self.A_tensors[-1 - i],
                             b=self.b_tensors[-1 - i],
-                            fun=self.adjoints[-1 - i],
                             ksp_options=self.db.parameter_db.adjoint_ksp_options[
                                 -1 - i
                             ],
-                            comm=self.db.geometry_db.mpi_comm,
                             preconditioner_form=self.db.form_db.preconditioner_forms[
                                 -1 - i
                             ],
@@ -180,6 +204,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                     A_tensors=self.A_tensors[::-1],
                     b_tensors=self.b_tensors[::-1],
                     preconditioner_forms=self.db.form_db.preconditioner_forms[::-1],
+                    newton_linearizations=self.adjoint_linearizations[::-1],
                 )
 
             self.has_solution = True

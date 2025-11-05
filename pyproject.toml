@@ -7,7 +7,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cashocs"
-version = "2.5.0-dev"
+version = "2.8.0-dev"
 description = "Computational Adjoint-Based Shape Optimization and Optimal Control Software"
 readme = "README.rst"
 requires-python = ">=3.9"
@@ -39,6 +39,7 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Programming Language :: Python :: 3 :: Only",
     "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
     "Operating System :: OS Independent"
@@ -84,9 +85,6 @@ all = ["cashocs[tests,docs]"]
 [tool.setuptools.packages]
 find = {}
 
-[tool.black]
-line_length = 88
-
 [tool.isort]
 profile = "black"
 skip_gitignore = "True"
@@ -99,10 +97,6 @@ order_by_type = "False"
 group_by_package = "True"
 known_first_party = ["cashocs"]
 known_third_party = ["fenics", "ufl", "numpy"]
-
-[tool.pydocstyle]
-convention = "google"
-match_dir = "cashocs/"
 
 [tool.coverage.run]
 source = ["cashocs"]
@@ -156,9 +150,25 @@ select = [
   "D", # pydocstyle
   "C90", # mccabe
   "UP", # pyupgrade
-  "B", # flake8bugbear
-  "NPY" # numpy
+  "B", # flake8-bugbear
+  "ANN", # flake8-annotations
+  "FA", # flake8-future-annotations
+  "LOG", # flake8-logging
+  "S", # flake8-bandit
+  "NPY", # numpy
+  "PD", # pandas-vet
+  "FURB", # refurb
+  "RUF100",
+  "RUF101",
+  "RUF200",
+]
+
+ignore = [
+"ANN401",
 ]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10

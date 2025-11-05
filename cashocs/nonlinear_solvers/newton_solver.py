@@ -138,6 +138,8 @@ class _NewtonSolver:
 
         # Setup increment and function for monotonicity test
         self.function_space = u.function_space()
+        self.comm = self.function_space.mesh().mpi_comm()
+
         self.du = fenics.Function(self.function_space)
         self.ddu = fenics.Function(self.function_space)
         self.u_save = fenics.Function(self.function_space)
@@ -178,7 +180,7 @@ class _NewtonSolver:
         self.P_fenics = fenics.PETScMatrix(self.comm)
 
         if linear_solver is None:
-            self.linear_solver = _utils.linalg.LinearSolver(self.comm)
+            self.linear_solver = _utils.linalg.LinearSolver()
         else:
             self.linear_solver = linear_solver
 
@@ -207,18 +209,18 @@ class _NewtonSolver:
         print_str = (
             f"{self.iterations:4d},  "
             f"{self.res:>13.3e} ({self.atol:.2e}),  "
-            f"{self.res/self.res_0:>13.3e} ({self.rtol:.2e})"
+            f"{self.res / self.res_0:>13.3e} ({self.rtol:.2e})"
         )
         if self.verbose:
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            if self.comm.rank == 0:
                 print(info_str + print_str, flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            self.comm.barrier()
         else:
-            log.info(info_str + print_str)
+            log.debug(info_str + print_str)
 
+    @log.profile_execution_time("assembling the Jacobian for Newton's method")
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
-        log.begin("Assembling the Jacobian for Newton's method.", level=log.DEBUG)
         self.assembler.assemble(self.A_fenics)
         self.A_fenics.ident_zeros()
         self.A_matrix = fenics.as_backend_type(  # pylint: disable=invalid-name
@@ -233,8 +235,6 @@ class _NewtonSolver:
             ).mat()
         else:
             self.P_matrix = None
-
-        log.end()
 
     def _compute_eta_inexact(self) -> None:
         """Computes the parameter ``eta`` for the inexact Newton method."""
@@ -271,18 +271,20 @@ class _NewtonSolver:
             A solution of the nonlinear problem.
 
         """
-        log.begin("Solving the nonlinear PDE system with Newton's method.")
+        log.begin(
+            "Solving the nonlinear PDE system with Newton's method.", level=log.DEBUG
+        )
         self._compute_residual()
 
         self.res_0 = self.residual.norm(self.norm_type)
         if self.res_0 == 0.0:  # pragma: no cover
             message = "Residual vanishes, input is already a solution."
             if self.verbose:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                if self.comm.rank == 0:
                     print(message, flush=True)
-                fenics.MPI.barrier(fenics.MPI.comm_world)
+                self.comm.barrier()
             else:
-                log.info(message)
+                log.debug(message)
             return self.u
 
         self.res = self.res_0
@@ -303,9 +305,9 @@ class _NewtonSolver:
 
             self._compute_eta_inexact()
             self.linear_solver.solve(
+                self.du,
                 A=self.A_matrix,
                 b=self.b,
-                fun=self.du,
                 ksp_options=self.ksp_options,
                 rtol=self.eta,
                 atol=self.atol / 10.0,
@@ -329,9 +331,8 @@ class _NewtonSolver:
             if self._check_for_convergence():
                 break
 
-        self._check_if_successful()
-
         log.end()
+        self._check_if_successful()
 
         return self.u
 
@@ -342,11 +343,11 @@ class _NewtonSolver:
                 f"Newton Solver converged after {self.iterations:d} iterations."
             )
             if self.verbose:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                if self.comm.rank == 0:
                     print(convergence_message, flush=True)
-                fenics.MPI.barrier(fenics.MPI.comm_world)
+                self.comm.barrier()
             else:
-                log.info(convergence_message)
+                log.debug(convergence_message)
             return True
 
         else:
@@ -374,9 +375,9 @@ class _NewtonSolver:
                 "Maximum number of iterations were exceeded.",
             )
 
+    @log.profile_execution_time("assembling the residual for Newton's method")
     def _compute_residual(self) -> None:
         """Computes the residual of the nonlinear system."""
-        log.begin("Assembling the residual for Newton's method.", level=log.DEBUG)
         self.residual = fenics.PETScVector(self.comm)
         self.assembler.assemble(self.residual, self.u.vector())
         if (
@@ -388,7 +389,6 @@ class _NewtonSolver:
             self.residual[:] -= self.residual_shift[:]
 
         self.b = fenics.as_backend_type(self.residual).vec()
-        log.end()
 
     def _compute_convergence_tolerance(self) -> float:
         """Computes the tolerance for the Newton solver.
@@ -412,9 +412,9 @@ class _NewtonSolver:
                 self.u.vector().apply("")
                 self._compute_residual()
                 self.linear_solver.solve(
+                    self.ddu,
                     A=self.A_matrix,
                     b=self.b,
-                    fun=self.ddu,
                     ksp_options=self.ksp_options,
                     rtol=self.eta,
                     atol=self.atol / 10.0,

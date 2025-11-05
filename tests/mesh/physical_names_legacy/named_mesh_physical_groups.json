@@ -1,0 +1,10 @@
+{
+    "dx": {
+        "volume": 1
+    },
+    "ds": {
+        "inlet": 1,
+        "wall": 2,
+        "outlet": 3
+    }
+}

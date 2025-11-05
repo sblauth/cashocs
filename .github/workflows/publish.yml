@@ -14,6 +14,8 @@ jobs:
     container:
       image: ghcr.io/sblauth/cashocs:main
       options: --user=root
+    env:
+      OMP_NUM_THREADS: 1
 
     steps:
     - name: Delete current installation in docker image
@@ -24,7 +26,7 @@ jobs:
         rm -R /home/mambauser/cashocs
 
     - name: Checkout repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
     - name: Install cashocs
       shell: bash
@@ -49,7 +51,7 @@ jobs:
     steps:
     
     - name: Checkout repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
 
     - name: Get tag name
@@ -60,14 +62,14 @@ jobs:
 
     - name: Check if release is a pre-release
       id: check_version
-      uses: nowsprinting/check-version-format-action@8678d594eeed2666b105eca0253f77c5eae94e5a # v4.0.5
+      uses: nowsprinting/check-version-format-action@bb1181a02ee5d9ae4feead2842236183c85152c6 # v4.0.7
       with:
         prefix: 'v'
 
 
     - name: Create Github release
       id: create_release
-      uses: softprops/action-gh-release@c95fe1489396fe8a9eb87c0abf8aa5b2ef267fda # v2.2.1
+      uses: softprops/action-gh-release@6da8fa9354ddfdc4aeace5fc48d7f679b5214090 # v2.4.1
       with:
         name: cashocs ${{ steps.tag_name.outputs.TAG_PREFIX }}
         generate_release_notes: ${{ steps.check_version.outputs.is_stable == 'true' }}
@@ -84,12 +86,12 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-    - name: Set up Python 3.13
-      uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5.4.0
+    - name: Set up Python 3.14
+      uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
       with:
-        python-version: 3.13
+        python-version: 3.14
 
     - name: Install pypa/build
       run: python -m pip install build --user
@@ -98,4 +100,4 @@ jobs:
       run: python -m build --sdist --wheel --outdir dist/ .
 
     - name: Publish distribution to PyPI
-      uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # release/v1
+      uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # release/v1

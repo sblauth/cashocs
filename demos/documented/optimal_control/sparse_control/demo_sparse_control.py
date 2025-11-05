@@ -118,7 +118,8 @@ plt.tight_layout()
 # -
 
 # which yields the following output
-# ![](/../../demos/documented/optimal_control/sparse_control/img_sparse_control.png)
+# :::{image} /../../demos/documented/optimal_control/sparse_control/img_sparse_control.png
+# :::
 #
 # :::{note}
 # The oscillations in between the peaks for the control variable {python}`u` are just

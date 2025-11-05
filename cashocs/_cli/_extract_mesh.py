@@ -19,8 +19,9 @@
 
 """Extract mesh files from .xdmf files."""
 
+from __future__ import annotations
+
 import argparse
-from typing import Optional
 
 from cashocs.io import mesh as iomesh
 
@@ -28,16 +29,17 @@ from cashocs.io import mesh as iomesh
 def _generate_parser() -> argparse.ArgumentParser:
     """Returns a parser for command line arguments."""
     parser = argparse.ArgumentParser(
-        prog="cashocs-extract_mesh", description="Extract a Gmsh file from an XDMF file"
+        prog="cashocs-extract_mesh",
+        description="Extract a Gmsh file from an XDMF file.",
     )
     parser.add_argument(
-        "xdmffile", type=str, help="The base XDMF state file, which holds the mesh"
+        "xdmffile", type=str, help="The XDMF file which holds the mesh."
     )
     parser.add_argument(
         "-i",
         "--iteration",
         type=int,
-        help="Iteration of interest in the XDMF state file. Defaults to 0.",
+        help="Iteration of interest in the XDMF file.",
         default=0,
         metavar="iteration",
     )
@@ -45,8 +47,8 @@ def _generate_parser() -> argparse.ArgumentParser:
         "-o",
         "--outfile",
         type=str,
-        help="Path to the output Gmsh file. When this is not specified, the file is "
-        "written to the same directory as the XDMF state file.",
+        help="Path to the output Gmsh file. If this is not specified, the file is "
+        "written to the same directory as the XDMF file.",
         default=None,
         metavar="outfile",
     )
@@ -68,7 +70,7 @@ def _generate_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def extract_mesh(argv: Optional[list[str]] = None) -> None:
+def extract_mesh(argv: list[str] | None = None) -> None:
     """Wrapper for calling :py:func:`cashocs.io.extract_mesh` from command line.
 
     Args:

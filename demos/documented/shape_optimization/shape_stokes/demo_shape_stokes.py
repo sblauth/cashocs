@@ -278,4 +278,5 @@ plt.tight_layout()
 # -
 
 # and the result is shown below
-# ![](/../../demos/documented/shape_optimization/shape_stokes/img_shape_stokes.png)
+# :::{image} /../../demos/documented/shape_optimization/shape_stokes/img_shape_stokes.png
+# :::

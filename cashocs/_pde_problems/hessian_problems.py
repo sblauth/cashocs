@@ -103,17 +103,21 @@ class HessianProblem:
 
         # pylint: disable=invalid-name
         self.state_A_tensors = [
-            fenics.PETScMatrix() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScMatrix(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
         self.state_b_tensors = [
-            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScVector(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
         # pylint: disable=invalid-name
         self.adjoint_A_tensors = [
-            fenics.PETScMatrix() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScMatrix(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
         self.adjoint_b_tensors = [
-            fenics.PETScVector() for _ in range(self.db.parameter_db.state_dim)
+            fenics.PETScVector(self.db.geometry_db.mpi_comm)
+            for _ in range(self.db.parameter_db.state_dim)
         ]
 
         self.state_dim = self.db.parameter_db.state_dim
@@ -140,7 +144,7 @@ class HessianProblem:
         for _ in range(len(self.db.function_db.controls)):
             self.riesz_ksp_options.append(option)
 
-        self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
+        self.linear_solver = _utils.linalg.LinearSolver()
 
     def hessian_application(
         self, h: list[fenics.Function], out: list[fenics.Function]
@@ -172,10 +176,9 @@ class HessianProblem:
                 _utils.assemble_and_solve_linear(
                     self.form_handler.hessian_form_handler.sensitivity_eqs_lhs[i],
                     self.form_handler.hessian_form_handler.sensitivity_eqs_rhs[i],
-                    self.bcs_list_ad[i],
-                    fun=self.db.function_db.states_prime[i],
+                    self.db.function_db.states_prime[i],
+                    bcs=self.bcs_list_ad[i],
                     ksp_options=self.db.parameter_db.state_ksp_options[i],
-                    comm=self.db.geometry_db.mpi_comm,
                     preconditioner_form=self.db.form_db.preconditioner_forms[i],
                 )
 
@@ -185,10 +188,9 @@ class HessianProblem:
                         -1 - i
                     ],
                     self.form_handler.hessian_form_handler.w_1[-1 - i],
-                    self.bcs_list_ad[-1 - i],
-                    fun=self.db.function_db.adjoints_prime[-1 - i],
+                    self.db.function_db.adjoints_prime[-1 - i],
+                    bcs=self.bcs_list_ad[-1 - i],
                     ksp_options=self.db.parameter_db.adjoint_ksp_options[-1 - i],
-                    comm=self.db.geometry_db.mpi_comm,
                     preconditioner_form=self.db.form_db.preconditioner_forms[-1 - i],
                 )
 
@@ -229,9 +231,9 @@ class HessianProblem:
             ).vec()
 
             self.linear_solver.solve(
+                out[i],
                 A=self.form_handler.riesz_projection_matrices[i],
                 b=b,
-                fun=out[i],
                 ksp_options=self.riesz_ksp_options[i],
             )
 
@@ -291,7 +293,7 @@ class HessianProblem:
 
     def cg(self) -> None:
         """Solves the (truncated) Newton step with a CG method."""
-        log.begin("Solving the Newton system with a CG method.")
+        log.begin("Solving the Newton system with a CG method.", level=log.DEBUG)
         for j in range(len(self.residual)):
             self.residual[j].vector().vec().aypx(
                 0.0, -self.db.function_db.gradient[j].vector().vec()
@@ -303,7 +305,7 @@ class HessianProblem:
         rsold = self.form_handler.scalar_product(self.residual, self.residual)
         eps_0 = np.sqrt(rsold)
 
-        for _ in range(self.max_it_inner_newton):
+        for i in range(self.max_it_inner_newton):
             self.reduced_hessian_application(self.p, self.q)
 
             self.box_constraints.restrictor.restrict_to_active_set(self.p, self.temp1)
@@ -325,7 +327,9 @@ class HessianProblem:
 
             rsnew = self.form_handler.scalar_product(self.residual, self.residual)
             eps = np.sqrt(rsnew)
-            log.debug(f"Residual of the CG method: {eps/eps_0:.3e} (relative)")
+            log.debug(
+                f"{i = }  Residual of the CG method: {eps / eps_0:.3e} (relative)"
+            )
             if eps < self.inner_newton_atol + self.inner_newton_rtol * eps_0:
                 break
 
@@ -340,7 +344,7 @@ class HessianProblem:
 
     def cr(self) -> None:
         """Solves the (truncated) Newton step with a CR method."""
-        log.begin("Solving the Newton system with a CR method.")
+        log.begin("Solving the Newton system with a CR method.", level=log.DEBUG)
         for j in range(len(self.residual)):
             self.residual[j].vector().vec().aypx(
                 0.0, -self.db.function_db.gradient[j].vector().vec()
@@ -390,7 +394,9 @@ class HessianProblem:
             eps = np.sqrt(
                 self.form_handler.scalar_product(self.residual, self.residual)
             )
-            log.debug(f"Residual of the CR method: {eps/eps_0:.3e} (relative)")
+            log.debug(
+                f"{i = }  Residual of the CR method: {eps / eps_0:.3e} (relative)"
+            )
             if (
                 eps < self.inner_newton_atol + self.inner_newton_rtol * eps_0
                 or i == self.max_it_inner_newton - 1

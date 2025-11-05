@@ -20,27 +20,29 @@
 from __future__ import annotations
 
 import configparser
+import contextlib
 import gc
 import json
 import pathlib
-import subprocess  # nosec B404
+import subprocess
 import tempfile
+import time
 from typing import TYPE_CHECKING
 
 import fenics
 import h5py
+import meshio
+from mpi4py import MPI
 import numpy as np
 
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import log
-from cashocs._cli._convert import convert as cli_convert
+from cashocs import mpi
 from cashocs.geometry.measure import NamedMeasure
 from cashocs.geometry.mesh import _get_mesh_stats
 
 if TYPE_CHECKING:
-    from mpi4py import MPI
-
     from cashocs import _typing
 
 
@@ -150,7 +152,21 @@ def _import_gmsh_mesh(
     return mesh_tuple
 
 
-@_get_mesh_stats(mode="import")  # pylint:disable=protected-access
+def _get_mesh_paths(mesh_file: str) -> tuple[str, str, str]:
+    mesh_path = pathlib.Path(mesh_file)
+
+    subdomains_test_path = mesh_path.with_stem(mesh_path.stem + "_subdomains")
+    if subdomains_test_path.is_file():
+        subdomains_path = subdomains_test_path
+    else:
+        subdomains_path = mesh_path
+
+    boundaries_path = mesh_path.with_stem(mesh_path.stem + "_boundaries")
+
+    return str(mesh_path), str(subdomains_path), str(boundaries_path)
+
+
+@_get_mesh_stats("import")  # pylint:disable=protected-access
 def _import_xdmf_mesh(
     mesh_file: str, comm: MPI.Comm | None = None
 ) -> _typing.MeshTuple:
@@ -164,7 +180,8 @@ def _import_xdmf_mesh(
 
     Args:
         mesh_file: The location of the mesh file in .xdmf file format.
-        comm: MPI communicator that is to be used for creating the mesh.
+        comm: MPI communicator that is to be used for creating the mesh. If this is
+            `None`, then COMM_WORLD is used.
 
     Returns:
         A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported
@@ -200,15 +217,14 @@ def _import_xdmf_mesh(
             " is not allowed anymore starting with cashocs v2.",
         )
     # Check for the file format
-    file_string = mesh_file[:-5]
+    mesh_string, subdomain_string, boundaries_string = _get_mesh_paths(mesh_file)
 
     if comm is None:
-        comm = fenics.MPI.comm_world
+        comm = mpi.COMM_WORLD
 
     mesh = fenics.Mesh(comm)
-    xdmf_file = fenics.XDMFFile(mesh.mpi_comm(), mesh_file)
-    xdmf_file.read(mesh)
-    xdmf_file.close()
+    with fenics.XDMFFile(mesh.mpi_comm(), mesh_string) as xdmf_file:
+        xdmf_file.read(mesh)
 
     subdomains_mvc = fenics.MeshValueCollection(
         "size_t", mesh, mesh.geometric_dimension()
@@ -217,20 +233,21 @@ def _import_xdmf_mesh(
         "size_t", mesh, mesh.geometric_dimension() - 1
     )
 
-    subdomains_path = pathlib.Path(f"{file_string}_subdomains.xdmf")
+    subdomains_path = pathlib.Path(subdomain_string)
     if subdomains_path.is_file():
-        xdmf_subdomains = fenics.XDMFFile(mesh.mpi_comm(), str(subdomains_path))
-        xdmf_subdomains.read(subdomains_mvc, "subdomains")
-        xdmf_subdomains.close()
+        with fenics.XDMFFile(mesh.mpi_comm(), str(subdomains_path)) as xdmf_subdomains:
+            xdmf_subdomains.read(subdomains_mvc, "subdomains")
 
-    boundaries_path = pathlib.Path(f"{file_string}_boundaries.xdmf")
+    boundaries_path = pathlib.Path(boundaries_string)
     if boundaries_path.is_file():
-        xdmf_boundaries = fenics.XDMFFile(mesh.mpi_comm(), str(boundaries_path))
-        xdmf_boundaries.read(boundaries_mvc, "boundaries")
-        xdmf_boundaries.close()
+        with fenics.XDMFFile(mesh.mpi_comm(), str(boundaries_path)) as xdmf_boundaries:
+            xdmf_boundaries.read(boundaries_mvc, "boundaries")
 
     physical_groups: dict[str, dict[str, int]] | None = None
-    physical_groups_path = pathlib.Path(f"{file_string}_physical_groups.json")
+    physical_groups_path = pathlib.Path(mesh_string)
+    physical_groups_path = physical_groups_path.with_name(
+        physical_groups_path.stem + "_physical_groups.json"
+    )
     if physical_groups_path.is_file():
         with physical_groups_path.open("r", encoding="utf-8") as file:
             physical_groups = json.load(file)
@@ -276,12 +293,11 @@ def export_mesh(
             default is `None`, so that no subdomain information is used.
         boundaries: The boundaries meshfunction corresponding to the mesh. Optional,
             default is `None`, so that no boundary information is used.
-        comm: The MPI communicator used. Optional, default is `None`, so that the
-            `fenics.MPI.comm_world` is used.
+        comm: The MPI communicator used. Optional, default is `None`. This argument is
+            deprecated and will be removed in the future.
 
     """
-    if comm is None:
-        comm = fenics.MPI.comm_world
+    comm = mesh.mpi_comm()
 
     _utils.check_file_extension(mesh_file, "xdmf")
 
@@ -313,6 +329,7 @@ def convert(
     output_file: str | None = None,
     mode: str = "physical",
     quiet: bool = False,
+    comm: MPI.Comm | None = None,
 ) -> None:
     """Converts the input mesh file to a xdmf mesh file for cashocs to work with.
 
@@ -324,19 +341,11 @@ def convert(
         quiet: A boolean flag which silences the output.
         mode: The mode which is used to define the subdomains and boundaries. Should be
             one of 'physical' (the default), 'geometrical', or 'none'.
+        comm: The MPI.Comm that is used for parallelization.
 
     """
-    args = [input_file]
-
-    if output_file is not None:
-        args += ["-o", output_file]
-    if quiet:
-        args += ["-q"]
-
-    args += ["--mode", mode]
-
-    cli_convert(args)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    mesh_converter = MeshConverter(comm)
+    mesh_converter.convert(input_file, outputfile=output_file, mode=mode, quiet=quiet)
 
 
 def create_point_representation(
@@ -381,7 +390,6 @@ def gather_coordinates(mesh: fenics.Mesh) -> np.ndarray:
 
     """
     comm = mesh.mpi_comm()
-    rank = comm.Get_rank()
     top = mesh.topology()
     global_vertex_indices = top.global_indices(0)
     num_global_vertices = mesh.num_entities_global(0)
@@ -389,13 +397,13 @@ def gather_coordinates(mesh: fenics.Mesh) -> np.ndarray:
     local_coordinates_list = comm.gather(local_mesh_coordinates, root=0)
     vertex_map_list = comm.gather(global_vertex_indices, root=0)
 
-    if rank == 0:
+    if comm.rank == 0:
         coordinates = np.zeros((num_global_vertices, local_mesh_coordinates.shape[1]))
         for coords, verts in zip(local_coordinates_list, vertex_map_list):
             coordinates[verts] = coords
     else:
         coordinates = np.zeros((1, 1))
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    comm.barrier()
 
     return coordinates
 
@@ -470,7 +478,8 @@ def check_mesh_compatibility(mesh: fenics.Mesh, original_mesh_file: str) -> None
 
     """
     num_points = 0
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    comm = mesh.mpi_comm()
+    if comm.rank == 0:
         with open(original_mesh_file, encoding="utf-8") as file:
             node_info = False
             for line in file:
@@ -482,9 +491,9 @@ def check_mesh_compatibility(mesh: fenics.Mesh, original_mesh_file: str) -> None
                 if line == "$Nodes\n":
                     node_info = True
 
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    comm.barrier()
 
-    number_of_points = int(fenics.MPI.comm_world.bcast(num_points, root=0))
+    number_of_points = int(comm.bcast(num_points, root=0))
 
     if mesh.num_entities_global(0) != number_of_points:
         raise _exceptions.CashocsException(
@@ -493,7 +502,7 @@ def check_mesh_compatibility(mesh: fenics.Mesh, original_mesh_file: str) -> None
         )
 
 
-def write_out_mesh(  # noqa: C901
+def write_out_mesh(
     mesh: fenics.Mesh, original_msh_file: str, out_msh_file: str
 ) -> None:
     """Writes out mesh as Gmsh .msh file.
@@ -515,15 +524,16 @@ def write_out_mesh(  # noqa: C901
     """
     check_mesh_compatibility(mesh, original_msh_file)
     dim = mesh.geometric_dimension()
+    comm = mesh.mpi_comm()
 
     if not pathlib.Path(out_msh_file).parent.is_dir():
         pathlib.Path(out_msh_file).parent.mkdir(parents=True, exist_ok=True)
 
     points = gather_coordinates(mesh)
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if comm.rank == 0:
         parse_file(original_msh_file, out_msh_file, points, dim)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    comm.barrier()
 
 
 def read_mesh_from_xdmf(
@@ -534,7 +544,8 @@ def read_mesh_from_xdmf(
     Args:
         filename: The filename to the .xdmf file.
         step: The checkpoint number. Default is ``0``.
-        comm: MPI communicator that is to be used for creating the mesh.
+        comm: MPI communicator that is to be used for creating the mesh. If this is
+            `None`, then COMM_WORLD is used.
 
     Returns:
         The corresponding mesh for the checkpoint number.
@@ -568,11 +579,11 @@ def read_mesh_from_xdmf(
         )
 
     if comm is None:
-        comm = fenics.MPI.comm_world
+        comm = mpi.COMM_WORLD
 
     mesh = fenics.Mesh(comm)
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if comm.rank == 0:
         mesh_editor = fenics.MeshEditor()
         mesh_editor.open(mesh, cell_type, tdim, gdim)
         mesh_editor.init_vertices(coordinates.shape[0])
@@ -624,25 +635,25 @@ def extract_mesh_from_xdmf(
     _utils.check_file_extension(outputfile, "msh")
 
     mesh = read_mesh_from_xdmf(xdmffile, step=iteration)
+    comm = mesh.mpi_comm()
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if comm.rank == 0:
         tmp = tempfile.mkdtemp(prefix="cashocs_tmp_")
     else:
         tmp = ""
-    fenics.MPI.barrier(fenics.MPI.comm_world)
-    tempdir = fenics.MPI.comm_world.bcast(tmp, root=0)
+    comm.barrier()
+    tempdir = comm.bcast(tmp, root=0)
 
     mesh_location_xdmf = f"{tempdir}/mesh.xdmf"
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    comm.barrier()
     if original_gmsh_file is None:
         try:
-            with fenics.XDMFFile(fenics.MPI.comm_world, mesh_location_xdmf) as file:
+            with fenics.XDMFFile(comm, mesh_location_xdmf) as file:
                 file.write(mesh, fenics.XDMFFile.Encoding.HDF5)
 
-            fenics.MPI.barrier(fenics.MPI.comm_world)
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                subprocess.run(  # nosec B603, B607
-                    [
+            if comm.rank == 0:
+                subprocess.run(  # noqa: S603
+                    [  # noqa: S607
                         "meshio",
                         "convert",
                         "--output-format",
@@ -653,14 +664,255 @@ def extract_mesh_from_xdmf(
                     ],
                     check=True,
                 )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            comm.barrier()
         finally:
-            fenics.MPI.barrier(fenics.MPI.comm_world)
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                subprocess.run(["rm", "-r", tempdir], check=True)  # nosec B603, B607
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            if comm.rank == 0:
+                subprocess.run(["rm", "-r", tempdir], check=True)  # noqa: S603, S607
+            comm.barrier()
 
     else:
         write_out_mesh(mesh, original_gmsh_file, outputfile)
 
     log.end()
+
+
+class MeshConverter:
+    """Converter from Gmsh to XDMF."""
+
+    def __init__(self, comm: MPI.Comm | None) -> None:
+        """Initializes the mesh converter.
+
+        Args:
+            comm (MPI.Comm | None): The MPI.Comm used for parallelization. If this is
+                None, COMM_WORLD is used.
+
+        """
+        if comm is None:
+            self.comm = mpi.COMM_WORLD
+        else:
+            self.comm = comm
+
+    def check_mode(self, mode: str) -> None:
+        """Cheks, whether the supplied mode is sensible.
+
+        Args:
+            mode: The mode that should be used for the conversion.
+
+        """
+        if mode not in ["physical", "geometrical", "none"]:
+            raise _exceptions.CashocsException(
+                f"The supplied mode {mode} is invalid. "
+                f"Only possible options are 'physical', 'geometrical', or 'none'."
+            )
+
+    def write_mesh(
+        self,
+        topological_dimension: int,
+        cell_data_dict: dict,
+        points: np.ndarray,
+        cells_dict: dict,
+        ostring: str,
+        mode: str,
+    ) -> None:
+        """Writes out a xdmf file with the mesh and corresponding subdomains.
+
+        Args:
+            topological_dimension: The topological dimension of the mesh.
+            cell_data_dict: The cell_data_dict of the mesh.
+            points: The array of points.
+            cells_dict: The cells_dict of the mesh.
+            ostring: The output string, containing the name and path to the output file,
+                without extension.
+            mode: The mode which is used to define the subdomains and boundaries.
+                Should be one of 'physical' (the default), 'geometrical', or 'none'.
+
+        """
+        cell_type = "triangle"
+        if topological_dimension == 2:
+            cell_type = "triangle"
+        elif topological_dimension == 3:
+            cell_type = "tetra"
+
+        if mode == "physical":
+            dict_key = "gmsh:physical"
+        elif mode == "geometrical":
+            dict_key = "gmsh:geometrical"
+        else:
+            dict_key = None
+
+        try:
+            cell_data = {"subdomains": [cell_data_dict[dict_key][cell_type]]}
+        except KeyError:
+            cell_data = None
+
+        xdmf_mesh = meshio.Mesh(
+            points=points, cells={cell_type: cells_dict[cell_type]}, cell_data=cell_data
+        )
+        meshio.write(f"{ostring}.xdmf", xdmf_mesh)
+
+    def write_boundaries(
+        self,
+        topological_dimension: int,
+        cell_data_dict: dict,
+        points: np.ndarray,
+        cells_dict: dict,
+        ostring: str,
+        mode: str,
+    ) -> None:
+        """Writes out a xdmf file with meshio corresponding to the boundaries.
+
+        Args:
+            topological_dimension: The topological dimension of the mesh.
+            cell_data_dict: The cell_data_dict of the mesh.
+            points: The array of points.
+            cells_dict: The cells_dict of the mesh.
+            ostring: The output string, containing the name and path to the output file,
+                without extension.
+            mode: The mode which is used to define the subdomains and boundaries.
+                Should be one of 'physical' (the default), 'geometrical', or 'none'.
+
+        """
+        facet_str = "line"
+        if topological_dimension == 2:
+            facet_str = "line"
+        elif topological_dimension == 3:
+            facet_str = "triangle"
+
+        if mode == "physical":
+            dict_key = "gmsh:physical"
+        elif mode == "geometrical":
+            dict_key = "gmsh:geometrical"
+        else:
+            dict_key = None
+
+        if mode != "none" and dict_key in cell_data_dict.keys():
+            if facet_str in cell_data_dict[dict_key].keys():
+                xdmf_boundaries = meshio.Mesh(
+                    points=points,
+                    cells={facet_str: cells_dict[facet_str]},
+                    cell_data={"boundaries": [cell_data_dict[dict_key][facet_str]]},
+                )
+                meshio.write(f"{ostring}_boundaries.xdmf", xdmf_boundaries)
+        else:
+            if pathlib.Path(f"{ostring}_boundaries.xdmf").is_file():
+                subprocess.run(  # noqa: S603
+                    ["rm", f"{ostring}_boundaries.xdmf"],  # noqa: S607
+                    check=True,
+                )
+            if pathlib.Path(f"{ostring}_boundaries.h5").is_file():
+                subprocess.run(  # noqa: S603
+                    ["rm", f"{ostring}_boundaries.h5"],  # noqa: S607
+                    check=True,
+                )
+
+    def check_for_physical_names(
+        self, inputfile: str, topological_dimension: int, ostring: str
+    ) -> None:
+        """Checks and extracts physical tags if they are given as strings.
+
+        Args:
+            inputfile: Path to the input file.
+            topological_dimension: The dimension of the mesh.
+            ostring: The output string, containing the name and path to the output file,
+                without extension.
+
+        """
+        physical_groups: dict[str, dict[str, int]] = {"dx": {}, "ds": {}}
+        has_physical_groups = False
+        with open(inputfile, encoding="utf-8") as infile:
+            for line in infile:
+                line = line.strip()
+                if line == "$PhysicalNames":
+                    has_physical_groups = True
+                    info_line = next(infile).strip()
+                    no_physical_groups = int(info_line)
+                    for _ in range(no_physical_groups):
+                        physical_line = next(infile).strip().split()
+                        phys_dim = int(physical_line[0])
+                        phys_tag = int(physical_line[1])
+                        phys_name = physical_line[2]
+                        if "'" in phys_name:
+                            phys_name = phys_name.replace("'", "")
+                        if '"' in phys_name:
+                            phys_name = phys_name.replace('"', "")
+
+                        if phys_dim == topological_dimension:
+                            physical_groups["dx"][phys_name] = phys_tag
+                        elif phys_dim == topological_dimension - 1:
+                            physical_groups["ds"][phys_name] = phys_tag
+
+                    break
+
+            if has_physical_groups:
+                with open(
+                    f"{ostring}_physical_groups.json", "w", encoding="utf-8"
+                ) as ofile:
+                    json.dump(physical_groups, ofile, indent=4)
+
+    def convert(
+        self,
+        inputfile: str,
+        outputfile: str | None = None,
+        mode: str = "physical",
+        quiet: bool = False,
+    ) -> None:
+        """Converts a Gmsh .msh file to a .xdmf mesh file.
+
+        Args:
+            inputfile (str): Gmsh file to be converted.
+            outputfile (str | None, optional): Path to the target output. Defaults to
+                None.
+            mode (str, optional): The mode used to define the subdomains and
+                boundaries. This can be either "physical" or "geometrical". Defaults to
+                "physical".
+            quiet (bool, optional): A boolean flag which indicates whether the method
+                should produce output to stdout. Defaults to False.
+
+        """
+        start_time = time.time()
+
+        _utils.check_file_extension(inputfile, "msh")
+        self.check_mode(mode)
+
+        if outputfile is None:
+            outputfile = f"{inputfile[:-4]}.xdmf"
+        _utils.check_file_extension(outputfile, "xdmf")
+
+        ostring = outputfile.rsplit(".", 1)[0]
+
+        if self.comm.rank == 0:
+            with contextlib.redirect_stdout(None):
+                mesh_collection = meshio.read(inputfile)
+
+            points = mesh_collection.points
+            cells_dict = mesh_collection.cells_dict
+            cell_data_dict = mesh_collection.cell_data_dict
+
+            # Check, whether we have a 2D or 3D mesh:
+            keyvals = cells_dict.keys()
+            topological_dimension = 2
+            if "tetra" in keyvals:
+                topological_dimension = 3
+            elif "triangle" in keyvals:
+                topological_dimension = 2
+                # check if geometrical dimension matches topological dimension
+                z_coords = points[:, 2]
+                if np.abs(np.max(z_coords) - np.min(z_coords)) <= 1e-15:
+                    points = points[:, :2]
+
+            self.write_mesh(
+                topological_dimension, cell_data_dict, points, cells_dict, ostring, mode
+            )
+            self.write_boundaries(
+                topological_dimension, cell_data_dict, points, cells_dict, ostring, mode
+            )
+            self.check_for_physical_names(inputfile, topological_dimension, ostring)
+        self.comm.barrier()
+
+        end_time = time.time()
+
+        if not quiet:
+            log.info(
+                f"Successfully converted {inputfile} to {outputfile} "
+                f"in {end_time - start_time:.2f} s"
+            )

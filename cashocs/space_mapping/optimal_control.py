@@ -36,14 +36,13 @@ except ImportError:
 
 from cashocs import _exceptions
 from cashocs import _utils
+from cashocs import io
 from cashocs import log
 from cashocs._database import database
 from cashocs._optimization.optimal_control import optimal_control_problem as ocp
-from cashocs.io import output
 
 if TYPE_CHECKING:
     from cashocs import _typing
-    from cashocs import io
 
 
 class FineModel(abc.ABC):
@@ -57,6 +56,14 @@ class FineModel(abc.ABC):
 
     controls: list[fenics.Function]
     cost_functional_value: float
+
+    @log.profile_execution_time("simulating the fine model")
+    def simulate(self) -> None:
+        """Simulates the fine model.
+
+        This is done in this method so it can be decorated for logging purposes.
+        """
+        self.solve_and_evaluate()
 
     @abc.abstractmethod
     def solve_and_evaluate(self) -> None:
@@ -480,7 +487,7 @@ class SpaceMappingProblem:
             self.coarse_model.preconditioner_forms,  # type: ignore
         )
 
-        self.output_manager = output.OutputManager(self.db)
+        self.output_manager = io.output.OutputManager(self.db)
 
         self.eps = 1.0
         self.converged = False
@@ -559,9 +566,7 @@ class SpaceMappingProblem:
         log.begin("Solving the space mapping problem.")
         self._compute_intial_guess()
 
-        log.begin("Simulating the fine model.")
-        self.fine_model.solve_and_evaluate()
-        log.end()
+        self.fine_model.simulate()
 
         self.parameter_extraction._solve(  # pylint: disable=protected-access
             self.iteration
@@ -693,9 +698,7 @@ class SpaceMappingProblem:
                 )
                 self.x[i].vector().apply("")
 
-            log.begin("Simulating the fine model.")
-            self.fine_model.solve_and_evaluate()
-            log.end()
+            self.fine_model.simulate()
 
             self.parameter_extraction._solve(  # pylint: disable=protected-access
                 self.iteration,
@@ -721,9 +724,7 @@ class SpaceMappingProblem:
                     )
                     self.x[i].vector().apply("")
 
-                log.begin("Simulating the fine model.")
-                self.fine_model.solve_and_evaluate()
-                log.end()
+                self.fine_model.simulate()
 
                 self.parameter_extraction._solve(  # pylint: disable=protected-access
                     self.iteration,

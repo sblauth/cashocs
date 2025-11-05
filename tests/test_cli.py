@@ -19,12 +19,69 @@ import pathlib
 import subprocess
 
 import fenics
+from mpi4py import MPI
 import numpy as np
 import pytest
 
 import cashocs
 import cashocs._cli
 from cashocs.io.mesh import gather_coordinates
+
+
+@pytest.mark.skipif(
+    MPI.COMM_WORLD.size > 1,
+    reason="This test cannot be run in parallel.",
+)
+def test_convert_cli(dir_path):
+    subprocess.run(
+        ["cashocs-convert", f"{dir_path}/mesh/mesh.msh"],
+        check=True,
+    )
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+        dir_path + "/mesh/mesh.xdmf"
+    )
+
+    gmsh_coords = np.array(
+        [
+            [0, 0],
+            [1, 0],
+            [1, 1],
+            [0, 1],
+            [0.499999999998694, 0],
+            [1, 0.499999999998694],
+            [0.5000000000020591, 1],
+            [0, 0.5000000000020591],
+            [0.2500000000010297, 0.7500000000010296],
+            [0.3749999970924328, 0.3750000029075671],
+            [0.7187499979760099, 0.2812500030636815],
+            [0.6542968741702071, 0.6542968818888233],
+        ]
+    )
+
+    assert fenics.assemble(1 * dx) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds) == pytest.approx(4.0, rel=1e-14)
+
+    assert fenics.assemble(1 * ds(1)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(2)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(3)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(4)) == pytest.approx(1.0, rel=1e-14)
+
+    mesh_coords = gather_coordinates(mesh)
+    if MPI.COMM_WORLD.rank == 0:
+        assert np.allclose(mesh_coords, gmsh_coords)
+    MPI.COMM_WORLD.barrier()
+
+    assert pathlib.Path(f"{dir_path}/mesh/mesh.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh.h5").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.xdmf").is_file()
+    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.h5").is_file()
+
+    if MPI.COMM_WORLD.rank == 0:
+        subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
+        subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
+        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
+        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
+    MPI.COMM_WORLD.barrier()
 
 
 def test_convert_output_arg(dir_path):
@@ -50,34 +107,30 @@ def test_convert_output_arg(dir_path):
         ]
     )
 
-    assert abs(fenics.assemble(1 * dx) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds) - 4) < 1e-14
+    assert fenics.assemble(1 * dx) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds) == pytest.approx(4.0, rel=1e-14)
 
-    assert abs(fenics.assemble(1 * ds(1)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(2)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(3)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(4)) - 1) < 1e-14
+    assert fenics.assemble(1 * ds(1)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(2)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(3)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(4)) == pytest.approx(1.0, rel=1e-14)
 
     mesh_coords = gather_coordinates(mesh)
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         assert np.allclose(mesh_coords, gmsh_coords)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
     assert pathlib.Path(f"{dir_path}/mesh/test.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/test.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/test_subdomains.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/test_subdomains.h5").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/test_boundaries.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/test_boundaries.h5").is_file()
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/test.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/test.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/test_subdomains.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/test_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.h5"], check=True)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
 
 def test_convert_wrapper(dir_path):
@@ -103,34 +156,30 @@ def test_convert_wrapper(dir_path):
         ]
     )
 
-    assert abs(fenics.assemble(1 * dx) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds) - 4) < 1e-14
+    assert fenics.assemble(1 * dx) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds) == pytest.approx(4.0, rel=1e-14)
 
-    assert abs(fenics.assemble(1 * ds(1)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(2)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(3)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(4)) - 1) < 1e-14
+    assert fenics.assemble(1 * ds(1)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(2)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(3)) == pytest.approx(1.0, rel=1e-14)
+    assert fenics.assemble(1 * ds(4)) == pytest.approx(1.0, rel=1e-14)
 
     mesh_coords = gather_coordinates(mesh)
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         assert np.allclose(mesh_coords, gmsh_coords)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
     assert pathlib.Path(f"{dir_path}/mesh/mesh.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_subdomains.h5").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.h5").is_file()
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
 
 def test_convert3D(dir_path):
@@ -139,53 +188,49 @@ def test_convert3D(dir_path):
         dir_path + "/mesh/mesh3.xdmf"
     )
 
-    assert abs(fenics.assemble(1 * dx) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds) - 6) < 1e-14
+    assert fenics.assemble(1 * dx) == pytest.approx(1, rel=1e-14)
+    assert fenics.assemble(1 * ds) == pytest.approx(6, rel=1e-14)
 
-    assert abs(fenics.assemble(1 * ds(1)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(2)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(3)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(4)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(5)) - 1) < 1e-14
-    assert abs(fenics.assemble(1 * ds(6)) - 1) < 1e-14
+    assert fenics.assemble(1 * ds(1)) == pytest.approx(1, rel=1e-14)
+    assert fenics.assemble(1 * ds(2)) == pytest.approx(1, rel=1e-14)
+    assert fenics.assemble(1 * ds(3)) == pytest.approx(1, rel=1e-14)
+    assert fenics.assemble(1 * ds(4)) == pytest.approx(1, rel=1e-14)
+    assert fenics.assemble(1 * ds(5)) == pytest.approx(1, rel=1e-14)
+    assert fenics.assemble(1 * ds(6)) == pytest.approx(1, rel=1e-14)
 
     assert pathlib.Path(f"{dir_path}/mesh/mesh3.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh3.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh3_subdomains.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh3_subdomains.h5").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh3_boundaries.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/mesh3_boundaries.h5").is_file()
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         subprocess.run(["rm", f"{dir_path}/mesh/mesh3.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh3.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh3_subdomains.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh3_subdomains.h5"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh3_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh3_boundaries.h5"], check=True)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
 
 def test_wrong_formats(dir_path):
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         with pytest.raises(Exception) as e_info:
             cashocs._cli.convert(
                 [f"{dir_path}/mesh/mesh.mesh", "-o", f"{dir_path}/mesh/mesh.xdmf"]
             )
         assert "due to wrong format." in str(e_info.value)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         with pytest.raises(Exception) as e_info:
             cashocs._cli.convert(
                 [f"{dir_path}/mesh/mesh.msh", "-o", f"{dir_path}/mesh/mesh.test"]
             )
         assert "due to wrong format." in str(e_info.value)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
 
 @pytest.mark.skipif(
-    fenics.MPI.size(fenics.MPI.comm_world) > 1,
+    MPI.COMM_WORLD.size > 1,
     reason="This test cannot be run in parallel.",
 )
 def test_extract_mesh_cli(dir_path):
@@ -215,8 +260,8 @@ def test_extract_mesh_cli(dir_path):
     assert mesh.num_vertices() == 121
     assert mesh.num_cells() == 200
 
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()
 
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+    if MPI.COMM_WORLD.rank == 0:
         subprocess.run(["rm", "-r", f"{dir_path}/tmp"], check=True)
-    fenics.MPI.barrier(fenics.MPI.comm_world)
+    MPI.COMM_WORLD.barrier()

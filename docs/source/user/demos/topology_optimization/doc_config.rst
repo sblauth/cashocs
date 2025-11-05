@@ -14,15 +14,64 @@ configparser module <https://docs.python.org/3/library/configparser.html>`_ for
 a detailed description of how these config files can be structured. Moreover,
 we remark that cashocs has a default behavior for almost all of these
 parameters, which is triggered when they are **NOT** specified in the config file,
-and we will discuss this behavior for each parameter in this tutorial. For a
-summary over all parameters and their default values look at
-:ref:`the end of this page <config_topology_summary>`.
+and we will discuss this behavior for each parameter in this tutorial.
+
+Again, we start with a summary of all parameters before discussing them
+detailedly. New users might want
+to skip the summary and continue directly at
+:ref:`the detailed description <config_topology_detailed>`.
+
+
+
+.. _config_topology_summary:
+
+Summary
+-------
+
+An overview over all configuration parameters for topology optimization and their default values can be found
+in the following.
+
+
+TopologyOptimization
+********************
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`angle_tol = 1.0`
+      - Stopping tolerance for the angle (in degrees)
+    * - :ini:`interpolation_scheme = volume`
+      - The approach used to interpolate the topological derivative. Possible options: :ini:`volume` or :ini:`angle`
+    * - :ini:`normalize_topological_derivative = False`
+      - Whether to normalize the topological derivative in each iteration.
+    * - :ini:`re_normalize_levelset = False`
+      - Whether to re-normalize the levelset function in each iteration.
+    * - :ini:`topological_derivative_is_identical = False`
+      - Whether the topological derivative is identical for all considered parts
+    * - :ini:`tol_bisection = 1e-4`
+      - Tolerance for the bisection procedure (used for incorporating volume constraints)
+    * - :ini:`max_iter_bisection = 100`
+      - Maximum number of iterations of the bisection procedure
+
+
+
+.. _config_topology_detailed:
+
+Detailed Description
+--------------------
+
+Let us now give a detailed description over all parameters available for configuring cashocs' behavior.
 
 
 .. _config_top_topology_optimization:
 
-Section TopologyOptimization
-----------------------------
+TopologyOptimization
+********************
 
 Topology optimization problems contain additional parameters only in the section "TopologyOptimization".
 Let us go over the parameters in that section now.
@@ -86,38 +135,4 @@ Finally, the parameter
 
 determines how many iterations of the bisection approach are carried out in the worst case. The default value for this is given by
 :ini:`max_iter_bisection = 100`.
-
-
-.. _config_topology_summary:
-
-Summary
--------
-
-Finally, an overview over all configuration parameters for topology optimization and their default values can be found
-in the following.
-
-
-[TopologyOptimization]
-**********************
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`angle_tol = 1.0`
-      - Stopping tolerance for the angle (in degrees)
-    * - :ini:`interpolation_scheme = volume`
-      - The approach used to interpolate the topological derivative. Possible options: :ini:`volume` or :ini:`angle`
-    * - :ini:`normalize_topological_derivative = False`
-      - Whether to normalize the topological derivative in each iteration.
-    * - :ini:`re_normalize_levelset = False`
-      - Whether to re-normalize the levelset function in each iteration.
-    * - :ini:`topological_derivative_is_identical = False`
-      - Whether the topological derivative is identical for all considered parts
-    * - :ini:`tol_bisection = 1e-4`
-      - Tolerance for the bisection procedure (used for incorporating volume constraints)
-    * - :ini:`max_iter_bisection = 100`
-      - Maximum number of iterations of the bisection procedure
-
 

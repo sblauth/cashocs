@@ -159,13 +159,13 @@ def picard_iteration(
             info_str = f"\n{prefix}iter,  abs. residual,  rel. residual\n\n"
         else:
             info_str = ""
-        val_str = f"{prefix}{i:4d},  {res:>13.3e},  {res/res_0:>13.3e}"
+        val_str = f"{prefix}{i:4d},  {res:>13.3e},  {res / res_0:>13.3e}"
         if verbose:
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            if comm.rank == 0:
                 print(info_str + val_str, flush=True)
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            comm.barrier()
         else:
-            log.info(info_str + val_str)
+            log.debug(info_str + val_str)
 
         if res <= tol:
             break

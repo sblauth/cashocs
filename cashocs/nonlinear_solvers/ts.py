@@ -124,7 +124,9 @@ class TSPseudoSolver:
 
         self.rtol = rtol
         self.atol = atol
+        self.dtol = 1e4
         self.max_iter = max_iter
+        self.res_current = -1.0
 
         if petsc_options is None:
             self.petsc_options: _typing.KspOption = copy.deepcopy(
@@ -195,6 +197,9 @@ class TSPseudoSolver:
             self.excluded_from_time_derivative = excluded_from_time_derivative
         self._setup_mass_matrix()
 
+        self.has_monitor_output = "ts_monitor" in self.petsc_options
+        self.ts_converged_its = "ts_converged_its" in self.petsc_options
+
     def _setup_mass_matrix(self) -> None:
         """Sets up the mass matrix for the time derivative."""
         space = self.u.function_space()
@@ -231,7 +236,8 @@ class TSPseudoSolver:
 
         form = _utils.summation(form_list)
         M = fenics.PETScMatrix(self.mass_matrix_petsc)  # pylint: disable=invalid-name,
-        fenics.assemble(form, tensor=M)
+        zero_form = ufl.inner(fenics.Constant(np.zeros(test.ufl_shape)), test) * dx
+        fenics.assemble_system(form, zero_form, self.bcs, A_tensor=M)
 
         self.M_petsc = self.mass_matrix_petsc.copy()  # pylint: disable=invalid-name,
 
@@ -242,6 +248,7 @@ class TSPseudoSolver:
         else:
             self.MP_petsc = None
 
+    @log.profile_execution_time("assembling the residual for pseudo time stepping")
     def assemble_residual(
         self,
         ts: PETSc.TS,  # pylint: disable=unused-argument
@@ -258,7 +265,6 @@ class TSPseudoSolver:
             f (PETSc.Vec): The vector in which the residual is stored.
 
         """
-        log.begin("Assembling the residual for pseudo time stepping.", level=log.DEBUG)
         self.u.vector().vec().aypx(0.0, u)
         self.u.vector().apply("")
 
@@ -274,8 +280,8 @@ class TSPseudoSolver:
             f[:] -= self.residual_shift[:]
 
         f.scale(-1)
-        log.end()
 
+    @log.profile_execution_time("assembling the Jacobian for pseudo time stepping")
     def assemble_jacobian(
         self,
         ts: PETSc.TS,  # pylint: disable=unused-argument
@@ -294,7 +300,6 @@ class TSPseudoSolver:
             P (PETSc.Mat): The matrix for storing the preconditioner.
 
         """
-        log.begin("Assembling the Jacobian for pseudo time stepping.", level=log.DEBUG)
         self.u.vector().vec().aypx(0.0, u)
         self.u.vector().apply("")
 
@@ -315,8 +320,6 @@ class TSPseudoSolver:
             P_petsc.scale(-1)
             P_petsc.assemble()
 
-        log.end()
-
     def assemble_i_function(
         self,
         ts: PETSc.TS,  # pylint: disable=unused-argument
@@ -335,9 +338,7 @@ class TSPseudoSolver:
             f (PETSc.Vec): The vector for storing the IFunction.
 
         """
-        res = self.mass_matrix_petsc.createVecLeft()
-        self.mass_matrix_petsc.mult(u_dot, res)
-        f.aypx(0.0, res)
+        self.mass_matrix_petsc.mult(u_dot, f)
         f.assemble()
 
     def assemble_mass_matrix(
@@ -407,27 +408,59 @@ class TSPseudoSolver:
             u (PETSc.Vec): The current iterate.
 
         """
-        residual_norm = self.compute_nonlinear_residual(u)
+        self.res_current = self.compute_nonlinear_residual(u)
 
-        log.debug(f"TS {i = }  {t = :.3e}  residual: {residual_norm:.3e}")
+        if self.res_initial == 0:
+            relative_residual = self.res_current
+        else:
+            relative_residual = self.res_current / self.res_initial
+
+        monitor_str = (
+            f"TS {i = }  {t = :.3e}  "
+            f"residual: {relative_residual:.3e} (rel)  "
+            f"{self.res_current:.3e} (abs)"
+        )
+        if self.comm.rank == 0 and self.has_monitor_output:
+            print(monitor_str, flush=True)
 
         self.rtol = cast(float, self.rtol)
         self.atol = cast(float, self.atol)
 
-        if residual_norm < np.maximum(self.rtol * self.res_initial, self.atol):
+        if self.res_current < np.maximum(self.rtol * self.res_initial, self.atol):
             ts.setConvergedReason(PETSc.TS.ConvergedReason.CONVERGED_USER)
             max_time = ts.getMaxTime()
             ts.setTime(max_time)
+        elif self.res_current > self.dtol * self.res_initial:
+            if hasattr(PETSc, "garbage_cleanup"):
+                self._destroy_petsc_objects()
+                ts.destroy()
+                PETSc.garbage_cleanup(comm=self.comm)
+            raise _exceptions.PETScTSError(-5)
+
+    def _destroy_petsc_objects(self) -> None:
+        self.residual_convergence.vec().destroy()
+
+        self.M_petsc.destroy()
+        self.mass_matrix_petsc.destroy()
+
+        if self.P_petsc is not None:
+            self.P_petsc.destroy()
+
+        if self.residual_shift is not None:
+            self.residual_shift.destroy()
+
+        if self.MP_petsc is not None:
+            self.MP_petsc.destroy()
 
     def solve(self) -> fenics.Function:
         """Solves the (nonlinear) problem with pseudo time stepping.
 
         Returns:
-            fenics.Function: The solution obtained by the solver.
+            The solution obtained by the solver.
 
         """
-        log.begin("Solving the PDE system with pseudo time stepping.")
-        ts = PETSc.TS().create()
+        log.begin("Solving the PDE system with pseudo time stepping.", level=log.DEBUG)
+        ts = PETSc.TS().create(self.comm)
         ts.setProblemType(ts.ProblemType.NONLINEAR)
 
         ts.setIFunction(self.assemble_i_function, self.mass_application_petsc)
@@ -462,9 +495,15 @@ class TSPseudoSolver:
 
         self.res_initial = self.compute_nonlinear_residual(self.u.vector().vec())
         ts.setTime(0.0)
-        ts.setMonitor(self.monitor)
 
-        _utils.setup_petsc_options([ts], [self.petsc_options])
+        ts.setMonitor(self.monitor)
+        reduced_petsc_options = {
+            key: value
+            for key, value in self.petsc_options.items()
+            if key not in ["ts_monitor", "ts_converged_its"]
+        }
+
+        _utils.setup_petsc_options([ts], [reduced_petsc_options])
         if self.rtol is None:
             self.rtol = ts.getSNES().rtol
         if self.atol is None:
@@ -477,23 +516,23 @@ class TSPseudoSolver:
         x.vector().apply("")
 
         ts.solve(x.vector().vec())
+        converged_reason = ts.getConvergedReason()
 
         self.u.vector().vec().aypx(0.0, x.vector().vec())
         self.u.vector().apply("")
 
-        converged_reason = ts.getConvergedReason()
-        if (
-            converged_reason < 0
-            or converged_reason == PETSc.TS.ConvergedReason.CONVERGED_ITS
-        ):
-            raise _exceptions.PETScTSError(converged_reason)
+        log.end()
 
         if hasattr(PETSc, "garbage_cleanup"):
+            self._destroy_petsc_objects()
             ts.destroy()
             PETSc.garbage_cleanup(comm=self.comm)
-            PETSc.garbage_cleanup()
 
-        log.end()
+        if converged_reason < 0:
+            raise _exceptions.PETScTSError(converged_reason)
+        elif converged_reason == PETSc.TS.ConvergedReason.CONVERGED_ITS:
+            if not self.ts_converged_its:
+                raise _exceptions.PETScTSError(converged_reason)
 
         return self.u
 

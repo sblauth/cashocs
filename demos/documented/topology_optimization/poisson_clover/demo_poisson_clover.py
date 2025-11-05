@@ -376,7 +376,9 @@ plt.tight_layout()
 # -
 
 # and the result looks like this
-# ![](/../../demos/documented/topology_optimization/poisson_clover/img_poisson_clover.png)
+# :::{image} /../../demos/documented/topology_optimization/poisson_clover/img_poisson_clover.png
+# :::
+#
 # As we can see, the BFGS method is able to reconstruct the desired clover shape after
 # only about 100 iterations. We encourage readers to try the other (established) methods
 # to compare the novel BFGS approach to established techniques and see that the new

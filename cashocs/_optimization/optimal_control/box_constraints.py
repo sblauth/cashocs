@@ -139,7 +139,7 @@ class BoxConstraints:
                             )
                             or (
                                 sub_elem.family() == "Discontinuous Lagrange"
-                                and sub_elem.degree() == 0
+                                and sub_elem.degree() <= 1
                             )
                         ):
                             raise _exceptions.InputError(
@@ -150,8 +150,8 @@ class BoxConstraints:
                                 "controls",
                                 (
                                     "Control constraints are only implemented for "
-                                    "linear Lagrange, constant Discontinuous Lagrange, "
-                                    "and Real elements."
+                                    "linear Lagrange, constant and linear discontinuous"
+                                    " Lagrange, and Real elements."
                                 ),
                             )
 
@@ -164,7 +164,7 @@ class BoxConstraints:
                         )
                         or (
                             control_element.family() == "Discontinuous Lagrange"
-                            and control_element.degree() == 0
+                            and control_element.degree() <= 1
                         )
                     ):
                         raise _exceptions.InputError(
@@ -175,8 +175,8 @@ class BoxConstraints:
                             "controls",
                             (
                                 "Control constraints are only implemented for "
-                                "linear Lagrange, constant Discontinuous Lagrange, "
-                                "and Real elements."
+                                "linear Lagrange, constant and linear discontinuous "
+                                "Lagrange, and Real elements."
                             ),
                         )
 

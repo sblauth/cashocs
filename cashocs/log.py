@@ -20,9 +20,37 @@
 from __future__ import annotations
 
 import datetime
+import functools
 import logging
+from typing import Any, Callable, TYPE_CHECKING, TypeVar
 
 import fenics
+
+from cashocs import mpi
+
+if TYPE_CHECKING:
+    from mpi4py import MPI
+
+
+class LogLevel:
+    """Stores the various log levels of cashocs."""
+
+    TRACE = logging.DEBUG - 5
+    DEBUG = logging.DEBUG
+    INFO = logging.INFO
+    WARNING = logging.WARNING
+    ERROR = logging.ERROR
+    CRITICAL = logging.CRITICAL
+
+
+TRACE = logging.DEBUG - 5  # pylint: disable=invalid-name
+DEBUG = logging.DEBUG  # pylint: disable=invalid-name
+INFO = logging.INFO  # pylint: disable=invalid-name
+WARNING = logging.WARNING  # pylint: disable=invalid-name
+ERROR = logging.ERROR  # pylint: disable=invalid-name
+CRITICAL = logging.CRITICAL  # pylint: disable=invalid-name
+
+logging.addLevelName(TRACE, "TRACE")
 
 
 class Logger:
@@ -41,15 +69,29 @@ class Logger:
 
         self._log = logging.getLogger(name)
         self._log.addHandler(h)
-        self._log.setLevel(logging.DEBUG)
+        self._log.setLevel(TRACE)
 
         self._logfiles: dict[str, logging.FileHandler] = {}
         self._indent_level = 0
-        self._use_timestamp = False
+        self._use_timestamp = True
 
         self._time_stack: list[datetime.datetime] = []
         self._group_stack: list[str] = []
         self._level_stack: list[int] = []
+
+        self.comm = mpi.COMM_WORLD
+
+    def set_comm(self, comm: MPI.Comm) -> None:
+        """Sets the MPI communicator used for logging.
+
+        This should be the same that is supplied for the mesh generation, otherwise
+        the program could hang indefinitely.
+
+        Args:
+            comm (MPI.Comm): The MPI communicator for logging.
+
+        """
+        self.comm = comm
 
     def log(self, level: int, message: str) -> None:
         """Use the logging functionality of the logger to log to (various) handlers.
@@ -60,9 +102,18 @@ class Logger:
             message (str): The message that should be logged.
 
         """
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if self.comm.rank == 0:
             self._log.log(level, self._format(message))
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        self.comm.barrier()
+
+    def trace(self, message: str) -> None:
+        """Issues a message at the trace level.
+
+        Args:
+            message (str): The message that should be logged.
+
+        """
+        self.log(TRACE, message)
 
     def debug(self, message: str) -> None:
         """Issues a message at the debug level.
@@ -171,8 +222,8 @@ class Logger:
         """Generate a timedelta between the start and end time.
 
         Returns:
-            datetime.timedelta: The timedelta between the :py:func:`cashocs.log.begin`
-            and :py:func:`cashocs.log.end` calls.
+            The timedelta between the :py:func:`cashocs.log.begin` and
+            :py:func:`cashocs.log.end` calls.
 
         """
         start_time = self._time_stack.pop()
@@ -194,7 +245,7 @@ class Logger:
         """Retrieves a message from the message stack.
 
         Returns:
-            str: The message that was on the top of the message stack.
+            The message that was on the top of the message stack.
 
         """
         return self._group_stack.pop()
@@ -212,7 +263,7 @@ class Logger:
         """Retrieves the log level from the level stack.
 
         Returns:
-            int: The log level that was on top of the level stack.
+            The log level that was on top of the level stack.
 
         """
         return self._level_stack.pop()
@@ -224,17 +275,17 @@ class Logger:
             message (str): The input string which should be formatted.
 
         Returns:
-            str: The formatted string.
+            The formatted string.
 
         """
         if self._use_timestamp:
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+            timestamp = datetime.datetime.now().isoformat()
             timestamp = timestamp + " | "
         else:
             timestamp = ""
 
         indent = 2 * self._indent_level * " "
-        return "\n".join([indent + timestamp + line for line in message.split("\n")])
+        return "\n".join([timestamp + indent + line for line in message.split("\n")])
 
     def add_logfile(
         self, filename: str, mode: str = "a", level: int = logging.DEBUG
@@ -249,7 +300,7 @@ class Logger:
                 Defaults to logging.DEBUG.
 
         Returns:
-            logging.FileHandler: The file handler for the log file.
+            The file handler for the log file.
 
         """
         if filename in self._logfiles:
@@ -281,6 +332,7 @@ class Logger:
 
 cashocs_logger = Logger("cashocs")
 
+trace = cashocs_logger.trace
 debug = cashocs_logger.debug
 info = cashocs_logger.info
 warning = cashocs_logger.warning
@@ -295,24 +347,42 @@ add_logfile = cashocs_logger.add_logfile
 add_timestamps = cashocs_logger.add_timestamps
 remove_timestamps = cashocs_logger.remove_timestamps
 add_handler = cashocs_logger.add_handler
-
-
-class LogLevel:
-    """Stores the various log levels of cashocs."""
-
-    DEBUG = logging.DEBUG
-    INFO = logging.INFO
-    WARNING = logging.WARNING
-    ERROR = logging.ERROR
-    CRITICAL = logging.CRITICAL
-
-
-DEBUG = logging.DEBUG
-INFO = logging.INFO
-WARNING = logging.WARNING
-ERROR = logging.ERROR
-CRITICAL = logging.CRITICAL
+set_comm = cashocs_logger.set_comm
 
 fenics.set_log_level(fenics.LogLevel.WARNING)
 logging.getLogger("UFL").setLevel(logging.WARNING)
 logging.getLogger("FFC").setLevel(logging.WARNING)
+
+
+T = TypeVar("T")
+
+
+def profile_execution_time(
+    action: str, level: int = TRACE
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
+    """Profiles the execution time of a function.
+
+    This decorator is used to determine how long it takes to complete a function call.
+    The output consists of log calls specified by the log level.
+
+    Args:
+        action (str): A string describing what the function does.
+        level (int): The log level for the output of the profiling.
+
+    """
+
+    def decorator(func: Callable[..., T]) -> Callable[..., T]:
+        @functools.wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> T:
+            start_time = datetime.datetime.now()
+
+            result = func(*args, **kwargs)
+
+            end_time = datetime.datetime.now()
+            elapsed_time = end_time - start_time
+            cashocs_logger.log(level, f"Elapsed time for {action}: {elapsed_time}.\n")
+            return result
+
+        return wrapper
+
+    return decorator

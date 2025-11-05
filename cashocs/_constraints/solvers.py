@@ -173,9 +173,10 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         """
         super().__init__(constrained_problem, mu_0=mu_0, lambda_0=lambda_0)
         self.gamma = 0.25
+        comm = constrained_problem.db.geometry_db.mpi_comm
         # pylint: disable=invalid-name
-        self.A_tensors = [fenics.PETScMatrix() for _ in range(self.constraint_dim)]
-        self.b_tensors = [fenics.PETScVector() for _ in range(self.constraint_dim)]
+        self.A_tensors = [fenics.PETScMatrix(comm) for _ in range(self.constraint_dim)]
+        self.b_tensors = [fenics.PETScVector(comm) for _ in range(self.constraint_dim)]
         self.solver_name = "Augmented Lagrangian"
         self.inner_cost_functional_form: list[_typing.CostFunctional] = []
 
@@ -208,10 +209,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         lhs = trial * test * measure
         rhs = project_term * test * measure
 
-        comm = self.cg_function_space.mesh().mpi_comm()
-        _utils.assemble_and_solve_linear(
-            lhs, rhs, A=A_tensor, b=b_tensor, fun=multiplier, comm=comm
-        )
+        _utils.assemble_and_solve_linear(lhs, rhs, multiplier, A=A_tensor, b=b_tensor)
 
     def _update_cost_functional(self) -> None:
         """Updates the cost functional with new weights."""
@@ -395,8 +393,7 @@ class AugmentedLagrangianMethod(ConstrainedSolver):
         while True:
             self.iterations += 1
 
-            log.debug(f"mu = {self.mu}")
-            log.debug(f"lambda = {self.lmbd}")
+            log.debug(f"mu = {self.mu:.3e}  lambda = {self.lmbd}")
 
             self._update_cost_functional()
 
@@ -483,7 +480,7 @@ class QuadraticPenaltyMethod(ConstrainedSolver):
         while True:
             self.iterations += 1
 
-            log.debug(f"mu = {self.mu}")
+            log.debug(f"mu = {self.mu:.3e}")
 
             self._update_cost_functional()
 

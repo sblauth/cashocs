@@ -61,7 +61,7 @@ def summation(x: list[T]) -> T | fenics.Constant:
         y = x[0]
 
         for item in x[1:]:
-            y += item
+            y += item  # type: ignore
 
     return y
 
@@ -85,7 +85,7 @@ def multiplication(x: list[T]) -> T | fenics.Constant:
         y = x[0]
 
         for item in x[1:]:
-            y *= item
+            y *= item  # type: ignore
 
     return y
 

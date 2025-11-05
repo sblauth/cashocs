@@ -7,10 +7,80 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-2.5.0 (in development)
+2.8.0 (in development)
 ----------------------
 
-* Add support for Python 3.13
+
+
+2.7.0 (September 24, 2025)
+--------------------------
+
+* The function :py:func:`cashocs.load_config` now raises an exception instead of only issuing a warning if the specified configuration file is not found.
+
+* Revert the way :py:func:`cashocs.ts_pseudo_solve` handles convergence after the maximum number of iterations: By default, once the maximum number of (pseudo) time steps is reached, an exception is raised. This reverts the changes introduced in version 2.5 and is in line with the behavior of SNES and KSP solvers - and the pseudo time stepping can be seen as relaxation. However, an cashocs-only PETSc option `ts_converged_its` has been added. If this is set, then the pseudo time stepping is considered as converged once the maximum number of iterations is reached. Note that this parameter does not have any value, so that it should be supplied as `"ts_converged_its": None` in the corresponding dictionary.
+
+* Update the logging behavior of cashocs:
+
+  * Introduce a new log level `TRACE` which is mainly used to log performance profiling information. This helps to de-clutter the debug and info logs. Trace level messages detail, e.g., the time it takes to assemble and solve linear systems.
+
+  * Most (inner) solver calls, which are responsible for logging the solves of PDEs are now in the debug level. Also, all logs the solvers would have sent by default are now turned off and have to be enabled, if required, either through supplying the corresponding PETSc command line options (for the PETSc solver backend) or the configuration file (for the cashocs solver backend).
+
+  * Timestamps for the logs are now enabled by default. If you want to change this, you can use :py:func:`cashocs.log.remove_timestamps`
+
+* For :py:func:`cashocs.ts_pseudo_solve`, there is the possibility to specify the PETSc command line option `ts_monitor`. This will activate the cashocs-implemented monitor for the pseudo time stepping and not use the default TS monitor, as one would expect. Output of the function can be toggled this way, completely analogous to :py:func:`cashocs.snes_solve`.
+
+* For optimal control problems: Using linear discontinous Lagrange elements for the control variable for box-constrained problems is now also possible (constant DG elements were already allowed in previous versions).
+
+* Fix a memory leak with PETSc and petsc4py.
+
+* Update the documentation of the configuration parameters. Now, the summary is shown at the top and the width of the columns has been adapted to be consistent throughout.
+
+
+2.6.0 (June 26, 2025)
+---------------------
+
+* Add the possibility to use the adjoint form of the user-provided `newton_linearizations`: For example, if a Picard iteration is used to solve the nonlinear state system, then the adjoint of the Picard linearization can be used to solve the adjoint system. This may require more "nonlinear" or defect-correction iterations, but may yield linear systems that are significatly easier to solve. This is controlled with the configuration parameter :ini:`use_adjoint_linearizations` in the Section StateSystem.
+
+* The mesh conversion routines now only produce two .xdmf and .h5 files instead of three to save disk space. For mesh files converted with earlier versions of cashocs, the import still works and correctly recognizes the "_subdomains.xdmf" file. Converting and importing a mesh otherwise works as before, so users should not notice any difference.
+
+* Changed the way :py:func:`cashocs.io.import_function` works: Now, the name of the saved function is taken automatically. As cashocs one saves one function per .xdmf file, this should not change any workflows. Users can (and must) still specify a name in case multiple functions are saved in a single file.
+
+* The MPI usage of cashocs has been improved. Now, a duplicate of COMM_WORLD is used by default if the user does not specify another MPI communicator.
+
+* Two additional demos have been added which describe how custom MPI communicators can be used with cashocs. They can be found at `<https://cashocs.readthedocs.io/en/stable/user/demos/misc/demo_mpi_comm_self/>`_ and `<https://cashocs.readthedocs.io/en/stable/user/demos/misc/demo_mpi_custom/>`_.
+
+* Add the possibility to compute the mesh quality based on a quantile. This can be useful for remeshing, where the minimum approach is too strict and the maximum approach too coarse.
+
+* New configuration file parameters:
+
+  * Section StateSystem
+
+    * :ini:`use_adjoint_linearizations` is a boolean flag which specifies, whether or not the adjoint form of the `newton_linearizations` should be used to solve the adjoint system.
+
+  * Section MeshQuality
+
+    * :ini:`quantile` is a user-specified quantile for which the mesh quality is computed. For example, :ini:`quantile = 0.5` uses the median mesh quality.
+
+
+
+2.5.0 (March 26, 2025)
+----------------------
+
+* Add the possibility to re-compute the gradient deformation in shape optimization. To do so, the gradient deformation is first computed as before but then only the surface deformation (or the one in normal direction) is used as boundary condition for the elasticty equation to compute a new deformation. This can help to avoid numerical artifacts in the interior of the domain not related to the actual shape changes.
+
+* Update the way :py:func:`cashocs.ts_pseudo_solve` handles convergence / divergence. A new divergence tolerance is introduced. If the residual increases by a factor of 1e4, the solver automatically diverges and raises a corresponding exception. Moreover, if the solver reaches the maximum number of iterations, no exception is raised anymore. Instead, a warning is issued that the solver did not reach the specified tolerances, but converges anyway. This is in line with the convergence of the PETSc TS. Note that the latter behavior is changed in version 2.7, where the PETSc option `ts_converged_its` is introduced to indicate convergence after the maximum number of iterations.
+
+* Add support for Python 3.13.
+
+* Functions with Crouzeix-Raviart elements are now interpolated into discontinuous Galerkin FEM spaces before being saved as .xdmf file so that they can be worked with.
+
+* New configuration file parameters:
+
+  * Section ShapeGradient
+
+    * :ini:`reextend_from_boundary` is a boolean flag which indicates whether the gradient deformation should be re-computed as described above
+
+    * :ini:`reextension_mode` can have the values :ini:`reextension_mode = surface` or :ini:`reextension_mode = normal`. In the first case, the boundary values of the gradient deformation are used as they are for the re-extension, in the second case only the normal deformation is used.
 
 
 

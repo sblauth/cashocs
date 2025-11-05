@@ -21,7 +21,7 @@
 from __future__ import annotations
 
 import pathlib
-import subprocess  # nosec B404
+import subprocess
 import tempfile
 from typing import TYPE_CHECKING
 import weakref
@@ -49,39 +49,6 @@ if TYPE_CHECKING:
     from cashocs._database import database
     from cashocs._optimization.optimization_algorithms import OptimizationAlgorithm
     from cashocs.geometry import mesh_testing
-
-
-def _remove_gmsh_parametrizations(mesh_file: str) -> None:
-    """Removes the parametrizations section from a Gmsh file.
-
-    This is needed in case several remeshing iterations have to be executed.
-
-    Args:
-        mesh_file: Path to the Gmsh file, has to end in .msh.
-
-    """
-    temp_location = f"{mesh_file[:-4]}_temp.msh"
-    if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-        with (
-            open(mesh_file, encoding="utf-8") as in_file,
-            open(temp_location, "w", encoding="utf-8") as temp_file,
-        ):
-            parametrizations_section = False
-
-            for line in in_file:
-                if line == "$Parametrizations\n":
-                    parametrizations_section = True
-
-                if not parametrizations_section:
-                    temp_file.write(line)
-                else:
-                    pass
-
-                if line == "$EndParametrizations\n":
-                    parametrizations_section = False
-
-        subprocess.run(["mv", temp_location, mesh_file], check=True)  # nosec B603, B607
-    fenics.MPI.barrier(fenics.MPI.comm_world)
 
 
 def check_mesh_quality_tolerance(mesh_quality: float, tolerance: float) -> None:
@@ -137,6 +104,7 @@ class _MeshHandler:
 
         # Namespacing
         self.mesh = self.db.geometry_db.mesh
+        self.comm = self.mesh.mpi_comm()
         self.deformation_handler = deformations.DeformationHandler(
             self.mesh, self.a_priori_tester, self.a_posteriori_tester
         )
@@ -170,9 +138,13 @@ class _MeshHandler:
         self.mesh_quality_measure = self.config.get("MeshQuality", "measure")
 
         self.mesh_quality_type = self.config.get("MeshQuality", "type")
+        self.quality_quantile = self.config.getfloat("MeshQuality", "quantile")
 
         self.current_mesh_quality: float = quality.compute_mesh_quality(
-            self.mesh, self.mesh_quality_type, self.mesh_quality_measure
+            self.mesh,
+            quality_type=self.mesh_quality_type,
+            quality_measure=self.mesh_quality_measure,
+            quantile=self.quality_quantile,
         )
 
         if not self.db.parameter_db.is_remeshed:
@@ -190,6 +162,7 @@ class _MeshHandler:
         }
         self.trial_dg0 = fenics.TrialFunction(self.db.function_db.dg_function_space)
         self.test_dg0 = fenics.TestFunction(self.db.function_db.dg_function_space)
+        self.norm_function = fenics.Function(self.db.function_db.dg_function_space)
         self.search_direction_container = fenics.Function(
             self.db.function_db.control_spaces[0]
         )
@@ -233,16 +206,16 @@ class _MeshHandler:
             )
 
             if not self.db.parameter_db.is_remeshed:
-                if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+                if self.comm.rank == 0:
                     remesh_directory: str = tempfile.mkdtemp(
                         prefix="cashocs_remesh_", dir=self.mesh_directory
                     )
                 else:
                     remesh_directory = ""
-                self.db.parameter_db.remesh_directory = fenics.MPI.comm_world.bcast(
+                self.db.parameter_db.remesh_directory = self.comm.bcast(
                     remesh_directory, root=0
                 )
-                fenics.MPI.barrier(fenics.MPI.comm_world)
+                self.comm.barrier()
             else:
                 self.db.parameter_db.remesh_directory = self.db.parameter_db.temp_dict[
                     "remesh_directory"
@@ -261,11 +234,12 @@ class _MeshHandler:
                 f"{self.db.parameter_db.remesh_directory}"
                 f"/mesh_{self.remesh_counter:d}.msh"
             )
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
-                subprocess.run(  # nosec 603
-                    ["cp", self.gmsh_file, self.gmsh_file_init], check=True
+            if self.comm.rank == 0:
+                subprocess.run(  # noqa: S603
+                    ["cp", self.gmsh_file, self.gmsh_file_init],  # noqa: S607
+                    check=True,
                 )
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+            self.comm.barrier()
             self.gmsh_file = self.gmsh_file_init
 
     @property
@@ -308,7 +282,6 @@ class _MeshHandler:
             raise _exceptions.CashocsException("Not a valid mesh transformation")
 
         if not self.a_priori_tester.test(transformation, self.volume_change):
-            log.debug("Mesh transformation rejected due to a priori check.")
             return False
         else:
             success_flag = self.deformation_handler.move_mesh(
@@ -317,8 +290,16 @@ class _MeshHandler:
                 test_for_intersections=self.test_for_intersections,
             )
             self.current_mesh_quality = quality.compute_mesh_quality(
-                self.mesh, self.mesh_quality_type, self.mesh_quality_measure
+                self.mesh,
+                quality_type=self.mesh_quality_type,
+                quality_measure=self.mesh_quality_measure,
+                quantile=self.quality_quantile,
             )
+            if success_flag:
+                log.debug(
+                    "Mesh update was successful. "
+                    f"Deformed mesh has a quality of {self.current_mesh_quality:.3e}"
+                )
             return success_flag
 
     def revert_transformation(self) -> None:
@@ -375,14 +356,14 @@ class _MeshHandler:
                 0.0, search_direction[0].vector().vec()
             )
             self.search_direction_container.vector().apply("")
-            x = _utils.assemble_and_solve_linear(
+            _utils.assemble_and_solve_linear(
                 self.a_frobenius,
                 self.l_frobenius,
+                self.norm_function,
                 ksp_options=self.options_frobenius,
-                comm=self.db.geometry_db.mpi_comm,
             )
 
-            frobenius_norm = x.max()[1]
+            frobenius_norm = self.norm_function.vector().vec().max()[1]
             beta_armijo = self.config.getfloat("LineSearch", "beta_armijo")
 
             return int(
@@ -406,7 +387,7 @@ class _MeshHandler:
                 file.
 
         """
-        if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+        if self.comm.rank == 0:
             with open(self.remesh_geo_file, "w", encoding="utf-8") as file:
                 temp_name = pathlib.Path(input_mesh_file).name
 
@@ -428,96 +409,74 @@ class _MeshHandler:
                         if line[:5] == "Mesh.":
                             file.write(line)
 
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        self.comm.barrier()
 
     def clean_previous_gmsh_files(self) -> None:
         """Removes the gmsh files from the previous remeshing iterations."""
-        gmsh_file = (
+        gmsh_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
             f"/mesh_{self.remesh_counter - 1:d}.msh"
         )
-        if (
-            pathlib.Path(gmsh_file).is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-        ):
-            subprocess.run(["rm", gmsh_file], check=True)  # nosec 603
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        if gmsh_file.is_file() and self.comm.rank == 0:
+            gmsh_file.unlink()
+        self.comm.barrier()
 
-        gmsh_pre_remesh_file = (
+        gmsh_pre_remesh_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
-            f"/mesh_{self.remesh_counter-1:d}_pre_remesh.msh"
+            f"/mesh_{self.remesh_counter - 1:d}_pre_remesh.msh"
         )
-        if (
-            pathlib.Path(gmsh_pre_remesh_file).is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-        ):
-            subprocess.run(["rm", gmsh_pre_remesh_file], check=True)  # nosec 603
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        if gmsh_pre_remesh_file.is_file() and self.comm.rank == 0:
+            gmsh_pre_remesh_file.unlink()
+        self.comm.barrier()
 
-        mesh_h5_file = (
-            f"{self.db.parameter_db.remesh_directory}/mesh_{self.remesh_counter-1:d}.h5"
-        )
-        if (
-            pathlib.Path(mesh_h5_file).is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-        ):
-            subprocess.run(["rm", mesh_h5_file], check=True)  # nosec 603
-        fenics.MPI.barrier(fenics.MPI.comm_world)
-
-        mesh_xdmf_file = (
+        mesh_h5_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
-            f"/mesh_{self.remesh_counter-1:d}.xdmf"
+            f"/mesh_{self.remesh_counter - 1:d}.h5"
         )
-        if (
-            pathlib.Path(mesh_xdmf_file).is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-        ):
-            subprocess.run(["rm", mesh_xdmf_file], check=True)  # nosec 603
-        fenics.MPI.barrier(fenics.MPI.comm_world)
 
-        boundaries_h5_file = (
-            f"{self.db.parameter_db.remesh_directory}"
-            f"/mesh_{self.remesh_counter-1:d}_boundaries.h5"
-        )
-        if (
-            pathlib.Path(boundaries_h5_file).is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-        ):
-            subprocess.run(["rm", boundaries_h5_file], check=True)  # nosec 603
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        if mesh_h5_file.is_file() and self.comm.rank == 0:
+            mesh_h5_file.unlink()
+        self.comm.barrier()
 
-        boundaries_xdmf_file = (
+        mesh_xdmf_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
-            f"/mesh_{self.remesh_counter-1:d}_boundaries.xdmf"
+            f"/mesh_{self.remesh_counter - 1:d}.xdmf"
         )
-        if (
-            pathlib.Path(boundaries_xdmf_file).is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-        ):
-            subprocess.run(["rm", boundaries_xdmf_file], check=True)  # nosec 603
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        if mesh_xdmf_file.is_file() and self.comm.rank == 0:
+            mesh_xdmf_file.unlink()
+        self.comm.barrier()
 
-        subdomains_h5_file = (
+        boundaries_h5_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
-            f"/mesh_{self.remesh_counter-1:d}_subdomains.h5"
+            f"/mesh_{self.remesh_counter - 1:d}_boundaries.h5"
         )
-        if (
-            pathlib.Path(subdomains_h5_file).is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-        ):
-            subprocess.run(["rm", subdomains_h5_file], check=True)  # nosec 603
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        if boundaries_h5_file.is_file() and self.comm.rank == 0:
+            boundaries_h5_file.unlink()
+        self.comm.barrier()
 
-        subdomains_xdmf_file = (
+        boundaries_xdmf_file = pathlib.Path(
             f"{self.db.parameter_db.remesh_directory}"
-            f"/mesh_{self.remesh_counter-1:d}_subdomains.xdmf"
+            f"/mesh_{self.remesh_counter - 1:d}_boundaries.xdmf"
         )
-        if (
-            pathlib.Path(subdomains_xdmf_file).is_file()
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
-        ):
-            subprocess.run(["rm", subdomains_xdmf_file], check=True)  # nosec 603
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        if boundaries_xdmf_file.is_file() and self.comm.rank == 0:
+            boundaries_xdmf_file.unlink()
+        self.comm.barrier()
+
+        subdomains_h5_file = pathlib.Path(
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter - 1:d}_subdomains.h5"
+        )
+        if subdomains_h5_file.is_file() and self.comm.rank == 0:
+            subdomains_h5_file.unlink()
+        self.comm.barrier()
+
+        subdomains_xdmf_file = pathlib.Path(
+            f"{self.db.parameter_db.remesh_directory}"
+            f"/mesh_{self.remesh_counter - 1:d}_subdomains.xdmf"
+        )
+        if subdomains_xdmf_file.is_file() and self.comm.rank == 0:
+            subdomains_xdmf_file.unlink()
+        self.comm.barrier()
 
     def _reinitialize(self, solver: OptimizationAlgorithm) -> None:
         solver.optimization_problem.__init__(  # type: ignore # pylint: disable=C2801
@@ -595,18 +554,18 @@ class _MeshHandler:
                 "-o",
                 new_gmsh_file,
             ]
-            if fenics.MPI.rank(fenics.MPI.comm_world) == 0:
+            if self.comm.rank == 0:
                 if not self.config.getboolean("Mesh", "show_gmsh_output"):
-                    subprocess.run(  # nosec 603
+                    subprocess.run(  # noqa: S603
                         gmsh_cmd_list,
                         check=True,
                         stdout=subprocess.DEVNULL,
                     )
                 else:
-                    subprocess.run(gmsh_cmd_list, check=True)  # nosec 603
-            fenics.MPI.barrier(fenics.MPI.comm_world)
+                    subprocess.run(gmsh_cmd_list, check=True)  # noqa: S603
+            self.comm.barrier()
 
-            _remove_gmsh_parametrizations(new_gmsh_file)
+            self._remove_gmsh_parametrizations(new_gmsh_file)
 
             self.db.parameter_db.temp_dict["remesh_counter"] = self.remesh_counter
             self.db.parameter_db.temp_dict["remesh_directory"] = (
@@ -666,13 +625,15 @@ class _MeshHandler:
 
         mesh_quality_measure = self.db.config.get("MeshQuality", "measure")
         mesh_quality_type = self.db.config.get("MeshQuality", "type")
+        quality_quantile = self.db.config.getfloat("MeshQuality", "quantile")
 
         mesh = solver.optimization_problem.states[0].function_space().mesh()
 
         current_mesh_quality = quality.compute_mesh_quality(
             mesh,
-            mesh_quality_type,
-            mesh_quality_measure,
+            quality_type=mesh_quality_type,
+            quality_measure=mesh_quality_measure,
+            quantile=quality_quantile,
         )
 
         check_mesh_quality_tolerance(current_mesh_quality, mesh_quality_tol_upper)
@@ -711,3 +672,38 @@ class _MeshHandler:
             self.db.parameter_db.temp_dict["deformation_function"] = (
                 solver.line_search.deformation_function.copy(True)
             )
+
+    def _remove_gmsh_parametrizations(self, mesh_file: str) -> None:
+        """Removes the parametrizations section from a Gmsh file.
+
+        This is needed in case several remeshing iterations have to be executed.
+
+        Args:
+            mesh_file: Path to the Gmsh file, has to end in .msh.
+
+        """
+        temp_location = f"{mesh_file[:-4]}_temp.msh"
+        if self.comm.rank == 0:
+            with (
+                open(mesh_file, encoding="utf-8") as in_file,
+                open(temp_location, "w", encoding="utf-8") as temp_file,
+            ):
+                parametrizations_section = False
+
+                for line in in_file:
+                    if line == "$Parametrizations\n":
+                        parametrizations_section = True
+
+                    if not parametrizations_section:
+                        temp_file.write(line)
+                    else:
+                        pass
+
+                    if line == "$EndParametrizations\n":
+                        parametrizations_section = False
+
+            subprocess.run(  # noqa: S603
+                ["mv", temp_location, mesh_file],  # noqa: S607
+                check=True,
+            )
+        self.comm.barrier()

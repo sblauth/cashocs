@@ -147,8 +147,8 @@ class ArmijoLineSearch(line_search.LineSearch):
                 current_function_value
             )
             log.debug(
-                f"Trial stepsize {self.stepsize:.3e} - "
-                f"Function value {objective_step:.3e}"
+                f"Stepsize: {self.stepsize:.3e}  -"
+                f"  Tentative cost function value: {objective_step:.3e}"
             )
 
             decrease_measure = self._compute_decrease_measure(search_direction)
@@ -156,7 +156,9 @@ class ArmijoLineSearch(line_search.LineSearch):
             if self._satisfies_armijo_condition(
                 solver, objective_step, current_function_value, decrease_measure
             ):
-                log.debug("Stepsize satisfies the Armijo decrease condition.")
+                log.debug(
+                    "Accepting tentative step based on Armijo decrease condition."
+                )
                 if self.optimization_variable_abstractions.requires_remeshing():
                     log.debug(
                         "The mesh quality was sufficient for accepting the step, "
@@ -175,7 +177,9 @@ class ArmijoLineSearch(line_search.LineSearch):
                 break
 
             else:
-                log.debug("Stepsize does not satisfy the Armijo decrease condition.")
+                log.debug(
+                    "Rejecting tentative step based on Armijo decrease condition."
+                )
                 self.stepsize /= self.beta_armijo
                 self.optimization_variable_abstractions.revert_variable_update()
 
@@ -224,7 +228,7 @@ class ArmijoLineSearch(line_search.LineSearch):
         self.state_problem.has_solution = False
         try:
             objective_step = self.cost_functional.evaluate()
-        except (_exceptions.PETScKSPError, _exceptions.NotConvergedError) as error:
+        except (_exceptions.PETScError, _exceptions.NotConvergedError) as error:
             if self.config.getboolean("LineSearch", "fail_if_not_converged"):
                 raise error
             else:

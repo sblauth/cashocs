@@ -160,4 +160,5 @@ plt.tight_layout()
 # -
 
 # and the result looks as follows
-# ![](/../../demos/documented/optimal_control/scalar_control_tracking/img_scalar_control_tracking.png)
+# :::{image} /../../demos/documented/optimal_control/scalar_control_tracking/img_scalar_control_tracking.png
+# :::

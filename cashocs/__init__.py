@@ -27,6 +27,7 @@ The documentation for cashocs can be found `here <https://cashocs.readthedocs.io
 from cashocs import geometry
 from cashocs import io
 from cashocs import log
+from cashocs import mpi
 from cashocs import nonlinear_solvers
 from cashocs import space_mapping
 from cashocs import verification
@@ -67,7 +68,7 @@ from cashocs.nonlinear_solvers import picard_iteration
 from cashocs.nonlinear_solvers import snes_solve
 from cashocs.nonlinear_solvers import ts_pseudo_solve
 
-__version__ = "2.5.0-dev"
+__version__ = "2.8.0-dev"
 
 __citation__ = """
 @Article{Blauth2021cashocs,
@@ -138,6 +139,7 @@ __all__ = [
     "geometry",
     "io",
     "log",
+    "mpi",
     "nonlinear_solvers",
     "space_mapping",
     "verification",

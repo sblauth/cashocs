@@ -58,7 +58,7 @@ def _get_subdx(
 class GeneralFormHandler:
     """Manages weak state and adjoint forms."""
 
-    def __init__(self, db: database.Database):
+    def __init__(self, db: database.Database) -> None:
         """Initializes self.
 
         Args:
@@ -80,7 +80,7 @@ class StateFormHandler:
     state_eq_forms_lhs: list[ufl.Form]
     state_eq_forms_rhs: list[ufl.Form]
 
-    def __init__(self, db: database.Database):
+    def __init__(self, db: database.Database) -> None:
         """Initializes the state form handler.
 
         Args:
@@ -149,7 +149,7 @@ class AdjointFormHandler:
     adjoint_eq_forms: list[ufl.Form]
     linear_adjoint_eq_forms: list[ufl.Form]
 
-    def __init__(self, db: database.Database):
+    def __init__(self, db: database.Database) -> None:
         """Initializes the adjoint form handler.
 
         Args:

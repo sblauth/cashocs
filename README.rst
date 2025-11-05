@@ -32,9 +32,6 @@
 .. image:: https://readthedocs.org/projects/cashocs/badge/?version=latest&style=flat-square
     :target: https://cashocs.readthedocs.io/en/latest/?badge=latest
 
-.. image:: https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square
-    :target: https://github.com/psf/black
-
 |
 
 cashocs is a finite element software for the automated solution of shape optimization and optimal control problems. It is used to solve problems in fluid dynamics and multiphysics contexts. Its name is an acronym for computational adjoint-based shape optimization and optimal control software and the software is written in Python.
@@ -50,36 +47,13 @@ cashocs is based on the finite element package `FEniCS
 to treat general PDE constrained optimization problems, in particular, shape
 optimization and optimal control problems.
 
-For some applications and further information about cashocs, we also refer to the website `Fluid Dynamical Shape Optimization with cashocs <https://www.itwm.fraunhofer.de/en/departments/tv/products-and-services/shape-optimization-cashocs-software.html>`_.
-
-.. readme_start_disclaimer
-
-Note, that we assume that you are (at least somewhat) familiar with PDE
-constrained optimization and FEniCS. For a introduction to these topics,
-we can recommend the textbooks
-
-- Optimal Control and general PDE constrained optimization
-    - `Hinze, Ulbrich, Ulbrich, and Pinnau - Optimization with PDE Constraints <https://doi.org/10.1007/978-1-4020-8839-1>`_
-    - `Tröltzsch - Optimal Control of Partial Differential Equations <https://doi.org/10.1090/gsm/112>`_
-- Shape Optimization
-    - `Delfour and Zolesio - Shapes and Geometries <https://doi.org/10.1137/1.9780898719826>`_
-    - `Sokolowski and Zolesio - Introduction to Shape Optimization <https://doi.org/10.1007/978-3-642-58106-9>`_
-- Topology Optimization
-    - `Sokolowski and Novotny - Topological Derivatives in Shape Optimization <https://doi.org/10.1007/978-3-642-35245-4>`_
-    - `Amstutz - An Introduction to the Topological Derivative <https://doi.org/10.1108/EC-07-2021-0433>`_
-- FEniCS
-    - `Logg, Mardal, and Wells - Automated Solution of Differential Equations by the Finite Element Method <https://doi.org/10.1007/978-3-642-23099-8>`_
-    - `The FEniCS demos <https://fenicsproject.org/olddocs/dolfin/2019.1.0/python/demos.html>`_
-
-.. readme_end_disclaimer
-
-However, the `cashocs tutorial <https://cashocs.readthedocs.io/en/stable/user>`_ also gives many references either
-to the underlying theory of PDE constrained optimization or to relevant demos
-and documentation of FEniCS.
+To get started with cashocs, take a look at `cashocs in a nutshell <https://cashocs.readthedocs.io/en/stable/about/nutshell/>`_ as well as the in-depth `tutorial <https://cashocs.readthedocs.io/en/stable/user/>`_. There, the core concepts and functionalities of cashocs are explained.
 
 An overview over cashocs and its capabilities can be found in `Blauth - cashocs: A Computational, Adjoint-Based
 Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2020.100646>`_ and `Blauth - Version 2.0 - cashocs: A Computational, Adjoint-Based Shape Optimization and Optimal Control Software <https://doi.org/10.1016/j.softx.2023.101577>`_. Moreover, note that
 the full cashocs documentation is available at `<https://cashocs.readthedocs.io>`_.
+
+For some applications and further information about cashocs, we also refer to the website `Fluid Dynamical Shape Optimization with cashocs <https://www.itwm.fraunhofer.de/en/departments/tv/products-and-services/shape-optimization-cashocs-software.html>`_.
 
 
 .. readme_start_installation
@@ -90,25 +64,21 @@ Installation
 Via conda-forge
 ---------------
 
-cashocs is available via the anaconda package manager, and you can install it
-with
+cashocs is available via the conda package manager, and you can install it (to your currently activated environment) with
 
 .. code-block:: bash
 
     conda install -c conda-forge cashocs
 
-Alternatively, you might want to create a new, clean conda environment with the
-command
+Alternatively, you might want to create a new, clean conda environment with the command
 
 .. code-block:: bash
 
-    conda create -n <ENV_NAME> -c conda-forge cashocs
+    conda create -n ENV_NAME -c conda-forge cashocs
 
-where `<ENV_NAME>` is the desired name of the new environment.
+where `ENV_NAME` is the desired name of the new environment.
 
-.. note::
-
-    `Gmsh <https://gmsh.info/>`_ is automatically installed with anaconda.
+For more information about conda, please take a look at the `conda documentation <https://docs.conda.io/en/latest/>`_.
 
 
 
@@ -116,7 +86,7 @@ Manual Installation
 -------------------
 
 - First, install `FEniCS <https://fenicsproject.org/download/>`_, version 2019.1.
-  Note that FEniCS should be compiled with PETSc and petsc4py.
+  Note that FEniCS should be compiled with PETSc and petsc4py. Moreover, note that cashocs is not yet compatible with the new dolfinx, which is currently under development.
 
 - Then, install `meshio <https://github.com/nschloe/meshio>`_, with a `h5py <https://www.h5py.org>`_
   version that matches the HDF5 version used in FEniCS, and `matplotlib <https://matplotlib.org/>`_.
@@ -126,30 +96,17 @@ Manual Installation
   cashocs does not necessarily need this to work properly,
   but it is required for the remeshing functionality.
 
-.. note::
-
-    If you are having trouble with using the conversion tool cashocs-convert from
-    the command line, then you most likely encountered a problem with hdf5 and h5py.
-    This can (hopefully) be resolved by following the suggestions from `this thread
-    <https://fenicsproject.discourse.group/t/meshio-convert-to-xdmf-from-abaqus-raises-version-error-for-h5py/1480>`_,
-    i.e., you should try to install `meshio <https://github.com/nschloe/meshio>`_
-    using the command
-
-    .. code-block:: bash
-
-        pip3 install meshio[all] --no-binary=h5py
-
 - You can install cashocs via the `PYPI <https://pypi.org/>`_ as follows
 
   .. code-block:: bash
 
-      pip3 install cashocs
+      pip install cashocs
 
 - You can install the newest (development) version of cashocs with
 
   .. code-block:: bash
 
-      pip3 install git+https://github.com/sblauth/cashocs.git
+      pip install git+https://github.com/sblauth/cashocs.git
 
 - To get the latest (development) version of cashocs, clone this repository with git and install it with pip
 
@@ -157,7 +114,7 @@ Manual Installation
 
       git clone https://github.com/sblauth/cashocs.git
       cd cashocs
-      pip3 install .
+      pip install .
 
 
 .. note::
@@ -167,7 +124,7 @@ Manual Installation
 
     .. code-block:: bash
 
-        python3 -m pytest tests/
+        python -m pytest tests/
 
     or simply
 
@@ -175,7 +132,7 @@ Manual Installation
 
         pytest tests/
 
-    from the source / repository root directory. Note that it might take some
+    from the repository root directory. Note that it might take some
     time to perform all of these tests for the very first time, as FEniCS
     compiles the necessary code. However, on subsequent iterations the
     compiled code is retrieved from a cache, so that the tests are singificantly
@@ -225,6 +182,31 @@ or use the following bibtex entry
 	
 For more details on how to cite cashocs please take a look at `<https://cashocs.readthedocs.io/en/stable/about/citing/>`_.
 
+
+
+References for PDE Constrained Optimization and FEniCS
+======================================================
+
+.. readme_start_disclaimer
+
+We assume that you are (at least somewhat) familiar with PDE
+constrained optimization and FEniCS. For a introduction to these topics,
+we can recommend the textbooks
+
+- Optimal Control and general PDE constrained optimization
+    - `Hinze, Ulbrich, Ulbrich, and Pinnau - Optimization with PDE Constraints <https://doi.org/10.1007/978-1-4020-8839-1>`_
+    - `Tröltzsch - Optimal Control of Partial Differential Equations <https://doi.org/10.1090/gsm/112>`_
+- Shape Optimization
+    - `Delfour and Zolesio - Shapes and Geometries <https://doi.org/10.1137/1.9780898719826>`_
+    - `Sokolowski and Zolesio - Introduction to Shape Optimization <https://doi.org/10.1007/978-3-642-58106-9>`_
+- Topology Optimization
+    - `Sokolowski and Novotny - Topological Derivatives in Shape Optimization <https://doi.org/10.1007/978-3-642-35245-4>`_
+    - `Amstutz - An Introduction to the Topological Derivative <https://doi.org/10.1108/EC-07-2021-0433>`_
+- FEniCS
+    - `Logg, Mardal, and Wells - Automated Solution of Differential Equations by the Finite Element Method <https://doi.org/10.1007/978-3-642-23099-8>`_
+    - `The FEniCS demos <https://fenicsproject.org/olddocs/dolfin/2019.1.0/python/demos.html>`_
+
+.. readme_end_disclaimer
 
 .. readme_start_license
 .. _license:

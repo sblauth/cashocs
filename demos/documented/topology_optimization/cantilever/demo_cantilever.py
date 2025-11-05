@@ -314,4 +314,5 @@ plt.tight_layout()
 # -
 #
 # and the result looks like this
-# ![](/../../demos/documented/topology_optimization/cantilever/img_cantilever.png)
+# :::{image} /../../demos/documented/topology_optimization/cantilever/img_cantilever.png
+# :::

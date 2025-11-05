@@ -121,7 +121,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.levelset_function_prev = fenics.Function(self.cg1_space)
         self.setup_assembler()
 
-        self.linear_solver = _utils.linalg.LinearSolver(self.db.geometry_db.mpi_comm)
+        self.linear_solver = _utils.linalg.LinearSolver()
 
         self.projection = optimization_problem.projection
 
@@ -199,11 +199,11 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
                 form_compiler_parameters={"quadrature_degree": estimated_degree},
             )
 
-        self.fenics_matrix = fenics.PETScMatrix()
+        self.fenics_matrix = fenics.PETScMatrix(self.db.geometry_db.mpi_comm)
         self.assembler.assemble(self.fenics_matrix)
         self.fenics_matrix.ident_zeros()
         self.riesz_matrix = self.fenics_matrix.mat()
-        self.b_tensor = fenics.PETScVector()
+        self.b_tensor = fenics.PETScVector(self.db.geometry_db.mpi_comm)
 
     @abc.abstractmethod
     def run(self) -> None:
@@ -290,9 +290,9 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         )
         self.assembler.assemble(self.b_tensor)
         self.linear_solver.solve(
+            self.topological_derivative_vertex,
             A=self.riesz_matrix,
             b=self.b_tensor.vec(),
-            fun=self.topological_derivative_vertex,
             ksp_options=self.gradient_problem.riesz_ksp_options[0],
         )
 
@@ -319,7 +319,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         else:
             self.topological_derivative_vertex.vector().vec().aypx(
                 0.0,
-                fenics.project(self.topological_derivative_pos, self.cg1_space)
+                _utils.l2_projection(self.topological_derivative_pos, self.cg1_space)
                 .vector()
                 .vec(),
             )

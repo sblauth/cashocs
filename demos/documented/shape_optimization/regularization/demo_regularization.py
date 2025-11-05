@@ -160,4 +160,5 @@ plt.tight_layout()
 # -
 
 # The results should look like this
-# ![](/../../demos/documented/shape_optimization/regularization/img_regularization.png)
+# :::{image} /../../demos/documented/shape_optimization/regularization/img_regularization.png
+# :::

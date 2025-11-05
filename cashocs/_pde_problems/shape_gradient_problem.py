@@ -35,10 +35,12 @@ try:
 except ImportError:
     import ufl
 
+from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import log
 from cashocs import nonlinear_solvers
 from cashocs._pde_problems import pde_problem
+from cashocs.geometry import measure
 
 if TYPE_CHECKING:
     from cashocs import _forms
@@ -146,16 +148,19 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                         np.array([0.0] * len(self.form_handler.fixed_indices)),
                     )
                     self.form_handler.fe_shape_derivative_vector.apply("")
+                self.db.function_db.gradient[0].vector().vec().set(0.0)
+                self.db.function_db.gradient[0].vector().apply("")
                 self.linear_solver.solve(
+                    self.db.function_db.gradient[0],
                     A=self.form_handler.scalar_product_matrix,
                     b=self.form_handler.fe_shape_derivative_vector.vec(),
-                    fun=self.db.function_db.gradient[0],
                     ksp_options=self.ksp_options,
                 )
                 self.form_handler.apply_shape_bcs(self.db.function_db.gradient[0])
 
                 self.has_solution = True
 
+            self.reextend_gradient_from_boundaries()
             self.db.callback.call_post()
 
             self.gradient_norm_squared = self.form_handler.scalar_product(
@@ -164,6 +169,132 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             log.end()
 
         return self.db.function_db.gradient
+
+    def reextend_gradient_from_boundaries(self) -> None:
+        """Re-extends the gradient to the volume from its boundary values.
+
+        Note:
+            This method modifies the gradient deformation and the original one is
+            over-written.
+
+        """
+        if self.config.getboolean("ShapeGradient", "reextend_from_boundary"):
+            log.debug("Re-extending the gradient deformation from the boundary.")
+
+            if self.config.get("ShapeGradient", "reextension_mode") == "normal":
+                normal_deformation = self._compute_normal_deformation()
+                self.db.function_db.gradient[0].vector().vec().aypx(
+                    0.0, normal_deformation.vector().vec()
+                )
+                self.db.function_db.gradient[0].vector().apply("")
+
+            self.form_handler.assembler_extension.assemble(
+                self.form_handler.fe_reextension_vector
+            )
+            if self.form_handler.use_fixed_dimensions:
+                self.form_handler.fe_reextension_vector.vec().setValues(
+                    self.form_handler.fixed_indices,
+                    np.array([0.0] * len(self.form_handler.fixed_indices)),
+                )
+                self.form_handler.fe_reextension_vector.apply("")
+
+            reextended_gradient = fenics.Function(self.db.function_db.control_spaces[0])
+            self.form_handler.apply_reextension_bcs(  # Effect of DirichletBCs on KSP
+                reextended_gradient
+            )
+            self.linear_solver.solve(
+                reextended_gradient,
+                A=self.form_handler.reextension_matrix,
+                b=self.form_handler.fe_reextension_vector.vec(),
+                ksp_options=self.ksp_options,
+            )
+            self.form_handler.apply_reextension_bcs(reextended_gradient)
+
+            self.db.function_db.gradient[0].vector().vec().aypx(
+                0.0, reextended_gradient.vector().vec()
+            )
+            self.db.function_db.gradient[0].vector().apply("")
+
+    def _compute_normal_deformation(self) -> fenics.Function:
+        """Computes the projection of the gradient deformation on the normal vector.
+
+        Returns:
+            The normal component gradient deformation in normal direction.
+
+        """
+        mesh = self.db.geometry_db.mesh
+
+        if fenics.parameters["ghost_mode"] == "none" and mesh.mpi_comm().size > 1:
+            raise _exceptions.CashocsException(
+                "Cannot re-extend the gradient deformation based on the normal "
+                + "deformation. "
+                + "Try using fenics.parameters['ghost_mode'] = 'shared_facet' "
+                + "or 'shared_vertex' before importing your mesh."
+            )
+
+        physical_groups = None
+        if hasattr(mesh, "physical_groups"):
+            physical_groups = mesh.physical_groups
+
+        ds = measure.NamedMeasure(
+            "ds",
+            domain=mesh,
+            subdomain_data=self.form_handler.boundaries,
+            physical_groups=physical_groups,
+        )
+        dS = measure.NamedMeasure(  # pylint: disable=invalid-name
+            "dS",
+            domain=mesh,
+            subdomain_data=self.form_handler.boundaries,
+            physical_groups=physical_groups,
+        )
+
+        n = fenics.FacetNormal(mesh)
+        all_boundaries = (
+            self.form_handler.shape_bdry_def
+            + self.form_handler.shape_bdry_fix
+            + self.form_handler.shape_bdry_fix_x
+            + self.form_handler.shape_bdry_fix_y
+            + self.form_handler.shape_bdry_fix_z
+        )
+        space = fenics.FunctionSpace(mesh, "CG", 1)
+        normal_deformation = fenics.Function(space)
+        v = fenics.TestFunction(space)
+
+        normal_integrand = (
+            normal_deformation * v - ufl.dot(self.db.function_db.gradient[0], n) * v
+        )
+        normal_form = normal_integrand * ds(all_boundaries) + normal_integrand(
+            "+"
+        ) * dS(all_boundaries)
+
+        bcs: list[fenics.DirichletBC] = []
+
+        ksp_options: _typing.KspOption = {
+            "ksp_type": "cg",
+            "ksp_rtol": 1e-8,
+            "ksp_atol": 1e-30,
+            "pc_type": "hypre",
+            "pc_hypre_type": "boomeramg",
+        }
+        nonlinear_solvers.linear_solve(
+            normal_form, normal_deformation, bcs, ksp_options=ksp_options
+        )
+
+        surface_deformation = fenics.Function(self.db.function_db.control_spaces[0])
+        v = fenics.TestFunction(self.db.function_db.control_spaces[0])
+        surface_integrand = ufl.dot(
+            surface_deformation, v
+        ) - normal_deformation * ufl.dot(n, v)
+
+        surface_form = surface_integrand * ds(all_boundaries) + surface_integrand(
+            "+"
+        ) * dS(all_boundaries)
+        nonlinear_solvers.linear_solve(
+            surface_form, surface_deformation, bcs, ksp_options=ksp_options
+        )
+
+        return surface_deformation
 
 
 class _PLaplaceProjector:
@@ -201,8 +332,10 @@ class _PLaplaceProjector:
         dx = self.db.geometry_db.dx
         self.mu_lame = gradient_problem.form_handler.mu_lame
 
-        self.A_tensor = fenics.PETScMatrix()  # pylint: disable=invalid-name
-        self.b_tensor = fenics.PETScVector()
+        self.A_tensor = fenics.PETScMatrix(  # pylint: disable=invalid-name
+            self.db.geometry_db.mpi_comm
+        )
+        self.b_tensor = fenics.PETScVector(self.db.geometry_db.mpi_comm)
 
         self.form_list = []
         for p in self.p_list:
@@ -236,7 +369,10 @@ class _PLaplaceProjector:
 
     def solve(self) -> None:
         """Solves the p-Laplace problem for computing the shape gradient."""
-        log.begin("Computing the gradient deformation with the p-Laplace approach.")
+        log.begin(
+            "Computing the gradient deformation with the p-Laplace approach.",
+            level=log.DEBUG,
+        )
 
         self.solution.vector().vec().set(0.0)
         self.solution.vector().apply("")
@@ -244,7 +380,8 @@ class _PLaplaceProjector:
             petsc_options: _typing.KspOption = {
                 "snes_type": "newtonls",
                 "snes_linesearch_type": "basic",
-                "snes_ksp_ew": True,
+                "snes_ksp_ew": None,
+                "snes_ksp_ew_rtolmax": 1e-1,
             }
             petsc_options.update(self.ksp_options)
 

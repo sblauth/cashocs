@@ -166,4 +166,5 @@ plt.tight_layout()
 # -
 
 # and obtain the results shown below
-# ![](/../../demos/documented/shape_optimization/scaling/img_scaling.png)
+# :::{image} /../../demos/documented/shape_optimization/scaling/img_scaling.png
+# :::

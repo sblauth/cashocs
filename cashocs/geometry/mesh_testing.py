@@ -40,7 +40,7 @@ if TYPE_CHECKING:
 class APrioriMeshTester:
     """A class for testing the mesh before it is modified."""
 
-    def __init__(self, mesh: fenics.Mesh):
+    def __init__(self, mesh: fenics.Mesh) -> None:
         """Initializes the mesh tester.
 
         Args:
@@ -48,12 +48,14 @@ class APrioriMeshTester:
 
         """
         self.mesh = mesh
+        self.comm = self.mesh.mpi_comm()
 
         dg_function_space = fenics.FunctionSpace(self.mesh, "DG", 0)
         vector_cg_space = fenics.VectorFunctionSpace(self.mesh, "CG", 1)
         dx = ufl.Measure("dx", domain=mesh)
 
         self.transformation_container = fenics.Function(vector_cg_space)
+        self.determinant_function = fenics.Function(dg_function_space)
 
         # pylint: disable=invalid-name
         self.A_prior = (
@@ -78,6 +80,7 @@ class APrioriMeshTester:
             "ksp_max_it": 1000,
         }
 
+    @log.profile_execution_time("testing the volume change restrictions")
     def test(self, transformation: fenics.Function, volume_change: float) -> bool:
         r"""Check the quality of the transformation before the actual mesh is moved.
 
@@ -97,22 +100,36 @@ class APrioriMeshTester:
             A boolean that indicates whether the desired transformation is feasible.
 
         """
-        log.begin("Testing if the mesh contains inverted elements", level=log.DEBUG)
-        comm = self.transformation_container.function_space().mesh().mpi_comm()
         self.transformation_container.vector().vec().aypx(
             0.0, transformation.vector().vec()
         )
         self.transformation_container.vector().apply("")
-        x = _utils.assemble_and_solve_linear(
-            self.A_prior, self.l_prior, ksp_options=self.options_prior, comm=comm
+        _utils.assemble_and_solve_linear(
+            self.A_prior,
+            self.l_prior,
+            self.determinant_function,
+            ksp_options=self.options_prior,
         )
 
-        min_det = float(x.min()[1])
-        max_det = float(x.max()[1])
+        min_det = float(self.determinant_function.vector().vec().min()[1])
+        max_det = float(self.determinant_function.vector().vec().max()[1])
 
-        log.end()
+        result = bool((min_det >= 1 / volume_change) and (max_det <= volume_change))
 
-        return bool((min_det >= 1 / volume_change) and (max_det <= volume_change))
+        if result:
+            log.debug(
+                "Accepting the deformation as all mesh elements satisfy the volume "
+                "change restrictions. There are no inverted cells are in the mesh."
+            )
+        else:
+            log.debug(
+                "Rejecting the deformation as the mesh does not satisfy the volume "
+                "change restrictions."
+            )
+            if min_det < 0.0:
+                log.debug("There are inverted cells in the mesh.")
+
+        return result
 
 
 class IntersectionTester:
@@ -126,6 +143,7 @@ class IntersectionTester:
 
         """
         self.mesh = mesh
+        self.comm = self.mesh.mpi_comm()
 
         cells = self.mesh.cells()
         vertex_ghost_offset = self.mesh.topology().ghost_offset(0)
@@ -139,6 +157,7 @@ class IntersectionTester:
             [self.cell_counter[i] for i in range(vertex_ghost_offset)]
         )
 
+    @log.profile_execution_time("testing for self-intersecting mesh cells")
     def test(self) -> bool:
         """Checks the quality of the transformation after the actual mesh is moved.
 
@@ -154,22 +173,26 @@ class IntersectionTester:
             element mesh, so this check has to be done manually.
 
         """
-        log.begin(
-            "Testing if the mesh has self intersecting elements.", level=log.DEBUG
-        )
         self_intersections = False
         collisions = CollisionCounter.compute_collisions(self.mesh)
         if not (collisions == self.occurrences).all():
             self_intersections = True
-        list_self_intersections = fenics.MPI.comm_world.allgather(self_intersections)
-
-        log.end()
+        list_self_intersections = self.comm.allgather(self_intersections)
 
         if any(list_self_intersections):
-            log.debug("Mesh transformation rejected due to a posteriori check.")
-            return False
+            log.debug(
+                "Rejecting the deformation as the mesh has self-intersecting elements "
+                "after the update."
+            )
+            result = False
         else:
-            return True
+            log.debug(
+                "Accepting the deformation as the mesh does not have self-intersecting "
+                "elements after the update."
+            )
+            result = True
+
+        return result
 
 
 class CollisionCounter:

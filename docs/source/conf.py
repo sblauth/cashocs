@@ -16,10 +16,11 @@ import sys
 sys.path.insert(0, os.path.abspath("../.."))
 sys.path.insert(0, os.path.abspath("."))
 
+import document_cli
 import jupytext_process
 
 jupytext_process.process()
-
+document_cli.process()
 
 # -- Project information -----------------------------------------------------
 
@@ -28,7 +29,7 @@ copyright = "2020-2025, Fraunhofer ITWM and Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
-release = "2.5.0-dev"
+release = "2.8.0-dev"
 
 
 # -- General configuration ---------------------------------------------------
@@ -118,7 +119,7 @@ html_theme = "pydata_sphinx_theme"
 html_logo = "logo.jpg"
 html_theme_options = {
     "github_url": "https://github.com/sblauth/cashocs",
-    "header_links_before_dropdown": 5,
+    "header_links_before_dropdown": 6,
     "icon_links": [
         {
             "name": "PyPI",
@@ -128,7 +129,7 @@ html_theme_options = {
     ],
     "navbar_end": ["theme-switcher", "version-switcher", "navbar-icon-links"],
     "navbar_persistent": [],
-    "show_nav_level": 2,
+    "show_nav_level": 1,
     "switcher": {
         "json_url": "https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json",
         "version_match": switcher_version,

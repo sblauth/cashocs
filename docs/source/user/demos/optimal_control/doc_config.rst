@@ -5,31 +5,236 @@ Documentation of the Config Files for Optimal Control Problems
 
 
 Let us take a look at how the config files are structured for optimal control
-problems.
-
-First of all, the config is divided into the sections: :ref:`Mesh
-<config_ocp_mesh>`, :ref:`StateSystem <config_ocp_state_system>`,
-:ref:`OptimizationRoutine <config_ocp_optimization_routine>`, :ref:`AlgoLBFGS
-<config_ocp_algolbfgs>`, :ref:`AlgoCG <config_ocp_algocg>`, :ref:`AlgoTNM
-<config_ocp_algonewton>`, and :ref:`Output <config_ocp_output>`.
-These manage the settings for the mesh, the state equation of the optimization
-problem, the solution algorithms, and the output, respectively. Note, that the
-structure of such config files is explained in-depth in the `documentation of the
+problems. Note, that the structure of such config files is explained in-depth
+in the `documentation of the
 configparser module <https://docs.python.org/3/library/configparser.html>`_.
 In particular, the order of the entries in each section is arbitrary.
 
 Moreover, we remark that cashocs has a default behavior for almost all of these
 parameters, which is triggered when they are **NOT** specified in the config file,
 and we will discuss this behavior for each parameter in this tutorial.
-A summary of all parameters as well as their default values
-can be found at :ref:`the end of this page <config_ocp_summary>`.
+
+For the sake of brevity, we begin with a summary of all parameters and their default
+values before going deeper into detail on all of them below. New users might want
+to skip the summary and continue directly at
+:ref:`the detailed description <config_ocp_detailed>`.
+
+.. _config_ocp_summary:
+
+Summary
+-------
+
+An overview over all parameters and their default values can be found
+in the following.
 
 
+StateSystem
+***********
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`is_linear = False`
+      - using :ini:`is_linear = True` gives an error for nonlinear problems
+    * - :ini:`newton_rtol = 1e-11`
+      - relative tolerance for Newton's method
+    * - :ini:`newton_atol = 1e-13`
+      - absolute tolerance for Newton's method
+    * - :ini:`newton_iter = 50`
+      - maximum iterations for Newton's method
+    * - :ini:`newton_damped = False`
+      - if :ini:`newton_damped = True`, damping is enabled
+    * - :ini:`newton_inexact = False`
+      - if :ini:`newton_inexact = True`, an inexact Newton's method is used
+    * - :ini:`newton_verbose = False`
+      - :ini:`newton_verbose = True` enables verbose output of Newton's method
+    * - :ini:`picard_iteration = False`
+      - :ini:`picard_iteration = True` enables Picard iteration; only has an effect for multiple
+        variables
+    * - :ini:`picard_rtol = 1e-10`
+      - relative tolerance for Picard iteration
+    * - :ini:`picard_atol = 1e-12`
+      - absolute tolerance for Picard iteration
+    * - :ini:`picard_iter = 50`
+      - maximum iterations for Picard iteration
+    * - :ini:`picard_verbose = False`
+      - :ini:`picard_verbose = True` enables verbose output of Picard iteration
+    * - :ini:`backend = cashocs`
+      - specifies the backend for solving nonlinear equations, can be either :ini:`cashocs` or :ini:`petsc`
+    * - :ini:`use_adjoint_linearizations = False`
+      - if `True`, the adjoint form of the provided `newton_linearizations` will be used for the adjoint system.
+
+OptimizationRoutine
+*******************
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`algorithm`
+      - has to be specified by the user; see :py:meth:`solve <cashocs.OptimalControlProblem.solve>`. There is no default value.
+    * - :ini:`rtol = 1e-3`
+      - relative tolerance for the optimization algorithm
+    * - :ini:`atol = 0.0`
+      - absolute tolerance for the optimization algorithm
+    * - :ini:`max_iter = 100`
+      - maximum iterations for the optimization algorithm
+    * - :ini:`gradient_method = direct`
+      - specifies the solver for computing the gradient, can be either :ini:`gradient_method = direct` or :ini:`gradient_method = iterative`
+    * - :ini:`gradient_tol = 1e-9`
+      - the relative tolerance in case an iterative solver is used to compute the gradient.
+    * - :ini:`soft_exit = False`
+      - if :ini:`soft_exit = True`, the optimization algorithm does not raise an exception if
+        it did not converge
+
+
+LineSearch
+**********
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`method = armio`
+      - :ini:`method = armijo` is a simple backtracking line search, whereas :ini:`method = polynomial` uses polynomial models to compute trial stepsizes.
+    * - :ini:`initial_stepsize = 1.0`
+      - initial stepsize for the first iteration in the Armijo rule
+    * - :ini:`epsilon_armijo = 1e-4`
+      -
+    * - :ini:`beta_armijo = 2.0`
+      -
+    * - :ini:`safeguard_stepsize = True`
+      - De(-activates) a safeguard against poor scaling
+    * - :ini:`polynomial_model = cubic`
+      - This specifies, whether a cubic or quadratic model is used for computing trial stepsizes
+    * - :ini:`factor_high = 0.5`
+      - Safeguard for stepsize, upper bound
+    * - :ini:`factor_low = 0.1`
+      - Safeguard for stepsize, lower bound
+    * - :ini:`fail_if_not_converged = False`
+      - if this is :ini:`True`, then the line search fails if the state system can not be solved at the new iterate
+
+
+AlgoLBFGS
+*********
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`bfgs_memory_size = 5`
+      - memory size of the L-BFGS method
+    * - :ini:`use_bfgs_scaling = True`
+      - if :ini:`use_bfgs_scaling = True`, uses a scaled identity mapping as initial guess for the inverse Hessian
+    * - :ini:`bfgs_periodic_restart = 0`
+      - specifies, after how many iterations the method is restarted. If this is 0, no restarting is done.
+    * - :ini:`damped = False`
+      - specifies whether damping for the BFGS method should be used to enforce the curvature condition and prevent restarting
+
+
+AlgoCG
+******
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`cg_method = FR`
+      - specifies which nonlinear CG method is used
+    * - :ini:`cg_periodic_restart = False`
+      - if :ini:`cg_periodic_restart = True`, enables periodic restart of NCG method
+    * - :ini:`cg_periodic_its = 10`
+      - specifies, after how many iterations the NCG method is restarted, if applicable
+    * - :ini:`cg_relative_restart = False`
+      - if :ini:`cg_relative_restart = True`, enables restart of NCG method based on a relative criterion
+    * - :ini:`cg_restart_tol = 0.25`
+      - the tolerance of the relative restart criterion, if applicable
+
+AlgoTNM
+*******
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`inner_newton = cr`
+      - inner iterative solver for the truncated Newton method
+    * - :ini:`inner_newton_rtol = 1e-15`
+      - relative tolerance for the inner iterative solver
+    * - :ini:`inner_newton_atol = 0.0`
+      - absolute tolerance for the inner iterative solver
+    * - :ini:`max_it_inner_newton = 50`
+      - maximum iterations for the inner iterative solver
+
+Output
+******
+
+.. list-table::
+    :width: 100 %
+    :widths: 50, 50
+    :align: left
+    :header-rows: 1
+
+    * - Parameter = Default value
+      - Description and remarks
+    * - :ini:`verbose = True`
+      - if :ini:`verbose = True`, the history of the optimization is printed to the console
+    * - :ini:`save_results = True`
+      - if :ini:`save_results = True`, the history of the optimization is saved to a .json file
+    * - :ini:`save_txt = True`
+      - if :ini:`save_txt = True`, the history of the optimization is saved to a human readable .txt file
+    * - :ini:`save_state = False`
+      - if :ini:`save_state = True`, the history of the state variables over the optimization is
+        saved in .xdmf files
+    * - :ini:`save_adjoint = False`
+      - if :ini:`save_adjoint = True`, the history of the adjoint variables over the optimization is
+        saved in .xdmf files
+    * - :ini:`save_gradient = False`
+      - if :ini:`save_gradient = True`, the history of the gradient(s) over the optimization is saved in .xdmf files
+    * - :ini:`result_dir = ./`
+      - path to the directory, where the output should be placed
+    * - :ini:`precision = 3`
+      - number of significant digits to be printed
+    * - :ini:`time_suffix = False`
+      - Boolean flag, which adds a suffix to :ini:`result_dir` based on the current time
+
+
+.. _config_ocp_detailed:
+
+Detailed Description
+--------------------
+
+Let us now give a detailed description over all parameters available for configuring cashocs' behavior.
 
 .. _config_ocp_mesh:
 
-Section Mesh
-------------
+Mesh
+****
 The mesh section consists, for optimal control problems, only of a path to the
 .xdmf version of the mesh file
 
@@ -47,8 +252,8 @@ file to the .xdmf format, you can use :py:func:`cashocs.convert`.
 
 .. _config_ocp_state_system:
 
-Section StateSystem
----------------------
+StateSystem
+***********
 The state system section is used to detail how the state and adjoint systems are
 solved. This includes settings for a damped Newton method and a Picard iteration.
 
@@ -174,13 +379,26 @@ is used which can be configured with the `ksp_options` supplied by the user to t
 :py:class:`cashocs.OptimizationProblem`. An overview over possible PETSc command line options
 can be found at `<https://petsc.org/release/manualpages/SNES/>`_.
 
+The parameter :ini:`use_adjoint_linearizations` is a boolean which specifies whether the adjoint form
+of the linearization provided with `newton_linearizations` should be used to solve the adjoint equation.
+The parameter is set with the line
+
+.. code-block:: ini
+
+    use_adjoint_linearizations = False
+
+The default value is `False`. Note that one has to use a PETSc SNES solver (or pseudo time stepping)
+in order for this to make sense. Using the option `-snes_type ksponly` with the SNES solver will not
+give correct results (if the provided linearization is not the Newton linearization). The benefit of
+doing so can be significantly easier to solve linear systems at the cost of doing more "nonlinear"
+iterations, in a defect-correction setting.
 
 
 
 .. _config_ocp_optimization_routine:
 
-Section OptimizationRoutine
----------------------------
+OptimizationRoutine
+*******************
 
 The following section is used to specify general parameters for the solution
 algorithm, which can be customized here. The first parameter determines the
@@ -321,8 +539,8 @@ algorithms.
 
 .. _config_ocp_linesearch:
 
-Section LineSearch
-------------------
+LineSearch
+**********
 
 In this section, parameters regarding the line search can be specified. The type of the line search can be chosen via the parameter 
 
@@ -359,9 +577,8 @@ which determines, whether the line search is terminated if the state system cann
 
 .. _config_ocp_algolbfgs:
 
-Section AlgoLBFGS
------------------
-
+AlgoLBFGS
+*********
 
 For the L-BFGS method we have the following parameters. First, we have
 :ini:`bfgs_memory_size`, which is set via 
@@ -404,9 +621,8 @@ This parameter is a boolean flag, which indicates whether Powell's damping (on H
 
 .. _config_ocp_algocg:
 
-Section AlgoCG
---------------
-
+AlgoCG
+******
 
 The parameter 
 
@@ -472,8 +688,8 @@ default behavior is given by :ini:`cg_relative_restart = False` and :ini:`cg_res
 
 .. _config_ocp_algonewton:
 
-Section AlgoTNM
-------------------
+AlgoTNM
+*******
 
 The parameters for the truncated Newton method are determined in the following.
 
@@ -529,8 +745,8 @@ of whether this is converged or not. This defaults to :ini:`max_it_inner_newton 
 
 .. _config_ocp_output:
 
-Section Output
---------------
+Output
+******
 
 This section determines the behavior of cashocs regarding output, both in the
 terminal and w.r.t. output files. The first line of this section reads
@@ -614,188 +830,6 @@ Moreover, we have the parameter :ini:`time_suffix`, which adds a suffix to the r
 
 	time_suffix = False
 
-
-
-.. _config_ocp_summary:
-
-Summary
--------
-
-Finally, an overview over all parameters and their default values can be found
-in the following.
-
-
-[StateSystem]
-*************
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`is_linear = False`
-      - using :ini:`is_linear = True` gives an error for nonlinear problems
-    * - :ini:`newton_rtol = 1e-11`
-      - relative tolerance for Newton's method
-    * - :ini:`newton_atol = 1e-13`
-      - absolute tolerance for Newton's method
-    * - :ini:`newton_iter = 50`
-      - maximum iterations for Newton's method
-    * - :ini:`newton_damped = False`
-      - if :ini:`newton_damped = True`, damping is enabled
-    * - :ini:`newton_inexact = False`
-      - if :ini:`newton_inexact = True`, an inexact Newton's method is used
-    * - :ini:`newton_verbose = False`
-      - :ini:`newton_verbose = True` enables verbose output of Newton's method
-    * - :ini:`picard_iteration = False`
-      - :ini:`picard_iteration = True` enables Picard iteration; only has an effect for multiple
-        variables
-    * - :ini:`picard_rtol = 1e-10`
-      - relative tolerance for Picard iteration
-    * - :ini:`picard_atol = 1e-12`
-      - absolute tolerance for Picard iteration
-    * - :ini:`picard_iter = 50`
-      - maximum iterations for Picard iteration
-    * - :ini:`picard_verbose = False`
-      - :ini:`picard_verbose = True` enables verbose output of Picard iteration
-    * - :ini:`backend = cashocs`
-      - specifies the backend for solving nonlinear equations, can be either :ini:`cashocs` or :ini:`petsc`
-
-[OptimizationRoutine]
-*********************
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`algorithm`
-      - has to be specified by the user; see :py:meth:`solve <cashocs.OptimalControlProblem.solve>`
-    * - :ini:`rtol = 1e-3`
-      - relative tolerance for the optimization algorithm
-    * - :ini:`atol = 0.0`
-      - absolute tolerance for the optimization algorithm
-    * - :ini:`max_iter = 100`
-      - maximum iterations for the optimization algorithm
-    * - :ini:`gradient_method = direct`
-      - specifies the solver for computing the gradient, can be either :ini:`gradient_method = direct` or :ini:`gradient_method = iterative`
-    * - :ini:`gradient_tol = 1e-9`
-      - the relative tolerance in case an iterative solver is used to compute the gradient.
-    * - :ini:`soft_exit = False`
-      - if :ini:`soft_exit = True`, the optimization algorithm does not raise an exception if
-        it did not converge
-
-        
-[LineSearch]
-************
-
-.. list-table::
-    :header-rows: 1
-    
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`method = armio`
-      - :ini:`method = armijo` is a simple backtracking line search, whereas :ini:`method = polynomial` uses polynomial models to compute trial stepsizes.
-    * - :ini:`initial_stepsize = 1.0`
-      - initial stepsize for the first iteration in the Armijo rule
-    * - :ini:`epsilon_armijo = 1e-4`
-      -
-    * - :ini:`beta_armijo = 2.0`
-      -
-    * - :ini:`safeguard_stepsize = True`
-      - De(-activates) a safeguard against poor scaling
-    * - :ini:`polynomial_model = cubic`
-      - This specifies, whether a cubic or quadratic model is used for computing trial stepsizes
-    * - :ini:`factor_high = 0.5`
-      - Safeguard for stepsize, upper bound
-    * - :ini:`factor_low = 0.1`
-      - Safeguard for stepsize, lower bound
-    * - :ini:`fail_if_not_converged = False`
-      - if this is :ini:`True`, then the line search fails if the state system can not be solved at the new iterate
-
-
-[AlgoLBFGS]
-***********
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`bfgs_memory_size = 5`
-      - memory size of the L-BFGS method
-    * - :ini:`use_bfgs_scaling = True`
-      - if :ini:`use_bfgs_scaling = True`, uses a scaled identity mapping as initial guess for the inverse Hessian
-    * - :ini:`bfgs_periodic_restart = 0`
-      - specifies, after how many iterations the method is restarted. If this is 0, no restarting is done.
-    * - :ini:`damped = False`
-      - specifies whether damping for the BFGS method should be used to enforce the curvature condition and prevent restarting
-
-
-[AlgoCG]
-********
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`cg_method = FR`
-      - specifies which nonlinear CG method is used
-    * - :ini:`cg_periodic_restart = False`
-      - if :ini:`cg_periodic_restart = True`, enables periodic restart of NCG method
-    * - :ini:`cg_periodic_its = 10`
-      - specifies, after how many iterations the NCG method is restarted, if applicable
-    * - :ini:`cg_relative_restart = False`
-      - if :ini:`cg_relative_restart = True`, enables restart of NCG method based on a relative criterion
-    * - :ini:`cg_restart_tol = 0.25`
-      - the tolerance of the relative restart criterion, if applicable
-
-[AlgoTNM]
-*********
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`inner_newton = cr`
-      - inner iterative solver for the truncated Newton method
-    * - :ini:`inner_newton_rtol = 1e-15`
-      - relative tolerance for the inner iterative solver
-    * - :ini:`inner_newton_atol = 0.0`
-      - absolute tolerance for the inner iterative solver
-    * - :ini:`max_it_inner_newton = 50`
-      - maximum iterations for the inner iterative solver
-
-[Output]
-********
-
-.. list-table::
-    :header-rows: 1
-
-    * - Parameter = Default value
-      - Remarks
-    * - :ini:`verbose = True`
-      - if :ini:`verbose = True`, the history of the optimization is printed to the console
-    * - :ini:`save_results = True`
-      - if :ini:`save_results = True`, the history of the optimization is saved to a .json file
-    * - :ini:`save_txt = True`
-      - if :ini:`save_txt = True`, the history of the optimization is saved to a human readable .txt file
-    * - :ini:`save_state = False`
-      - if :ini:`save_state = True`, the history of the state variables over the optimization is
-        saved in .xdmf files
-    * - :ini:`save_adjoint = False`
-      - if :ini:`save_adjoint = True`, the history of the adjoint variables over the optimization is
-        saved in .xdmf files
-    * - :ini:`save_gradient = False`
-      - if :ini:`save_gradient = True`, the history of the gradient(s) over the optimization is saved in .xdmf files
-    * - :ini:`result_dir = ./`
-      - path to the directory, where the output should be placed
-    * - :ini:`precision = 3`
-      - number of significant digits to be printed
-    * - :ini:`time_suffix = False`
-      - Boolean flag, which adds a suffix to :ini:`result_dir` based on the current time
 
 
 This concludes the documentation of the config files for optimal control problems.

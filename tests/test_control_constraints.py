@@ -107,36 +107,50 @@ def test_int_ineq_constraint(rng, u, geometry):
     shift_tol = rng.random()
     u.vector().vec().set(lower_bound - shift_tol)
     u.vector().apply("")
-    assert np.abs(int_ineq_constraint_lower.constraint_violation() - shift_tol) < 1e-14
+    assert int_ineq_constraint_lower.constraint_violation() == pytest.approx(
+        shift_tol, rel=1e-14
+    )
 
     shift_tol = rng.random()
     u.vector().vec().set(lower_bound + shift_tol)
     u.vector().apply("")
-    assert np.abs(int_ineq_constraint_lower.constraint_violation() - 0.0) < 1e-14
+    assert int_ineq_constraint_lower.constraint_violation() == pytest.approx(
+        0.0, rel=1e-14
+    )
 
     shift_tol = rng.random()
     u.vector().vec().set(upper_bound + shift_tol)
     u.vector().apply("")
-    assert np.abs(int_ineq_constraint_upper.constraint_violation() - shift_tol) < 1e-14
+    assert int_ineq_constraint_upper.constraint_violation() == pytest.approx(
+        shift_tol, rel=1e-14
+    )
 
     shift_tol = rng.random()
     u.vector().vec().set(upper_bound - shift_tol)
     u.vector().apply("")
-    assert np.abs(int_ineq_constraint_upper.constraint_violation() - 0.0) < 1e-14
+    assert int_ineq_constraint_upper.constraint_violation() == pytest.approx(
+        0.0, rel=1e-14
+    )
 
     u.vector().vec().set((upper_bound + lower_bound) / 2.0)
     u.vector().apply("")
-    assert np.abs(int_ineq_constraint_both.constraint_violation() - 0.0) < 1e-14
+    assert int_ineq_constraint_both.constraint_violation() == pytest.approx(
+        0.0, rel=1e-14
+    )
 
     shift_tol = rng.random()
     u.vector().vec().set(upper_bound + shift_tol)
     u.vector().apply("")
-    assert np.abs(int_ineq_constraint_both.constraint_violation() - shift_tol) < 1e-14
+    assert int_ineq_constraint_both.constraint_violation() == pytest.approx(
+        shift_tol, rel=1e-14
+    )
 
     shift_tol = rng.random()
     u.vector().vec().set(lower_bound - shift_tol)
     u.vector().apply("")
-    assert np.abs(int_ineq_constraint_both.constraint_violation() - shift_tol) < 1e-14
+    assert int_ineq_constraint_both.constraint_violation() == pytest.approx(
+        shift_tol, rel=1e-14
+    )
 
 
 def test_pw_ineq_constraint(rng, u, CG1, geometry):
@@ -173,21 +187,18 @@ def test_pw_ineq_constraint(rng, u, CG1, geometry):
         assemble(pow(cashocs._utils.max_(0.0, u - upper_bound), 2) * geometry.dx)
     )
 
-    assert (
-        np.abs(
-            ineq_constraint_both.constraint_violation()
-            - np.sqrt(
-                assemble(
-                    pow(
-                        cashocs._utils.min_(0.0, u - lower_bound),
-                        2,
-                    )
-                    * geometry.dx
-                    + pow(cashocs._utils.max_(0.0, u - upper_bound), 2) * geometry.dx
-                )
+    constraint_violation_target = np.sqrt(
+        assemble(
+            pow(
+                cashocs._utils.min_(0.0, u - lower_bound),
+                2,
             )
+            * geometry.dx
+            + pow(cashocs._utils.max_(0.0, u - upper_bound), 2) * geometry.dx
         )
-        < 1e-14
+    )
+    assert ineq_constraint_both.constraint_violation() == pytest.approx(
+        constraint_violation_target, rel=1e-14
     )
 
 

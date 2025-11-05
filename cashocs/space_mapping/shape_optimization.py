@@ -37,15 +37,14 @@ except ImportError:
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import geometry
+from cashocs import io
 from cashocs import log
 from cashocs._database import database
 from cashocs._optimization.shape_optimization import shape_optimization_problem as sop
 from cashocs.geometry import mesh_testing
-from cashocs.io import output
 
 if TYPE_CHECKING:
     from cashocs import _typing
-    from cashocs import io
 
 
 class FineModel(abc.ABC):
@@ -59,7 +58,7 @@ class FineModel(abc.ABC):
 
     cost_functional_value: float
 
-    def __init__(self, mesh: fenics.Mesh):
+    def __init__(self, mesh: fenics.Mesh) -> None:
         """Initializes self.
 
         Args:
@@ -68,6 +67,14 @@ class FineModel(abc.ABC):
 
         """
         self.mesh = fenics.Mesh(mesh)
+
+    @log.profile_execution_time("simulating the fine model")
+    def simulate(self) -> None:
+        """Simulates the fine model.
+
+        This is done in this method so it can be decorated for logging purposes.
+        """
+        self.solve_and_evaluate()
 
     @abc.abstractmethod
     def solve_and_evaluate(self) -> None:
@@ -109,7 +116,7 @@ class CoarseModel:
         adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
         newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
         excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
-    ):
+    ) -> None:
         """Initializes self.
 
         Args:
@@ -464,7 +471,7 @@ class SpaceMappingProblem:
             self.coarse_model.preconditioner_forms,  # type: ignore
         )
 
-        self.output_manager = output.OutputManager(self.db)
+        self.output_manager = io.output.OutputManager(self.db)
 
         self.coordinates_initial = self.coarse_model.coordinates_initial
 
@@ -588,9 +595,7 @@ class SpaceMappingProblem:
         log.begin("Solving the space mapping problem.")
         self._compute_initial_guess()
 
-        log.begin("Simulating the fine model.")
-        self.fine_model.solve_and_evaluate()
-        log.end()
+        self.fine_model.simulate()
 
         self.parameter_extraction._solve(  # pylint: disable=protected-access
             self.iteration
@@ -719,9 +724,7 @@ class SpaceMappingProblem:
                     "possible due to intersections"
                 )
 
-            log.begin("Simulating the fine model.")
-            self.fine_model.solve_and_evaluate()
-            log.end()
+            self.fine_model.simulate()
 
             self.parameter_extraction._solve(  # pylint: disable=protected-access
                 self.iteration
@@ -753,9 +756,7 @@ class SpaceMappingProblem:
                 self.transformation.vector().apply("")
                 success = self.deformation_handler_fine.move_mesh(self.transformation)
                 if success:
-                    log.begin("Simulating the fine model.")
-                    self.fine_model.solve_and_evaluate()
-                    log.end()
+                    self.fine_model.simulate()
 
                     # pylint: disable=protected-access
                     self.parameter_extraction._solve(self.iteration)

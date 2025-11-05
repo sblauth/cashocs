@@ -21,7 +21,7 @@ from __future__ import annotations
 
 import functools
 import gc
-import subprocess  # nosec B404
+import subprocess
 from typing import Callable, TYPE_CHECKING
 
 import dolfin.function.argument
@@ -231,11 +231,12 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         if self.uses_custom_scalar_product and self.config.getboolean(
             "ShapeGradient", "use_p_laplacian"
         ):
-            log.warning(
+            raise _exceptions.InputError(
+                "cashocs.ShapeOptimizationProblem",
+                "shape_scalar_product",
                 "You have supplied a custom scalar product and set the parameter "
-                "``use_p_laplacian`` in the config file."
-                "cashocs will use the supplied scalar product and not the "
-                "p-Laplacian to compute the shape gradient."
+                "``use_p_laplacian`` in the config file.\n"
+                "These options are mutually exclusive. Please disable one of them.",
             )
 
         self.shape_regularization = _forms.shape_regularization.ShapeRegularization(
@@ -485,12 +486,13 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         log.debug("An exception was raised, deleting the created temporary files.")
         if (
             not self.config.getboolean("Debug", "remeshing")
-            and fenics.MPI.rank(fenics.MPI.comm_world) == 0
+            and self.db.geometry_db.mpi_comm.rank == 0
         ):
-            subprocess.run(  # nosec B603, B607
-                ["rm", "-r", self.db.parameter_db.remesh_directory], check=False
+            subprocess.run(  # noqa: S603
+                ["rm", "-r", self.db.parameter_db.remesh_directory],  # noqa: S607
+                check=False,
             )
-        fenics.MPI.barrier(fenics.MPI.comm_world)
+        self.db.geometry_db.mpi_comm.barrier()
 
     def compute_shape_gradient(self) -> list[fenics.Function]:
         """Solves the Riesz problem to determine the shape gradient.

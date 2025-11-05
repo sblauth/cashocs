@@ -25,7 +25,6 @@ import fenics
 import numpy as np
 
 from cashocs import _exceptions
-from cashocs import log
 from cashocs.geometry import measure
 
 if TYPE_CHECKING:
@@ -128,11 +127,8 @@ class DeformationHandler:
             else:
                 dof_transformation = transformation
             if not self.a_priori_tester.test(dof_transformation, float("inf")):
-                log.debug(
-                    "Mesh transformation rejected due to a priori check.\n"
-                    "Reason: Transformation would result in inverted mesh elements."
-                )
                 return False
+
         self.old_coordinates = self.mesh.coordinates().copy()
         self.coordinates += coordinate_transformation
         self.bbtree.build(self.mesh)
