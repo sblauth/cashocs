@@ -236,7 +236,8 @@ class TSPseudoSolver:
 
         form = _utils.summation(form_list)
         M = fenics.PETScMatrix(self.mass_matrix_petsc)  # pylint: disable=invalid-name,
-        fenics.assemble(form, tensor=M)
+        zero_form = ufl.inner(fenics.Constant(np.zeros(test.ufl_shape)), test) * dx
+        fenics.assemble_system(form, zero_form, self.bcs, A_tensor=M)
 
         self.M_petsc = self.mass_matrix_petsc.copy()  # pylint: disable=invalid-name,
 
