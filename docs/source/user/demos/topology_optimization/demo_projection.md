@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.16.1
 ---
 
 ```{eval-rst}
@@ -69,6 +69,14 @@ where {math}`r_\mathrm{in} = \frac{\alpha_\mathrm{out}}{\alpha_\mathrm{in}}`,
 {math}`\lambda` are the Lamé parameters which satisfy {math}`\mu \geq 0` and
 {math}`2\mu + d \lambda > 0`, where {math}`d` is the dimension of the problem.
 
+The volume constraint is treated by projecting the level-set function so
+that the updated level-set function satisfies the volume constraint, similar to
+a projected gradient method. For more details, we refer to our preprint
+[Baeck, Blauth, Leithäuser, Pinnau, and Sturm - A Novel Deflation Approach for
+Topology Optimization and Application for Optimization of Bipolar Plates of
+Electrolysis Cells](https://arxiv.org/abs/2406.17491), where the used method is
+described detailedly.
+
 ## Implementation
 
 The complete python code can be found in the file {download}`demo_projection.py
@@ -83,7 +91,6 @@ and therefore we omit the details here and just state the corresponding code
 from fenics import *
 
 import cashocs
-from cashocs._optimization.topology_optimization import bisection
 
 cfg = cashocs.load_config("config.ini")
 
@@ -108,8 +115,6 @@ lambd = 2 * mu * lambd_star / (lambd_star + 2.0 * mu)
 alpha_in = 1.0
 alpha_out = 1e-3
 alpha = Function(DG0)
-
-indicator_omega = Function(DG0)
 
 
 def eps(u):
@@ -155,6 +160,8 @@ except the penalty term for the volume and reads
 J = cashocs.IntegralFunctional(alpha * inner(sigma(u), eps(u)) * dx)
 ```
 
+Note, that this is indeed the same as in {ref}`demo_cantilever` for the case that
+:math:`\gamma = 0`.
 Finally, we specify the generalized topological derivative of the problem
 with the lines
 
@@ -182,7 +189,8 @@ dJ_out = Constant(
 ```
 
 This generalized topological derivative is again similar to {ref}`demo_cantilever`
-without the last term resulting from the volume penalty term in the objective.
+without the last term resulting from the volume penalty term in the objective, as
+:math:`\gamma = 0` in this demo since the volume constraint is dealt with differently.
 
 +++
 
@@ -201,7 +209,7 @@ border 0.5 and the upper one as 1.25
 ```python
 vol_low = 0.5
 vol_up = 1.25
-vol = [vol_low, vol_up]
+volume_restriction = (vol_low, vol_up)
 ```
 
 Now, we are able to define the
@@ -209,7 +217,17 @@ Now, we are able to define the
 
 ```python
 top = cashocs.TopologyOptimizationProblem(
-    F, bcs, J, u, v, psi, dJ_in, dJ_out, update_level_set, volume_restriction=vol, config=cfg
+    F,
+    bcs,
+    J,
+    u,
+    v,
+    psi,
+    dJ_in,
+    dJ_out,
+    update_level_set,
+    volume_restriction=volume_restriction,
+    config=cfg,
 )
 ```
 
@@ -220,17 +238,18 @@ Finally, we can solve the topology optimization problem using the
 top.solve(algorithm="bfgs", rtol=0.0, atol=0.0, angle_tol=1.0, max_iter=100)
 ```
 
-:::{note}
+::::{note}
 In the case of an equality constraint for the volume of {math}`\Omega` we
-have to exchange `vol` by a float describing the desired volume, in this
-case we choose 1.0.
+have to use a float for `volume_restriction` instead of a tuple. For example, if
+we consider a volume equality with target volume of 1, then we would have to use the
+following definition
 :::{code-block} python
-vol = 1.0
+volume_restriction = 1.0
 top = cashocs.TopologyOptimizationProblem(
-   F, bcs, J, u, v, psi, dJ_in, dJ_out, update_level_set, volume_restriction=vol, config=cfg
+   F, bcs, J, u, v, psi, dJ_in, dJ_out, update_level_set, volume_restriction=volume_restriction, config=cfg
 )
 :::
-:::
+::::
 
 +++
 

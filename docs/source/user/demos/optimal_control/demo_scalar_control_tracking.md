@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.16.1
 ---
 
 ```{eval-rst}
@@ -61,7 +61,7 @@ from fenics import *
 
 import cashocs
 
-cashocs.set_log_level(cashocs.LogLevel.INFO)
+cashocs.set_log_level(cashocs.log.INFO)
 config = cashocs.load_config("config.ini")
 mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(25)
 V = FunctionSpace(mesh, "CG", 1)

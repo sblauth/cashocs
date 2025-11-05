@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.16.1
 ---
 
 ```{eval-rst}
@@ -138,7 +138,7 @@ def pre_callback():
         - q * div(u) * dx
         - inner(c, v) * dx
     )
-    cashocs.newton_solve(e, up, bcs, verbose=False)
+    cashocs.snes_solve(e, up, bcs)
 ```
 
 where we solve the Navier-Stokes equations with a lower Reynolds number of

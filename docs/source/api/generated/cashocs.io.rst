@@ -4,44 +4,29 @@ cashocs.io
 .. automodule:: cashocs.io
 
    
-   
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
+      :toctree:
    
+      load_config
+      import_function
+      read_function_from_xdmf
       convert
       export_mesh
       extract_mesh_from_xdmf
-      import_function
       import_mesh
-      load_config
-      read_function_from_xdmf
       read_mesh_from_xdmf
       write_out_mesh
-   
-   
-
-   
    
    .. rubric:: Classes
 
    .. autosummary::
+      :toctree:
    
       Config
       OutputManager
    
-   
-
-   
-   
-   
-
-
-
 .. rubric:: Modules
 
 .. autosummary::
@@ -53,4 +38,3 @@ cashocs.io
    cashocs.io.managers
    cashocs.io.mesh
    cashocs.io.output
-

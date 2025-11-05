@@ -314,18 +314,6 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             self._cashocs_problem.adjoint_problem.has_solution = False
         self._cashocs_problem.compute_adjoint_variables()
 
-        '''for i in range(0, len(self.optimization_problem.cost_functional_list)):
-                if hasattr(self.optimization_problem.cost_functional_list[i],
-                           'topological_derivative'):
-                    self.topological_derivative_pos += \
-                        self.optimization_problem.cost_functional_list[
-                            i].topological_derivative()
-                    self.topological_derivative_neg += \
-                        self.optimization_problem.cost_functional_list[
-                            i].topological_derivative()'''
-
-
-
         if not self.topological_derivative_is_identical:
             self.average_topological_derivative()
         else:
@@ -338,36 +326,15 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             self.topological_derivative_vertex.vector().apply("")
 
             dg0_function = fenics.Function(self.dg0_space)
-            dg0_function.vector()[:] = fenics.project(
-                self.topological_derivative_pos, self.dg0_space
-            ).vector()[:]
+            dg0_function.vector().vec().aypx(
+                0.0,
+                fenics.project(self.topological_derivative_pos, self.dg0_space)
+                .vector()
+                .vec(),
+            )
             _utils.interpolate_dg0_function_to_cg1(
                 dg0_function, self.topological_derivative_vertex
             )
-
-            '''top = fenics.Function(self.levelset_function.function_space())
-            test = fenics.TestFunction(self.levelset_function.function_space())
-            indicator_omega = fenics.Function(self.dg0_space)
-            interpolate_levelset_function_to_cells(self.levelset_function, 1.0, 0.0,
-                                                   indicator_omega)
-            form_td = self.topological_derivative_neg * indicator_omega + self.topological_derivative_pos * (
-                    fenics.Constant(1.0) - indicator_omega
-            )
-            kappa = 0.025
-            left = top * test * self.dx + kappa * fenics.inner(fenics.grad(top),
-                                                               fenics.grad(
-                                                                   test)) * self.dx
-            right = form_td * test * self.dx
-            total = (
-                    top * test * self.dx - form_td * test * self.dx
-            )
-    
-            linear_solve(total, top, [])
-    
-            self.topological_derivative_vertex.vector().vec().aypx(
-                0.0, top.vector().vec(),
-            )
-            self.topological_derivative_vertex.vector().apply("")'''
             
         self.project_topological_derivative()
 
@@ -461,7 +428,6 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                 break
 
             self.iteration = k
-            #ls = 0
             self.levelset_function_prev.vector().vec().aypx(
                 0.0, self.levelset_function.vector().vec()
             )
@@ -508,7 +474,6 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                 if cost_functional_new <= self.objective_value or (
                     self.projection.volume_restriction is not None and k == 0
                 ):
-                #if cost_functional_new <= self.objective_value or ls >= 5:
                     break
                 else:
                     self.stepsize *= 0.5
@@ -523,8 +488,6 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                             "topology_optimization_algorithm",
                             "Stepsize computation failed.",
                         )
-
-                #ls += 1
 
             self.iteration += 1
             if self.nonconvergence():

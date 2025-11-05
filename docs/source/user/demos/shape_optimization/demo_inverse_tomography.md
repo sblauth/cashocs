@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.16.1
 ---
 
 ```{eval-rst}
@@ -136,9 +136,10 @@ def generate_measurements():
     solve(a == L2, meas2)
     solve(a == L3, meas3)
 
-    m1, _ = meas1.split(True)
-    m2, _ = meas2.split(True)
-    m3, _ = meas3.split(True)
+    CG1 = V.sub(0).collapse()
+    m1 = project(meas1[0], CG1)
+    m2 = project(meas2[0], CG1)
+    m3 = project(meas3[0], CG1)
 
     return [m1, m2, m3]
 ```
@@ -375,10 +376,13 @@ ax_result = plt.subplot(1, 2, 2)
 fig_result = plot(result)
 plt.title("Optimized Geometry")
 
-mesh_initial, _, _, _, _, _ = cashocs.import_mesh("./mesh/mesh.xdmf")
-mesh.coordinates()[:, :] = mesh_initial.coordinates()[:, :]
-mesh.bounding_box_tree().build(mesh)
+mesh_initial, _, _, dx, _, _ = cashocs.import_mesh("./mesh/mesh.xdmf")
+DG0 = FunctionSpace(mesh_initial, "DG", 0)
 initial = Function(DG0)
+a_post = TrialFunction(DG0) * TestFunction(DG0) * dx
+L_post = Constant(1) * TestFunction(DG0) * dx(1) + Constant(2) * TestFunction(DG0) * dx(
+    2
+)
 solve(a_post == L_post, initial)
 
 ax_initial = plt.subplot(1, 2, 1)

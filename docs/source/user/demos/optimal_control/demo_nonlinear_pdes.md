@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.16.1
 ---
 
 ```{eval-rst}
@@ -34,13 +34,14 @@ $$
 
 As this problem has a nonlinear PDE as state constraint, we have to modify the config
 file slightly. In particular, in the Section
-{ref}`StateSystem <config_ocp_state_system>` we have to write
+{ref}`StateSystem <config_ocp_state_system>` we have to use
 :::{code-block} ini
 :caption: config.ini
 
 is_linear = False
 :::
 
+which is the default value.
 Note, that {ini}`is_linear = False` works for any problem, as linear equations are
 just a special case of nonlinear ones, and the corresponding nonlinear solver
 converges in a single iteration for these. However, in the opposite case, FEniCS will

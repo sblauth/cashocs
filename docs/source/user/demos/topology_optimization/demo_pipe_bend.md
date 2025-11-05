@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.16.1
 ---
 
 ```{eval-rst}
@@ -96,6 +96,8 @@ from fenics import *
 import numpy as np
 
 import cashocs
+
+parameters["dof_ordering_library"] = "Boost"
 ```
 
 Next, we load the configuration file for the problem and define the mesh with the

@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.16.1
 ---
 
 ```{eval-rst}
@@ -139,7 +139,7 @@ and, further, we decrease the verbosity of cashocs so that we can see only the o
 of the space mapping routine
 
 ```python
-cashocs.set_log_level(cashocs.LogLevel.ERROR)
+cashocs.set_log_level(cashocs.log.ERROR)
 ```
 
 Finally, we define the path to the current directory (where the script is located) via
@@ -178,7 +178,7 @@ def create_desired_state(alpha_1, alpha_2, beta, f_1, f_2):
         - Constant(f_2) * v * dx(2)
     )
     bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1, 2, 3, 4])
-    cashocs.newton_solve(F, u, bcs, verbose=False)
+    cashocs.snes_solve(F, u, bcs)
 
     return u
 
@@ -263,7 +263,7 @@ class FineModel(space_mapping.FineModel):
             - Constant(self.f_2) * v * dx(2)
         )
         bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1, 2, 3, 4])
-        cashocs.newton_solve(F, u, bcs, verbose=False)
+        cashocs.snes_solve(F, u, bcs)
 
         LagrangeInterpolator.interpolate(u_des, self.u_des_fixed)
 
@@ -320,7 +320,7 @@ F = (
     - Constant(self.f_2) * v * dx(2)
 )
 bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1, 2, 3, 4])
-cashocs.newton_solve(F, u, bcs, verbose=False)
+cashocs.snes_solve(F, u, bcs)
 :::
 
 After solving the fine model PDE constraint, we re-interpolate the desired state to

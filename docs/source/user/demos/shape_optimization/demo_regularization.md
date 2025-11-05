@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.16.1
 ---
 
 ```{eval-rst}
@@ -97,7 +97,7 @@ J = cashocs.IntegralFunctional(
 )
 ```
 
-The remaining two parts are specified via {download}`config.ini
+The remaining parts are specified via {download}`config.ini
 </../../demos/documented/shape_optimization/regularization/config.ini>`, where
 the following lines are relevant
 
@@ -106,10 +106,8 @@ the following lines are relevant
 [Regularization]
 factor_volume = 1.0
 target_volume = 1.5
-use_initial_volume = False
 factor_surface = 1.0
 target_surface = 4.5
-use_initial_surface = False
 factor_curvature = 1e-4
 ```
 

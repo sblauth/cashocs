@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.16.1
 ---
 
 ```{eval-rst}
@@ -132,7 +132,7 @@ bcs = [bcs_y, bcs_z]
 
 The cost functional is defined as in {ref}`demo_monolithic_problems`, the only
 difference is that {python}`y` and {python}`z` now are {py:class}`fenics.Function` objects, whereas
-they were generated with the {py:func}`fenics.split` command previously
+they were generated with the {py:func}`ufl.split` command previously
 
 ```python
 y_d = Expression("sin(2*pi*x[0])*sin(2*pi*x[1])", degree=1)

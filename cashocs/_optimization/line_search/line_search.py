@@ -51,6 +51,7 @@ class LineSearch(abc.ABC):
 
         """
         self.db = db
+        self.optimization_problem = optimization_problem
         self.problem_type = db.parameter_db.problem_type
 
         self.config = self.db.config
@@ -246,6 +247,7 @@ class LineSearch(abc.ABC):
 
     def _satisfies_armijo_condition(
         self,
+        solver: optimization_algorithms.OptimizationAlgorithm,
         objective_step: float,
         current_function_value: float,
         decrease_measure: float,
@@ -253,6 +255,7 @@ class LineSearch(abc.ABC):
         """Checks whether the sufficient decrease condition is satisfied.
 
         Args:
+            solver: The optimization algorithm.
             objective_step: The new objective value, after taking the step
             current_function_value: The old objective value
             decrease_measure: The directional derivative in direction of the search
@@ -268,5 +271,9 @@ class LineSearch(abc.ABC):
                 < current_function_value + self.epsilon_armijo * decrease_measure
             )
         else:
-            val = bool(objective_step <= current_function_value)
+            # if self.optimization_problem.volume_restriction is not None and solver.iteration == 0:
+            if solver.iteration == 0:
+                val = True
+            else:
+                val = bool(objective_step <= current_function_value)
         return val

@@ -4,59 +4,48 @@
 .. automodule:: cashocs
 
    
-   
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
+      :toctree:
    
-      compute_mesh_quality
-      convert
       create_dirichlet_bcs
-      import_mesh
       interpolate_levelset_function_to_cells
+      compute_mesh_quality
       interval_mesh
-      linear_solve
-      load_config
-      newton_solve
-      picard_iteration
       regular_box_mesh
       regular_mesh
+      convert
+      import_mesh
+      load_config
       set_log_level
-   
-   
-
-   
+      linear_solve
+      newton_solve
+      picard_iteration
+      snes_solve
+      ts_pseudo_solve
    
    .. rubric:: Classes
 
    .. autosummary::
+      :toctree:
    
       ConstrainedOptimalControlProblem
       ConstrainedShapeOptimizationProblem
       EqualityConstraint
-      Functional
       InequalityConstraint
+      DeflatedTopologyOptimizationProblem
+      DeflatedOptimalControlProblem
+      Functional
       IntegralFunctional
-      Interpolator
-      LogLevel
       MinMaxFunctional
-      OptimalControlProblem
       ScalarTrackingFunctional
+      OptimalControlProblem
       ShapeOptimizationProblem
       TopologyOptimizationProblem
+      Interpolator
+      LogLevel
    
-   
-
-   
-   
-   
-
-
-
 .. rubric:: Modules
 
 .. autosummary::
@@ -65,6 +54,7 @@
 
    cashocs.geometry
    cashocs.io
+   cashocs.log
    cashocs.nonlinear_solvers
    cashocs.space_mapping
-
+   cashocs.verification

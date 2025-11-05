@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.16.1
 ---
 
 ```{eval-rst}
@@ -105,7 +105,7 @@ c = Function(U)
 ```
 
 Here, {python}`up` plays the role of the state variable, having components {python}`u`
-and {python}`p`, which are extracted using the {py:func}`fenics.split` command. The
+and {python}`p`, which are extracted using the {py:func}`ufl.split` command. The
 adjoint state {python}`vq`  is structured in exactly the same fashion. See
 {ref}`demo_monolithic_problems` for more details. Similarly to there, {python}`v` will
 play the role of the adjoint velocity, and {python}`q` the one of the adjoint
@@ -155,7 +155,7 @@ defined. Note that in order to make this work, one has to specify the keyword ar
 
 The definition of the optimization problem is in complete analogy to the previous
 ones we considered. The only difference is the fact that we now have to use
-{py:func}`fenics.inner` to multiply the vector valued functions {python}`u`,
+{py:func}`ufl.inner` to multiply the vector valued functions {python}`u`,
 {python}`u_d` and {python}`c`.
 
 ```python

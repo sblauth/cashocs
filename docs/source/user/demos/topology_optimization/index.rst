@@ -13,6 +13,7 @@ be treated with cashocs.
    demo_cantilever.md
    demo_pipe_bend.md
    demo_projection.md
+   demo_deflation.md
 
 
 .. note::

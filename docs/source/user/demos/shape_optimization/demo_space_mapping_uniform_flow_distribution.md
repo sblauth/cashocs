@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.16.1
 ---
 
 ```{eval-rst}
@@ -147,7 +147,7 @@ space mapping module, set up the log level, and define the current working direc
 
 ```python
 space_mapping = cashocs.space_mapping.shape_optimization
-cashocs.set_log_level(cashocs.LogLevel.ERROR)
+cashocs.set_log_level(cashocs.log.ERROR)
 dir = os.path.dirname(os.path.realpath(__file__))
 ```
 
@@ -287,7 +287,7 @@ class FineModel(space_mapping.FineModel):
         bc_pressure = DirichletBC(V.sub(1), Constant(0.0), boundaries, 5)
         bcs = [bc_in] + bcs_wall + [bc_out] + [bc_pressure]
 
-        cashocs.newton_solve(F, up, bcs, verbose=False)
+        cashocs.snes_solve(F, up, bcs)
         self.u, p = up.split(True)
 
         file = File(f"./pvd/u_{self.iter}.pvd")
@@ -418,9 +418,9 @@ bc_pressure = DirichletBC(V.sub(1), Constant(0.0), boundaries, 5)
 bcs = [bc_in
 :::
 
-The problem is then solved with {py:func}`<cashocs.newton_solve>`
+The problem is then solved with {py:func}`<cashocs.snes_solve>`
 :::{code-block} python
-cashocs.newton_solve(F, up, bcs, verbose=False)
+cashocs.snes_solve(F, up, bcs)
 :::
 
 Finally, after having solved the problem, we first save the solution for later

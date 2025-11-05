@@ -154,7 +154,7 @@ class ArmijoLineSearch(line_search.LineSearch):
             decrease_measure = self._compute_decrease_measure(search_direction)
 
             if self._satisfies_armijo_condition(
-                objective_step, current_function_value, decrease_measure
+                solver, objective_step, current_function_value, decrease_measure
             ):
                 log.debug("Stepsize satisfies the Armijo decrease condition.")
                 if self.optimization_variable_abstractions.requires_remeshing():

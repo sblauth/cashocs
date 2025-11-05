@@ -4,26 +4,18 @@ cashocs.io.managers
 .. automodule:: cashocs.io.managers
 
    
-   
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
+      :toctree:
    
-      cast
       generate_output_str
       generate_summary_str
-   
-   
-
-   
    
    .. rubric:: Classes
 
    .. autosummary::
+      :toctree:
    
       ConsoleManager
       FileManager
@@ -33,11 +25,3 @@ cashocs.io.managers
       TempFileManager
       XDMFFileManager
    
-   
-
-   
-   
-   
-
-
-

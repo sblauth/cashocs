@@ -5,7 +5,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.16.0
+    jupytext_version: 1.16.1
 ---
 
 ```{eval-rst}
@@ -135,7 +135,7 @@ import cashocs
 Next, as before, we can specify the verbosity of cashocs with the line
 
 ```python
-cashocs.set_log_level(cashocs.LogLevel.INFO)
+cashocs.set_log_level(cashocs.log.INFO)
 ```
 
 As with the other problem types, the solution algorithms of cashocs can be adapted

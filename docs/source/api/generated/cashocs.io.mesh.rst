@@ -4,17 +4,12 @@ cashocs.io.mesh
 .. automodule:: cashocs.io.mesh
 
    
-   
-   
-
-   
-   
    .. rubric:: Functions
 
    .. autosummary::
+      :toctree:
    
       check_mesh_compatibility
-      cli_convert
       convert
       create_point_representation
       export_mesh
@@ -25,15 +20,3 @@ cashocs.io.mesh
       read_mesh_from_xdmf
       write_out_mesh
    
-   
-
-   
-   
-   
-
-   
-   
-   
-
-
-
