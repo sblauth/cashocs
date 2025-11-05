@@ -799,14 +799,16 @@ def test_adjoint_linearizations(geometry, config_ocp):
         "ksp_rtol": 1e-3,
         "ksp_atol": 1e-30,
         "ksp_converged_reason": None,
-        # "ksp_monitor_true_residual": None,
         "pc_type": "fieldsplit",
-        "pc_fieldsplit_type": "additive",
+        "pc_fieldsplit_type": "schur",
+        "pc_fieldsplit_schur_fact_type": "full",
+        "pc_fieldsplit_schur_precondition": "selfp",
         "fieldsplit_0_ksp_type": "preonly",
         "fieldsplit_0_pc_type": "hypre",
         "fieldsplit_0_pc_hypre_type": "boomeramg",
         "fieldsplit_1_ksp_type": "preonly",
-        "fieldsplit_1_pc_type": "jacobi",
+        "fieldsplit_1_pc_type": "hypre",
+        "fieldsplit_1_pc_hypre_type": "boomeramg",
     }
 
     config_ocp.set("StateSystem", "backend", "petsc")
@@ -825,4 +827,4 @@ def test_adjoint_linearizations(geometry, config_ocp):
         ksp_options=ksp_options,
     )
     # ocp.compute_adjoint_variables()
-    ocp.solve(rtol=1e-2, max_iter=47)
+    ocp.solve(rtol=1e-2, max_iter=50)

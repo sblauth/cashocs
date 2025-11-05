@@ -14,6 +14,8 @@ jobs:
     container:
       image: ghcr.io/sblauth/cashocs:main
       options: --user=root
+    env:
+      OMP_NUM_THREADS: 1
 
     steps:
     - name: Delete current installation in docker image
@@ -67,7 +69,7 @@ jobs:
 
     - name: Create Github release
       id: create_release
-      uses: softprops/action-gh-release@6cbd405e2c4e67a21c47fa9e383d020e4e28b836 # v2.3.3
+      uses: softprops/action-gh-release@6da8fa9354ddfdc4aeace5fc48d7f679b5214090 # v2.4.1
       with:
         name: cashocs ${{ steps.tag_name.outputs.TAG_PREFIX }}
         generate_release_notes: ${{ steps.check_version.outputs.is_stable == 'true' }}

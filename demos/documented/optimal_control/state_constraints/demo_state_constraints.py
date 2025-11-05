@@ -190,4 +190,5 @@ plt.tight_layout()
 # -
 
 # and looks as follows
-# ![](/../../demos/documented/optimal_control/state_constraints/img_state_constraints.png)
+# :::{image} /../../demos/documented/optimal_control/state_constraints/img_state_constraints.png
+# :::

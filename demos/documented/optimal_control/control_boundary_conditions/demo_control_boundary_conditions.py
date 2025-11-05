@@ -137,4 +137,5 @@ plt.tight_layout()
 # -
 
 # and the result should look like this
-# ![](/../../demos/documented/optimal_control/control_boundary_conditions/img_control_boundary_conditions.png)
+# :::{image} /../../demos/documented/optimal_control/control_boundary_conditions/img_control_boundary_conditions.png
+# :::

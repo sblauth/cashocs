@@ -11,6 +11,11 @@ on:
 
 permissions: read-all
 
+env:
+  OMP_NUM_THREADS: 1
+  SCOTCH_DETERMINISTIC: 1
+  SCOTCH_RANDOM_FIXED_SEED: 1
+
 jobs:
   parallel_tests:
     name: Test (py=${{ matrix.python-version}}, ${{ matrix.mpi }})
@@ -49,7 +54,5 @@ jobs:
         pip install .[all]
     
     - name: Run tests in parallel
-      env: 
-        OMP_NUM_THREADS: 1
       run: |
         mpirun -n 2 python3 -m pytest -vv --timeout=1800 -p no:cacheprovider --randomly-seed=${{ github.run_id }} tests/

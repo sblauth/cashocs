@@ -227,4 +227,5 @@ plt.tight_layout()
 # -
 
 # and the result should look like this
-# ![](/../../demos/documented/optimal_control/iterative_solvers/img_iterative_solvers.png)
+# :::{image} /../../demos/documented/optimal_control/iterative_solvers/img_iterative_solvers.png
+# :::

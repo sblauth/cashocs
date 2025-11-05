@@ -430,7 +430,8 @@ plt.tight_layout()
 # -
 
 # and the result should look as follows
-# ![](/../../demos/documented/shape_optimization/space_mapping_semilinear_transmission/img_space_mapping_semilinear_transmission.png)
+# :::{image} /../../demos/documented/shape_optimization/space_mapping_semilinear_transmission/img_space_mapping_semilinear_transmission.png
+# :::
 #
 # :::{note}
 # The left image shows the optimized geometry with the coarse model, the middle image

@@ -167,4 +167,5 @@ plt.tight_layout()
 # -
 
 # and should yield the following output
-# ![](/../../demos/documented/optimal_control/box_constraints/img_box_constraints.png)
+# :::{image} /../../demos/documented/optimal_control/box_constraints/img_box_constraints.png
+# :::

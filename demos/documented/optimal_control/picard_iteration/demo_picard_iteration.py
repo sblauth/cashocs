@@ -190,7 +190,8 @@ plt.tight_layout()
 # -
 
 # and the result can be seen below
-# ![](/../../demos/documented/optimal_control/picard_iteration/img_picard_iteration.png)
+# :::{image} /../../demos/documented/optimal_control/picard_iteration/img_picard_iteration.png
+# :::
 #
 # :::{note}
 # Comparing the output (especially in the early iterations) between the monlithic and Picard apporach

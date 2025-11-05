@@ -43,12 +43,12 @@ class LogLevel:
     CRITICAL = logging.CRITICAL
 
 
-TRACE = logging.DEBUG - 5
-DEBUG = logging.DEBUG
-INFO = logging.INFO
-WARNING = logging.WARNING
-ERROR = logging.ERROR
-CRITICAL = logging.CRITICAL
+TRACE = logging.DEBUG - 5  # pylint: disable=invalid-name
+DEBUG = logging.DEBUG  # pylint: disable=invalid-name
+INFO = logging.INFO  # pylint: disable=invalid-name
+WARNING = logging.WARNING  # pylint: disable=invalid-name
+ERROR = logging.ERROR  # pylint: disable=invalid-name
+CRITICAL = logging.CRITICAL  # pylint: disable=invalid-name
 
 logging.addLevelName(TRACE, "TRACE")
 
