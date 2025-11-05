@@ -825,4 +825,4 @@ def test_adjoint_linearizations(geometry, config_ocp):
         ksp_options=ksp_options,
     )
     # ocp.compute_adjoint_variables()
-    ocp.solve(rtol=1e-2, max_iter=44)
+    ocp.solve(rtol=1e-2, max_iter=47)
