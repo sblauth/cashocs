@@ -452,16 +452,16 @@ def test_topology_optimization_algorithms_for_cantilever(
     dJ_out_proj,
     update_level_set_deflation,
 ):
-    config_top = cashocs.load_config("/p/tv/DISS_Baeck/cashocs/tests/config_top.ini")
+    config_top = cashocs.load_config("./config_top.ini")
 
     config_top.set("OptimizationRoutine", "soft_exit", "True")
     config_top.set("OptimizationRoutine", "algorithm", "sphere_combination")
 
     char_function_0 = cashocs.io.read_function_from_xdmf(
-        "./cantilever/deflation_0.xdmf", "deflation_0", "DG", 0, step=0
+        "./xdmf_state/deflation_0.xdmf", "deflation_0", "DG", 0, step=0
     )
     char_function_1 = cashocs.io.read_function_from_xdmf(
-        "./cantilever/deflation_1.xdmf", "deflation_1", "DG", 0, step=0
+        "./xdmf_state/deflation_1.xdmf", "deflation_1", "DG", 0, step=0
     )
 
     dtop = cashocs.DeflatedTopologyOptimizationProblem(
