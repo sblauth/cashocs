@@ -80,6 +80,13 @@ def psi_proj(CG1):
 
 
 @pytest.fixture
+def psi_deflation(CG1):
+    levelset = Function(CG1)
+    levelset.vector()[:] = 1.0
+    return levelset
+
+
+@pytest.fixture
 def alpha(DG0):
     return Function(DG0)
 
@@ -273,6 +280,14 @@ def update_level_set_proj(psi, alpha, alpha_in, alpha_out):
 
 
 @pytest.fixture
+def update_level_set_deflation(psi_deflation, alpha, alpha_in, alpha_out):
+    def update_level_set_eval():
+        cashocs.interpolate_levelset_function_to_cells(psi_deflation, alpha_in, alpha_out, alpha)
+
+    return update_level_set_eval
+
+
+@pytest.fixture
 def levelset_function(CG1, geometry):
     psi_exp = Expression("x[0]-0.5", degree=1)
     psi = Function(CG1)
@@ -425,3 +440,55 @@ def test_projection_method_for_topology_optimization(
     top.projection.project()
     projection_volume = top.projection.evaluate(0.0, 0.0)
     assert abs(projection_volume - target) < top.projection.tol_bisect
+
+def test_topology_optimization_algorithms_for_cantilever(
+    F,
+    bcs,
+    J_proj,
+    u,
+    v,
+    psi_deflation,
+    dJ_in_proj,
+    dJ_out_proj,
+    update_level_set_deflation,
+):
+    config_top = cashocs.load_config("/p/tv/DISS_Baeck/cashocs/tests/config_top.ini")
+
+    config_top.set("OptimizationRoutine", "soft_exit", "True")
+    config_top.set("OptimizationRoutine", "algorithm", "sphere_combination")
+
+    char_function_0 = cashocs.io.read_function_from_xdmf(
+        "./cantilever/deflation_0.xdmf", "deflation_0", "DG", 0, step=0
+    )
+    char_function_1 = cashocs.io.read_function_from_xdmf(
+        "./cantilever/deflation_1.xdmf", "deflation_1", "DG", 0, step=0
+    )
+
+    dtop = cashocs.DeflatedTopologyOptimizationProblem(
+        F,
+        bcs,
+        J_proj,
+        u,
+        v,
+        psi_deflation,
+        dJ_in_proj,
+        dJ_out_proj,
+        update_level_set_deflation,
+        config=config_top,
+        volume_restriction=[1.25, 1.5]
+    )
+    dtop.solve(1e-6, 1, 1.0, 10000., inner_rtol=0., inner_atol=0., angle_tol=5.0)
+
+    assert (
+        max(np.absolute(
+            dtop.control_list_mapped_final[0].vector()[:] - char_function_0.vector()[:]
+        )
+        ) < 1e-3
+    )
+    assert (
+            max(np.absolute(
+                dtop.control_list_mapped_final[1].vector()[
+                :] - char_function_1.vector()[:]
+            )
+            ) < 1e-3
+    )

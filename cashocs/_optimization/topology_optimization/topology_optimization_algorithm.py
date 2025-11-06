@@ -326,16 +326,16 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             )
             self.topological_derivative_vertex.vector().apply("")
 
-            dg0_function = fenics.Function(self.dg0_space)
-            dg0_function.vector().vec().aypx(
-                0.0,
-                fenics.project(self.topological_derivative_pos, self.dg0_space)
-                .vector()
-                .vec(),
-            )
-            _utils.interpolate_dg0_function_to_cg1(
-                dg0_function, self.topological_derivative_vertex
-            )
+            #dg0_function = fenics.Function(self.dg0_space)
+            #dg0_function.vector().vec().aypx(
+            #    0.0,
+            #    fenics.project(self.topological_derivative_pos, self.dg0_space)
+            #    .vector()
+            #    .vec(),
+            #)
+            #_utils.interpolate_dg0_function_to_cg1(
+            #    dg0_function, self.topological_derivative_vertex
+            #)
             
         self.project_topological_derivative()
 
