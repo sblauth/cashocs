@@ -273,8 +273,7 @@ class LineSearch(abc.ABC):
                 < current_function_value + self.epsilon_armijo * decrease_measure
             )
         else:
-            # if self.optimization_problem.volume_restriction is not None and solver.iteration == 0:
-            if solver.iteration == 0:
+            if not self.optimization_problem.feasible() and solver.iteration == 0:
                 val = True
             else:
                 val = bool(objective_step <= current_function_value)

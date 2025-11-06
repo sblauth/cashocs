@@ -147,6 +147,26 @@ class LevelSetVolumeProjector:
         vol = fenics.assemble(self.indicator_omega * self.dx)
         return float(vol - target)
 
+    def feasible(self) -> bool:
+        """Checks if the supplied level-set function is feasible.
+
+        The function checks if the initial level-set function satisfies the volume
+        constraint and is thus feasible.
+
+        Returns:
+            A bool that is True when the level-set function is feasible and False
+            otherwise.
+
+        """
+        if self.volume_restriction is None:
+            return True
+
+        vol = self.evaluate(0., 0.)
+        if vol > self.volume_restriction[1] or vol < self.volume_restriction[0]:
+            return False
+        else:
+            return True
+
     def project(self) -> None:
         """Projects the level-set function.
 
