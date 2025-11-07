@@ -478,7 +478,7 @@ def test_deflation(
         config=config_top,
         volume_restriction=[1.25, 1.5]
     )
-    dtop.solve(1e-6, 1, 1.0, 10000., inner_rtol=0., inner_atol=0., angle_tol=5.0)
+    dtop.solve(1e-6, 1, 0.75, 10000., inner_rtol=0., inner_atol=0., angle_tol=5.0)
 
     assert (
         max(np.absolute(
