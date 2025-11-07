@@ -451,9 +451,8 @@ def test_deflation(
     dJ_in_proj,
     dJ_out_proj,
     update_level_set_deflation,
+    config_top
 ):
-    #config_top = cashocs.load_config("./config_top.ini")
-
     config_top.set("OptimizationRoutine", "soft_exit", "True")
     config_top.set("OptimizationRoutine", "algorithm", "sphere_combination")
 
