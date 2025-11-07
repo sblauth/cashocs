@@ -441,7 +441,7 @@ def test_projection_method_for_topology_optimization(
     projection_volume = top.projection.evaluate(0.0, 0.0)
     assert abs(projection_volume - target) < top.projection.tol_bisect
 
-def test_topology_optimization_algorithms_for_cantilever(
+def test_deflation(
     F,
     bcs,
     J_proj,
@@ -452,7 +452,7 @@ def test_topology_optimization_algorithms_for_cantilever(
     dJ_out_proj,
     update_level_set_deflation,
 ):
-    config_top = cashocs.load_config("./config_top.ini")
+    #config_top = cashocs.load_config("./config_top.ini")
 
     config_top.set("OptimizationRoutine", "soft_exit", "True")
     config_top.set("OptimizationRoutine", "algorithm", "sphere_combination")
