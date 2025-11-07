@@ -18,6 +18,7 @@
 """Tests for topology optimization problems."""
 
 from collections import namedtuple
+import pathlib
 
 from fenics import *
 import numpy as np
