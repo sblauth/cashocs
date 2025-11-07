@@ -48,36 +48,32 @@ class DeflatedProblem(abc.ABC):
     """Base class for deflated problems for topology optimization."""
 
     def __init__(  # pylint: disable=unused-argument
-            self,
-            state_forms: list[ufl.Form] | ufl.Form,
-            bcs_list: (
-                    list[list[fenics.DirichletBC]]
-                    | list[fenics.DirichletBC]
-                    | fenics.DirichletBC
-            ),
-            cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
-            states: list[fenics.Function] | fenics.Function,
-            adjoints: list[fenics.Function] | fenics.Function,
-            config: io.Config | None = None,
-            initial_guess: list[fenics.Function] | None = None,
-            ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
-            adjoint_ksp_options: _typing.KspOption | list[
-                _typing.KspOption] | None = None,
-            gradient_ksp_options: _typing.KspOption | list[
-                _typing.KspOption] | None = None,
-            preconditioner_forms: list[ufl.Form] | None = None,
-            pre_callback: (
-                    Callable[[], None] | Callable[
-                [_typing.OptimizationProblem], None] | None
-            ) = None,
-            post_callback: (
-                    Callable[[], None] | Callable[
-                [_typing.OptimizationProblem], None] | None
-            ) = None,
-            linear_solver: _utils.linalg.LinearSolver | None = None,
-            adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
-            newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
-            excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
+        self,
+        state_forms: list[ufl.Form] | ufl.Form,
+        bcs_list: (
+            list[list[fenics.DirichletBC]]
+            | list[fenics.DirichletBC]
+            | fenics.DirichletBC
+        ),
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: list[fenics.Function] | fenics.Function,
+        adjoints: list[fenics.Function] | fenics.Function,
+        config: io.Config | None = None,
+        initial_guess: list[fenics.Function] | None = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        preconditioner_forms: list[ufl.Form] | None = None,
+        pre_callback: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ) = None,
+        post_callback: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ) = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
     ) -> None:
         r"""Initializes self.
 
@@ -161,12 +157,10 @@ class DeflatedProblem(abc.ABC):
         self.current_function_value = 0.0
 
         self._pre_callback: (
-                Callable[[], None] | Callable[
-            [_typing.OptimizationProblem], None] | None
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
         ) = None
         self._post_callback: (
-                Callable[[], None] | Callable[
-            [_typing.OptimizationProblem], None] | None
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
         ) = None
 
         self.cost_functional_form_initial: list[_typing.CostFunctional] = _utils.enlist(
@@ -198,22 +192,22 @@ class DeflatedProblem(abc.ABC):
 
     def distance_shapes(self):
         """Computes the distance of a new local minimizer of the deflated problem
-           to all previously found ones.
+        to all previously found ones.
 
-                Returns:
-                    True if the distance of the new local minimizer to all previous
-                    found ones exceeds the threshold gamma. False if at least one
-                    distance does not meet the threshold (no new minimizer of the
-                    actual problem found).
+             Returns:
+                 True if the distance of the new local minimizer to all previous
+                 found ones exceeds the threshold gamma. False if at least one
+                 distance does not meet the threshold (no new minimizer of the
+                 actual problem found).
 
-                """
+        """
         for i in range(0, len(self.control_list_mapped_final) - 1):
             dist = fenics.assemble(
                 fenics.inner(
-                    self.control_list_mapped_final[i] -
-                    self.control_list_mapped_restart[-1],
-                    self.control_list_mapped_final[i] -
-                    self.control_list_mapped_restart[-1]
+                    self.control_list_mapped_final[i]
+                    - self.control_list_mapped_restart[-1],
+                    self.control_list_mapped_final[i]
+                    - self.control_list_mapped_restart[-1],
                 )
                 * self.dx
             )
@@ -225,13 +219,13 @@ class DeflatedProblem(abc.ABC):
 
     @abc.abstractmethod
     def _solve_inner_problem(
-            self,
-            tol: float = 1e-2,
-            inner_rtol: float | None = None,
-            inner_atol: float | None = None,
-            iteration: int = 0,
-            angle_tol: Optional[float] = 1.0,
-            restart: Optional[bool] = False,
+        self,
+        tol: float = 1e-2,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
+        iteration: int = 0,
+        angle_tol: Optional[float] = 1.0,
+        restart: Optional[bool] = False,
     ) -> None:
         """Solves the inner (unpenalized) optimization problem.
 
@@ -256,11 +250,10 @@ class DeflatedProblem(abc.ABC):
         self.rtol = inner_rtol or tol
 
     def inject_pre_callback(
-            self,
-            function: (
-                    Callable[[], None] | Callable[
-                [_typing.OptimizationProblem], None] | None
-            ),
+        self,
+        function: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ),
     ) -> None:
         """Changes the a-priori callback of the OptimizationProblem.
 
@@ -272,11 +265,10 @@ class DeflatedProblem(abc.ABC):
         self._pre_callback = function
 
     def inject_post_callback(
-            self,
-            function: (
-                    Callable[[], None] | Callable[
-                [_typing.OptimizationProblem], None] | None
-            ),
+        self,
+        function: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ),
     ) -> None:
         """Changes the a-posteriori callback of the OptimizationProblem.
 
@@ -288,15 +280,13 @@ class DeflatedProblem(abc.ABC):
         self._post_callback = function
 
     def inject_pre_post_callback(
-            self,
-            pre_function: (
-                    Callable[[], None] | Callable[
-                [_typing.OptimizationProblem], None] | None
-            ),
-            post_function: (
-                    Callable[[], None] | Callable[
-                [_typing.OptimizationProblem], None] | None
-            ),
+        self,
+        pre_function: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ),
+        post_function: (
+            Callable[[], None] | Callable[[_typing.OptimizationProblem], None] | None
+        ),
     ) -> None:
         """Changes the a-priori (pre) and a-posteriori (post) callbacks of the problem.
 
@@ -313,11 +303,11 @@ class DeflatedProblem(abc.ABC):
     def check_for_restart(self):
         """Checks if a restart of the optimization of the unpenalized problem is needed.
 
-                Returns:
-                    Bool that indicates if a restart of the unpenalized problem with
-                    the local minimizer of the deflated problem is needed. This is the
-                    case if not all penality functions vanish in the local minimizer of
-                    the deflated problem.
+        Returns:
+            Bool that indicates if a restart of the unpenalized problem with
+            the local minimizer of the deflated problem is needed. This is the
+            case if not all penality functions vanish in the local minimizer of
+            the deflated problem.
 
         """
 
@@ -329,18 +319,14 @@ class DeflatedProblem(abc.ABC):
         return False
 
     def reset_starting_value(self) -> None:
-        """Resets the starting value for the optimization problem. """
+        """Resets the starting value for the optimization problem."""
         self.abstract_control.vector().vec().aypx(
             0.0, self.abstract_control_init.vector().vec()
         )
         self.abstract_control.vector().apply("")
 
     @abc.abstractmethod
-    def construct_penalty_functions(
-            self,
-            gamma,
-            delta
-    ) -> None:
+    def construct_penalty_functions(self, gamma, delta) -> None:
         """Constructs the penalty functions for the deflation procedure.
 
         Args:
@@ -362,25 +348,20 @@ class DeflatedProblem(abc.ABC):
         """
         pass
 
-    def save_functions(
-            self,
-            argument: Union[str, List[str]]
-    ) -> None:
+    def save_functions(self, argument: Union[str, List[str]]) -> None:
         """Stores the newly computed local minimizers during the deflation procedure.
 
         Args:
-            Argument: str that indicates in which list the abstract_control of the 
+            Argument: str that indicates in which list the abstract_control of the
                 newly computed minimizer gets stored. 'solution': local minimizer of the
-                deflated optimization problems. 'restart': local minimizers of the 
-                restart procedure. 'final': (distinct) local minimizers of the 
+                deflated optimization problems. 'restart': local minimizers of the
+                restart procedure. 'final': (distinct) local minimizers of the
                 undeflated optimization problem.
 
         """
         arg_list = _utils.enlist(argument)
 
-        abstract_control_temp = fenics.Function(
-            self.abstract_control.function_space()
-        )
+        abstract_control_temp = fenics.Function(self.abstract_control.function_space())
         abstract_control_temp.vector().vec().aypx(
             0.0, self.abstract_control.vector().vec()
         )
@@ -388,25 +369,25 @@ class DeflatedProblem(abc.ABC):
 
         abstract_control_mapped_temp = self.map_abstract_control()
 
-        if 'solution' in arg_list:
+        if "solution" in arg_list:
             self.control_list_mapped.append(abstract_control_mapped_temp)
-        if 'restart' in arg_list:
+        if "restart" in arg_list:
             self.control_list_mapped_restart.append(abstract_control_mapped_temp)
-        if 'final' in arg_list:
+        if "final" in arg_list:
             self.control_list_mapped_final.append(abstract_control_mapped_temp)
             self.control_list_final.append(abstract_control_temp)
 
     def solve(
-            self,
-            tol: float = 1e-2,
-            it_deflation: int = 5,
-            gamma: float = 0.5,
-            delta: float = 1.0,
-            inner_rtol: Optional[float] = None,
-            inner_atol: Optional[float] = None,
-            angle_tol: Optional[float] = 1.0,
+        self,
+        tol: float = 1e-2,
+        it_deflation: int = 5,
+        gamma: float = 0.5,
+        delta: float = 1.0,
+        inner_rtol: Optional[float] = None,
+        inner_atol: Optional[float] = None,
+        angle_tol: Optional[float] = 1.0,
     ) -> None:
-        """Deflation procedure to find multiple local minimizers of the optimization 
+        """Deflation procedure to find multiple local minimizers of the optimization
             problem.
 
         Args:
@@ -427,53 +408,51 @@ class DeflatedProblem(abc.ABC):
         """
         self.gamma = gamma
         self.delta = delta
-        
+
         self.reset_starting_value()
 
         log.begin("Begin of the deflation procedure.", level=log.INFO)
-        log.info('Iteration 0 of Deflation loop:')
+        log.info("Iteration 0 of Deflation loop:")
 
         self._solve_inner_problem(tol, inner_rtol, inner_atol, 0, angle_tol)
-        self.save_functions(['solution', 'restart', 'final'])
+        self.save_functions(["solution", "restart", "final"])
 
         for num_defl in range(1, it_deflation + 1):
+            log.info("Iteration {it} of Deflation loop:".format(it=num_defl))
 
-            log.info('Iteration {it} of Deflation loop:'.format(it=num_defl))
-            
-            self.cost_functional_form_deflation = \
+            self.cost_functional_form_deflation = (
                 self.cost_functional_form_initial.copy()
-            
+            )
+
             self.construct_penalty_functions(gamma, delta)
 
             self.reset_starting_value()
             self._solve_inner_problem(tol, inner_rtol, inner_atol, num_defl, angle_tol)
-            self.save_functions('solution')
+            self.save_functions("solution")
 
             restart = self.check_for_restart()
 
-            self.cost_functional_form_deflation = \
+            self.cost_functional_form_deflation = (
                 self.cost_functional_form_initial.copy()
+            )
 
             if restart:
-                log.info('Performing a Restart (At least one penalty function did '
-                         'not vanish)')
+                log.info(
+                    "Performing a Restart (At least one penalty function did "
+                    "not vanish)"
+                )
                 self._solve_inner_problem(
-                    tol,
-                    inner_rtol,
-                    inner_atol,
-                    num_defl,
-                    angle_tol,
-                    restart=True
+                    tol, inner_rtol, inner_atol, num_defl, angle_tol, restart=True
                 )
 
-            self.save_functions('restart')
+            self.save_functions("restart")
             distance = self.distance_shapes()
 
             if distance:
-                log.info('New local Minimizer found')
-                self.save_functions('final')
+                log.info("New local Minimizer found")
+                self.save_functions("final")
             else:
-                log.info('Minimizer was already computed before')
+                log.info("Minimizer was already computed before")
 
         log.end()
 
@@ -482,36 +461,34 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
     """A deflated topology optimization problem."""
 
     def __init__(  # pylint: disable=unused-argument
-            self,
-            state_forms: list[ufl.Form] | ufl.Form,
-            bcs_list: (
-                    list[list[fenics.DirichletBC]]
-                    | list[fenics.DirichletBC]
-                    | fenics.DirichletBC
-            ),
-            cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
-            states: list[fenics.Function] | fenics.Function,
-            adjoints: list[fenics.Function] | fenics.Function,
-            levelset_function: fenics.Function,
-            topological_derivative_neg: fenics.Function | ufl.Form,
-            topological_derivative_pos: fenics.Function | ufl.Form,
-            update_levelset: Callable,
-            volume_restriction: Union[float, tuple[float, float]] | None = None,
-            config: io.Config | None = None,
-            riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
-            initial_guess: list[fenics.Function] | None = None,
-            ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
-            adjoint_ksp_options: _typing.KspOption | list[
-                _typing.KspOption] | None = None,
-            gradient_ksp_options: _typing.KspOption | list[
-                _typing.KspOption] | None = None,
-            preconditioner_forms: list[ufl.Form] | ufl.Form | None = None,
-            pre_callback: Callable | None = None,
-            post_callback: Callable | None = None,
-            linear_solver: _utils.linalg.LinearSolver | None = None,
-            adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
-            newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
-            excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
+        self,
+        state_forms: list[ufl.Form] | ufl.Form,
+        bcs_list: (
+            list[list[fenics.DirichletBC]]
+            | list[fenics.DirichletBC]
+            | fenics.DirichletBC
+        ),
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: list[fenics.Function] | fenics.Function,
+        adjoints: list[fenics.Function] | fenics.Function,
+        levelset_function: fenics.Function,
+        topological_derivative_neg: fenics.Function | ufl.Form,
+        topological_derivative_pos: fenics.Function | ufl.Form,
+        update_levelset: Callable,
+        volume_restriction: Union[float, tuple[float, float]] | None = None,
+        config: io.Config | None = None,
+        riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
+        initial_guess: list[fenics.Function] | None = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        preconditioner_forms: list[ufl.Form] | ufl.Form | None = None,
+        pre_callback: Callable | None = None,
+        post_callback: Callable | None = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
     ) -> None:
         r"""Initializes self.
 
@@ -633,7 +610,7 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
 
         self.dx = fenics.Measure("dx", self.abstract_control.function_space().mesh())
         self.abstract_control_mapped = fenics.Function(self.dg0_space)
-        
+
     def construct_penalty_functions(self, gamma, delta) -> None:
         """Constructs the penalty functions for the deflation procedure.
 
@@ -650,18 +627,16 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
             J_deflation = cost_functional.DeflationFunctional(
                 gamma,
                 fenics.inner(
-                    self.abstract_control_mapped -
-                    self.control_list_mapped[i],
-                    self.abstract_control_mapped -
-                    self.control_list_mapped[i])
+                    self.abstract_control_mapped - self.control_list_mapped[i],
+                    self.abstract_control_mapped - self.control_list_mapped[i],
+                )
                 * self.dx,
                 (1 - 2 * self.control_list_mapped[i]),
-                delta
+                delta,
             )
 
             self.cost_functional_form_deflation.append(J_deflation)
-            
-            
+
     def map_abstract_control(self) -> fenics.Function:
         """Maps the abstract control for the optimization problem.
 
@@ -673,7 +648,7 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
         """
         abstract_control_mapped_temp = fenics.Function(self.dg0_space)
         _utils.interpolate_levelset_function_to_cells(
-            self.abstract_control, 1., 0., abstract_control_mapped_temp
+            self.abstract_control, 1.0, 0.0, abstract_control_mapped_temp
         )
         return abstract_control_mapped_temp
 
@@ -681,17 +656,17 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
         """update_levelset function for the deflated topology optimization problem."""
         self.update_levelset()
         _utils.interpolate_levelset_function_to_cells(
-            self.abstract_control, 1., 0., self.abstract_control_mapped
+            self.abstract_control, 1.0, 0.0, self.abstract_control_mapped
         )
 
     def _solve_inner_problem(
-            self,
-            tol: float = 1e-2,
-            inner_rtol: Optional[float] = None,
-            inner_atol: Optional[float] = None,
-            iteration: int = 0,
-            angle_tol: Optional[float] = 1.0,
-            restart: Optional[bool] = False,
+        self,
+        tol: float = 1e-2,
+        inner_rtol: Optional[float] = None,
+        inner_atol: Optional[float] = None,
+        iteration: int = 0,
+        angle_tol: Optional[float] = 1.0,
+        restart: Optional[bool] = False,
     ) -> None:
         """Solves the inner (unpenalized) optimization problem.
 
@@ -719,11 +694,15 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
         config = copy.deepcopy(self.config)
         output_path = pathlib.Path(self.config.get("Output", "result_dir"))
         if restart:
-            config.set("Output", "result_dir",
-                       str(output_path / f"subproblem_{iteration}_restart"))
+            config.set(
+                "Output",
+                "result_dir",
+                str(output_path / f"subproblem_{iteration}_restart"),
+            )
         else:
-            config.set("Output", "result_dir",
-                       str(output_path / f"subproblem_{iteration}"))
+            config.set(
+                "Output", "result_dir", str(output_path / f"subproblem_{iteration}")
+            )
 
         topology_optimization_problem_inner = (
             topology_optimization.TopologyOptimizationProblem(
@@ -770,39 +749,37 @@ class DeflatedOptimalControlProblem(DeflatedProblem):
     """A deflated optimal control problem."""
 
     def __init__(
-            self,
-            state_forms: ufl.Form | list[ufl.Form],
-            bcs_list: (
-                    fenics.DirichletBC
-                    | list[fenics.DirichletBC]
-                    | list[list[fenics.DirichletBC]]
-            ),
-            cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
-            states: fenics.Function | list[fenics.Function],
-            controls: fenics.Function | list[fenics.Function],
-            adjoints: fenics.Function | list[fenics.Function],
-            config: io.Config | None = None,
-            riesz_scalar_products: ufl.Form | list[ufl.Form] | None = None,
-            control_constraints: list[list[float | fenics.Function]] | None = None,
-            initial_guess: list[fenics.Function] | None = None,
-            ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
-            adjoint_ksp_options: _typing.KspOption | list[
-                _typing.KspOption] | None = None,
-            gradient_ksp_options: _typing.KspOption | list[
-                _typing.KspOption] | None = None,
-            control_bcs_list: (
-                    fenics.DirichletBC
-                    | list[fenics.DirichletBC]
-                    | list[list[fenics.DirichletBC]]
-                    | None
-            ) = None,
-            preconditioner_forms: list[ufl.Form] | None = None,
-            pre_callback: Callable | None = None,
-            post_callback: Callable | None = None,
-            linear_solver: _utils.linalg.LinearSolver | None = None,
-            adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
-            newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
-            excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
+        self,
+        state_forms: ufl.Form | list[ufl.Form],
+        bcs_list: (
+            fenics.DirichletBC
+            | list[fenics.DirichletBC]
+            | list[list[fenics.DirichletBC]]
+        ),
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: fenics.Function | list[fenics.Function],
+        controls: fenics.Function | list[fenics.Function],
+        adjoints: fenics.Function | list[fenics.Function],
+        config: io.Config | None = None,
+        riesz_scalar_products: ufl.Form | list[ufl.Form] | None = None,
+        control_constraints: list[list[float | fenics.Function]] | None = None,
+        initial_guess: list[fenics.Function] | None = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        control_bcs_list: (
+            fenics.DirichletBC
+            | list[fenics.DirichletBC]
+            | list[list[fenics.DirichletBC]]
+            | None
+        ) = None,
+        preconditioner_forms: list[ufl.Form] | None = None,
+        pre_callback: Callable | None = None,
+        post_callback: Callable | None = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
     ) -> None:
         r"""Initializes self.
 
@@ -916,7 +893,7 @@ class DeflatedOptimalControlProblem(DeflatedProblem):
         self.cost_functional_form_deflation = self.cost_functional_form_initial.copy()
 
         self.dx = fenics.Measure("dx", self.abstract_control.function_space().mesh())
-        
+
     def construct_penalty_functions(self, gamma, delta) -> None:
         """Constructs the penalty functions for the deflation procedure.
 
@@ -933,14 +910,15 @@ class DeflatedOptimalControlProblem(DeflatedProblem):
                 self.gamma,
                 fenics.inner(
                     self.abstract_control - self.control_list_mapped[i],
-                    self.abstract_control - self.control_list_mapped[i])
+                    self.abstract_control - self.control_list_mapped[i],
+                )
                 * self.dx,
                 ufl.Form,
-                self.delta
+                self.delta,
             )
 
             self.cost_functional_form_deflation.append(J_deflation)
-            
+
     def map_abstract_control(self) -> fenics.Function:
         """Maps the abstract control for the optimization problem.
 
@@ -959,13 +937,13 @@ class DeflatedOptimalControlProblem(DeflatedProblem):
         return abstract_control_mapped_temp
 
     def _solve_inner_problem(
-            self,
-            tol: float = 1e-2,
-            inner_rtol: float | None = None,
-            inner_atol: float | None = None,
-            iteration: int = 0,
-            angle_tol: Optional[float] = 1.0,
-            restart: Optional[bool] = False,
+        self,
+        tol: float = 1e-2,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
+        iteration: int = 0,
+        angle_tol: Optional[float] = 1.0,
+        restart: Optional[bool] = False,
     ) -> None:
         """Solves the inner (unpenalized) optimization problem.
 
@@ -984,10 +962,7 @@ class DeflatedOptimalControlProblem(DeflatedProblem):
 
         """
         super()._solve_inner_problem(
-            tol=tol,
-            inner_rtol=inner_rtol,
-            inner_atol=inner_atol,
-            iteration=iteration
+            tol=tol, inner_rtol=inner_rtol, inner_atol=inner_atol, iteration=iteration
         )
 
         config = copy.deepcopy(self.config)
@@ -996,13 +971,11 @@ class DeflatedOptimalControlProblem(DeflatedProblem):
             config.set(
                 "Output",
                 "result_dir",
-                str(output_path / f"subproblem_{iteration}_restart")
+                str(output_path / f"subproblem_{iteration}_restart"),
             )
         else:
             config.set(
-                "Output",
-                "result_dir",
-                str(output_path / f"subproblem_{iteration}")
+                "Output", "result_dir", str(output_path / f"subproblem_{iteration}")
             )
 
         optimal_control_problem = optimal_control.OptimalControlProblem(

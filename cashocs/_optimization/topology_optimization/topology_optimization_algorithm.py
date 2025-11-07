@@ -75,14 +75,20 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             optimization_problem.topological_derivative_pos
         )
         for i in range(0, len(self.optimization_problem.cost_functional_list)):
-                if hasattr(self.optimization_problem.cost_functional_list[i],
-                           'topological_derivative'):
-                    self.topological_derivative_pos += \
-                        self.optimization_problem.cost_functional_list[
-                            i].topological_derivative()
-                    self.topological_derivative_neg += \
-                        self.optimization_problem.cost_functional_list[
-                            i].topological_derivative()
+            if hasattr(
+                self.optimization_problem.cost_functional_list[i],
+                "topological_derivative",
+            ):
+                self.topological_derivative_pos += (
+                    self.optimization_problem.cost_functional_list[
+                        i
+                    ].topological_derivative()
+                )
+                self.topological_derivative_neg += (
+                    self.optimization_problem.cost_functional_list[
+                        i
+                    ].topological_derivative()
+                )
 
         self.update_levelset: Callable = optimization_problem.update_levelset
         self.config = optimization_problem.config
@@ -100,7 +106,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             optimization_problem._base_ocp
         )
         self._cashocs_problem.db.parameter_db.problem_type = "topology"
-        self._cashocs_problem.feasible= optimization_problem.projection.feasible
+        self._cashocs_problem.feasible = optimization_problem.projection.feasible
 
         self.mesh = optimization_problem.mesh
 
@@ -326,17 +332,17 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             )
             self.topological_derivative_vertex.vector().apply("")
 
-            #dg0_function = fenics.Function(self.dg0_space)
-            #dg0_function.vector().vec().aypx(
+            # dg0_function = fenics.Function(self.dg0_space)
+            # dg0_function.vector().vec().aypx(
             #    0.0,
             #    fenics.project(self.topological_derivative_pos, self.dg0_space)
             #    .vector()
             #    .vec(),
-            #)
-            #_utils.interpolate_dg0_function_to_cg1(
+            # )
+            # _utils.interpolate_dg0_function_to_cg1(
             #    dg0_function, self.topological_derivative_vertex
-            #)
-            
+            # )
+
         self.project_topological_derivative()
 
         if self.normalize_topological_derivative:
