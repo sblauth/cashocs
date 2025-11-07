@@ -96,7 +96,7 @@ CG1 = FunctionSpace(mesh, "CG", 1)
 DG0 = FunctionSpace(mesh, "DG", 0)
 
 alpha_in = 2.5 / (100 ** 2)
-alpha_out = 2.5 / (0.005 ** 2)
+alpha_out = 2.5 / (0.01 ** 2)
 alpha = Function(DG0)
 
 psi = Function(CG1)
@@ -207,7 +207,7 @@ dtop = cashocs.DeflatedTopologyOptimizationProblem(
 # +
 delta = 1000000.
 gamma = 0.7
-dtop.solve(tol=1e-6, it_deflation=5, gamma=gamma, delta=delta, inner_rtol=0., inner_atol=0., angle_tol=1.0)
+dtop.solve(tol=1e-6, it_deflation=4, gamma=gamma, delta=delta, inner_rtol=0., inner_atol=0., angle_tol=1.0)
 # -
 
 # Here, `it_deflation` denotes the number of iterations of the deflation procedure, and
