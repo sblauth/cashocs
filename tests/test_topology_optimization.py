@@ -456,11 +456,12 @@ def test_deflation(
     config_top.set("OptimizationRoutine", "soft_exit", "True")
     config_top.set("OptimizationRoutine", "algorithm", "sphere_combination")
 
+    dir_path = str(pathlib.Path(__file__).parent)
     char_function_0 = cashocs.io.read_function_from_xdmf(
-        "./xdmf_state/deflation_0.xdmf", "deflation_0", "DG", 0, step=0
+        f"{dir_path}/xdmf_state/deflation_0.xdmf", "DG", 0, step=0
     )
     char_function_1 = cashocs.io.read_function_from_xdmf(
-        "./xdmf_state/deflation_1.xdmf", "deflation_1", "DG", 0, step=0
+        f"{dir_path}/xdmf_state/deflation_1.xdmf", "DG", 0, step=0
     )
 
     dtop = cashocs.DeflatedTopologyOptimizationProblem(
