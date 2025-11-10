@@ -37,6 +37,8 @@ from cashocs._constraints.constrained_problems import (
 )
 from cashocs._constraints.constraints import EqualityConstraint
 from cashocs._constraints.constraints import InequalityConstraint
+from cashocs._constraints.deflated_problems import DeflatedOptimalControlProblem
+from cashocs._constraints.deflated_problems import DeflatedTopologyOptimizationProblem
 from cashocs._optimization.cost_functional import Functional
 from cashocs._optimization.cost_functional import IntegralFunctional
 from cashocs._optimization.cost_functional import MinMaxFunctional
@@ -145,6 +147,8 @@ __all__ = [
     "ConstrainedShapeOptimizationProblem",
     "EqualityConstraint",
     "InequalityConstraint",
+    "DeflatedTopologyOptimizationProblem",
+    "DeflatedOptimalControlProblem",
     "Functional",
     "IntegralFunctional",
     "MinMaxFunctional",
