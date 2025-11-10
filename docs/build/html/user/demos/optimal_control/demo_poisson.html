@@ -1,0 +1,953 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="16x16" href="../../../_static/favicon/favicon-16x16.jpg" type="image/jpeg">
+    <link rel="icon" sizes="32x32" href="../../../_static/favicon/favicon-32x32.jpg" type="image/jpeg">
+    <title>Distributed Control of a Poisson Problem &#8212; cashocs 2.1.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script src="../../../_static/documentation_options.js?v=14dbad98"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user/demos/optimal_control/demo_poisson';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.14.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Documentation of the Config Files for Optimal Control Problems" href="doc_config.html" />
+    <link rel="prev" title="Optimal Control Problems" href="index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <script>document.write(`<img src="../../../_static/logo.jpg" class="logo__image only-dark" alt="cashocs"/>`);</script>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../about/index.html">
+                        About
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../../index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../api/index.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../development/index.html">
+                        Development
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../release_notes.html">
+                        Release Notes
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item">
+<nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../about/index.html">
+                        About
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../../index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../api/index.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../development/index.html">
+                        Development
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../release_notes.html">
+                        Release Notes
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-3"
+      type="button"
+      class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-3"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-3"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-3">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">List of tutorial topics:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Optimal Control Problems</a><input checked class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Distributed Control of a Poisson Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc_config.html">Documentation of the Config Files for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_box_constraints.html">Control Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_neumann_control.html">Neumann Boundary Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_multiple_variables.html">Using Multiple Variables and PDEs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_monolithic_problems.html">Coupled Problems - Monolithic Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_picard_iteration.html">Coupled Problems - Picard Iteration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_stokes.html">Distributed Control of a Stokes Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_heat_equation.html">Distributed Control for Time Dependent Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_nonlinear_pdes.html">Optimal Control with Nonlinear PDE Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_dirichlet_control.html">Dirichlet Boundary Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_iterative_solvers.html">Iterative Solvers for State and Adjoint Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_state_constraints.html">Optimal Control with State Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_sparse_control.html">Sparse Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_scalar_control_tracking.html">Tracking of Scalar Functionals for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_constraints.html">Treatment of additional constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_control_boundary_conditions.html">Boundary conditions for control variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_pre_post_callbacks.html">Pre- and Post-Callbacks for the optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../shape_optimization/index.html">Shape Optimization Problems</a><input checked class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_shape_poisson.html">Shape Optimization with a Poisson Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/doc_config.html">Documentation of the Config Files for Shape Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_regularization.html">Regularization for Shape Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_inverse_tomography.html">Inverse Problem in Electric Impedance Tomography</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_shape_stokes.html">Optimization of an Obstacle in Stokes Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_remeshing.html">Remeshing with cashocs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_custom_scalar_product.html">Custom Scalar Products for Shape Gradient Computation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_scaling.html">Scaling of the Cost Functional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_eikonal_stiffness.html">Computing the Shape Stiffness via Distance to the Boundaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_p_laplacian.html">Shape Optimization with the p-Laplacian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_space_mapping_semilinear_transmission.html">Space Mapping Shape Optimization - Semilinear Transmission Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_space_mapping_uniform_flow_distribution.html">Space Mapping Shape Optimization - Uniform Flow Distribution</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../topology_optimization/index.html">Topology Optimization Problems</a><input checked class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_poisson_clover.html">Topology Optimization with a Poisson Equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_cantilever.html">Topology Optimization with Linear Elasticity - Cantilever</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_pipe_bend.html">Topology Optimization with Stokes Flow - Pipe Bend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_projection.html">Topology Optimization with a Volume Constraint</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../cashocs_as_solver/index.html">Using cashocs as a solver</a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../cashocs_as_solver/demo_control_solver.html">cashocs as Solver for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cashocs_as_solver/demo_shape_solver.html">cashocs as Solver for Shape Optimization Problems</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../misc/index.html">Miscellaneous Topics</a><input checked class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/demo_xdmf_io.html">Writing and Reading XDMF Files</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<nav class="sidebar-indices-items">
+  <p class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">cashocs Tutorial</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Optimal Control Problems</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">Distributed...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="distributed-control-of-a-poisson-problem">
+<span id="demo-poisson"></span><h1>Distributed Control of a Poisson Problem<a class="headerlink" href="#distributed-control-of-a-poisson-problem" title="Link to this heading">#</a></h1>
+<section id="problem-formulation">
+<h2>Problem Formulation<a class="headerlink" href="#problem-formulation" title="Link to this heading">#</a></h2>
+<p>In this demo we investigate the basics of cashocs for
+optimal control problems. To do so, we investigate the “mother
+problem” of PDE constrained optimization, i.e.,</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align}
+    &amp;\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2
+    \text{ d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{ d}x \\
+    &amp;\text{ subject to } \qquad
+    \begin{alignedat}[t]{2}
+        -\Delta y &amp;= u \quad &amp;&amp;\text{ in } \Omega,\\
+        y &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma.
+    \end{alignedat}
+\end{align}
+\end{split}\]</div>
+<p>(see, e.g., <a class="reference external" href="https://doi.org/10.1090/gsm/112">Tröltzsch - Optimal Control of Partial Differential Equations</a>
+or <a class="reference external" href="https://doi.org/10.1007/978-1-4020-8839-1">Hinze, Pinnau, Ulbrich, and Ulbrich - Optimization with PDE constraints</a>.</p>
+<p>For this first example, we do not consider control constraints,
+but search for an optimal control u in the entire space <span class="math notranslate nohighlight">\(L^2(\Omega)\)</span>,
+for the sake of simplicitiy. For the domain under consideration, we use the unit
+square <span class="math notranslate nohighlight">\(\Omega = (0, 1)^2\)</span>, since this is built into cashocs.</p>
+<p>In the following, we will describe how to solve this problem
+using cashocs. Moreover, we also detail alternative / equivalent FEniCS code which
+could be used to define the problem instead.</p>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
+<p>The complete python code can be found in the file
+<a class="reference download internal" download="" href="../../../_downloads/c7887ab9c022a7dd2483b4e52427bb1e/demo_poisson.py"><code class="xref download docutils literal notranslate"><span class="pre">demo_poisson.py</span></code></a>
+and the corresponding config can be found in
+<a class="reference download internal" download="" href="../../../_downloads/534a2bfaf1dc16de17cb479d4f128dad/config.ini"><code class="xref download docutils literal notranslate"><span class="pre">config.ini</span></code></a>.</p>
+<section id="initialization">
+<h3>Initialization<a class="headerlink" href="#initialization" title="Link to this heading">#</a></h3>
+<p>We begin by importing FEniCS and cashocs. For the sake of
+better readability we use a wildcard import for FEniCS</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fenics</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">cashocs</span>
+</pre></div>
+</div>
+<p>Afterwards, we can specify the so-called log level of cashocs. This is done in the
+line</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cashocs</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">cashocs</span><span class="o">.</span><span class="n">LogLevel</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>There are a total of five levels of verbosity, given by
+<a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.LogLevel.DEBUG" title="cashocs.LogLevel.DEBUG"><code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.LogLevel.DEBUG</span></code></a>, <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.LogLevel.INFO" title="cashocs.LogLevel.INFO"><code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.LogLevel.INFO</span></code></a>,
+<a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.LogLevel.WARNING" title="cashocs.LogLevel.WARNING"><code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.LogLevel.WARNING</span></code></a>, <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.LogLevel.ERROR" title="cashocs.LogLevel.ERROR"><code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.LogLevel.ERROR</span></code></a>,
+and <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.LogLevel.CRITICAL" title="cashocs.LogLevel.CRITICAL"><code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.LogLevel.CRITICAL</span></code></a>. The default value is <code class="code highlight python docutils literal highlight-python"><span class="n">INFO</span></code>, which
+would also be selected if the <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.set_log_level" title="cashocs.set_log_level"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.set_log_level()</span></code></a> method would not have
+been called.</p>
+</div>
+<p>Next, we have to load the config file which loads the user’s input parameters into the
+script. For a detailed documentation of the config files and the parameters within, we
+refer to <a class="reference internal" href="doc_config.html#config-optimal-control"><span class="std std-ref">Documentation of the Config Files for Optimal Control Problems</span></a>. Note that the corresponding file is
+<a class="reference download internal" download="" href="../../../_downloads/534a2bfaf1dc16de17cb479d4f128dad/config.ini"><code class="xref download docutils literal notranslate"><span class="pre">config.ini</span></code></a>.
+The config is then loaded via</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">config</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">load_config</span><span class="p">(</span><span class="s2">&quot;config.ini&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next up, we have to define the state equation. This mostly works with usual FEniCS
+syntax. In cashocs, we can quickly generate meshes for squares and cubes, as well as
+import meshes generated by Gmsh, for more complex geometries. In this example we take
+a built-in unit square as example. This is generated via</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mesh</span><span class="p">,</span> <span class="n">subdomains</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">dS</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">regular_mesh</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The input for regular_mesh determines the number of elements that
+are placed along each axis of the square. Note, that the mesh could be
+further manipulated with additional, optional arguments, and we
+refer to <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.regular_mesh" title="cashocs.regular_mesh"><code class="xref py py-func docutils literal notranslate"><span class="pre">regular_mesh</span></code></a> for more infos. Note,
+that the <code class="code highlight python docutils literal highlight-python"><span class="n">subdomains</span></code> object is a (empty) <code class="xref py py-class docutils literal notranslate"><span class="pre">MeshFunction</span></code>, and that
+<code class="code highlight python docutils literal highlight-python"><span class="n">boundaries</span></code> is a <code class="xref py py-class docutils literal notranslate"><span class="pre">MeshFunction</span></code> that contains markers for the following
+boundaries</p>
+<ul class="simple">
+<li><p>The left side of the square is marked by 1</p></li>
+<li><p>The right side is marked by 2</p></li>
+<li><p>The bottom is marked by 3</p></li>
+<li><p>The top is marked by 4,</p></li>
+</ul>
+<p>as defined in <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.regular_mesh" title="cashocs.regular_mesh"><code class="xref py py-func docutils literal notranslate"><span class="pre">regular_mesh</span></code></a>.</p>
+<p>With the geometry defined, we create a function space with the classical
+FEniCS syntax</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">V</span> <span class="o">=</span> <span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which creates a function space of continuous, linear Lagrange elements.</p>
+</section>
+<section id="definition-of-the-state-equation">
+<h3>Definition of the state equation<a class="headerlink" href="#definition-of-the-state-equation" title="Link to this heading">#</a></h3>
+<p>To describe the state system in cashocs, we use (almost) standard
+FEniCS syntax, and the differences will be highlighted in the
+following. First, we define a <code class="xref py py-class docutils literal notranslate"><span class="pre">fenics.Function</span></code> <code class="code highlight python docutils literal highlight-python"><span class="n">y</span></code> that models our
+state variable <span class="math notranslate nohighlight">\(y\)</span>, and a <code class="xref py py-class docutils literal notranslate"><span class="pre">fenics.Function</span></code> <code class="code highlight python docutils literal highlight-python"><span class="n">p</span></code> that models
+the corresponding adjoint variable <span class="math notranslate nohighlight">\(p\)</span> via</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Next up, we analogously define the control variable as <code class="xref py py-class docutils literal notranslate"><span class="pre">fenics.Function</span></code>
+<code class="code highlight python docutils literal highlight-python"><span class="n">u</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">u</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This enables us to define the weak form of the state equation,
+which is tested not with a <code class="xref py py-class docutils literal notranslate"><span class="pre">fenics.TestFunction</span></code> but with the adjoint
+variable <code class="code highlight python docutils literal highlight-python"><span class="n">p</span></code> via the classical FEniCS / UFL syntax</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">e</span> <span class="o">=</span> <span class="n">inner</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">-</span> <span class="n">u</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">dx</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For the clasical definition of this weak form with FEniCS
+one would write the following code</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">TrialFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">TestFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">inner</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span>
+<span class="n">L</span> <span class="o">=</span> <span class="n">u</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">dx</span>
+</pre></div>
+</div>
+<p>as this is a linear problem. However, to have greater flexibility
+we have to treat the problems as being potentially nonlinear.
+In this case, the classical FEniCS formulation for this as
+nonlinear problem would be</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">y</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">TestFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">F</span> <span class="o">=</span> <span class="n">inner</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">y</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">-</span><span class="n">u</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">dx</span>
+</pre></div>
+</div>
+<p>which could then be solved via the <code class="xref py py-func docutils literal notranslate"><span class="pre">fenics.solve()</span></code> interface. This
+formulation, which comes more naturally for nonlinear
+variational problems (see the
+<a class="reference external" href="https://fenicsproject.org/docs/dolfin/latest/python/demos.html">FEniCS examples</a>)
+is closer to the one in cashocs. However, for the use with cashocs, the state variable
+<span class="math notranslate nohighlight">\(y\)</span> <strong>must not</strong> be a <code class="xref py py-class docutils literal notranslate"><span class="pre">fenics.TrialFunction</span></code>, and the adjoint variable
+<span class="math notranslate nohighlight">\(p\)</span> <strong>must not</strong> be a <code class="xref py py-class docutils literal notranslate"><span class="pre">fenics.TestFunction</span></code>. They <strong>have to</strong> be
+defined as regular <code class="xref py py-class docutils literal notranslate"><span class="pre">fenics.Function</span></code> objects, otherwise the code will not
+work properly.</p>
+</div>
+<p>After defining the weak form of the state equation, we now
+specify the corresponding (homogeneous) Dirichlet boundary
+conditions via</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bcs</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">create_dirichlet_bcs</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Constant</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">boundaries</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>This creates Dirichlet boundary conditions with value 0 at the
+boundaries 1,2,3, and 4, i.e., everywhere.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Classically, these boundary conditions could also be defined via</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">boundary</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">on_bdry</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">on_boundary</span>
+<span class="n">bc</span> <span class="o">=</span> <span class="n">DirichletBC</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Constant</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">boundary</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which would yield a single DirichletBC object, instead of the list returned by
+<a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.create_dirichlet_bcs" title="cashocs.create_dirichlet_bcs"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_dirichlet_bcs</span></code></a>. Any of the many
+methods for defining the boundary conditions works here, as long as it is valid input
+for the <code class="xref py py-func docutils literal notranslate"><span class="pre">fenics.solve()</span></code> function.</p>
+</div>
+<p>With the above description, we see that defining the state system
+for cashocs is nearly identical to defining it with FEniCS,
+the only major difference lies in the definition of the state
+and adjoint variables as <code class="xref py py-class docutils literal notranslate"><span class="pre">fenics.Function</span></code> objects, instead of
+<code class="xref py py-class docutils literal notranslate"><span class="pre">fenics.TrialFunction</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">fenics.TestFunction</span></code>.</p>
+</section>
+<section id="definition-of-the-cost-functional">
+<h3>Definition of the cost functional<a class="headerlink" href="#definition-of-the-cost-functional" title="Link to this heading">#</a></h3>
+<p>Now, we have to define the optimal control problem which we do
+by first specifying the cost functional. To do so, we define the
+desired state <span class="math notranslate nohighlight">\(y_d\)</span> as an <code class="xref py py-class docutils literal notranslate"><span class="pre">fenics.Expression</span></code> <code class="code highlight python docutils literal highlight-python"><span class="n">y_d</span></code>, i.e.,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">y_d</span> <span class="o">=</span> <span class="n">Expression</span><span class="p">(</span><span class="s2">&quot;sin(2*pi*x[0])*sin(2*pi*x[1])&quot;</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Alternatively, <code class="code highlight python docutils literal highlight-python"><span class="n">y_d</span></code> could also be a <code class="xref py py-class docutils literal notranslate"><span class="pre">fenics.Function</span></code> or any other
+object that is usable in an UFL form (e.g. generated with
+<code class="xref py py-func docutils literal notranslate"><span class="pre">fenics.SpatialCoordinate()</span></code>).</p>
+<p>Then, we define the regularization parameter <span class="math notranslate nohighlight">\(\alpha\)</span> and the tracking-type
+cost functional via the commands</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">alpha</span> <span class="o">=</span> <span class="mf">1e-6</span>
+<span class="n">J</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">IntegralFunctional</span><span class="p">(</span>
+    <span class="n">Constant</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_d</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">y</span> <span class="o">-</span> <span class="n">y_d</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">Constant</span><span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">u</span> <span class="o">*</span> <span class="n">dx</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The cost functional is defined via the <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.IntegralFunctional" title="cashocs.IntegralFunctional"><code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.IntegralFunctional</span></code></a>, which
+means that we only have to define the cost functional’s integrand, which will then
+further be treated by cashocs as needed for the optimization. These definitions are
+also classical in the sense that they would have to be performed in this (or a
+similar) way in FEniCS when one would want to evaluate the (reduced) cost functional,
+so that we have only very little overhead.</p>
+</section>
+<section id="definition-of-the-optimization-problem-and-its-solution">
+<h3>Definition of the optimization problem and its solution<a class="headerlink" href="#definition-of-the-optimization-problem-and-its-solution" title="Link to this heading">#</a></h3>
+<p>Finally, we set up an
+<a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.OptimalControlProblem" title="cashocs.OptimalControlProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">OptimalControlProblem</span></code></a> <code class="code highlight python docutils literal highlight-python"><span class="n">ocp</span></code> and
+then directly solve it with the method <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.OptimalControlProblem.solve" title="cashocs.OptimalControlProblem.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">ocp.solve()</span></code></a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ocp</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">OptimalControlProblem</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">bcs</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+<span class="n">ocp</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Note that the <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.OptimalControlProblem.solve" title="cashocs.OptimalControlProblem.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve</span></code></a> command without
+any additional keyword arguments leads to cashocs using the settings defined in the
+config file. However, there are some options that can be directly set with keyword
+arguments for the <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.OptimalControlProblem.solve" title="cashocs.OptimalControlProblem.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve</span></code></a> call. These
+are</p>
+<ul class="simple">
+<li><p><code class="code highlight python docutils literal highlight-python"><span class="n">algorithm</span></code> : Specifies which solution algorithm shall be used.</p></li>
+<li><p><code class="code highlight python docutils literal highlight-python"><span class="n">rtol</span></code> : The relative tolerance for the optimization algorithm.</p></li>
+<li><p><code class="code highlight python docutils literal highlight-python"><span class="n">atol</span></code> : The absolute tolerance for the optimization algorithm.</p></li>
+<li><p><code class="code highlight python docutils literal highlight-python"><span class="n">max_iter</span></code> : The maximum amount of iterations that can be carried out.</p></li>
+</ul>
+<p>Hence, we could also use the command</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ocp</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="s1">&#39;lbfgs&#39;</span><span class="p">,</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>to solve the optimization problem with the L-BFGS method, a relative tolerance of
+<code class="code highlight python docutils literal highlight-python"><span class="mf">1e-3</span></code>, no absolute tolerance, and a maximum of 100 iterations.</p>
+<p>The possible values for these arguments are the same as <a class="reference internal" href="doc_config.html#config-ocp-optimization-routine"><span class="std std-ref">the corresponding ones in the config file</span></a>. This just allows for some
+shortcuts, e.g., when one wants to quickly use a different solver.</p>
+<p>Note, that it is not strictly necessary to supply config files in cashocs. In this
+case, the user has to follow the above example and specify at least the solution
+algorithm via the <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.OptimalControlProblem.solve" title="cashocs.OptimalControlProblem.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve</span></code></a> method.
+However, it is very strongly recommended to use config files with cashocs as
+they allow a detailed tuning of its behavior.</p>
+</div>
+<p>Finally, we visualize the results using matplotlib and the following code ::</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">fraction</span><span class="o">=</span><span class="mf">0.046</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.04</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Control variable u&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">fraction</span><span class="o">=</span><span class="mf">0.046</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.04</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;State variable y&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">y_d</span><span class="p">,</span> <span class="n">mesh</span><span class="o">=</span><span class="n">mesh</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">fig</span><span class="p">,</span> <span class="n">fraction</span><span class="o">=</span><span class="mf">0.046</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.04</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Desired state y_d&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="c1"># plt.savefig(&#39;./img_poisson.png&#39;, dpi=150, bbox_inches=&#39;tight&#39;)</span>
+</pre></div>
+</div>
+<p>The output should look like this</p>
+<img alt="../../../_images/img_poisson.png" src="../../../_images/img_poisson.png" />
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Optimal Control Problems</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="doc_config.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Documentation of the Config Files for Optimal Control Problems</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem-formulation">Problem Formulation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#initialization">Initialization</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definition-of-the-state-equation">Definition of the state equation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definition-of-the-cost-functional">Definition of the cost functional</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definition-of-the-optimization-problem-and-its-solution">Definition of the optimization problem and its solution</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/user/demos/optimal_control/demo_poisson.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2024, Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

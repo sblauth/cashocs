@@ -1,0 +1,1150 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cashocs._optimization.shape_optimization.shape_optimization_problem &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/cashocs/_optimization/shape_optimization/shape_optimization_problem';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">cashocs._optimization.shape_optimization.shape_optimization_problem</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for cashocs._optimization.shape_optimization.shape_optimization_problem</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of cashocs.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with cashocs.  If not, see &lt;https://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;Shape optimization problem.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">gc</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>  <span class="c1"># nosec B404</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">import</span> <span class="nn">dolfin.function.argument</span>
+<span class="kn">import</span> <span class="nn">fenics</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ufl_legacy</span> <span class="k">as</span> <span class="nn">ufl</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ufl</span>
+
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_exceptions</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_forms</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_pde_problems</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_utils</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">geometry</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">io</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">verification</span>
+<span class="kn">from</span> <span class="nn">cashocs._optimization</span> <span class="kn">import</span> <span class="n">cost_functional</span>
+<span class="kn">from</span> <span class="nn">cashocs._optimization</span> <span class="kn">import</span> <span class="n">line_search</span> <span class="k">as</span> <span class="n">ls</span>
+<span class="kn">from</span> <span class="nn">cashocs._optimization</span> <span class="kn">import</span> <span class="n">optimization_algorithms</span>
+<span class="kn">from</span> <span class="nn">cashocs._optimization</span> <span class="kn">import</span> <span class="n">optimization_problem</span>
+<span class="kn">from</span> <span class="nn">cashocs._optimization.shape_optimization</span> <span class="kn">import</span> <span class="n">shape_variable_abstractions</span>
+<span class="kn">from</span> <span class="nn">cashocs.geometry</span> <span class="kn">import</span> <span class="n">mesh_testing</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cashocs_extensions</span> <span class="kn">import</span> <span class="n">mesh_quality_constraints</span>
+
+    <span class="n">has_cashocs_extensions</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">has_cashocs_extensions</span> <span class="o">=</span> <span class="kc">False</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_typing</span>
+
+
+<span class="n">CallableFunction</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="p">())</span>
+
+
+<div class="viewcode-block" id="ShapeOptimizationProblem">
+<a class="viewcode-back" href="../../../../api/generated/cashocs.ShapeOptimizationProblem.html#cashocs.ShapeOptimizationProblem">[docs]</a>
+<span class="k">class</span> <span class="nc">ShapeOptimizationProblem</span><span class="p">(</span><span class="n">optimization_problem</span><span class="o">.</span><span class="n">OptimizationProblem</span><span class="p">):</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;A shape optimization problem.</span>
+
+<span class="sd">    This class is used to define a shape optimization problem, and to solve</span>
+<span class="sd">    it subsequently. For a detailed documentation, we refer to the</span>
+<span class="sd">    :ref:`tutorial &lt;tutorial_index&gt;`. For easier input, when consider single (state or</span>
+<span class="sd">    control) variables, these do not have to be wrapped into a list. Note, that in the</span>
+<span class="sd">    case of multiple variables these have to be grouped into ordered lists, where</span>
+<span class="sd">    ``state_forms``, ``bcs_list``, ``states``, ``adjoints`` have to have the same order</span>
+<span class="sd">    (i.e. ``[y1, y2]`` and ``[p1, p2]``, where ``p1`` is the adjoint of ``y1`` and so</span>
+<span class="sd">    on).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">singledispatchmethod</span>  <span class="c1"># type: ignore</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">state_forms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">]</span> <span class="o">|</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">,</span>
+        <span class="n">bcs_list</span><span class="p">:</span> <span class="p">(</span>
+            <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">]]</span>
+            <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">]</span>
+            <span class="o">|</span> <span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span>
+        <span class="p">),</span>
+        <span class="n">cost_functional_form</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_typing</span><span class="o">.</span><span class="n">CostFunctional</span><span class="p">]</span> <span class="o">|</span> <span class="n">_typing</span><span class="o">.</span><span class="n">CostFunctional</span><span class="p">,</span>
+        <span class="n">states</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]</span> <span class="o">|</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
+        <span class="n">adjoints</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]</span> <span class="o">|</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
+        <span class="n">boundaries</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">,</span>
+        <span class="n">config</span><span class="p">:</span> <span class="n">io</span><span class="o">.</span><span class="n">Config</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">shape_scalar_product</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">initial_guess</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ksp_options</span><span class="p">:</span> <span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">adjoint_ksp_options</span><span class="p">:</span> <span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">gradient_ksp_options</span><span class="p">:</span> <span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">desired_weights</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">temp_dict</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">initial_function_values</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">preconditioner_forms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">]</span> <span class="o">|</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">pre_callback</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">post_callback</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">linear_solver</span><span class="p">:</span> <span class="n">_utils</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinearSolver</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">adjoint_linear_solver</span><span class="p">:</span> <span class="n">_utils</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">LinearSolver</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">newton_linearizations</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">excluded_from_time_derivative</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            state_forms: The weak form of the state equation (user implemented). Can be</span>
+<span class="sd">                either a single UFL form, or a (ordered) list of UFL forms.</span>
+<span class="sd">            bcs_list: The list of :py:class:`fenics.DirichletBC` objects describing</span>
+<span class="sd">                Dirichlet (essential) boundary conditions. If this is ``None``, then no</span>
+<span class="sd">                Dirichlet boundary conditions are imposed.</span>
+<span class="sd">            cost_functional_form: UFL form of the cost functional. Can also be a list of</span>
+<span class="sd">                summands of the cost functional</span>
+<span class="sd">            states: The state variable(s), can either be a :py:class:`fenics.Function`,</span>
+<span class="sd">                or a list of these.</span>
+<span class="sd">            adjoints: The adjoint variable(s), can either be a</span>
+<span class="sd">                :py:class:`fenics.Function`, or a (ordered) list of these.</span>
+<span class="sd">            boundaries: A :py:class:`fenics.MeshFunction` that indicates the boundary</span>
+<span class="sd">                markers.</span>
+<span class="sd">            config: The config file for the problem, generated via</span>
+<span class="sd">                :py:func:`cashocs.load_config`. Alternatively, this can also be</span>
+<span class="sd">                ``None``, in which case the default configurations are used, except for</span>
+<span class="sd">                the optimization algorithm. This has then to be specified in the</span>
+<span class="sd">                :py:meth:`solve &lt;cashocs.OptimalControlProblem.solve&gt;` method. The</span>
+<span class="sd">                default is ``None``.</span>
+<span class="sd">            shape_scalar_product: The bilinear form for computing the shape gradient</span>
+<span class="sd">                (or gradient deformation). This has to use</span>
+<span class="sd">                :py:class:`fenics.TrialFunction` and :py:class:`fenics.TestFunction`</span>
+<span class="sd">                objects to define the weak form, which have to be in a</span>
+<span class="sd">                :py:class:`fenics.VectorFunctionSpace` of continuous, linear Lagrange</span>
+<span class="sd">                finite elements. Moreover, this form is required to be symmetric.</span>
+<span class="sd">            initial_guess: list of functions that act as initial guess for the state</span>
+<span class="sd">                variables, should be valid input for :py:func:`fenics.assign`. Defaults</span>
+<span class="sd">                to ``None``, which means a zero initial guess.</span>
+<span class="sd">            ksp_options: A list of dicts corresponding to command line options for</span>
+<span class="sd">                PETSc, used to solve the state systems. If this is ``None``, then the</span>
+<span class="sd">                direct solver mumps is used (default is ``None``).</span>
+<span class="sd">            adjoint_ksp_options: A list of dicts corresponding to command line options</span>
+<span class="sd">                for PETSc, used to solve the adjoint systems. If this is ``None``, then</span>
+<span class="sd">                the same options as for the state systems are used (default is</span>
+<span class="sd">                ``None``).</span>
+<span class="sd">            gradient_ksp_options: A list of dicts corresponding to command line options</span>
+<span class="sd">                for PETSc, used to compute the (shape) gradient. If this is ``None``,</span>
+<span class="sd">                either a direct or an iterative method is used (depending on the</span>
+<span class="sd">                configuration, section OptimizationRoutine, key gradient_method).</span>
+<span class="sd">            desired_weights: A list of values for scaling the cost functional terms. If</span>
+<span class="sd">                this is supplied, the cost functional has to be given as list of</span>
+<span class="sd">                summands. The individual terms are then scaled, so that term `i` has the</span>
+<span class="sd">                magnitude of `desired_weights[i]` for the initial iteration. In case</span>
+<span class="sd">                that `desired_weights` is `None`, no scaling is performed. Default is</span>
+<span class="sd">                `None`.</span>
+<span class="sd">            temp_dict: This is a private parameter of the class, required for remeshing.</span>
+<span class="sd">                This parameter must not be set by the user and should be ignored.</span>
+<span class="sd">                Using this parameter may result in unintended side effects.</span>
+<span class="sd">            initial_function_values: This is a privatve parameter of the class, required</span>
+<span class="sd">                for remeshing. This parameter must not be set by the user and should be</span>
+<span class="sd">                ignored. Using this parameter may result in unintended side effects.</span>
+<span class="sd">            preconditioner_forms: The list of forms for the preconditioner. The default</span>
+<span class="sd">                is `None`, so that the preconditioner matrix is the same as the system</span>
+<span class="sd">                matrix.</span>
+<span class="sd">            pre_callback: A function (without arguments) that will be called before each</span>
+<span class="sd">                solve of the state system</span>
+<span class="sd">            post_callback: A function (without arguments) that will be called after the</span>
+<span class="sd">                computation of the gradient.</span>
+<span class="sd">            linear_solver: The linear solver (KSP) which is used to solve the linear</span>
+<span class="sd">                systems arising from the discretized PDE.</span>
+<span class="sd">            adjoint_linear_solver: The linear solver (KSP) which is used to solve the</span>
+<span class="sd">                (linear) adjoint system.</span>
+<span class="sd">            newton_linearizations: A (list of) UFL forms describing which (alternative)</span>
+<span class="sd">                linearizations should be used for the (nonlinear) state equations when</span>
+<span class="sd">                solving them (with Newton&#39;s method). The default is `None`, so that the</span>
+<span class="sd">                Jacobian of the supplied state forms is used.</span>
+<span class="sd">            excluded_from_time_derivative: For each state equation, a list of indices</span>
+<span class="sd">                which are not part of the first order time derivative for pseudo time</span>
+<span class="sd">                stepping. Example: Pressure for incompressible flow. Default is None.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">state_forms</span><span class="p">,</span>
+            <span class="n">bcs_list</span><span class="p">,</span>
+            <span class="n">cost_functional_form</span><span class="p">,</span>
+            <span class="n">states</span><span class="p">,</span>
+            <span class="n">adjoints</span><span class="p">,</span>
+            <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+            <span class="n">initial_guess</span><span class="o">=</span><span class="n">initial_guess</span><span class="p">,</span>
+            <span class="n">ksp_options</span><span class="o">=</span><span class="n">ksp_options</span><span class="p">,</span>
+            <span class="n">adjoint_ksp_options</span><span class="o">=</span><span class="n">adjoint_ksp_options</span><span class="p">,</span>
+            <span class="n">gradient_ksp_options</span><span class="o">=</span><span class="n">gradient_ksp_options</span><span class="p">,</span>
+            <span class="n">desired_weights</span><span class="o">=</span><span class="n">desired_weights</span><span class="p">,</span>
+            <span class="n">temp_dict</span><span class="o">=</span><span class="n">temp_dict</span><span class="p">,</span>
+            <span class="n">initial_function_values</span><span class="o">=</span><span class="n">initial_function_values</span><span class="p">,</span>
+            <span class="n">preconditioner_forms</span><span class="o">=</span><span class="n">preconditioner_forms</span><span class="p">,</span>
+            <span class="n">pre_callback</span><span class="o">=</span><span class="n">pre_callback</span><span class="p">,</span>
+            <span class="n">post_callback</span><span class="o">=</span><span class="n">post_callback</span><span class="p">,</span>
+            <span class="n">linear_solver</span><span class="o">=</span><span class="n">linear_solver</span><span class="p">,</span>
+            <span class="n">adjoint_linear_solver</span><span class="o">=</span><span class="n">adjoint_linear_solver</span><span class="p">,</span>
+            <span class="n">newton_linearizations</span><span class="o">=</span><span class="n">newton_linearizations</span><span class="p">,</span>
+            <span class="n">excluded_from_time_derivative</span><span class="o">=</span><span class="n">excluded_from_time_derivative</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">shape_scalar_product</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">deformation_space</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">FunctionSpace</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">VectorFunctionSpace</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">geometry_db</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">deformation_space</span> <span class="o">=</span> <span class="n">shape_scalar_product</span><span class="o">.</span><span class="n">arguments</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ufl_function_space</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">control_spaces</span> <span class="o">=</span> <span class="p">[</span><span class="n">deformation_space</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">gradient</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">control_spaces</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">problem_type</span> <span class="o">=</span> <span class="s2">&quot;shape&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;ShapeGradient&quot;</span><span class="p">,</span> <span class="s2">&quot;global_deformation&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">geometry_db</span><span class="o">.</span><span class="n">init_transfer_matrix</span><span class="p">()</span>
+
+        <span class="c1"># Initialize the remeshing behavior, and a temp file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_remesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;remesh&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_remesh_init</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MeshFunction</span> <span class="o">=</span> <span class="n">boundaries</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape_scalar_product</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span> <span class="o">=</span> <span class="n">shape_scalar_product</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_scalar_product</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uses_custom_scalar_product</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uses_custom_scalar_product</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
+            <span class="s2">&quot;ShapeGradient&quot;</span><span class="p">,</span> <span class="s2">&quot;use_p_laplacian&quot;</span>
+        <span class="p">):</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;You have supplied a custom scalar product and set the parameter &quot;</span>
+                <span class="s2">&quot;``use_p_laplacian`` in the config file.&quot;</span>
+                <span class="s2">&quot;cashocs will use the supplied scalar product and not the &quot;</span>
+                <span class="s2">&quot;p-Laplacian to compute the shape gradient.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">shape_regularization</span> <span class="o">=</span> <span class="n">_forms</span><span class="o">.</span><span class="n">shape_regularization</span><span class="o">.</span><span class="n">ShapeRegularization</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="p">:</span> <span class="n">_forms</span><span class="o">.</span><span class="n">ShapeFormHandler</span> <span class="o">=</span> <span class="n">_forms</span><span class="o">.</span><span class="n">ShapeFormHandler</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_regularization</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;Regularization&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+                <span class="s2">&quot;mu_volume&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_regularization</span><span class="o">.</span><span class="n">volume_regularization</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span>
+                <span class="s2">&quot;mu_surface&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_regularization</span><span class="o">.</span><span class="n">surface_regularization</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span>
+                <span class="s2">&quot;mu_curvature&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_regularization</span><span class="o">.</span><span class="n">curvature_regularization</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span>
+                <span class="s2">&quot;mu_barycenter&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">shape_regularization</span><span class="o">.</span><span class="n">barycenter_regularization</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span>
+            <span class="p">}</span>
+
+        <span class="n">a_priori_tester</span> <span class="o">=</span> <span class="n">mesh_testing</span><span class="o">.</span><span class="n">APrioriMeshTester</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">geometry_db</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="n">intersection_tester</span> <span class="o">=</span> <span class="n">mesh_testing</span><span class="o">.</span><span class="n">IntersectionTester</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">geometry_db</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="c1"># pylint: disable=protected-access</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh_handler</span><span class="p">:</span> <span class="n">geometry</span><span class="o">.</span><span class="n">_MeshHandler</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">_MeshHandler</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="p">,</span> <span class="n">a_priori_tester</span><span class="p">,</span> <span class="n">intersection_tester</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_spaces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">state_spaces</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adjoint_spaces</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">adjoint_spaces</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradient_problem</span> <span class="o">=</span> <span class="n">_pde_problems</span><span class="o">.</span><span class="n">ShapeGradientProblem</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_problem</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adjoint_problem</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">reduced_cost_functional</span> <span class="o">=</span> <span class="n">cost_functional</span><span class="o">.</span><span class="n">ReducedCostFunctional</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_problem</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">has_cashocs_extensions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">constraint_manager</span><span class="p">:</span> <span class="n">mesh_quality_constraints</span><span class="o">.</span><span class="n">ConstraintManager</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">mesh_quality_constraints</span><span class="o">.</span><span class="n">ConstraintManager</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">mesh_handler</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">boundaries</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">control_spaces</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimization_variable_abstractions</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">mesh_quality_constraints</span><span class="o">.</span><span class="n">ConstrainedShapeVariableAbstractions</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">constraint_manager</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">constraint_manager</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">optimization_variable_abstractions</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">shape_variable_abstractions</span><span class="o">.</span><span class="n">ShapeVariableAbstractions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">bool</span><span class="p">(</span><span class="n">desired_weights</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_scale_cost_functional</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># type: ignore # pylint: disable=unnecessary-dunder-call</span>
+                <span class="n">state_forms</span><span class="p">,</span>
+                <span class="n">bcs_list</span><span class="p">,</span>
+                <span class="n">cost_functional_form</span><span class="p">,</span>
+                <span class="n">states</span><span class="p">,</span>
+                <span class="n">adjoints</span><span class="p">,</span>
+                <span class="n">boundaries</span><span class="p">,</span>
+                <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>
+                <span class="n">shape_scalar_product</span><span class="o">=</span><span class="n">shape_scalar_product</span><span class="p">,</span>
+                <span class="n">initial_guess</span><span class="o">=</span><span class="n">initial_guess</span><span class="p">,</span>
+                <span class="n">ksp_options</span><span class="o">=</span><span class="n">ksp_options</span><span class="p">,</span>
+                <span class="n">adjoint_ksp_options</span><span class="o">=</span><span class="n">adjoint_ksp_options</span><span class="p">,</span>
+                <span class="n">gradient_ksp_options</span><span class="o">=</span><span class="n">gradient_ksp_options</span><span class="p">,</span>
+                <span class="n">desired_weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                <span class="n">temp_dict</span><span class="o">=</span><span class="n">temp_dict</span><span class="p">,</span>
+                <span class="n">initial_function_values</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">initial_function_values</span><span class="p">,</span>
+                <span class="n">preconditioner_forms</span><span class="o">=</span><span class="n">preconditioner_forms</span><span class="p">,</span>
+                <span class="n">pre_callback</span><span class="o">=</span><span class="n">pre_callback</span><span class="p">,</span>
+                <span class="n">post_callback</span><span class="o">=</span><span class="n">post_callback</span><span class="p">,</span>
+                <span class="n">linear_solver</span><span class="o">=</span><span class="n">linear_solver</span><span class="p">,</span>
+                <span class="n">adjoint_linear_solver</span><span class="o">=</span><span class="n">adjoint_linear_solver</span><span class="p">,</span>
+                <span class="n">newton_linearizations</span><span class="o">=</span><span class="n">newton_linearizations</span><span class="p">,</span>
+                <span class="n">excluded_from_time_derivative</span><span class="o">=</span><span class="n">excluded_from_time_derivative</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="nd">@__init__</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">CallableFunction</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh_parametrization</span><span class="p">:</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">mesh_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self. Version for remeshing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mesh_parametrization: A custom function, which takes the path to the mesh</span>
+<span class="sd">                file as argument and returns either just the positional arguments or the</span>
+<span class="sd">                positional and keyword arguments for the standard __init__</span>
+<span class="sd">                implementation.</span>
+<span class="sd">            mesh_name: The path to the initial mesh file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh_parametrization</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="n">mesh_parametrization</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh_name</span> <span class="o">=</span> <span class="n">mesh_name</span>
+
+        <span class="n">arguments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh_parametrization</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh_name</span><span class="p">)</span>
+        <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span> <span class="o">=</span> <span class="n">arguments</span>
+        <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">arguments</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="n">arguments</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">CashocsException</span><span class="p">(</span>
+                <span class="s2">&quot;For remeshing, the mesh_parametrization function&quot;</span>
+                <span class="s2">&quot; must either return one or two objects.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;db&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">:</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s2">&quot;temp_dict&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span>
+        <span class="bp">self</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># type: ignore # pylint: disable=unnecessary-dunder-call</span>
+            <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_remesh_init</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self for remeshing.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_remesh</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">is_remeshed</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="o">.</span><span class="n">update</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;gmsh_file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;gmsh_file&quot;</span><span class="p">),</span>
+                        <span class="s2">&quot;geo_file&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;geo_file&quot;</span><span class="p">),</span>
+                        <span class="s2">&quot;OptimizationRoutine&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="s2">&quot;iteration_counter&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                            <span class="s2">&quot;gradient_norm_initial&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+                        <span class="p">},</span>
+                        <span class="s2">&quot;output_dict&quot;</span><span class="p">:</span> <span class="p">{},</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_erase_pde_memory</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resets the memory of the PDE problems so that new solutions are computed.</span>
+
+<span class="sd">        This sets the value of has_solution to False for all relevant PDE problems,</span>
+<span class="sd">        where memory is stored.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_erase_pde_memory</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh_handler</span><span class="o">.</span><span class="n">bbtree</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh_handler</span><span class="o">.</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="o">.</span><span class="n">update_scalar_product</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradient_problem</span><span class="o">.</span><span class="n">has_solution</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_setup_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">optimization_algorithms</span><span class="o">.</span><span class="n">OptimizationAlgorithm</span><span class="p">:</span>
+        <span class="n">line_search_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;LineSearch&quot;</span><span class="p">,</span> <span class="s2">&quot;method&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">line_search_type</span> <span class="o">==</span> <span class="s2">&quot;armijo&quot;</span><span class="p">:</span>
+            <span class="n">line_search</span><span class="p">:</span> <span class="n">ls</span><span class="o">.</span><span class="n">LineSearch</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">ArmijoLineSearch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">line_search_type</span> <span class="o">==</span> <span class="s2">&quot;polynomial&quot;</span><span class="p">:</span>
+            <span class="n">line_search</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">PolynomialLineSearch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">CashocsException</span><span class="p">(</span><span class="s2">&quot;This code cannot be reached.&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;ShapeGradient&quot;</span><span class="p">,</span> <span class="s2">&quot;global_deformation&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">global_deformation_vector</span> <span class="o">=</span> <span class="n">line_search</span><span class="o">.</span><span class="n">global_deformation_vector</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">global_deformation_function</span> <span class="o">=</span> <span class="n">line_search</span><span class="o">.</span><span class="n">deformation_function</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;gradient_descent&quot;</span><span class="p">:</span>
+            <span class="n">solver</span><span class="p">:</span> <span class="n">optimization_algorithms</span><span class="o">.</span><span class="n">OptimizationAlgorithm</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">optimization_algorithms</span><span class="o">.</span><span class="n">GradientDescentMethod</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">line_search</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;lbfgs&quot;</span><span class="p">:</span>
+            <span class="n">solver</span> <span class="o">=</span> <span class="n">optimization_algorithms</span><span class="o">.</span><span class="n">LBFGSMethod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">line_search</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;conjugate_gradient&quot;</span><span class="p">:</span>
+            <span class="n">solver</span> <span class="o">=</span> <span class="n">optimization_algorithms</span><span class="o">.</span><span class="n">NonlinearCGMethod</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="p">,</span> <span class="n">line_search</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">algorithm</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;none&quot;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">InputError</span><span class="p">(</span>
+                <span class="s2">&quot;cashocs.OptimalControlProblem.solve&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;algorithm&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;You did not specify a solution algorithm in your config file. &quot;</span>
+                <span class="s2">&quot;You have to specify one in the solve &quot;</span>
+                <span class="s2">&quot;method. Needs to be one of &#39;gradient_descent&#39; (&#39;gd&#39;), &quot;</span>
+                <span class="s2">&quot;&#39;lbfgs&#39; (&#39;bfgs&#39;), or &#39;conjugate_gradient&#39; (&#39;cg&#39;).&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">CashocsException</span><span class="p">(</span><span class="s2">&quot;This code cannot be reached.&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">solver</span>
+
+<div class="viewcode-block" id="ShapeOptimizationProblem.solve">
+<a class="viewcode-back" href="../../../../api/generated/cashocs.ShapeOptimizationProblem.html#cashocs.ShapeOptimizationProblem.solve">[docs]</a>
+    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">algorithm</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Solves the optimization problem by the method specified in the config file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            algorithm: Selects the optimization algorithm. Valid choices are</span>
+<span class="sd">                ``&#39;gradient_descent&#39;`` or ``&#39;gd&#39;`` for a gradient descent method,</span>
+<span class="sd">                ``&#39;conjugate_gradient&#39;``, ``&#39;nonlinear_cg&#39;``, ``&#39;ncg&#39;`` or ``&#39;cg&#39;``</span>
+<span class="sd">                for nonlinear conjugate gradient methods, and ``&#39;lbfgs&#39;`` or ``&#39;bfgs&#39;``</span>
+<span class="sd">                for limited memory BFGS methods. This overwrites the value specified</span>
+<span class="sd">                in the config file. If this is ``None``, then the value in the</span>
+<span class="sd">                config file is used. Default is ``None``.</span>
+<span class="sd">            rtol: The relative tolerance used for the termination criterion.</span>
+<span class="sd">                Overwrites the value specified in the config file. If this</span>
+<span class="sd">                is ``None``, the value from the config file is taken. Default</span>
+<span class="sd">                is ``None``.</span>
+<span class="sd">            atol: The absolute tolerance used for the termination criterion.</span>
+<span class="sd">                Overwrites the value specified in the config file. If this</span>
+<span class="sd">                is ``None``, the value from the config file is taken. Default</span>
+<span class="sd">                is ``None``.</span>
+<span class="sd">            max_iter: The maximum number of iterations the optimization algorithm</span>
+<span class="sd">                can carry out before it is terminated. Overwrites the value</span>
+<span class="sd">                specified in the config file. If this is ``None``, the value from</span>
+<span class="sd">                the config file is taken. Default is ``None``.</span>
+
+<span class="sd">        Notes:</span>
+<span class="sd">            If either ``rtol`` or ``atol`` are specified as arguments to the ``.solve``</span>
+<span class="sd">            call, the termination criterion changes to:</span>
+<span class="sd">            - a purely relative one (if only ``rtol`` is specified), i.e.,</span>
+
+<span class="sd">            .. math::</span>
+<span class="sd">                || \nabla J(u_k) || \leq \texttt{rtol} || \nabla J(u_0) ||.</span>
+
+<span class="sd">            - a purely absolute one (if only ``atol`` is specified), i.e.,</span>
+
+<span class="sd">            .. math::</span>
+<span class="sd">                || \nabla J(u_K) || \leq \texttt{atol}.</span>
+
+<span class="sd">            - a combined one if both ``rtol`` and ``atol`` are specified, i.e.,</span>
+
+<span class="sd">            .. math::</span>
+<span class="sd">                || \nabla J(u_k) || \leq \texttt{atol}</span>
+<span class="sd">                + \texttt{rtol} || \nabla J(u_0) ||</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="s2">&quot;Solving the shape optimization problem.&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">log</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">algorithm</span><span class="o">=</span><span class="n">algorithm</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="n">max_iter</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setup_solver</span><span class="p">()</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">BaseException</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_clear_remesh_directory</span><span class="p">()</span>
+            <span class="k">raise</span> <span class="n">e</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">solver</span><span class="o">.</span><span class="n">post_processing</span><span class="p">()</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">end</span><span class="p">()</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_clear_remesh_directory</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;An exception was raised, deleting the created temporary files.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Debug&quot;</span><span class="p">,</span> <span class="s2">&quot;remeshing&quot;</span><span class="p">)</span>
+            <span class="ow">and</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>  <span class="c1"># nosec B603, B607</span>
+                <span class="p">[</span><span class="s2">&quot;rm&quot;</span><span class="p">,</span> <span class="s2">&quot;-r&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ShapeOptimizationProblem.compute_shape_gradient">
+<a class="viewcode-back" href="../../../../api/generated/cashocs.ShapeOptimizationProblem.html#cashocs.ShapeOptimizationProblem.compute_shape_gradient">[docs]</a>
+    <span class="k">def</span> <span class="nf">compute_shape_gradient</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Solves the Riesz problem to determine the shape gradient.</span>
+
+<span class="sd">        This can be used for debugging, or code validation.</span>
+<span class="sd">        The necessary solutions of the state and adjoint systems</span>
+<span class="sd">        are carried out automatically.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list containing the shape gradient.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradient_problem</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">gradient</span></div>
+
+
+<div class="viewcode-block" id="ShapeOptimizationProblem.supply_shape_derivative">
+<a class="viewcode-back" href="../../../../api/generated/cashocs.ShapeOptimizationProblem.html#cashocs.ShapeOptimizationProblem.supply_shape_derivative">[docs]</a>
+    <span class="k">def</span> <span class="nf">supply_shape_derivative</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shape_derivative</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Overrides the shape derivative of the reduced cost functional.</span>
+
+<span class="sd">        This allows users to implement their own shape derivative and use cashocs as a</span>
+<span class="sd">        solver library only.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            shape_derivative: The shape_derivative of the reduced cost functional.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="ow">not</span> <span class="n">shape_derivative</span><span class="o">.</span><span class="n">arguments</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ufl_function_space</span><span class="p">()</span>
+            <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">control_spaces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="n">shape_derivative</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                <span class="n">shape_derivative</span><span class="p">,</span>
+                <span class="p">{</span><span class="n">shape_derivative</span><span class="o">.</span><span class="n">arguments</span><span class="p">()[</span><span class="mi">0</span><span class="p">]:</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="o">.</span><span class="n">test_vector_field</span><span class="p">},</span>
+            <span class="p">)</span>
+
+        <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="o">.</span><span class="n">modified_scalar_product</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="o">.</span><span class="n">assembler</span><span class="p">,</span>
+        <span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="o">.</span><span class="n">setup_assembler</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="o">.</span><span class="n">riesz_scalar_product</span><span class="p">,</span>
+            <span class="n">shape_derivative</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="o">.</span><span class="n">bcs_shape</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">has_custom_derivative</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="ShapeOptimizationProblem.supply_custom_forms">
+<a class="viewcode-back" href="../../../../api/generated/cashocs.ShapeOptimizationProblem.html#cashocs.ShapeOptimizationProblem.supply_custom_forms">[docs]</a>
+    <span class="k">def</span> <span class="nf">supply_custom_forms</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">shape_derivative</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">,</span>
+        <span class="n">adjoint_forms</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">],</span>
+        <span class="n">adjoint_bcs_list</span><span class="p">:</span> <span class="p">(</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span>
+            <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">]</span>
+            <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">]]</span>
+        <span class="p">),</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Overrides both adjoint system and shape derivative with user input.</span>
+
+<span class="sd">        This allows the user to specify both the shape_derivative of the reduced cost</span>
+<span class="sd">        functional and the corresponding adjoint system, and allows them to use cashocs</span>
+<span class="sd">        as a solver.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            shape_derivative: The shape derivative of the reduced (!) cost functional.</span>
+<span class="sd">            adjoint_forms: The UFL forms of the adjoint system(s).</span>
+<span class="sd">            adjoint_bcs_list: The list of Dirichlet boundary conditions for the adjoint</span>
+<span class="sd">                system(s).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supply_shape_derivative</span><span class="p">(</span><span class="n">shape_derivative</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">supply_adjoint_forms</span><span class="p">(</span><span class="n">adjoint_forms</span><span class="p">,</span> <span class="n">adjoint_bcs_list</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ShapeOptimizationProblem.get_vector_field">
+<a class="viewcode-back" href="../../../../api/generated/cashocs.ShapeOptimizationProblem.html#cashocs.ShapeOptimizationProblem.get_vector_field">[docs]</a>
+    <span class="k">def</span> <span class="nf">get_vector_field</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">dolfin</span><span class="o">.</span><span class="n">function</span><span class="o">.</span><span class="n">argument</span><span class="o">.</span><span class="n">Argument</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the TestFunction for defining shape derivatives.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The TestFunction object.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="o">.</span><span class="n">test_vector_field</span></div>
+
+
+<div class="viewcode-block" id="ShapeOptimizationProblem.gradient_test">
+<a class="viewcode-back" href="../../../../api/generated/cashocs.ShapeOptimizationProblem.html#cashocs.ShapeOptimizationProblem.gradient_test">[docs]</a>
+    <span class="k">def</span> <span class="nf">gradient_test</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">h</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">RandomState</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Performs a Taylor test to verify that the computed shape gradient is correct.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            h: The direction used to compute the directional derivative. If this is</span>
+<span class="sd">                ``None``, then a random direction is used (default is ``None``).</span>
+<span class="sd">            rng: A numpy random state for calculating a random direction</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The convergence order from the Taylor test. If this is (approximately) 2</span>
+<span class="sd">            or larger, everything works as expected.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">verification</span><span class="o">.</span><span class="n">shape_gradient_test</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">rng</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

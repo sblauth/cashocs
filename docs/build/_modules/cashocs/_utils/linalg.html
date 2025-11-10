@@ -1,0 +1,1250 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cashocs._utils.linalg &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/cashocs/_utils/linalg';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">cashocs._utils.linalg</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for cashocs._utils.linalg</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of cashocs.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with cashocs.  If not, see &lt;https://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;Linear algebra helper functions.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">import</span> <span class="nn">fenics</span>
+<span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">petsc4py</span> <span class="kn">import</span> <span class="n">PETSc</span>
+<span class="kn">from</span> <span class="nn">scipy</span> <span class="kn">import</span> <span class="n">sparse</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ufl_legacy</span> <span class="k">as</span> <span class="nn">ufl</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ufl</span>
+
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_exceptions</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">cashocs._utils</span> <span class="kn">import</span> <span class="n">forms</span> <span class="k">as</span> <span class="n">forms_module</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_typing</span>
+
+<span class="n">iterative_ksp_options</span><span class="p">:</span> <span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;ksp_type&quot;</span><span class="p">:</span> <span class="s2">&quot;cg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;hypre&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pc_hypre_type&quot;</span><span class="p">:</span> <span class="s2">&quot;boomeramg&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pc_hypre_boomeramg_strong_threshold&quot;</span><span class="p">:</span> <span class="mf">0.7</span><span class="p">,</span>
+    <span class="s2">&quot;ksp_rtol&quot;</span><span class="p">:</span> <span class="mf">1e-20</span><span class="p">,</span>
+    <span class="s2">&quot;ksp_atol&quot;</span><span class="p">:</span> <span class="mf">1e-50</span><span class="p">,</span>
+    <span class="s2">&quot;ksp_max_it&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">direct_ksp_options</span><span class="p">:</span> <span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;ksp_type&quot;</span><span class="p">:</span> <span class="s2">&quot;preonly&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;lu&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pc_factor_mat_solver_type&quot;</span><span class="p">:</span> <span class="s2">&quot;mumps&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mat_mumps_icntl_24&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">split_linear_forms</span><span class="p">(</span><span class="n">forms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Splits a list of linear forms into left- and right-hand sides.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        forms: A list of (linear) ufl forms.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A tuple (lhs_forms, rhs_forms), where lhs_forms is the list of forms of the</span>
+<span class="sd">        left-hand sides, and rhs_forms is the list of forms of the right-hand side.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">lhs_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">rhs_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">forms</span><span class="p">)):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="n">forms</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="k">except</span> <span class="n">ufl</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">UFLException</span> <span class="k">as</span> <span class="n">ufl_exception</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">CashocsException</span><span class="p">(</span>
+                <span class="s2">&quot;The state system could not be transferred to a linear &quot;</span>
+                <span class="s2">&quot;system.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;Perhaps you specified that the system is linear, &quot;</span>
+                <span class="s2">&quot;although it is not.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="s2">&quot;In your config, in the StateSystem section, &quot;</span>
+                <span class="s2">&quot;try using is_linear = False.&quot;</span>
+            <span class="p">)</span> <span class="kn">from</span> <span class="nn">ufl_exception</span>
+        <span class="n">lhs_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lhs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">rhs</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+            <span class="n">test_function</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">arguments</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">mesh</span> <span class="o">=</span> <span class="n">lhs</span><span class="o">.</span><span class="n">ufl_domain</span><span class="p">()</span>
+            <span class="n">dx</span> <span class="o">=</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Measure</span><span class="p">(</span><span class="s2">&quot;dx&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="p">)</span>
+            <span class="n">zero_form</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">ufl</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span>
+                    <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">test_function</span><span class="o">.</span><span class="n">ufl_shape</span><span class="p">)),</span>
+                    <span class="n">test_function</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="o">*</span> <span class="n">dx</span>
+            <span class="p">)</span>
+            <span class="n">rhs_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">zero_form</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">rhs_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">lhs_list</span><span class="p">,</span> <span class="n">rhs_list</span>
+
+
+<span class="k">def</span> <span class="nf">assemble_petsc_system</span><span class="p">(</span>
+    <span class="n">lhs_form</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">,</span>
+    <span class="n">rhs_form</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">,</span>
+    <span class="n">bcs</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">A_tensor</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">PETScMatrix</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="n">b_tensor</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">PETScVector</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">preconditioner_form</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">,</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Vec</span><span class="p">,</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Assembles a system symmetrically and converts objects to PETSc format.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        lhs_form: The UFL form for the left-hand side of the linear equation.</span>
+<span class="sd">        rhs_form: The UFL form for the right-hand side of the linear equation.</span>
+<span class="sd">        bcs: A list of Dirichlet boundary conditions.</span>
+<span class="sd">        A_tensor: A matrix into which the result is assembled. Default is ``None``.</span>
+<span class="sd">        b_tensor: A vector into which the result is assembled. Default is ``None``.</span>
+<span class="sd">        preconditioner_form: The UFL form for assembling the preconditioner. Must</span>
+<span class="sd">            be a bilinear form.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A tuple (A, b), where A is the matrix of the linear system, and b is the vector</span>
+<span class="sd">        of the linear system.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        This function always uses the ident_zeros method of the matrix in order to add a</span>
+<span class="sd">        one to the diagonal in case the corresponding row only consists of zeros. This</span>
+<span class="sd">        allows for well-posed problems on the boundary etc.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="s2">&quot;Assembling the forms into a linear system.&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">log</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="n">mod_lhs_form</span> <span class="o">=</span> <span class="n">forms_module</span><span class="o">.</span><span class="n">bilinear_boundary_form_modification</span><span class="p">([</span><span class="n">lhs_form</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">A_tensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">A_tensor</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">PETScMatrix</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">b_tensor</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">b_tensor</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">PETScVector</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">assemble_system</span><span class="p">(</span>
+            <span class="n">mod_lhs_form</span><span class="p">,</span>
+            <span class="n">rhs_form</span><span class="p">,</span>
+            <span class="n">bcs</span><span class="p">,</span>
+            <span class="n">keep_diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">A_tensor</span><span class="o">=</span><span class="n">A_tensor</span><span class="p">,</span>
+            <span class="n">b_tensor</span><span class="o">=</span><span class="n">b_tensor</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">value_exception</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">CashocsException</span><span class="p">(</span>
+            <span class="s2">&quot;The state system could not be transferred to a linear &quot;</span>
+            <span class="s2">&quot;system.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;Perhaps you specified that the system is linear, &quot;</span>
+            <span class="s2">&quot;although it is not.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="s2">&quot;In your config, in the StateSystem section, &quot;</span>
+            <span class="s2">&quot;try using is_linear = False.&quot;</span>
+        <span class="p">)</span> <span class="kn">from</span> <span class="nn">value_exception</span>
+    <span class="n">A_tensor</span><span class="o">.</span><span class="n">ident_zeros</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">preconditioner_form</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">P_tensor</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">PETScMatrix</span><span class="p">()</span>  <span class="c1"># pylint: disable=invalid-name</span>
+        <span class="n">c_tensor</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">PETScVector</span><span class="p">()</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">assemble_system</span><span class="p">(</span>
+            <span class="n">preconditioner_form</span><span class="p">,</span>
+            <span class="n">rhs_form</span><span class="p">,</span>
+            <span class="n">bcs</span><span class="p">,</span>
+            <span class="n">keep_diagonal</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">A_tensor</span><span class="o">=</span><span class="n">P_tensor</span><span class="p">,</span>
+            <span class="n">b_tensor</span><span class="o">=</span><span class="n">c_tensor</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="n">P_tensor</span><span class="o">.</span><span class="n">ident_zeros</span><span class="p">()</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="n">P_tensor</span><span class="o">.</span><span class="n">mat</span><span class="p">()</span>  <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># pylint: disable=invalid-name</span>
+
+    <span class="n">A</span> <span class="o">=</span> <span class="n">A_tensor</span><span class="o">.</span><span class="n">mat</span><span class="p">()</span>  <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">b_tensor</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">P</span>
+
+
+<span class="k">def</span> <span class="nf">setup_petsc_options</span><span class="p">(</span>
+    <span class="n">objs</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">PETSc</span><span class="o">.</span><span class="n">KSP</span> <span class="o">|</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">SNES</span><span class="p">],</span> <span class="n">ksp_options</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets up an (iterative) linear solver.</span>
+
+<span class="sd">    This is used to pass user defined command line type options for PETSc</span>
+<span class="sd">    to the PETSc KSP objects. Here, options[i] is applied to ksps[i].</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        objs: A list of PETSc objects (e.g. linear solvers) to which the (command line)</span>
+<span class="sd">            options are applied to.</span>
+<span class="sd">        ksp_options: A list of command line options that specify the solver</span>
+<span class="sd">            from PETSc.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fenics</span><span class="o">.</span><span class="n">PETScOptions</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="n">opts</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Options</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">objs</span><span class="p">)):</span>
+        <span class="n">opts</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">ksp_options</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">opts</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="n">objs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">setFromOptions</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">setup_fieldsplit_preconditioner</span><span class="p">(</span>
+    <span class="n">fun</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ksp</span><span class="p">:</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">KSP</span><span class="p">,</span>
+    <span class="n">options</span><span class="p">:</span> <span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sets up the preconditioner for the fieldsplit case.</span>
+
+<span class="sd">    This defines the index sets which indicate where the splitting should take place.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fun: The function corresponding to the mixed system to be solved.</span>
+<span class="sd">        ksp: The ksp object.</span>
+<span class="sd">        options: The options for the ksp.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">fun</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;pc_type&quot;</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="n">options</span><span class="p">[</span><span class="s2">&quot;pc_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;fieldsplit&quot;</span><span class="p">:</span>
+            <span class="n">function_space</span> <span class="o">=</span> <span class="n">fun</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">function_space</span><span class="o">.</span><span class="n">num_sub_spaces</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">InputError</span><span class="p">(</span>
+                    <span class="s2">&quot;cashocs._utils.solve_linear_problem&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;ksp_options&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;You have specified a fieldsplit preconditioner, but the &quot;</span>
+                    <span class="s2">&quot;problem to be solved is not a mixed one.&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">any</span><span class="p">(</span><span class="n">key</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;_fields&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">options</span><span class="o">.</span><span class="n">keys</span><span class="p">()):</span>
+                <span class="n">pc</span> <span class="o">=</span> <span class="n">ksp</span><span class="o">.</span><span class="n">getPC</span><span class="p">()</span>
+                <span class="n">pc</span><span class="o">.</span><span class="n">setType</span><span class="p">(</span><span class="n">PETSc</span><span class="o">.</span><span class="n">PC</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">FIELDSPLIT</span><span class="p">)</span>
+                <span class="n">idx</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">function_space</span><span class="o">.</span><span class="n">num_sub_spaces</span><span class="p">()):</span>
+                    <span class="n">idx_i</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">IS</span><span class="p">()</span><span class="o">.</span><span class="n">createGeneral</span><span class="p">(</span>
+                        <span class="n">function_space</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">dofmap</span><span class="p">()</span><span class="o">.</span><span class="n">dofs</span><span class="p">()</span>
+                    <span class="p">)</span>
+                    <span class="n">idx</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idx_i</span><span class="p">)</span>
+                    <span class="n">name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">idx_tuples</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span>
+
+                <span class="n">pc</span><span class="o">.</span><span class="n">setFieldSplitIS</span><span class="p">(</span><span class="o">*</span><span class="n">idx_tuples</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">dof_total</span> <span class="o">=</span> <span class="n">function_space</span><span class="o">.</span><span class="n">dofmap</span><span class="p">()</span><span class="o">.</span><span class="n">dofs</span><span class="p">()</span>
+                <span class="n">offset</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">dof_total</span><span class="p">)</span>
+
+                <span class="n">num_sub_spaces</span> <span class="o">=</span> <span class="n">function_space</span><span class="o">.</span><span class="n">num_sub_spaces</span><span class="p">()</span>
+                <span class="n">dof_list</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">function_space</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">dofmap</span><span class="p">()</span><span class="o">.</span><span class="n">dofs</span><span class="p">())</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_sub_spaces</span><span class="p">)</span>
+                <span class="p">]</span>
+
+                <span class="n">section</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Section</span><span class="p">()</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+                <span class="n">section</span><span class="o">.</span><span class="n">setNumFields</span><span class="p">(</span><span class="n">num_sub_spaces</span><span class="p">)</span>
+
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_sub_spaces</span><span class="p">):</span>
+                    <span class="n">section</span><span class="o">.</span><span class="n">setFieldName</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">section</span><span class="o">.</span><span class="n">setFieldComponents</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">section</span><span class="o">.</span><span class="n">setChart</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dof_total</span><span class="p">))</span>
+                <span class="k">for</span> <span class="n">field_idx</span><span class="p">,</span> <span class="n">dofs</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dof_list</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">dofs</span><span class="p">:</span>
+                        <span class="n">section</span><span class="o">.</span><span class="n">setDof</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">offset</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="n">section</span><span class="o">.</span><span class="n">setFieldDof</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">offset</span><span class="p">,</span> <span class="n">field_idx</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">section</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+
+                <span class="n">dm</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">DMShell</span><span class="p">()</span><span class="o">.</span><span class="n">create</span><span class="p">()</span>
+                <span class="n">dm</span><span class="o">.</span><span class="n">setDefaultSection</span><span class="p">(</span><span class="n">section</span><span class="p">)</span>
+                <span class="n">dm</span><span class="o">.</span><span class="n">setUp</span><span class="p">()</span>
+
+                <span class="n">ksp</span><span class="o">.</span><span class="n">setDM</span><span class="p">(</span><span class="n">dm</span><span class="p">)</span>
+                <span class="n">ksp</span><span class="o">.</span><span class="n">setDMActive</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_initialize_comm</span><span class="p">(</span><span class="n">comm</span><span class="p">:</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Comm</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Comm</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Initializes the MPI communicator.</span>
+
+<span class="sd">    If the supplied communicator is `None`, return MPI.comm_world.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        comm: The supplied communicator or `None`</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The resulting communicator.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">comm</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span>
+
+    <span class="k">return</span> <span class="n">comm</span>
+
+
+<span class="k">def</span> <span class="nf">define_ksp_options</span><span class="p">(</span>
+    <span class="n">ksp_options</span><span class="p">:</span> <span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Defines the KSP options to be used by PETSc.</span>
+
+<span class="sd">    If no options are supplied, the direct solver mumps will be used.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ksp_options: The KSP options for PETSc</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The KSP options that are supplied of the default ones (for mumps).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">ksp_options</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">direct_ksp_options</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">ksp_options</span>
+
+    <span class="k">return</span> <span class="n">options</span>
+
+
+<span class="k">def</span> <span class="nf">setup_matrix_and_preconditioner</span><span class="p">(</span>
+    <span class="n">ksp</span><span class="p">:</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">KSP</span><span class="p">,</span>
+    <span class="n">A</span><span class="p">:</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="n">P</span><span class="p">:</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># pylint: disable=invalid-name</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up the system matrix and preconditioner for a linear solve.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        ksp: The KSP object used to solve the problem.</span>
+<span class="sd">        A: The system matrix or `None`.</span>
+<span class="sd">        P: The preconditioner matrix or `None`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The system matrix.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">A</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">P</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ksp</span><span class="o">.</span><span class="n">setOperators</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ksp</span><span class="o">.</span><span class="n">setOperators</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">A</span> <span class="o">=</span> <span class="n">ksp</span><span class="o">.</span><span class="n">getOperators</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">A</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span> <span class="ow">and</span> <span class="n">A</span><span class="o">.</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">InputError</span><span class="p">(</span>
+                <span class="s2">&quot;cashocs._utils.solve_linear_problem&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;ksp&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;The KSP object has to be initialized with some Matrix in case A is &quot;</span>
+                <span class="s2">&quot;None.&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">A</span>
+
+
+<span class="k">def</span> <span class="nf">solve_linear_problem</span><span class="p">(</span>
+    <span class="n">A</span><span class="p">:</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="n">b</span><span class="p">:</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fun</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ksp_options</span><span class="p">:</span> <span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">comm</span><span class="p">:</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Comm</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">P</span><span class="p">:</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="n">linear_solver</span><span class="p">:</span> <span class="n">LinearSolver</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Vec</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solves a finite dimensional linear problem.</span>
+
+<span class="sd">    An overview over possible command line options for the PETSc KSP object can</span>
+<span class="sd">    be found at `&lt;https://petsc.org/release/manualpages/KSP/&gt;`_ and options for the</span>
+<span class="sd">    preconditioners can be found at `&lt;https://petsc.org/release/manualpages/PC/&gt;`_.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        A: The PETSc matrix corresponding to the left-hand side of the problem. If</span>
+<span class="sd">            this is None, then the matrix stored in the ksp object is used. Raises</span>
+<span class="sd">            an error if no matrix is stored. Default is None.</span>
+<span class="sd">        b: The PETSc vector corresponding to the right-hand side of the problem.</span>
+<span class="sd">            If this is None, then a zero right-hand side is assumed, and a zero vector</span>
+<span class="sd">            is returned. Default is None.</span>
+<span class="sd">        fun: The function which will store the solution of the problem. If this is</span>
+<span class="sd">            None, then a new vector will be created (and returned).</span>
+<span class="sd">        ksp_options: The options for the PETSc ksp object. If this is None (the default)</span>
+<span class="sd">            a direct method is used.</span>
+<span class="sd">        rtol: The relative tolerance used in case an iterative solver is used for</span>
+<span class="sd">            solving the linear problem. Overrides the specification in the ksp object</span>
+<span class="sd">            and ksp_options.</span>
+<span class="sd">        atol: The absolute tolerance used in case an iterative solver is used for</span>
+<span class="sd">            solving the linear problem. Overrides the specification in the ksp object</span>
+<span class="sd">            and ksp_options.</span>
+<span class="sd">        comm: The MPI communicator for the problem.</span>
+<span class="sd">        P: The PETSc matrix corresponding to the preconditioner. If this is None, then</span>
+<span class="sd">            the left-hand-side matrix A is used to build the preconditioner.</span>
+<span class="sd">        linear_solver: The LinearSolver that should be used to solve the problem.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The solution vector.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+        <span class="s2">&quot;The function cashocs._utils.linalg.solve_linear_problem is &quot;</span>
+        <span class="s2">&quot;deprecated and will be removed in a future version. Please use&quot;</span>
+        <span class="s2">&quot;the solve method of cashocs._utils.linalg.LinearSolver instead.&quot;</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">linear_solver</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">linear_solver</span> <span class="o">=</span> <span class="n">LinearSolver</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">linear_solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">fun</span><span class="p">,</span> <span class="n">ksp_options</span><span class="p">,</span> <span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">assemble_and_solve_linear</span><span class="p">(</span>
+    <span class="n">lhs_form</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">,</span>
+    <span class="n">rhs_form</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">,</span>
+    <span class="n">bcs</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">A</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">PETScMatrix</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="n">b</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">PETScVector</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">fun</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">ksp_options</span><span class="p">:</span> <span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">comm</span><span class="p">:</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Comm</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">preconditioner_form</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">linear_solver</span><span class="p">:</span> <span class="n">LinearSolver</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Vec</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Assembles and solves a linear system.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        lhs_form: The UFL form for the left-hand side of the linear equation.</span>
+<span class="sd">        rhs_form: The UFL form for the right-hand side of the linear equation.</span>
+<span class="sd">        bcs: A list of Dirichlet boundary conditions.</span>
+<span class="sd">        A: A matrix into which the lhs is assembled. Default is ``None``.</span>
+<span class="sd">        b: A vector into which the rhs is assembled. Default is ``None``.</span>
+<span class="sd">        fun: The function which will be solution of the problem. If this is</span>
+<span class="sd">            None, then a new vector will be created (and returned).</span>
+<span class="sd">        ksp_options: The options for the PETSc ksp object. If this is None (the default)</span>
+<span class="sd">            a direct method is used.</span>
+<span class="sd">        rtol: The relative tolerance used in case an iterative solver is used for</span>
+<span class="sd">            solving the linear problem. Overrides the specification in the ksp object</span>
+<span class="sd">            and ksp_options.</span>
+<span class="sd">        atol: The absolute tolerance used in case an iterative solver is used for</span>
+<span class="sd">            solving the linear problem. Overrides the specification in the ksp object</span>
+<span class="sd">            and ksp_options.</span>
+<span class="sd">        comm: The MPI communicator for solving the problem.</span>
+<span class="sd">        preconditioner_form: The UFL for assembling the preconditioner. Must be a</span>
+<span class="sd">            bilinear form.</span>
+<span class="sd">        linear_solver: The LinearSolver used to solve the problem.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A PETSc vector containing the solution x.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="n">A_matrix</span><span class="p">,</span> <span class="n">b_vector</span><span class="p">,</span> <span class="n">P_matrix</span> <span class="o">=</span> <span class="n">assemble_petsc_system</span><span class="p">(</span>
+        <span class="n">lhs_form</span><span class="p">,</span>
+        <span class="n">rhs_form</span><span class="p">,</span>
+        <span class="n">bcs</span><span class="p">,</span>
+        <span class="n">A_tensor</span><span class="o">=</span><span class="n">A</span><span class="p">,</span>
+        <span class="n">b_tensor</span><span class="o">=</span><span class="n">b</span><span class="p">,</span>
+        <span class="n">preconditioner_form</span><span class="o">=</span><span class="n">preconditioner_form</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">linear_solver</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">linear_solver</span> <span class="o">=</span> <span class="n">LinearSolver</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span>
+
+    <span class="n">solution</span> <span class="o">=</span> <span class="n">linear_solver</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span>
+        <span class="n">A</span><span class="o">=</span><span class="n">A_matrix</span><span class="p">,</span>
+        <span class="n">b</span><span class="o">=</span><span class="n">b_vector</span><span class="p">,</span>
+        <span class="n">fun</span><span class="o">=</span><span class="n">fun</span><span class="p">,</span>
+        <span class="n">ksp_options</span><span class="o">=</span><span class="n">ksp_options</span><span class="p">,</span>
+        <span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span>
+        <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">,</span>
+        <span class="n">P</span><span class="o">=</span><span class="n">P_matrix</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">solution</span>
+
+
+<span class="k">class</span> <span class="nc">LinearSolver</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A solver for linear problems arising from discretized PDEs.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">comm</span><span class="p">:</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Comm</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the linear solver.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            comm: The MPI communicator used for distributing the mesh (in parallel).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">comm</span> <span class="o">=</span> <span class="n">_initialize_comm</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">solve</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">A</span><span class="p">:</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># pylint: disable=invalid-name</span>
+        <span class="n">b</span><span class="p">:</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Vec</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">fun</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">ksp_options</span><span class="p">:</span> <span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">P</span><span class="p">:</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>  <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Vec</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Solves a finite dimensional linear problem arising from a discretized PDE.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            A: The PETSc matrix corresponding to the left-hand side of the problem. If</span>
+<span class="sd">                this is None, then the matrix stored in the ksp object is used. Raises</span>
+<span class="sd">                an error if no matrix is stored. Default is None.</span>
+<span class="sd">            b: The PETSc vector corresponding to the right-hand side of the problem.</span>
+<span class="sd">                If this is None, then a zero right-hand side is assumed, and a zero</span>
+<span class="sd">                vector is returned. Default is None.</span>
+<span class="sd">            fun: The function which will store the solution of the problem. If this is</span>
+<span class="sd">                None, then a new vector will be created (and returned).</span>
+<span class="sd">            ksp_options: The options for the PETSc ksp object. If this is None (the</span>
+<span class="sd">                default) a direct method is used.</span>
+<span class="sd">            rtol: The relative tolerance used in case an iterative solver is used for</span>
+<span class="sd">                solving the linear problem. Overrides the specification in the ksp</span>
+<span class="sd">                object and ksp_options.</span>
+<span class="sd">            atol: The absolute tolerance used in case an iterative solver is used for</span>
+<span class="sd">                solving the linear problem. Overrides the specification in the ksp</span>
+<span class="sd">                object and ksp_options.</span>
+<span class="sd">            P: The PETSc matrix corresponding to the preconditioner.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The solution vector.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="s2">&quot;Solving a linear system with PETSc.&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">log</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+        <span class="n">ksp</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">KSP</span><span class="p">()</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="p">)</span>
+
+        <span class="n">A</span> <span class="o">=</span> <span class="n">setup_matrix_and_preconditioner</span><span class="p">(</span><span class="n">ksp</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">b</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">A</span><span class="o">.</span><span class="n">createVecRight</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">fun</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">createVecRight</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">fun</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span>
+
+        <span class="n">options</span> <span class="o">=</span> <span class="n">define_ksp_options</span><span class="p">(</span><span class="n">ksp_options</span><span class="p">)</span>
+
+        <span class="n">setup_fieldsplit_preconditioner</span><span class="p">(</span><span class="n">fun</span><span class="p">,</span> <span class="n">ksp</span><span class="p">,</span> <span class="n">options</span><span class="p">)</span>
+        <span class="n">setup_petsc_options</span><span class="p">([</span><span class="n">ksp</span><span class="p">],</span> <span class="p">[</span><span class="n">options</span><span class="p">])</span>
+
+        <span class="n">ksp</span><span class="o">.</span><span class="n">setTolerances</span><span class="p">(</span><span class="n">rtol</span><span class="o">=</span><span class="n">rtol</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="n">atol</span><span class="p">)</span>
+
+        <span class="n">ksp</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ksp</span><span class="o">.</span><span class="n">getConvergedReason</span><span class="p">()</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">PETScKSPError</span><span class="p">(</span><span class="n">ksp</span><span class="o">.</span><span class="n">getConvergedReason</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">PETSc</span><span class="p">,</span> <span class="s2">&quot;garbage_cleanup&quot;</span><span class="p">):</span>
+            <span class="n">ksp</span><span class="o">.</span><span class="n">destroy</span><span class="p">()</span>
+            <span class="n">PETSc</span><span class="o">.</span><span class="n">garbage_cleanup</span><span class="p">(</span><span class="n">comm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">comm</span><span class="p">)</span>
+            <span class="n">PETSc</span><span class="o">.</span><span class="n">garbage_cleanup</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">fun</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">fun</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">log</span><span class="o">.</span><span class="n">end</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+
+<div class="viewcode-block" id="Interpolator">
+<a class="viewcode-back" href="../../../api/generated/cashocs.Interpolator.html#cashocs.Interpolator">[docs]</a>
+<span class="k">class</span> <span class="nc">Interpolator</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Efficient interpolation between two function spaces.</span>
+
+<span class="sd">    This is very useful, if multiple interpolations have to be carried out between the</span>
+<span class="sd">    same spaces, which is made significantly faster by computing the corresponding</span>
+<span class="sd">    matrix. The function spaces can even be defined on different meshes.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        This class only works properly for continuous Lagrange elements and constant,</span>
+<span class="sd">        discontinuous Lagrange elements.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Here, we consider interpolating from CG1 elements to CG2 elements ::</span>
+
+<span class="sd">            import fenics</span>
+<span class="sd">            import cashocs</span>
+
+<span class="sd">            mesh, _, _, _, _, _ = cashocs.regular_mesh(25)</span>
+<span class="sd">            V1 = fenics.FunctionSpace(mesh, &#39;CG&#39;, 1)</span>
+<span class="sd">            V2 = fenics.FunctionSpace(mesh, &#39;CG&#39;, 2)</span>
+
+<span class="sd">            expr = fenics.Expression(&#39;sin(2*pi*x[0])&#39;, degree=1)</span>
+<span class="sd">            u = fenics.interpolate(expr, V1)</span>
+
+<span class="sd">            interp = cashocs._utils.Interpolator(V1, V2)</span>
+<span class="sd">            interp.interpolate(u)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">origin_space</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">,</span> <span class="n">target_space</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">FunctionSpace</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            origin_space: The function space whose objects shall be interpolated.</span>
+<span class="sd">            target_space: The space into which they shall be interpolated.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="n">origin_space</span><span class="o">.</span><span class="n">ufl_element</span><span class="p">()</span><span class="o">.</span><span class="n">family</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Lagrange&quot;</span>
+            <span class="ow">or</span> <span class="p">(</span>
+                <span class="n">origin_space</span><span class="o">.</span><span class="n">ufl_element</span><span class="p">()</span><span class="o">.</span><span class="n">family</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Discontinuous Lagrange&quot;</span>
+                <span class="ow">and</span> <span class="n">origin_space</span><span class="o">.</span><span class="n">ufl_element</span><span class="p">()</span><span class="o">.</span><span class="n">degree</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">InputError</span><span class="p">(</span>
+                <span class="s2">&quot;cashocs._utils.Interpolator&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;origin_space&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;The interpolator only works with CG n or DG 0 elements&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="n">target_space</span><span class="o">.</span><span class="n">ufl_element</span><span class="p">()</span><span class="o">.</span><span class="n">family</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Lagrange&quot;</span>
+            <span class="ow">or</span> <span class="p">(</span>
+                <span class="n">target_space</span><span class="o">.</span><span class="n">ufl_element</span><span class="p">()</span><span class="o">.</span><span class="n">family</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Discontinuous Lagrange&quot;</span>
+                <span class="ow">and</span> <span class="n">target_space</span><span class="o">.</span><span class="n">ufl_element</span><span class="p">()</span><span class="o">.</span><span class="n">degree</span><span class="p">()</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="p">)</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">InputError</span><span class="p">(</span>
+                <span class="s2">&quot;cashocs._utils.Interpolator&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;target_space&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;The interpolator only works with CG n or DG 0 elements&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">origin_space</span> <span class="o">=</span> <span class="n">origin_space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">target_space</span> <span class="o">=</span> <span class="n">target_space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transfer_matrix</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">PETScDMCollection</span><span class="o">.</span><span class="n">create_transfer_matrix</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">origin_space</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">target_space</span>
+        <span class="p">)</span><span class="o">.</span><span class="n">mat</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Interpolator.interpolate">
+<a class="viewcode-back" href="../../../api/generated/cashocs.Interpolator.html#cashocs.Interpolator.interpolate">[docs]</a>
+    <span class="k">def</span> <span class="nf">interpolate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolates function to target space.</span>
+
+<span class="sd">        The function has to belong to the origin space, i.e., the first argument</span>
+<span class="sd">        of __init__, and it is interpolated to the destination space, i.e., the</span>
+<span class="sd">        second argument of __init__. There is no need to call set_allow_extrapolation</span>
+<span class="sd">        on the function (this is done automatically due to the method).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            u: The function that shall be interpolated.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The result of the interpolation.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">target_space</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">as_backend_type</span><span class="p">(</span><span class="n">u</span><span class="o">.</span><span class="n">vector</span><span class="p">())</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transfer_matrix</span><span class="o">.</span><span class="n">mult</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">v</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">())</span>
+        <span class="n">v</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">v</span></div>
+</div>
+
+
+
+<span class="k">def</span> <span class="nf">sparse2scipy</span><span class="p">(</span>
+    <span class="n">csr</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">],</span> <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a sparse matrix representation to a sparse scipy matrix.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        csr: The tuple making up the CSR matrix: `rows, cols, vals`.</span>
+<span class="sd">        shape: The shape of the sparse matrix.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The corresponding sparse scipy csr matrix.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">csr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">cols</span> <span class="o">=</span> <span class="n">csr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">vals</span> <span class="o">=</span> <span class="n">csr</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">matrix</span> <span class="o">=</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">((</span><span class="n">vals</span><span class="p">,</span> <span class="p">(</span><span class="n">rows</span><span class="p">,</span> <span class="n">cols</span><span class="p">)),</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">matrix</span>
+
+
+<span class="k">def</span> <span class="nf">scipy2petsc</span><span class="p">(</span>
+    <span class="n">scipy_matrix</span><span class="p">:</span> <span class="n">sparse</span><span class="o">.</span><span class="n">csr_matrix</span><span class="p">,</span>
+    <span class="n">comm</span><span class="p">:</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Comm</span><span class="p">,</span>
+    <span class="n">local_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts a sparse scipy matrix to a (sparse) PETSc matrix.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        scipy_matrix: The sparse scipy matrix</span>
+<span class="sd">        comm: The MPI communicator used for distributing the mesh</span>
+<span class="sd">        local_size: The local size (number of rows) of the matrix, different for</span>
+<span class="sd">            each process. If this is `None` (the default), then PETSc.DECIDE is used.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The corresponding sparse PETSc matrix.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">scipy_matrix</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="n">no_rows_total</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">allreduce</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">op</span><span class="o">=</span><span class="n">MPI</span><span class="o">.</span><span class="n">SUM</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">local_size</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">local_size</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">DECIDE</span>
+
+    <span class="n">petsc_matrix</span> <span class="o">=</span> <span class="n">PETSc</span><span class="o">.</span><span class="n">Mat</span><span class="p">()</span><span class="o">.</span><span class="n">createAIJ</span><span class="p">(</span>
+        <span class="n">comm</span><span class="o">=</span><span class="n">comm</span><span class="p">,</span>
+        <span class="n">size</span><span class="o">=</span><span class="p">((</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">no_rows_total</span><span class="p">),</span> <span class="p">(</span><span class="n">local_size</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span>
+        <span class="n">csr</span><span class="o">=</span><span class="p">(</span><span class="n">scipy_matrix</span><span class="o">.</span><span class="n">indptr</span><span class="p">,</span> <span class="n">scipy_matrix</span><span class="o">.</span><span class="n">indices</span><span class="p">,</span> <span class="n">scipy_matrix</span><span class="o">.</span><span class="n">data</span><span class="p">),</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">petsc_matrix</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<Xdmf Version="3.0">
+  <Domain>
+    <Grid GridType="Collection" CollectionType="Temporal" Name="state_0_sub_1">
+      <Grid Name="state_0_sub_1_0" GridType="Uniform">
+        <Topology NumberOfElements="9108" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="9108 3" NumberType="UInt" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_0/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="4718 2" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_0/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="0.000000" />
+        <Attribute ItemType="FiniteElementFunction" ElementFamily="CG" ElementDegree="1" ElementCell="triangle" Name="state_0_sub_1" Center="Other" AttributeType="Scalar">
+          <DataItem Dimensions="27324 1" NumberType="UInt" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_0/cell_dofs</DataItem>
+          <DataItem Dimensions="4718 1" NumberType="Float" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_0/vector</DataItem>
+          <DataItem Dimensions="9109 1" NumberType="UInt" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_0/x_cell_dofs</DataItem>
+          <DataItem Dimensions="9108 1" NumberType="UInt" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_0/cells</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="state_0_sub_1_1" GridType="Uniform">
+        <Topology NumberOfElements="9108" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="9108 3" NumberType="UInt" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_1/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="4718 2" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_1/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="1.000000" />
+        <Attribute ItemType="FiniteElementFunction" ElementFamily="CG" ElementDegree="1" ElementCell="triangle" Name="state_0_sub_1" Center="Other" AttributeType="Scalar">
+          <DataItem Dimensions="27324 1" NumberType="UInt" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_1/cell_dofs</DataItem>
+          <DataItem Dimensions="4718 1" NumberType="Float" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_1/vector</DataItem>
+          <DataItem Dimensions="9109 1" NumberType="UInt" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_1/x_cell_dofs</DataItem>
+          <DataItem Dimensions="9108 1" NumberType="UInt" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_1/cells</DataItem>
+        </Attribute>
+      </Grid>
+      <Grid Name="state_0_sub_1_2" GridType="Uniform">
+        <Topology NumberOfElements="9108" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="9108 3" NumberType="UInt" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_2/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="4718 2" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_2/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="2.000000" />
+        <Attribute ItemType="FiniteElementFunction" ElementFamily="CG" ElementDegree="1" ElementCell="triangle" Name="state_0_sub_1" Center="Other" AttributeType="Scalar">
+          <DataItem Dimensions="27324 1" NumberType="UInt" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_2/cell_dofs</DataItem>
+          <DataItem Dimensions="4718 1" NumberType="Float" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_2/vector</DataItem>
+          <DataItem Dimensions="9109 1" NumberType="UInt" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_2/x_cell_dofs</DataItem>
+          <DataItem Dimensions="9108 1" NumberType="UInt" Format="HDF">state_0_1.h5:state_0_sub_1/state_0_sub_1_2/cells</DataItem>
+        </Attribute>
+      </Grid>
+    </Grid>
+  </Domain>
+</Xdmf>

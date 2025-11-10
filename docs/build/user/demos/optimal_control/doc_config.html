@@ -1,0 +1,1354 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="16x16" href="../../../_static/favicon/favicon-16x16.jpg" type="image/jpeg">
+    <link rel="icon" sizes="32x32" href="../../../_static/favicon/favicon-32x32.jpg" type="image/jpeg">
+    <title>Documentation of the Config Files for Optimal Control Problems &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user/demos/optimal_control/doc_config';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Control Constraints" href="demo_box_constraints.html" />
+    <link rel="prev" title="Distributed Control of a Poisson Problem" href="demo_poisson.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">List of tutorial topics:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Optimal Control Problems</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="demo_poisson.html">Distributed Control of a Poisson Problem</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Documentation of the Config Files for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_box_constraints.html">Control Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_neumann_control.html">Neumann Boundary Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_multiple_variables.html">Using Multiple Variables and PDEs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_monolithic_problems.html">Coupled Problems - Monolithic Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_picard_iteration.html">Coupled Problems - Picard Iteration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_stokes.html">Distributed Control of a Stokes Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_heat_equation.html">Distributed Control for Time Dependent Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_nonlinear_pdes.html">Optimal Control with Nonlinear PDE Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_dirichlet_control.html">Dirichlet Boundary Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_iterative_solvers.html">Iterative Solvers for State and Adjoint Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_state_constraints.html">Optimal Control with State Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_sparse_control.html">Sparse Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_scalar_control_tracking.html">Tracking of Scalar Functionals for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_constraints.html">Treatment of additional constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_control_boundary_conditions.html">Boundary conditions for control variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_pre_post_callbacks.html">Pre- and Post-Callbacks for the optimization</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../shape_optimization/index.html">Shape Optimization Problems</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_shape_poisson.html">Shape Optimization with a Poisson Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/doc_config.html">Documentation of the Config Files for Shape Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_regularization.html">Regularization for Shape Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_inverse_tomography.html">Inverse Problem in Electric Impedance Tomography</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_shape_stokes.html">Optimization of an Obstacle in Stokes Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_remeshing.html">Remeshing with cashocs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_custom_scalar_product.html">Custom Scalar Products for Shape Gradient Computation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_scaling.html">Scaling of the Cost Functional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_prescribed_mu.html">Computing the Shape Stiffness via Distance to the Boundaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_p_laplacian.html">Shape Optimization with the p-Laplacian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_space_mapping_semilinear_transmission.html">Space Mapping Shape Optimization - Semilinear Transmission Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_space_mapping_uniform_flow_distribution.html">Space Mapping Shape Optimization - Uniform Flow Distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_pseudo_time_stepping.html">Pseudo Time Stepping for Steady State Problems</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../topology_optimization/index.html">Topology Optimization Problems</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_poisson_clover.html">Topology Optimization with a Poisson Equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/doc_config.html">Documentation of the Config Files for Topology Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_cantilever.html">Topology Optimization with Linear Elasticity - Cantilever</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_pipe_bend.html">Topology Optimization with Stokes Flow - Pipe Bend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_projection.html">Topology Optimization with a Volume Constraint</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../cashocs_as_solver/index.html">Using cashocs as a solver</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../cashocs_as_solver/demo_control_solver.html">cashocs as Solver for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cashocs_as_solver/demo_shape_solver.html">cashocs as Solver for Shape Optimization Problems</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../misc/index.html">Miscellaneous Topics</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/demo_logging.html">Logging with cashocs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/demo_xdmf_io.html">Writing and Reading XDMF Files</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">cashocs Tutorial</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Optimal Control Problems</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Documentation of the Config Files for Optimal Control Problems</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="documentation-of-the-config-files-for-optimal-control-problems">
+<span id="config-optimal-control"></span><h1>Documentation of the Config Files for Optimal Control Problems<a class="headerlink" href="#documentation-of-the-config-files-for-optimal-control-problems" title="Link to this heading">#</a></h1>
+<p>Let us take a look at how the config files are structured for optimal control
+problems.</p>
+<p>First of all, the config is divided into the sections: <a class="reference internal" href="#config-ocp-mesh"><span class="std std-ref">Mesh</span></a>, <a class="reference internal" href="#config-ocp-state-system"><span class="std std-ref">StateSystem</span></a>,
+<a class="reference internal" href="#config-ocp-optimization-routine"><span class="std std-ref">OptimizationRoutine</span></a>, <a class="reference internal" href="#config-ocp-algolbfgs"><span class="std std-ref">AlgoLBFGS</span></a>, <a class="reference internal" href="#config-ocp-algocg"><span class="std std-ref">AlgoCG</span></a>, <a class="reference internal" href="#config-ocp-algonewton"><span class="std std-ref">AlgoTNM</span></a>, and <a class="reference internal" href="#config-ocp-output"><span class="std std-ref">Output</span></a>.
+These manage the settings for the mesh, the state equation of the optimization
+problem, the solution algorithms, and the output, respectively. Note, that the
+structure of such config files is explained in-depth in the <a class="reference external" href="https://docs.python.org/3/library/configparser.html">documentation of the
+configparser module</a>.
+In particular, the order of the entries in each section is arbitrary.</p>
+<p>Moreover, we remark that cashocs has a default behavior for almost all of these
+parameters, which is triggered when they are <strong>NOT</strong> specified in the config file,
+and we will discuss this behavior for each parameter in this tutorial.
+A summary of all parameters as well as their default values
+can be found at <a class="reference internal" href="#config-ocp-summary"><span class="std std-ref">the end of this page</span></a>.</p>
+<section id="section-mesh">
+<span id="config-ocp-mesh"></span><h2>Section Mesh<a class="headerlink" href="#section-mesh" title="Link to this heading">#</a></h2>
+<p>The mesh section consists, for optimal control problems, only of a path to the
+.xdmf version of the mesh file</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">mesh_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">../mesh/mesh.xdmf</span>
+</pre></div>
+</div>
+<p>This section is completely optional and can be used when importing meshes generated
+with GMSH. Note, that this section can become more populated and useful
+for shape optimization problems, as detailed in the
+<a class="reference internal" href="../shape_optimization/doc_config.html#config-shape-mesh"><span class="std std-ref">description of their config files</span></a>. To convert a .msh
+file to the .xdmf format, you can use <a class="reference internal" href="../../../api/generated/cashocs.convert.html#cashocs.convert" title="cashocs.convert"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.convert()</span></code></a>.</p>
+</section>
+<section id="section-statesystem">
+<span id="config-ocp-state-system"></span><h2>Section StateSystem<a class="headerlink" href="#section-statesystem" title="Link to this heading">#</a></h2>
+<p>The state system section is used to detail how the state and adjoint systems are
+solved. This includes settings for a damped Newton method and a Picard iteration.</p>
+<p>In the following, we go over each parameter in detail. First, we have</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">is_linear</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>This is a boolean parameter which indicates, whether the state system
+is linear. This is used to speed up some computations. Note, that the program
+will always work when this is set to False, as it treats the linear problem in a
+nonlinear fashion and the corresponding solver converges in one iteration. However, using
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">is_linear</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>
+on a nonlinear state system throws an error related to FEniCS. The default value
+for this parameter is <code class="code highlight ini docutils literal highlight-ini"><span class="na">is_linear</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+<p>The next parameter is defined via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">newton_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-11</span>
+</pre></div>
+</div>
+<p>This parameter determines the relative tolerance for the Newton solver that is
+used to solve a nonlinear state system. Subsequently, we can also define the
+absolute tolerance for the Newton solver via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">newton_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-13</span>
+</pre></div>
+</div>
+<p>Note, that the default values are <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-11</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-13</span></code>.</p>
+<p>The parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_iter</span></code>, which is defined via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">newton_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
+</pre></div>
+</div>
+<p>controls how many iterations the Newton method is allowed to make before it
+terminates. This defaults to <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span></code>.</p>
+<p>Moreover, we have the boolean <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_damped</span></code></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">newton_damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>which determines whether a damping should be used (in case this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>) or not
+(otherwise). This parameter defaults to <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code> if nothing is given.</p>
+<p>Additionally, we have the boolean parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_inexact</span></code>, defined via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">newton_inexact</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>which sets up an inexact Newton method for solving nonlinear problems in case this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_inexact</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>. The default is <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_inexact</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+<p>The parameter</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">newton_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>is used to make the Newton solver’s output verbose. This is disabled by default.
+This concludes the settings for Newton’s method.</p>
+<p>Next up, we have the parameters controlling the Picard iteration. First, we have</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">picard_iteration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This is another boolean flag, used to determine, whether the state system
+shall be solved using a Picard iteration (if this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_iteration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>) or not
+(if this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_iteration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>). For a single state equation (i.e. one single state
+variable) both options are equivalent. The difference is only active when
+considering a coupled system with multiple state variables that is coupled. The
+default value for this parameter is <code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_iteration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+<p>The tolerances for the Picard iteration are defined via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">picard_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-10</span>
+<span class="na">picard_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-12</span>
+</pre></div>
+</div>
+<p>The first parameter determines the relative tolerance used for the Picard
+iteration, in case it is enabled, and the second one determines the absolute
+tolerance. Their default value are given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-10</span></code> and
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-12</span></code>.</p>
+<p>The maximum number of iterations of the method can be set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">picard_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10</span>
+</pre></div>
+</div>
+<p>and the default value for this parameter is <code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span></code>.</p>
+<p>The parmater <code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_verbose</span></code> enables verbose output of the convergence of the
+Picard iteration, and is set as follows</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">picard_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>Its default value is <code class="code highlight ini docutils literal highlight-ini"><span class="na">False</span></code>.</p>
+<p>The parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">backend</span></code> specifies which solver backend should be used for solving nonlinear systems.
+Its default value is given by</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cashocs</span>
+</pre></div>
+</div>
+<p>Possible options are <code class="code highlight ini docutils literal highlight-ini"><span class="na">backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cashocs</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">petsc</span></code>. In the former case, a
+damped, inexact Newton method which is affine co-variant is used. Its parameters are specified in the
+configuration above. In the latter case, PETSc’s SNES interface for solving nonlinear equations
+is used which can be configured with the <cite>ksp_options</cite> supplied by the user to the
+<code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.OptimizationProblem</span></code>. An overview over possible PETSc command line options
+can be found at <a class="reference external" href="https://petsc.org/release/manualpages/SNES/">https://petsc.org/release/manualpages/SNES/</a>.</p>
+</section>
+<section id="section-optimizationroutine">
+<span id="config-ocp-optimization-routine"></span><h2>Section OptimizationRoutine<a class="headerlink" href="#section-optimizationroutine" title="Link to this heading">#</a></h2>
+<p>The following section is used to specify general parameters for the solution
+algorithm, which can be customized here. The first parameter determines the
+choice of the particular algorithm, via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">lbfgs</span>
+</pre></div>
+</div>
+<p>The possible choices are given by</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">gd</span></code> or <code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">gradient_descent</span></code> : a gradient descent method</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cg</span></code>, <code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">conjugate_gradient</span></code>, <code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ncg</span></code>, <code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">nonlinear_cg</span></code> : nonlinear CG methods</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">lbfgs</span></code> or <code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bfgs</span></code> : limited memory BFGS method</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">newton</span></code> : a truncated Newton method</p></li>
+</ul>
+</div></blockquote>
+<p>Note, that there is no default value, so that this always has to be specified by
+the user.</p>
+<p>The next line of the config file is given by</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-4</span>
+</pre></div>
+</div>
+<p>This parameter determines the relative tolerance for the solution algorithm.
+In the case where no control constraints are present, this uses the “classical”
+norm of the gradient of the cost functional as measure. In case there are box
+constraints present, it uses the stationarity measure (see <a class="reference external" href="https://doi.org/10.1137/1.9781611970920">Kelley, Iterative Methods
+for Optimization</a> as measure.
+Analogously, we also have the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
+</pre></div>
+</div>
+<p>This determines the absolute tolerance for the solution algorithm. The default
+tolerances for the optimization algorithm are given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-3</span></code> and
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code>.</p>
+<p>Next up, we have</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">max_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span>
+</pre></div>
+</div>
+<p>This parameter determines the maximum number of iterations carried out by the
+solution algorithm before it is terminated. It defaults to
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">max_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span></code>.</p>
+<p>The initial step size for the Armijo line search can be set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">initial_stepsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+</pre></div>
+</div>
+<p>This can have an important effect on performance of the gradient descent and nonlinear
+cg methods, as they do not include a built-in scaling of the step size. The default
+value is <code class="code highlight ini docutils literal highlight-ini"><span class="na">initial_stepsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code>.</p>
+<p>The next parameter is given by</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">safeguard_stepsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>This parameter can be used to activate safeguarding of the initial stepsize for line search methods. This helps
+to choose an apropriate stepsize for the initial iteration even if the problem is poorly scaled.</p>
+<p>The next paramter, <code class="code highlight ini docutils literal highlight-ini"><span class="na">epsilon_armijo</span></code>, is defined as follows</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">epsilon_armijo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-4</span>
+</pre></div>
+</div>
+<p>This paramter describes the parameter used in the Armijo rule to determine
+sufficient decrease, via</p>
+<div class="math notranslate nohighlight">
+\[J(u + td) \leq J(u) + \varepsilon t \left\langle g, d \right\rangle\]</div>
+<p>where u is the current optimization variable, d is the search direction, t is the
+step size, and g is the current gradient. Note, that <span class="math notranslate nohighlight">\(\varepsilon\)</span>
+corresponds to the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">epsilon_armijo</span></code>.
+A value of 1e-4 is recommended and commonly used (see <a class="reference external" href="https://doi.org/10.1007/978-0-387-40065-5">Nocedal and Wright -
+Numerical Optimization</a>), so that
+we use <code class="code highlight ini docutils literal highlight-ini"><span class="na">epsilon_armijo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-4</span></code> as default value.</p>
+<p>In the following line, the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">beta_armijo</span></code> is defined</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">beta_armijo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2</span>
+</pre></div>
+</div>
+<p>This parameter determines the factor by the which the step size is decreased
+if the Armijo condition is not satisfied, i.e., we get <span class="math notranslate nohighlight">\(t = \frac{t}{\beta}`as new
+step size, where :math:\)</span>beta` corresponds to <code class="code highlight ini docutils literal highlight-ini"><span class="na">beta_armijo</span></code>. The default value
+for this parameter is <code class="code highlight ini docutils literal highlight-ini"><span class="na">beta_armijo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span></code>.</p>
+<p>Next, we have a set of two parameters which detail the methods used for computing gradients in cashocs.
+These parameters are</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">direct</span>
+</pre></div>
+</div>
+<p>as well as</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">gradient_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-9</span>
+</pre></div>
+</div>
+<p>The first parameter, <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span></code> can be either <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">direct</span></code> or <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">iterative</span></code>. In the former case, a
+direct solver is used to compute the gradient (using a Riesz projection) and in the latter case, an
+iterative solver is used to do so. In case we have <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">iterative</span></code>, the parameter
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_tol</span></code> is used to specify the (relative) tolerance for the iterative solver, in the other case
+the parameter is not used.</p>
+<p>Finally, we have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">soft_exit</span></code>, which is defined as</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">soft_exit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This parameter determines, whether we get a hard (<code class="code highlight ini docutils literal highlight-ini"><span class="na">soft_exit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>) or soft (<code class="code highlight ini docutils literal highlight-ini"><span class="na">soft_exit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>) exit
+of the optimization routine in case it does not converge. In case of a hard exit
+an Exception is raised and the script does not complete. However, it can be beneficial
+to still have the subsequent code be processed, which happens in case <code class="code highlight ini docutils literal highlight-ini"><span class="na">soft_exit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>.
+Note, however, that in this case the returned results are <strong>NOT</strong> optimal,
+as defined by the user input parameters. Hence, the default value is <code class="code highlight ini docutils literal highlight-ini"><span class="na">soft_exit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+<p>The following sections describe parameters that belong to the certain solution
+algorithms.</p>
+</section>
+<section id="section-linesearch">
+<span id="config-ocp-linesearch"></span><h2>Section LineSearch<a class="headerlink" href="#section-linesearch" title="Link to this heading">#</a></h2>
+<p>In this section, parameters regarding the line search can be specified. The type of the line search can be chosen via the parameter</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">armijo</span>
+</pre></div>
+</div>
+<p>Possible options are <code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">armijo</span></code>, which performs a simple backtracking line search based on the armijo rule with fixed steps (think of halving the stepsize in each iteration), and <code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">polynomial</span></code>, which uses polynomial models of the cost functional restricted to the line to generate “better” guesses for the stepsize. The default is <code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">armijo</span></code>.</p>
+<p>The next parameter, <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span></code>, specifies, which type of polynomials are used to generate new trial stepsizes. It is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cubic</span>
+</pre></div>
+</div>
+<p>The parameter can either be <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">quadratic</span></code> or <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cubic</span></code>. If this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">quadratic</span></code>, a quadratic interpolation polynomial along the search direction is generated and this is minimized analytically to generate a new trial stepsize. Here, only the current function value, the direction derivative of the cost functional in direction of the search direction, and the most recent trial stepsize are used to generate the polynomial. In case that <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cubic</span></code>, the last two trial stepsizes (when available) are used in addition to the current cost functional value and the directional derivative, to generate a cubic model of the one-dimensional cost functional, which is then minimized to compute a new trial stepsize.</p>
+<p>For the polynomial models, we also have a safeguarding procedure, which ensures that trial stepsizes cannot be chosen too large or too small, and which can be configured with the following two parameters. The trial stepsizes generate by the polynomial models are projected to the interval <span class="math notranslate nohighlight">\([\beta_{low} \alpha, \beta_{high} \alpha]\)</span>, where <span class="math notranslate nohighlight">\(\alpha\)</span> is the previous trial stepsize and <span class="math notranslate nohighlight">\(\beta_{low}, \beta_{high}\)</span> are factors which can be set via the parameters <code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_low</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_high</span></code>. In the config file, this can look like this</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">factor_high</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
+<span class="na">factor_low</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+</pre></div>
+</div>
+<p>and the values specified here are also the default values for these parameters.</p>
+<p>Finally, we have the parameter</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">fail_if_not_converged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>which determines, whether the line search is terminated if the state system cannot be solved at the current iterate. If this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">fail_if_not_converged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, then an exception is raised. Otherwise, the iterate is counted as having too high of a function value and the stepsize is “halved” and a new iterate is formed.</p>
+</section>
+<section id="section-algolbfgs">
+<span id="config-ocp-algolbfgs"></span><h2>Section AlgoLBFGS<a class="headerlink" href="#section-algolbfgs" title="Link to this heading">#</a></h2>
+<p>For the L-BFGS method we have the following parameters. First, we have
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_memory_size</span></code>, which is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">bfgs_memory_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2</span>
+</pre></div>
+</div>
+<p>and determines the size of the memory of the L-BFGS method. E.g., the command
+above specifies that information of the previous two iterations shall be used.
+The case <code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_memory_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span></code> yields the classical gradient descent method,
+whereas <code class="code highlight python docutils literal highlight-python"><span class="n">bfgs_memory_size</span> <span class="o">&gt;</span> <span class="n">max_iter</span></code> gives rise to the classical
+BFGS method with unlimited memory. The default behavior is <code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_memory_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span></code>.</p>
+<p>Second, we have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_bfgs_scaling</span></code>, that is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">use_bfgs_scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>This determines, whether one should use a scaling of the initial Hessian approximation
+(see <a class="reference external" href="https://doi.org/10.1007/978-0-387-40065-5">Nocedal and Wright - Numerical Optimization</a>).
+This is usually very beneficial and should be kept enabled, which it is by default.</p>
+<p>Third, we have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_periodic_restart</span></code>, which is set in the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">bfgs_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span>
+</pre></div>
+</div>
+<p>This is a non-negative integer value, which indicates the number of BFGS iterations, before a reinitialization takes place. In case that this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span></code> (which is the default), no restarts are performed.</p>
+<p>Finally, we have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">damped</span></code>, which can be set with</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This parameter is a boolean flag, which indicates whether Powell’s damping (on H) should be used or not. This is useful, when the curvature condition is not satisfied and (without damping) a restart would be required. The default is <code class="code highlight ini docutils literal highlight-ini"><span class="na">damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+</section>
+<section id="section-algocg">
+<span id="config-ocp-algocg"></span><h2>Section AlgoCG<a class="headerlink" href="#section-algocg" title="Link to this heading">#</a></h2>
+<p>The parameter</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PR</span>
+</pre></div>
+</div>
+<p>determines which of the nonlinear cg methods shall be used. Available are</p>
+<ul class="simple">
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FR</span></code> : the Fletcher-Reeves method</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PR</span></code> : the Polak-Ribiere method</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">HS</span></code> : the Hestenes-Stiefel method</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DY</span></code> : the Dai-Yuan method</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">HZ</span></code> : the Hager-Zhang method</p></li>
+</ul>
+<p>The default value for this parameter is <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FR</span></code>.</p>
+<p>After the definition of the particular cg method, we now have parameters determining
+restart strategies for these method. First up, we have the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">cg_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This parameter determines, whether the CG method should be restarted with a gradient
+step periodically, which can lead to faster convergence. The amount of iterations
+between restarts is then determined by</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">cg_periodic_its</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span>
+</pre></div>
+</div>
+<p>In this example, the NCG method is restarted after 5 iterations. The default behavior
+is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_its</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10</span></code>. This means,
+if neither of the parameters is specified, no periodic restarting takes place. If,
+however, only <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> is set, the default number of iterations
+before a restart will be <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_its</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10</span></code>, unless <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_its</span></code> is
+defined, too.</p>
+<p>Another possibility to restart NCG methods is based on a relative criterion
+(see <a class="reference external" href="https://doi.org/10.1007/978-0-387-40065-5">Nocedal and Wright -
+Numerical Optimization, Chapter 5.2</a>).
+This is enabled via the boolean flag</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">cg_relative_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>and the corresponding relative tolerance (which should lie in <span class="math notranslate nohighlight">\((0,1)\)</span>)
+is determined via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">cg_restart_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
+</pre></div>
+</div>
+<p>Note, that this relative restart reinitializes the iteration with a gradient
+step in case subsequent gradients are not “sufficiently” orthogonal anymore. The
+default behavior is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_relative_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_restart_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.25</span></code>.</p>
+</section>
+<section id="section-algotnm">
+<span id="config-ocp-algonewton"></span><h2>Section AlgoTNM<a class="headerlink" href="#section-algotnm" title="Link to this heading">#</a></h2>
+<p>The parameters for the truncated Newton method are determined in the following.</p>
+<p>First up, we have</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">inner_newton</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cg</span>
+</pre></div>
+</div>
+<p>which determines the Krylov method for the solution of the Newton problem. Should be one
+of</p>
+<ul class="simple">
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">inner_newton</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cg</span></code> : A linear conjugate gradient method</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">inner_newton</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cr</span></code> : A conjugate residual method</p></li>
+</ul>
+<p>Note, that these Krylov solvers are streamlined for symmetric linear
+operators, which the Hessian is (should be also positive definite for a minimizer
+so that the conjugate gradient method should yield good results when initialized
+not too far from the optimum). The conjugate residual does not require positive
+definiteness of the operator, so that it might perform slightly better when the
+initial guess is further away from the optimum. The default value is <code class="code highlight ini docutils literal highlight-ini"><span class="na">inner_newton</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cr</span></code>.</p>
+<p>Then, we have the following line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">inner_newton_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-15</span>
+</pre></div>
+</div>
+<p>This determines the relative tolerance of the iterative Krylov solver for the
+Hessian problem. This is set to <code class="code highlight ini docutils literal highlight-ini"><span class="na">inner_newton_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-15</span></code> by default.</p>
+<p>Moreover, we can also specify the absolute tolerance for the iterative solver for the
+Hessian problem, with the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">inner_newton_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-15</span>
+</pre></div>
+</div>
+<p>analogously to the relative tolerance above.</p>
+<p>In the final line, the paramter <code class="code highlight ini docutils literal highlight-ini"><span class="na">max_it_inner_newton</span></code> is defined via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">max_it_inner_newton</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
+</pre></div>
+</div>
+<p>This parameter determines how many iterations of the Krylov solver are performed
+before the inner iteration is terminated. Note, that the approximate solution
+of the Hessian problem is used after <code class="code highlight ini docutils literal highlight-ini"><span class="na">max_it_inner_newton</span></code> iterations regardless
+of whether this is converged or not. This defaults to <code class="code highlight ini docutils literal highlight-ini"><span class="na">max_it_inner_newton</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span></code>.</p>
+</section>
+<section id="section-output">
+<span id="config-ocp-output"></span><h2>Section Output<a class="headerlink" href="#section-output" title="Link to this heading">#</a></h2>
+<p>This section determines the behavior of cashocs regarding output, both in the
+terminal and w.r.t. output files. The first line of this section reads</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>The parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">verbose</span></code> determines, whether the solution algorithm generates a verbose
+output in the console, useful for monitoring its convergence. This is set to
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> by default.</p>
+<p>Next up, we define the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_results</span></code></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">save_results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>If this parameter is set to True, the history of the optimization is saved in
+a .json file located in the same folder as the optimization script. This is
+very useful for postprocessing the results. This defaults to <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>.</p>
+<p>Moreover, we define the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_txt</span></code></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">save_txt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>This saves the output of the optimization, which is usually shown in the terminal,
+to a .txt file, which is human-readable.</p>
+<p>We define the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_state</span></code> in the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">save_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>If <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the state variables are saved to .xdmf files
+in a folder named “xdmf”, located in the same directory as the optimization script.
+These can be visualized with <a class="reference external" href="https://www.paraview.org/">Paraview</a>. This parameter
+defaults to <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+<p>The next parameter is <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_adjoint</span></code>, which is given in the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">save_adjoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>Analogously to the previous parameter, if <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_adjoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the adjoint
+variables are saved to .xdmf files. The default value is <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_adjoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+<p>The next parameter is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_gradient</span></code>, which is given in the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">save_gradient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This boolean flag ensures that a paraview with the computed gradients is saved in <cite>result_dir/xdmf</cite>. The main purpose of this is for debugging.</p>
+<p>Finally, we can specify in which directory the results should be stored with the
+parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">result_dir</span></code>, which is given in this config file by</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">result_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">./results</span>
+</pre></div>
+</div>
+<p>The path given there can be either relative or absolute. In this example, the
+working directory of the python script is chosen.</p>
+<p>The parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">precision</span></code>, which is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">precision</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span>
+</pre></div>
+</div>
+<p>is an integer parameter which determines how many significant digits are printed in the output to the console and / or the result file.</p>
+<p>Moreover, we have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">time_suffix</span></code>, which adds a suffix to the result directory based on the current time. It is controlled by the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">time_suffix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+</section>
+<section id="summary">
+<span id="config-ocp-summary"></span><h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h2>
+<p>Finally, an overview over all parameters and their default values can be found
+in the following.</p>
+<section id="statesystem">
+<h3>[StateSystem]<a class="headerlink" href="#statesystem" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">is_linear</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>using <code class="code highlight ini docutils literal highlight-ini"><span class="na">is_linear</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> gives an error for nonlinear problems</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-11</span></code></p></td>
+<td><p>relative tolerance for Newton’s method</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-13</span></code></p></td>
+<td><p>absolute tolerance for Newton’s method</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span></code></p></td>
+<td><p>maximum iterations for Newton’s method</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, damping is enabled</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_inexact</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_inexact</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, an inexact Newton’s method is used</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> enables verbose output of Newton’s method</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_iteration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_iteration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> enables Picard iteration; only has an effect for multiple
+variables</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-10</span></code></p></td>
+<td><p>relative tolerance for Picard iteration</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-12</span></code></p></td>
+<td><p>absolute tolerance for Picard iteration</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span></code></p></td>
+<td><p>maximum iterations for Picard iteration</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> enables verbose output of Picard iteration</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cashocs</span></code></p></td>
+<td><p>specifies the backend for solving nonlinear equations, can be either <code class="code highlight ini docutils literal highlight-ini"><span class="na">cashocs</span></code> or <code class="code highlight ini docutils literal highlight-ini"><span class="na">petsc</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="optimizationroutine">
+<h3>[OptimizationRoutine]<a class="headerlink" href="#optimizationroutine" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span></code></p></td>
+<td><p>has to be specified by the user; see <a class="reference internal" href="../../../api/generated/cashocs.OptimalControlProblem.html#cashocs.OptimalControlProblem.solve" title="cashocs.OptimalControlProblem.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-3</span></code></p></td>
+<td><p>relative tolerance for the optimization algorithm</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code></p></td>
+<td><p>absolute tolerance for the optimization algorithm</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">max_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span></code></p></td>
+<td><p>maximum iterations for the optimization algorithm</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">direct</span></code></p></td>
+<td><p>specifies the solver for computing the gradient, can be either <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">direct</span></code> or <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">iterative</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-9</span></code></p></td>
+<td><p>the relative tolerance in case an iterative solver is used to compute the gradient.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">soft_exit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">soft_exit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the optimization algorithm does not raise an exception if
+it did not converge</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="linesearch">
+<h3>[LineSearch]<a class="headerlink" href="#linesearch" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">armio</span></code></p></td>
+<td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">armijo</span></code> is a simple backtracking line search, whereas <code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">polynomial</span></code> uses polynomial models to compute trial stepsizes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">initial_stepsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code></p></td>
+<td><p>initial stepsize for the first iteration in the Armijo rule</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">epsilon_armijo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-4</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">beta_armijo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">safeguard_stepsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code></p></td>
+<td><p>De(-activates) a safeguard against poor scaling</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cubic</span></code></p></td>
+<td><p>This specifies, whether a cubic or quadratic model is used for computing trial stepsizes</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_high</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span></code></p></td>
+<td><p>Safeguard for stepsize, upper bound</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_low</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span></code></p></td>
+<td><p>Safeguard for stepsize, lower bound</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">fail_if_not_converged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">True</span></code>, then the line search fails if the state system can not be solved at the new iterate</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="algolbfgs">
+<h3>[AlgoLBFGS]<a class="headerlink" href="#algolbfgs" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_memory_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span></code></p></td>
+<td><p>memory size of the L-BFGS method</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">use_bfgs_scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_bfgs_scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, uses a scaled identity mapping as initial guess for the inverse Hessian</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span></code></p></td>
+<td><p>specifies, after how many iterations the method is restarted. If this is 0, no restarting is done.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>specifies whether damping for the BFGS method should be used to enforce the curvature condition and prevent restarting</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="algocg">
+<h3>[AlgoCG]<a class="headerlink" href="#algocg" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FR</span></code></p></td>
+<td><p>specifies which nonlinear CG method is used</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, enables periodic restart of NCG method</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_its</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10</span></code></p></td>
+<td><p>specifies, after how many iterations the NCG method is restarted, if applicable</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_relative_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_relative_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, enables restart of NCG method based on a relative criterion</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_restart_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.25</span></code></p></td>
+<td><p>the tolerance of the relative restart criterion, if applicable</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="algotnm">
+<h3>[AlgoTNM]<a class="headerlink" href="#algotnm" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">inner_newton</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cr</span></code></p></td>
+<td><p>inner iterative solver for the truncated Newton method</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">inner_newton_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-15</span></code></p></td>
+<td><p>relative tolerance for the inner iterative solver</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">inner_newton_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code></p></td>
+<td><p>absolute tolerance for the inner iterative solver</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">max_it_inner_newton</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span></code></p></td>
+<td><p>maximum iterations for the inner iterative solver</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="output">
+<h3>[Output]<a class="headerlink" href="#output" title="Link to this heading">#</a></h3>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the history of the optimization is printed to the console</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the history of the optimization is saved to a .json file</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_txt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_txt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the history of the optimization is saved to a human readable .txt file</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the history of the state variables over the optimization is
+saved in .xdmf files</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_adjoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_adjoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the history of the adjoint variables over the optimization is
+saved in .xdmf files</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_gradient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_gradient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the history of the gradient(s) over the optimization is saved in .xdmf files</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">result_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">./</span></code></p></td>
+<td><p>path to the directory, where the output should be placed</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">precision</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span></code></p></td>
+<td><p>number of significant digits to be printed</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">time_suffix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>Boolean flag, which adds a suffix to <code class="code highlight ini docutils literal highlight-ini"><span class="na">result_dir</span></code> based on the current time</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>This concludes the documentation of the config files for optimal control problems.
+For the corresponding documentation for shape optimization problems, see <a class="reference internal" href="../shape_optimization/doc_config.html#config-shape-optimization"><span class="std std-ref">Documentation of the Config Files for Shape Optimization Problems</span></a>.</p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="demo_poisson.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Distributed Control of a Poisson Problem</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="demo_box_constraints.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Control Constraints</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-mesh">Section Mesh</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-statesystem">Section StateSystem</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-optimizationroutine">Section OptimizationRoutine</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-linesearch">Section LineSearch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-algolbfgs">Section AlgoLBFGS</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-algocg">Section AlgoCG</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-algotnm">Section AlgoTNM</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-output">Section Output</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#statesystem">[StateSystem]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optimizationroutine">[OptimizationRoutine]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#linesearch">[LineSearch]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#algolbfgs">[AlgoLBFGS]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#algocg">[AlgoCG]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#algotnm">[AlgoTNM]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#output">[Output]</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/user/demos/optimal_control/doc_config.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

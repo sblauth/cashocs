@@ -1,0 +1,1897 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="16x16" href="../../../_static/favicon/favicon-16x16.jpg" type="image/jpeg">
+    <link rel="icon" sizes="32x32" href="../../../_static/favicon/favicon-32x32.jpg" type="image/jpeg">
+    <title>Documentation of the Config Files for Shape Optimization Problems &#8212; cashocs 2.1.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script src="../../../_static/documentation_options.js?v=14dbad98"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user/demos/shape_optimization/doc_config';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.14.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Regularization for Shape Optimization Problems" href="demo_regularization.html" />
+    <link rel="prev" title="Shape Optimization with a Poisson Problem" href="demo_shape_poisson.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <script>document.write(`<img src="../../../_static/logo.jpg" class="logo__image only-dark" alt="cashocs"/>`);</script>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../about/index.html">
+                        About
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../../index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../api/index.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../development/index.html">
+                        Development
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../release_notes.html">
+                        Release Notes
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <label class="sidebar-toggle secondary-toggle" for="__secondary" tabindex="0">
+      <span class="fa-solid fa-outdent"></span>
+    </label>
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item">
+<nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../about/index.html">
+                        About
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item current active">
+                      <a class="nav-link nav-internal" href="../../index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../api/index.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../development/index.html">
+                        Development
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../release_notes.html">
+                        Release Notes
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-3"
+      type="button"
+      class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-3"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-3"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-3">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">List of tutorial topics:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../optimal_control/index.html">Optimal Control Problems</a><input checked class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_poisson.html">Distributed Control of a Poisson Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/doc_config.html">Documentation of the Config Files for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_box_constraints.html">Control Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_neumann_control.html">Neumann Boundary Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_multiple_variables.html">Using Multiple Variables and PDEs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_monolithic_problems.html">Coupled Problems - Monolithic Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_picard_iteration.html">Coupled Problems - Picard Iteration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_stokes.html">Distributed Control of a Stokes Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_heat_equation.html">Distributed Control for Time Dependent Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_nonlinear_pdes.html">Optimal Control with Nonlinear PDE Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_dirichlet_control.html">Dirichlet Boundary Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_iterative_solvers.html">Iterative Solvers for State and Adjoint Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_state_constraints.html">Optimal Control with State Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_sparse_control.html">Sparse Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_scalar_control_tracking.html">Tracking of Scalar Functionals for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_constraints.html">Treatment of additional constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_control_boundary_conditions.html">Boundary conditions for control variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_pre_post_callbacks.html">Pre- and Post-Callbacks for the optimization</a></li>
+</ul>
+</li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Shape Optimization Problems</a><input checked class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="demo_shape_poisson.html">Shape Optimization with a Poisson Problem</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Documentation of the Config Files for Shape Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_regularization.html">Regularization for Shape Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_inverse_tomography.html">Inverse Problem in Electric Impedance Tomography</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_shape_stokes.html">Optimization of an Obstacle in Stokes Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_remeshing.html">Remeshing with cashocs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_custom_scalar_product.html">Custom Scalar Products for Shape Gradient Computation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_scaling.html">Scaling of the Cost Functional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_eikonal_stiffness.html">Computing the Shape Stiffness via Distance to the Boundaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_p_laplacian.html">Shape Optimization with the p-Laplacian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_space_mapping_semilinear_transmission.html">Space Mapping Shape Optimization - Semilinear Transmission Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_space_mapping_uniform_flow_distribution.html">Space Mapping Shape Optimization - Uniform Flow Distribution</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../topology_optimization/index.html">Topology Optimization Problems</a><input checked class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-3"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_poisson_clover.html">Topology Optimization with a Poisson Equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_cantilever.html">Topology Optimization with Linear Elasticity - Cantilever</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_pipe_bend.html">Topology Optimization with Stokes Flow - Pipe Bend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_projection.html">Topology Optimization with a Volume Constraint</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../cashocs_as_solver/index.html">Using cashocs as a solver</a><input checked class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-4"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../cashocs_as_solver/demo_control_solver.html">cashocs as Solver for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cashocs_as_solver/demo_shape_solver.html">cashocs as Solver for Shape Optimization Problems</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../misc/index.html">Miscellaneous Topics</a><input checked class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-5"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/demo_xdmf_io.html">Writing and Reading XDMF Files</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<nav class="sidebar-indices-items">
+  <p class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">cashocs Tutorial</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Shape Optimization Problems</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">Documentatio...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <section id="documentation-of-the-config-files-for-shape-optimization-problems">
+<span id="config-shape-optimization"></span><h1>Documentation of the Config Files for Shape Optimization Problems<a class="headerlink" href="#documentation-of-the-config-files-for-shape-optimization-problems" title="Link to this heading">#</a></h1>
+<p>Let us take a detailed look at the config files for shape optimization problems and
+discusss the corresponding parameters. The corresponding
+config file used for this discussion is <a class="reference download internal" download="" href="../../../_downloads/3e4e76465d1dbad77690aefe75dafc16/config.ini"><code class="xref download docutils literal notranslate"><span class="pre">config.ini</span></code></a>,
+which is the config file used for <a class="reference internal" href="demo_shape_poisson.html#demo-shape-poisson"><span class="std std-ref">Shape Optimization with a Poisson Problem</span></a>.</p>
+<p>For shape optimization problems, the config file is a lot larger compared to the <a class="reference internal" href="../optimal_control/doc_config.html#config-optimal-control"><span class="std std-ref">config files
+for optimal control</span></a>.
+However, several important parameters are shared between both _typing of optimization
+problems.</p>
+<p>A general config file for shape optimization has the following sections
+<a class="reference internal" href="#config-shape-mesh"><span class="std std-ref">Mesh</span></a>, <a class="reference internal" href="#config-shape-state-equation"><span class="std std-ref">StateSystem</span></a>,
+<a class="reference internal" href="#config-shape-optimization-routine"><span class="std std-ref">OptimizationRoutine</span></a>, <a class="reference internal" href="#config-shape-algolbfgs"><span class="std std-ref">AlgoLBFGS</span></a>,
+<a class="reference internal" href="#config-shape-algocg"><span class="std std-ref">AlgoCG</span></a>,
+<a class="reference internal" href="#config-shape-shape-gradient"><span class="std std-ref">ShapeGradient</span></a>,
+<a class="reference internal" href="#config-shape-regularization"><span class="std std-ref">Regularization</span></a>, <a class="reference internal" href="#config-shape-mesh-quality"><span class="std std-ref">MeshQuality</span></a>
+and <a class="reference internal" href="#config-shape-output"><span class="std std-ref">Output</span></a>. We go over these
+sections and each parameter in them in the following.</p>
+<p>As in <a class="reference internal" href="../optimal_control/doc_config.html#config-optimal-control"><span class="std std-ref">Documentation of the Config Files for Optimal Control Problems</span></a>, we refer to the <a class="reference external" href="https://docs.python.org/3/library/configparser.html">documentation of the
+configparser module</a> for
+a detailed description of how these config files can be structured. Moreover,
+we remark that cashocs has a default behavior for almost all of these
+parameters, which is triggered when they are <strong>NOT</strong> specified in the config file,
+and we will discuss this behavior for each parameter in this tutorial. For a
+summary over all parameters and their default values look at
+<a class="reference internal" href="#config-shape-summary"><span class="std std-ref">the end of this page</span></a>.</p>
+<section id="section-mesh">
+<span id="config-shape-mesh"></span><h2>Section Mesh<a class="headerlink" href="#section-mesh" title="Link to this heading">#</a></h2>
+<p>The mesh section is, in contrast to the corresponding one for optimal control problems,
+more important and also has more parameters. However, its primary importance is for
+remeshing, which we cover in <a class="reference internal" href="demo_remeshing.html#demo-remeshing"><span class="std std-ref">Remeshing with cashocs</span></a>.</p>
+<p>As first parameter, we have</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">mesh_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">./mesh/mesh.xdmf</span>
+</pre></div>
+</div>
+<p>This specifies a path to a .xdmf file containing the discretized geometry. For all purposes, cashocs assumes that this .xdmf file was generated via conversion from a
+GMSH file using the command line command <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.convert" title="cashocs.convert"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.convert()</span></code></a>.</p>
+<p>Note, that the corresponding files for the boundaries and subdomains are generated
+automatically with <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.convert" title="cashocs.convert"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.convert()</span></code></a>, and they will also be read by <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.import_mesh" title="cashocs.import_mesh"><code class="xref py py-func docutils literal notranslate"><span class="pre">import_mesh</span></code></a>
+if they are present.</p>
+<p>The second parameter in the Mesh section, <code class="code highlight ini docutils literal highlight-ini"><span class="na">gmsh_file</span></code>, is defined via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">gmsh_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">./mesh/mesh.msh</span>
+</pre></div>
+</div>
+<p>This defines the path to the GMSH .msh file which was used to create the .xdmf file
+specified in <code class="code highlight ini docutils literal highlight-ini"><span class="na">mesh_file</span></code>. As before, this parameter is only relevant for remeshing
+purposes, and not needed otherwise.</p>
+<p>The next parameter is <code class="code highlight ini docutils literal highlight-ini"><span class="na">geo_file</span></code>, which is the final file we need for remeshing (
+and only there). It is also given by a path to a file, in this case to the GMSH .geo
+file used to generate the <code class="code highlight ini docutils literal highlight-ini"><span class="na">gmsh_file</span></code>. It is specified, .e.g., as</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">geo_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">./mesh/mesh.geo</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For a detailed discussion of how to use these parameters we refer to <a class="reference internal" href="demo_remeshing.html#demo-remeshing"><span class="std std-ref">Remeshing with cashocs</span></a>.</p>
+</div>
+<p>Next up is a boolean flag that is used to indicate whether remeshing shall be performed</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">remesh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>As the remeshing feature is experimental, we do advise to always try without
+remeshing. Note, that by default this flag is set to <code class="code highlight ini docutils literal highlight-ini"><span class="na">remehs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code> so that remeshing is disabled.</p>
+<p>Finally, we have the boolean flag <code class="code highlight ini docutils literal highlight-ini"><span class="na">show_gmsh_output</span></code>, specified via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">show_gmsh_output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This is used to toggle on / off the terminal output of GMSH when it performs a
+remeshing operation. This can be helpful for debugging purposes. By default, this
+is set to <code class="code highlight ini docutils literal highlight-ini"><span class="na">show_gmsh_output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+<p>As stated throughout the Mesh section, these parameters are optional most of the time,
+and are only really required for remeshing. You can safely leave them out of your config file, and you should not need them, unless you want to perform remeshing.</p>
+</section>
+<section id="section-statesystem">
+<span id="config-shape-state-equation"></span><h2>Section StateSystem<a class="headerlink" href="#section-statesystem" title="Link to this heading">#</a></h2>
+<p>The StateSystem section is in complete analogy to <a class="reference internal" href="../optimal_control/doc_config.html#config-ocp-state-system"><span class="std std-ref">the corresponding one for optimal control problems</span></a>. For the
+sake of completeness, we briefly recall the parameters here, anyway.</p>
+<p>The first parameter is <code class="code highlight ini docutils literal highlight-ini"><span class="na">is_linear</span></code>, and can be set as</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">is_linear</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>This is a boolean flag that indicates whether the state system is linear or not.
+The default value for this parameter is <code class="code highlight ini docutils literal highlight-ini"><span class="na">is_linear</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>, as every linear problem can also be
+interpreted as a nonlinear one.</p>
+<p>The next parameters are used to define the tolerances of the Newton solver, in
+case a nonlinear state system has to be solved</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">newton_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-11</span>
+<span class="na">newton_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-13</span>
+</pre></div>
+</div>
+<p>Here, <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_rtol</span></code> sets the relative, and <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_atol</span></code> the absolute tolerance
+for Newton’s method. Their default values are <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-11</span></code> and
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-13</span></code>.</p>
+<p>The next parameter for the Newton iteration is the maximum number of iterations it
+is allowed to perform before the iteration is cancelled. This is controlled via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">newton_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
+</pre></div>
+</div>
+<p>which defaults to <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span></code>.</p>
+<p>The parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_damped</span></code>, which is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">newton_damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>is a boolean flag, indicating whether a damping strategy should be performed for the
+Newton method, or whether the classical Newton-Raphson iteration shall be used. This
+defaults to <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code> (as this is faster), but for some problems it might be beneficial to
+use damping in order to enhance the convergence of the nonlinear solver.</p>
+<p>Additionally, we have the boolean parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_inexact</span></code>, defined via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">newton_inexact</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>which sets up an inexact Newton method for solving nonlinear problems in case this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_inexact</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>. The default is <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_inexact</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+<p>Next, we have the parameter</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">newton_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This is used to toggle the verbose output of the Newton method for the state system.
+By default this is set to <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code> so that there is not too much noise in the terminal.</p>
+<p>The upcoming parameters are used to define the behavior of a Picard iteration, that
+may be used if we have multiple variables.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For a detailed discussion of how to use the Picard iteration to solve a coupled
+state system, we refer to <a class="reference internal" href="../optimal_control/demo_picard_iteration.html#demo-picard-iteration"><span class="std std-ref">Coupled Problems - Picard Iteration</span></a>. Note, that this demo
+is written for optimal control problems, but the definition of the state system
+can be transferred analogously to shape optimization problems, too.</p>
+</div>
+<p>First, we have a boolean flag, set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">picard_iteration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>which determines whether the Picard iteration is enabled or not. This defaults
+to <code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_iteration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>, so that the Picard solver is disabled by default.
+The following two parameters determine, analogously to above, the tolerances for the
+Picard iteration</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">picard_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-10</span>
+<span class="na">picard_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-12</span>
+</pre></div>
+</div>
+<p>The default values for these parameters are <code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-10</span></code> and
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-12</span></code>. Moreover, note that the tolerances of the Newton solver are adjusted automatically in case
+a Picard iteration is performedm, so that an inexact Picard iteration is used.</p>
+<p>The maximum amout of iterations for the Picard iteration are set with</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">picard_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10</span>
+</pre></div>
+</div>
+<p>The default value for this is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span></code>.</p>
+<p>Finally, we can enable verbose output of the Picard iteration with the following
+boolean flag</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">picard_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>which is set to <code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code> by default.</p>
+</section>
+<section id="section-optimizationroutine">
+<span id="config-shape-optimization-routine"></span><h2>Section OptimizationRoutine<a class="headerlink" href="#section-optimizationroutine" title="Link to this heading">#</a></h2>
+<p>The section OptimizationRoutine also closely resembles <a class="reference internal" href="../optimal_control/doc_config.html#config-ocp-optimization-routine"><span class="std std-ref">the one for optimal control
+problems</span></a>. Again, we will take a brief look at all parameters here</p>
+<p>The first parameter that can be controlled via the config file is <code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span></code>, which is
+set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">lbfgs</span>
+</pre></div>
+</div>
+<p>There are three possible choices for this parameter for shape optimization problems, namely</p>
+<ul class="simple">
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">gd</span></code> or <code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">gradient_descent</span></code> : A gradient descent method</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cg</span></code>, <code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">conjugate_gradient</span></code>, <code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">ncg</span></code>, <code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">nonlinear_cg</span></code> : Nonlinear CG methods</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">lbfgs</span></code> or <code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">bfgs</span></code> : limited memory BFGS method.</p></li>
+</ul>
+<p>Thereafter, we specify the tolerances for the optimization algorithm with the parameters</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5e-3</span>
+<span class="na">atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
+</pre></div>
+</div>
+<p>Again, <code class="code highlight ini docutils literal highlight-ini"><span class="na">rtol</span></code> denotes the relative, and <code class="code highlight ini docutils literal highlight-ini"><span class="na">atol</span></code> the absolute tolerance, and the
+defaults for these parameters are given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-3</span></code>, and <code class="code highlight ini docutils literal highlight-ini"><span class="na">atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code>.</p>
+<p>The next parameter is used to control the maximum number of iterations performed by
+the optimization algorithm. It is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">max_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span>
+</pre></div>
+</div>
+<p>and defaults to <code class="code highlight ini docutils literal highlight-ini"><span class="na">max_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span></code>.</p>
+<p>Next up, we have the initial guess for the step size, which can be determined via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">initial_stepsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+</pre></div>
+</div>
+<p>The default behavior is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">initial_stepsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code>.</p>
+<p>The next parameter is given by</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">safeguard_stepsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>This parameter can be used to activate safeguarding of the initial stepsize for line search methods. This helps
+to choose an apropriate stepsize for the initial iteration even if the problem is poorly scaled.</p>
+<p>The upcoming parameters are used for the Armijo rule</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">epsilon_armijo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-4</span>
+<span class="na">beta_armijo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2</span>
+</pre></div>
+</div>
+<p>They are used to verify that the condition</p>
+<div class="math notranslate nohighlight">
+\[J((I + t \mathcal{V})\Omega) \leq J(\Omega) + \varepsilon_{\text{Armijo}}\ t\ dJ(\Omega)[\mathcal{V}]\]</div>
+<p>holds, and if this is not satisfied, the stepsize is updated via <span class="math notranslate nohighlight">\(t = \frac{t}{\beta_{\text{Armijo}}}\)</span>.
+As default values for these parameters we use <code class="code highlight ini docutils literal highlight-ini"><span class="na">epsilon_armijo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-4</span></code> as well
+as <code class="code highlight ini docutils literal highlight-ini"><span class="na">beta_armijo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2</span></code>.</p>
+<p>Next, we have a set of two parameters which detail the methods used for computing gradients in cashocs.
+These parameters are</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">direct</span>
+</pre></div>
+</div>
+<p>as well as</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">gradient_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-9</span>
+</pre></div>
+</div>
+<p>The first parameter, <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span></code> can be either <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">direct</span></code> or <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">iterative</span></code>. In the former case, a
+direct solver is used to compute the gradient (using a Riesz projection) and in the latter case, an
+iterative solver is used to do so. In case we have <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">iterative</span></code>, the parameter
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_tol</span></code> is used to specify the (relative) tolerance for the iterative solver, in the other case
+the parameter is not used.</p>
+<p>The following parameter, <code class="code highlight ini docutils literal highlight-ini"><span class="na">soft_exit</span></code>, is a boolean flag which determines how
+the optimization algorithm is terminated in case it does not converge. If <code class="code highlight ini docutils literal highlight-ini"><span class="na">soft_exit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, then an
+error message is printed, but code after the <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.ShapeOptimizationProblem.solve" title="cashocs.ShapeOptimizationProblem.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve</span></code></a> call of the
+optimization problem will still be executed. However, when <code class="code highlight ini docutils literal highlight-ini"><span class="na">soft_exit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>, cashocs
+raises an exception and terminates. This is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">soft_exit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>and is set to <code class="code highlight ini docutils literal highlight-ini"><span class="na">soft_exit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code> by default.</p>
+</section>
+<section id="section-linesearch">
+<span id="config-sop-linesearch"></span><h2>Section LineSearch<a class="headerlink" href="#section-linesearch" title="Link to this heading">#</a></h2>
+<p>In this section, parameters regarding the line search can be specified. The type of the line search can be chosen via the parameter</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">armijo</span>
+</pre></div>
+</div>
+<p>Possible options are <code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">armijo</span></code>, which performs a simple backtracking line search based on the armijo rule with fixed steps (think of halving the stepsize in each iteration), and <code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">polynomial</span></code>, which uses polynomial models of the cost functional restricted to the line to generate “better” guesses for the stepsize. The default is <code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">armijo</span></code>.</p>
+<p>The next parameter, <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span></code>, specifies, which type of polynomials are used to generate new trial stepsizes. It is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cubic</span>
+</pre></div>
+</div>
+<p>The parameter can either be <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">quadratic</span></code> or <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cubic</span></code>. If this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">quadratic</span></code>, a quadratic interpolation polynomial along the search direction is generated and this is minimized analytically to generate a new trial stepsize. Here, only the current function value, the direction derivative of the cost functional in direction of the search direction, and the most recent trial stepsize are used to generate the polynomial. In case that <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cubic</span></code>, the last two trial stepsizes (when available) are used in addition to the current cost functional value and the directional derivative, to generate a cubic model of the one-dimensional cost functional, which is then minimized to compute a new trial stepsize.</p>
+<p>For the polynomial models, we also have a safeguarding procedure, which ensures that trial stepsizes cannot be chosen too large or too small, and which can be configured with the following two parameters. The trial stepsizes generate by the polynomial models are projected to the interval <span class="math notranslate nohighlight">\([\beta_{low} \alpha, \beta_{high} \alpha]\)</span>, where <span class="math notranslate nohighlight">\(\alpha\)</span> is the previous trial stepsize and <span class="math notranslate nohighlight">\(\beta_{low}, \beta_{high}\)</span> are factors which can be set via the parameters <code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_low</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_high</span></code>. In the config file, this can look like this</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">factor_high</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
+<span class="na">factor_low</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span>
+</pre></div>
+</div>
+<p>and the values specified here are also the default values for these parameters.</p>
+<p>Finally, we have the parameter</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">fail_if_not_converged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>which determines, whether the line search is terminated if the state system cannot be solved at the current iterate. If this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">fail_if_not_converged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, then an exception is raised. Otherwise, the iterate is counted as having too high of a function value and the stepsize is “halved” and a new iterate is formed.</p>
+</section>
+<section id="section-algolbfgs">
+<span id="config-shape-algolbfgs"></span><h2>Section AlgoLBFGS<a class="headerlink" href="#section-algolbfgs" title="Link to this heading">#</a></h2>
+<p>Next, we discuss the parameters relevant for the limited memory BFGS method. For details
+regarding this method, we refer to <a class="reference external" href="https://doi.org/10.1137/15M1029369">Schulz, Siebenborn, and Welker, Efficient PDE Constrained Shape Optimization Based on Steklov-Poincaré-Type Metrics</a>, where the methods are introduced.</p>
+<p>The first parameter, <code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_memory_size</span></code>, determines how large the storage of the BFGS method is. It is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">bfgs_memory_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span>
+</pre></div>
+</div>
+<p>Usually, a higher storage leads to a better Hessian approximation, and thus to faster
+convergence. However, this also leads to an increased memory usage. Typically, values
+below 5 already work very well. The default is <code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_memory_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span></code>.</p>
+<p>The other parameter for the BFGS method is</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">use_bfgs_scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>This determines, whether one should use a scaling of the initial Hessian approximation
+(see <a class="reference external" href="https://doi.org/10.1007/978-0-387-40065-5">Nocedal and Wright, Numerical Optimization</a>).
+This is usually very beneficial and should be kept enabled (which is the default).</p>
+<p>Third, we have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_periodic_restart</span></code>, which is set in the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">bfgs_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span>
+</pre></div>
+</div>
+<p>This is a non-negative integer value, which indicates the number of BFGS iterations, before a reinitialization takes place. In case that this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span></code> (which is the default), no restarts are performed.</p>
+<p>Finally, we have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">damped</span></code>, which can be set with</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This parameter is a boolean flag, which indicates whether Powell’s damping (on H) should be used or not. This is useful, when the curvature condition is not satisfied and (without damping) a restart would be required. The default is <code class="code highlight ini docutils literal highlight-ini"><span class="na">damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+</section>
+<section id="section-algocg">
+<span id="config-shape-algocg"></span><h2>Section AlgoCG<a class="headerlink" href="#section-algocg" title="Link to this heading">#</a></h2>
+<p>The following parameters are used to define the behavior of the nonlinear conjugate
+gradient methods for shape optimization. For more details on this, we refer to the
+preprint <a class="reference external" href="https://arxiv.org/abs/2007.12891">Blauth, Nonlinear Conjugate Gradient Methods for PDE Constrained Shape
+Optimization Based on Steklov-Poincaré-Type Metrics</a>.</p>
+<p>First, we define which nonlinear CG method is used by</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DY</span>
+</pre></div>
+</div>
+<p>Available options are</p>
+<ul class="simple">
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FR</span></code> : The Fletcher-Reeves method</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">PR</span></code> : The Polak-Ribiere method</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">HS</span></code> : The Hestenes-Stiefel method</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">DY</span></code> : The Dai-Yuan method</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">HZ</span></code> : The Hager-Zhang method</p></li>
+</ul>
+<p>The default value is <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FR</span></code>. As for optimal control problems, the subsequent parameters are used to define the
+restart behavior of the nonlinear CG methods. First, we have</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">cg_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This boolean flag en- or disables that the NCG methods are restarted after a fixed
+amount of iterations, which is specified via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">cg_periodic_its</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span>
+</pre></div>
+</div>
+<p>i.e., if <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_its</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">n</span></code>, then the NCG method
+is restarted every <span class="math notranslate nohighlight">\(n\)</span> iterations. The default behavior is given by
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_its</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10</span></code>.</p>
+<p>Alternatively, there also exists a relative restart criterion (see <a class="reference external" href="https://doi.org/10.1007/978-0-387-40065-5">Nocedal and Wright,
+Numerical Optimization</a>), which can be enabled
+via the boolean flag <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_relative_restart</span></code>, which is defined in the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">cg_relative_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>and the corresponding restart tolerance is set in</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">cg_restart_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span>
+</pre></div>
+</div>
+<p>Note, that <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_restart_tol</span></code> should be in <span class="math notranslate nohighlight">\((0, 1)\)</span>. If two subsequent
+gradients generated by the nonlinear CG method are not “sufficiently
+orthogonal”, the method is restarted with a gradient step. The default behavior
+is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_relative_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_restart_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.25</span></code>.</p>
+</section>
+<section id="section-shapegradient">
+<span id="config-shape-shape-gradient"></span><h2>Section ShapeGradient<a class="headerlink" href="#section-shapegradient" title="Link to this heading">#</a></h2>
+<p>After we have specified the behavior of the solution algorithm, this section
+is used to specify parameters relevant to the computation of the shape gradient.
+Note, that by shape gradient we refer to the following object.</p>
+<p>Let <span class="math notranslate nohighlight">\(\mathcal{S} \subset \{ \Omega \;\vert\; \Omega \subset \mathbb{R}^d \}\)</span> be a
+subset of the power set of <span class="math notranslate nohighlight">\(\mathbb{R}^d\)</span>. Let <span class="math notranslate nohighlight">\(J\)</span> be a shape differentiable functional
+<span class="math notranslate nohighlight">\(J \colon \mathcal{S} \to \mathbb{R}\)</span> with shape derivative <span class="math notranslate nohighlight">\(dJ(\Omega)[\mathcal{V}]\)</span>.
+Moreover, let <span class="math notranslate nohighlight">\(a \colon H \times H \to \mathbb{R}\)</span> be a symmetric, continuous, and
+coercive bilinear form on the Hilbert space <span class="math notranslate nohighlight">\(H\)</span>.
+Then, the shape gradient <span class="math notranslate nohighlight">\(\mathcal{G}\)</span> of <span class="math notranslate nohighlight">\(J\)</span> (w.r.t. <span class="math notranslate nohighlight">\(a\)</span>) is defined as the solution of the
+problem</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\text{Find } \mathcal{G} \in H \text{ such that } \\
+\quad a(\mathcal{G}, \mathcal{V}) = dJ(\Omega)[\mathcal{V}].\end{split}\]</div>
+<p>For PDE constrained shape optimization, it is common to use a bilinear form based on
+the linear elasticity equations, which enables smooth mesh deformations. This bilinear
+form is given as follows, in a general form, that is also implemented in cashocs</p>
+<div class="math notranslate nohighlight">
+\[a \colon H \times H; \quad a(\mathcal{W}, \mathcal{V}) = \int_\Omega
+2 \mu \left( \varepsilon(\mathcal{W}) : \varepsilon(\mathcal{V}) \right) + \lambda \left( \text{div}(\mathcal{W}) \text{div}(\mathcal{V}) \right) + \delta \left( V \cdot W \right) \text{ d}x,\]</div>
+<p>where <span class="math notranslate nohighlight">\(H\)</span> is some suitable subspace of <span class="math notranslate nohighlight">\(H^1(\Omega)^d\)</span> and <span class="math notranslate nohighlight">\(\varepsilon(\mathcal{V}) = \frac{1}{2}(D\mathcal{V} + D\mathcal{V}^\top)\)</span>
+is the symmetric part of the Jacobian.
+The subspace property is needed
+to include certain geometrical constraints of the shape optimization problem, which fix
+certain boundaries, into the shape gradient. For a detailed description of this
+setting we refer to the preprint <a class="reference external" href="https://arxiv.org/abs/2007.12891">Blauth, Nonlinear Conjugate Gradient Methods for PDE
+Constrained Shape Optimization Based on Steklov-Poincaré-Type Metrics</a>.
+Moreover, we note that for the second Lamé parameter <span class="math notranslate nohighlight">\(\mu\)</span>, cashocs implements
+an idea from <a class="reference external" href="https://doi.org/10.1515/cmam-2016-0009">Schulz and Siebenborn, Computational Comparison of Surface Metric for PDE Constrained Shape Optimization</a>: There, it is proposed to compute <span class="math notranslate nohighlight">\(\mu\)</span>
+as the solution of the Laplace problem</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{alignedat}{2}
+    - \Delta \mu &amp;= 0 \quad &amp;&amp;\text{ in } \Omega, \\
+    \mu &amp;= \mu_\text{def} \quad &amp;&amp;\text{ on } \Gamma^\text{def},\\
+    \mu &amp;= \mu_\text{fix} \quad &amp;&amp;\text{ on } \Gamma^\text{fix}.\\
+\end{alignedat}\end{split}\]</div>
+<p>This allows to give the deformable and fixed boundaries a different stiffness,
+which is then smoothly extended into the interior of the domain. Moreover, they
+propose to use the solution of this Laplace equation directly for 2D problems,
+and to use <span class="math notranslate nohighlight">\(\sqrt{\mu}\)</span> for 3D problems.</p>
+<p>Moreover, let us take a look at the possible _typing of boundaries that can be used
+with cashocs. In principle, there exist
+two _typing: deformable and fixed boundaries. On fixed boundaries, we
+impose homogeneous Dirichlet boundary conditions for the shape gradient, so that
+these are not moved under the corresponding deformation. In cashocs, we define what boundaries
+are fixed and deformable via their markers, which are either defined in the
+corresponding python script, or in the GMSH file, if such a mesh is imported.</p>
+<p>The config file for <a class="reference internal" href="demo_shape_poisson.html#demo-shape-poisson"><span class="std std-ref">Shape Optimization with a Poisson Problem</span></a> defines the deformable boundaries
+with the command</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">shape_bdry_def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[1]</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Remember, that in <a class="reference internal" href="demo_shape_poisson.html#demo-shape-poisson"><span class="std std-ref">Shape Optimization with a Poisson Problem</span></a>, we defined <code class="code highlight python docutils literal highlight-python"><span class="n">boundaries</span></code> with the commands</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">boundary</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">CompiledSubDomain(&#39;on_boundary&#39;)</span>
+<span class="na">boundaries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">MeshFunction(&#39;size_t&#39;, mesh, dim=1)</span>
+<span class="na">boundary.mark(boundaries, 1)</span>
+</pre></div>
+</div>
+<p>Hence, we see that the marker <code class="code highlight python docutils literal highlight-python"><span class="mi">1</span></code> corresponds to the entire boundary, so that this
+is set to being deformable through the config.</p>
+</div>
+<p>As we do not have a fixed boundary for this problem, the corresponding list
+for the fixed boundaries is empty</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">shape_bdry_fix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span>
+</pre></div>
+</div>
+<p>Note, that cashocs also gives you the possibility of defining partially constrainted
+boundaries, where only one axial component is fixed, whereas the other two are
+not. These are defined in</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">shape_bdry_fix_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span>
+<span class="na">shape_bdry_fix_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span>
+<span class="na">shape_bdry_fix_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span>
+</pre></div>
+</div>
+<p>For these, we have that <code class="code highlight ini docutils literal highlight-ini"><span class="na">shape_bdry_fix_x</span></code> is a list of all markers whose corresponding
+boundaries should not be deformable in x-direction, but can be deformed in the y-
+and z-directions. Of course you can constrain a boundary to be only variable in a
+single direction by adding the markers to the remaining lists.</p>
+<p>The next parameter is specified via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">use_pull_back</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>This parameter is used to determine, whether the material derivative should
+be computed for objects that are not state or adjoint variables. This is
+enabled by default.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This parameter should always be set to <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_pull_back</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, otherwise the shape derivative might
+be wrong. Only disable it when you are sure what you are doing.</p>
+<p>Furthermore, note that the material derivative computation is only correct,
+as long as no differential operators act on objects that are not state or
+adjoint variables. However, this should only be a minor restriction and not
+relevant for almost all problems.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>See <a class="reference internal" href="demo_inverse_tomography.html#demo-inverse-tomography"><span class="std std-ref">Inverse Problem in Electric Impedance Tomography</span></a> for a case, where we use
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">use_pull_back</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+</div>
+<p>The next parameters determine the coefficients of the bilinear form <span class="math notranslate nohighlight">\(a\)</span>.
+First, we have the first Lamé parameter <span class="math notranslate nohighlight">\(\lambda\)</span>, which is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">lambda_lame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.428571428571429</span>
+</pre></div>
+</div>
+<p>The default value for this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">lambda_lame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code>.</p>
+<p>Next, we specify the damping parameter <span class="math notranslate nohighlight">\(\delta\)</span> with the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">damping_factor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.2</span>
+</pre></div>
+</div>
+<p>The default for this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">damping_factor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As the default value for the damping factor is <code class="code highlight ini docutils literal highlight-ini"><span class="na">damping_factor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code>, this
+should be set to a positive value in case the entire boundary of a problem
+is deformable. Otherwise, the Riesz identification problem for the shape
+gradient is not well-posed.</p>
+</div>
+<p>Finally, we define the values for <span class="math notranslate nohighlight">\(\mu_\text{def}\)</span> and <span class="math notranslate nohighlight">\(\mu_\text{fix}\)</span>
+via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">mu_fix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.35714285714285715</span>
+<span class="na">mu_def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.35714285714285715</span>
+</pre></div>
+</div>
+<p>The default behavior is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_fix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code>.</p>
+<p>The parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_sqrt_mu</span></code> is a boolean flag, which switches between using
+<span class="math notranslate nohighlight">\(\mu\)</span> and <span class="math notranslate nohighlight">\(\sqrt{\mu}\)</span> as the stiffness for the linear elasticity
+equations, as discussed above. This is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">use_sqrt_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>and the default value is <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_sqrt_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+<p>The next line in the config file is</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">inhomogeneous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This determines, whether an inhomogeneous linear elasticity equation is used to
+project the shape gradient. This scales the parameters <span class="math notranslate nohighlight">\(\mu, \lambda\)</span> and
+<span class="math notranslate nohighlight">\(\delta\)</span> by <span class="math notranslate nohighlight">\(\frac{1}{\text{vol}}\)</span>, where <span class="math notranslate nohighlight">\(\text{vol}\)</span> is the
+volume of the current element (during assembly). This means, that smaller elements
+get a higher stiffness, so that the deformation takes place in the larger elements,
+which can handle larger deformations without reducing their quality too much. For
+more details on this approach, we refer to the paper <a class="reference external" href="https://doi.org/10.1002/zamm.202000166">Blauth, Leithäuser, and Pinnau,
+Model Hierarchy for the Shape Optimization of a Microchannel Cooling System</a>.</p>
+<p>Moreover, the parameter</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">update_inhomogeneous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>can be used to update the local mesh size after each mesh deformation, in case this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">update_inhomogeneous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, so that elements which become smaller also obtain a higher stiffness and vice versa. The default is <code class="code highlight ini docutils literal highlight-ini"><span class="na">update_inhomogeneous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+<p>For the inhomogeneous mesh stiffness, we also have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">inhomogeneous_exponent</span></code>, which is specified via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">inhomogeneous_exponent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+</pre></div>
+</div>
+<p>This parameter can be used to specify an exponent for the inhomogeneous mesh stiffness, so that the parameters
+<span class="math notranslate nohighlight">\(\mu, \lambda\)</span> and <span class="math notranslate nohighlight">\(\delta\)</span> are scaled by <span class="math notranslate nohighlight">\(\left( \frac{1}{\text{vol}} \right)^p\)</span>, where
+<span class="math notranslate nohighlight">\(p\)</span> is specified in <code class="code highlight ini docutils literal highlight-ini"><span class="na">inhomogeneous_exponent</span></code>. The default for this parameter is <code class="code highlight ini docutils literal highlight-ini"><span class="na">inhomogeneous_exponent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code>.</p>
+<p>There is also a different possibility to define the stiffness parameter <span class="math notranslate nohighlight">\(\mu\)</span>
+using cashocs, namely to define <span class="math notranslate nohighlight">\(\mu\)</span> in terms of how close a point of the
+computational domain is to a boundary. In the following we will explain this
+alternative way of defining <span class="math notranslate nohighlight">\(\mu\)</span>.
+To do so, we must first set the boolean parameter</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">use_distance_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>which enables this formulation and deactivates the previous one. Note that by default,
+the value is <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_distance_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>. Next, we have the parameters <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_min</span></code>, <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_max</span></code>,
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_min</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_max</span></code>. These do the following: If the distance to the boundary is
+smaller than <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_min</span></code>, the value of <span class="math notranslate nohighlight">\(\mu\)</span> is set to <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_min</span></code>, and if the distance
+to the boundary is larger than <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_max</span></code>, <span class="math notranslate nohighlight">\(\mu\)</span> is set to <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_max</span></code>. If the distance
+to the boundary is between <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_min</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_max</span></code>, the value of <span class="math notranslate nohighlight">\(\mu\)</span> is
+interpolated between <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_min</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_max</span></code>. The type of this interpolation is
+determined by the parameter</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">smooth_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>If this parameter is set to <code class="code highlight ini docutils literal highlight-ini"><span class="na">smooth_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, then a smooth, cubic polynomial is used to
+interplate between <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_min</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_max</span></code>, which yields a continuously differentiable
+<span class="math notranslate nohighlight">\(\mu\)</span>. If this is set to <code class="code highlight ini docutils literal highlight-ini"><span class="na">smooth_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>, then a linear interpolation is used, which only yields
+a continuous <span class="math notranslate nohighlight">\(\mu\)</span>. The default for this parameter is <code class="code highlight ini docutils literal highlight-ini"><span class="na">smooth_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+<p>Finally, we can specify which boundaries we want to incorporate when computing the
+distance. To do so, we can specify a list of indices which contain the boundary
+markers in the parameter</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">boundaries_dist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[1,2,3]</span>
+</pre></div>
+</div>
+<p>This means, that only boundaries marked with 1, 2, and 3 are considered for computing
+the distance, and all others are ignored. The default behavior is that all (outer) boundaries
+are considered.</p>
+<p>There is also another possibility to compute the shape gradient in cashocs, namely using the <span class="math notranslate nohighlight">\(p\)</span>-Laplacian, as proposed by <a class="reference external" href="https://doi.org/10.1007/s00158-021-03030-x">Müller, Kühl, Siebenborn, Deckelnick, Hinze, and Rung</a>. In order to do so, we have the following line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">use_p_laplacian</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>If this is set to <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_p_laplacian</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the <span class="math notranslate nohighlight">\(p\)</span>-Laplacian is used to compute the shape gradient, as explained in <a class="reference internal" href="demo_p_laplacian.html#demo-p-laplacian"><span class="std std-ref">Shape Optimization with the p-Laplacian</span></a>. However, by default this is disabled.
+The value of <span class="math notranslate nohighlight">\(p\)</span> which is then used is defined in the next line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">p_laplacian_power</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">6</span>
+</pre></div>
+</div>
+<p>which defaults to <code class="code highlight ini docutils literal highlight-ini"><span class="na">p_laplacian_power</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2</span></code>, whenever the parameter is not defined. The higher <span class="math notranslate nohighlight">\(p\)</span> is chosen, the better the numerical are expected to be, but the numerical solution of the problem becomes more involved.</p>
+<p>Finally, there is the possibility to use a stabilized weak form for the <span class="math notranslate nohighlight">\(p\)</span>-Laplacian operator, where the stabilization parameter can be defined in the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">p_laplacian_stabilization</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
+</pre></div>
+</div>
+<p>The default value of this parameter is <code class="code highlight ini docutils literal highlight-ini"><span class="na">p_laplacian_stabilization</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code>. Note, that the parameter should be chosen comparatively small, i.e., significantly smaller than 1.</p>
+<p>Furthermore, we have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">fixed_dimensions</span></code>, which enables us to restrict the shape gradient to specific dimensions. It is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">fixed_dimensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span>
+</pre></div>
+</div>
+<p>In case <code class="code highlight ini docutils literal highlight-ini"><span class="na">fixed_dimensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span></code>, there is no restriction on the shape gradient. However, if <code class="code highlight ini docutils literal highlight-ini"><span class="na">fixed_dimensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[i]</span></code>, then the i-th component of the shape gradient is set to 0, so that we have no deformation in the i-th coordinate direction. For example, if <code class="code highlight ini docutils literal highlight-ini"><span class="na">fixed_dimensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[0, 2]</span></code>, we only have a deformation in the <span class="math notranslate nohighlight">\(y\)</span>-component of the mesh. The default is <code class="code highlight ini docutils literal highlight-ini"><span class="na">fixed_dimensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span></code>.</p>
+</section>
+<section id="section-regularization">
+<span id="config-shape-regularization"></span><h2>Section Regularization<a class="headerlink" href="#section-regularization" title="Link to this heading">#</a></h2>
+<p>In this section, the parameters for shape regularizations are specified. For a
+detailed discussion of their usage, we refer to <a class="reference internal" href="demo_regularization.html#demo-regularization"><span class="std std-ref">Regularization for Shape Optimization Problems</span></a>.</p>
+<p>First, we have the parameters <code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_volume</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">target_volume</span></code>. These are set
+via the lines</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">factor_volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
+<span class="na">target_volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3.14</span>
+</pre></div>
+</div>
+<p>They are used to implement the (target) volume regularization term</p>
+<div class="math notranslate nohighlight">
+\[\frac{\mu_\text{vol}}{2} \left( \int_{\Omega} 1 \text{ d}x - \text{vol}_\text{des} \right)^2\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(\mu_\text{vol}\)</span> is specified via <code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_volume</span></code>, and <span class="math notranslate nohighlight">\(\text{vol}_\text{des}\)</span>
+is the target volume, specified via <code class="code highlight ini docutils literal highlight-ini"><span class="na">target_volume</span></code>. The default behavior is
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">target_volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code>, so that we do not have
+a volume regularization.</p>
+<p>The next line, i.e.,</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">use_initial_volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>determines the boolean flag <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_initial_volume</span></code>. If this is set to <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_initial_volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>,
+then not the value given in <code class="code highlight ini docutils literal highlight-ini"><span class="na">target_volume</span></code> is used, but instead the
+volume of the initial geometry is used for <span class="math notranslate nohighlight">\(\text{vol}_\text{des}\)</span>.</p>
+<p>For the next two _typing of regularization, namely the (target) surface and (target)
+barycenter regularization, the syntax for specifying the parameters is completely
+analogous. For the (target) surface regularization we have</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">factor_surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
+<span class="na">target_surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span>
+</pre></div>
+</div>
+<p>These parameter are used to implement the regularization term</p>
+<div class="math notranslate nohighlight">
+\[\frac{\mu_\text{surf}}{2} \left( \int_{\Gamma} 1 \text{ d}s - \text{surf}_\text{des} \right)^2\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(\mu_\text{surf}\)</span> is determined via <code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_surface</span></code>, and
+<span class="math notranslate nohighlight">\(\text{surf}_\text{des}\)</span> is determined via <code class="code highlight ini docutils literal highlight-ini"><span class="na">target_surface</span></code>. The default
+values are given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">target_surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code>.</p>
+<p>As for the volume regularization, the parameter</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">use_initial_surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>determines whether the target surface area is specified via <code class="code highlight ini docutils literal highlight-ini"><span class="na">target_surface</span></code>
+or if the surface area of the initial geometry should be used instead. The default
+behavior is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_initial_surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+<p>Next, we have the curvature regularization, which is controlled by the parameter</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">factor_curvature</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
+</pre></div>
+</div>
+<p>This is used to determine the size of <span class="math notranslate nohighlight">\(\mu_\text{curv}\)</span> in the regularization
+term</p>
+<div class="math notranslate nohighlight">
+\[\frac{\mu_\text{curv}}{2} \int_{\Gamma} \kappa^2 \text{ d}s,\]</div>
+<p>where <span class="math notranslate nohighlight">\(\kappa\)</span> denotes the mean curvature. This regularization term can be
+used to generate more smooth boundaries and to prevent kinks from occurring.</p>
+<p>Finally, we have the (target) barycenter regularization. This is specified via
+the parameters</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">factor_barycenter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
+<span class="na">target_barycenter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[0.0, 0.0, 0.0]</span>
+</pre></div>
+</div>
+<p>and implements the term</p>
+<div class="math notranslate nohighlight">
+\[\frac{\mu_\text{bary}}{2} \left\lvert \frac{1}{\text{vol}(\Omega)} \int_\Omega x \text{ d}x - \text{bary}_\text{des} \right\rvert^2\]</div>
+<p>The default behavior is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_barycenter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">target_barycenter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[0,0,0]</span></code>,
+so that we do not have a barycenter regularization.</p>
+<p>The flag</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">use_initial_barycenter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>again determines, whether <span class="math notranslate nohighlight">\(\text{bary}_\text{des}\)</span> is determined via <code class="code highlight ini docutils literal highlight-ini"><span class="na">target_barycenter</span></code>
+or if the barycenter of the initial geometry should be used instead. The default behavior
+is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_initial_barycenter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>The object <code class="code highlight ini docutils literal highlight-ini"><span class="na">target_barycenter</span></code> has to be a list. For 2D problems it is also
+sufficient, if the list only has two entries, for the <span class="math notranslate nohighlight">\(x\)</span> and <span class="math notranslate nohighlight">\(y\)</span>
+barycenters.</p>
+</div>
+<p>Finally, we have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_relative_scaling</span></code> which is set in the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">use_relative_scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This boolean flag does the following. For some regularization term <span class="math notranslate nohighlight">\(J_\text{reg}(\Omega)\)</span> with corresponding
+factor <span class="math notranslate nohighlight">\(\mu\)</span> (as defined above), the default behavior is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_relative_scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>
+adds the term <span class="math notranslate nohighlight">\(\mu J_\text{reg}(\Omega)\)</span> to the cost functional, so that the
+factor specified in the configuration file is actually used as the factor for the regularization term.
+In case <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_relative_scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the behavior is different, and the following term is
+added to the cost functional: <span class="math notranslate nohighlight">\(\frac{\mu}{\left\lvert J_\text{reg}(\Omega_0) \right\rvert} J_\text{reg}(\Omega)\)</span>,
+where <span class="math notranslate nohighlight">\(\Omega_0\)</span> is the initial guess for the geometry. In particular, this means
+that the magnitude of the regularization term is equal to <span class="math notranslate nohighlight">\(\mu\)</span> on the initial geometry.
+This allows a detailed weighting of multiple regularization terms, which is particularly
+useful in case the cost functional is also scaled (see <a class="reference internal" href="demo_scaling.html#demo-scaling"><span class="std std-ref">Scaling of the Cost Functional</span></a>).</p>
+</section>
+<section id="section-meshquality">
+<span id="config-shape-mesh-quality"></span><h2>Section MeshQuality<a class="headerlink" href="#section-meshquality" title="Link to this heading">#</a></h2>
+<p>This section details the parameters that influence the quality of the
+computational mesh. First, we have the lines</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">volume_change</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">inf</span>
+<span class="na">angle_change</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">inf</span>
+</pre></div>
+</div>
+<p>These parameters are used to specify how much the volume and the angles, respectively,
+of the mesh elements are allowed to change in a single transformation. In particular,
+they implement the following criteria (see <a class="reference external" href="https://doi.org/10.1137/19M1241465">Etling, Herzog, Loayza, Wachsmuth,
+First and Second Order Shape Optimization Based on Restricted Mesh Deformations</a>)</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\frac{1}{\alpha} &amp;\leq \det\left( \text{id} + D\mathcal{V} \right) \leq \alpha \\
+\left\lvert\left\lvert D\mathcal{V} \right\rvert\right\rvert_{F} &amp;\leq \beta.\end{split}\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(\alpha\)</span> corresponds to <code class="code highlight ini docutils literal highlight-ini"><span class="na">volume_change</span></code> and <span class="math notranslate nohighlight">\(\beta\)</span> corresponds
+to <code class="code highlight ini docutils literal highlight-ini"><span class="na">angle_change</span></code>, and <span class="math notranslate nohighlight">\(\mathcal{V}\)</span> is the deformation. The default behavior
+is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">volume_change</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">inf</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">angle_change</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">inf</span></code>, so that no restrictions
+are posed. Note, that, e.g., <a class="reference external" href="https://doi.org/10.1137/19M1241465">Etling, Herzog, Loayza, Wachsmuth,
+First and Second Order Shape Optimization Based on Restricted Mesh Deformations</a> use the values <code class="code highlight ini docutils literal highlight-ini"><span class="na">volume_change</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span></code> and
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">angle_change</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.3</span></code>.</p>
+<p>The next two parameters are given byx</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">tol_lower</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span>
+<span class="na">tol_upper</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-15</span>
+</pre></div>
+</div>
+<p>These parameters specify a kind of interval for the mesh quality. In particular,
+we have the following situation (note that the mesh quality is always an element
+in <span class="math notranslate nohighlight">\([0,1]\)</span>):</p>
+<ul class="simple">
+<li><p>If the mesh quality is in <span class="math notranslate nohighlight">\([\texttt{tol upper}, 1]\)</span>, the mesh is assumed
+to be “good”, so that finite element solutions of the corresponding PDEs are
+sensible and not influenced by the mesh quality or discretization artifacts.</p></li>
+<li><p>If the mesh quality is in <span class="math notranslate nohighlight">\([\texttt{tol lower}, \texttt{tol upper}]\)</span>, a
+kind of breaking point is reached. Here, it is assumed that the mesh is sufficiently
+good so that the solution of the state system is still possible. However, a mesh
+whose quality is in this interval should not be used anymore to compute the solution
+of the adjoint system or to compute the shape gradient, as the quality is too poor
+for this purpose. Usually, this means that the algorithm is terminated, unless remeshing
+is enabled. In the latter case, remeshing is performed.</p></li>
+<li><p>If the mesh quality is in the interval <span class="math notranslate nohighlight">\([0, \texttt{tol lower}]\)</span>, the mesh
+quality is assumed to be so poor, that even the solution of the state system
+is not possible anymore. In practice, this can only happen during the Armijo line
+search. Thanks to our previous considerations, we also know that the mesh, that is
+to be deformed, has at least a quality of <code class="code highlight ini docutils literal highlight-ini"><span class="na">tol_lupper</span></code>, so that this quality
+might be reached again, if the step size is just decreased sufficiently often.
+This way, it is ensured that the state system is only solved when the mesh quality
+is larger than <code class="code highlight ini docutils literal highlight-ini"><span class="na">tol_lower</span></code>, so that the corresponding cost functional value is
+reasonable.</p></li>
+</ul>
+<p>The default behavior is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">tol_lower</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">tol_upper</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-15</span></code>,
+so that there are basically no requirements on the mesh quality.</p>
+<p>Finally, the upcoming two parameters specify how exactly the mesh quality is measured.
+The first one is</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">measure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">condition_number</span>
+</pre></div>
+</div>
+<p>and determines one of the four mesh quality criteria, as defined in <code class="xref py py-class docutils literal notranslate"><span class="pre">MeshQuality</span></code>.
+Available options are</p>
+<ul class="simple">
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">measure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">skewness</span></code></p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">measure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">maximum_angle</span></code></p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">measure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">radius_ratios</span></code></p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">measure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">condition_number</span></code></p></li>
+</ul>
+<p>(see <code class="xref py py-class docutils literal notranslate"><span class="pre">MeshQuality</span></code> for a detailed description).
+The default value is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">measure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">skewness</span></code>.</p>
+<p>The parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">type</span></code> determines, whether the minimum quality over all
+elements (<code class="code highlight ini docutils literal highlight-ini"><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">min</span></code>) or the average quality over all elements (<code class="code highlight ini docutils literal highlight-ini"><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">avg</span></code>)
+shall be used. This is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">min</span>
+</pre></div>
+</div>
+<p>and defaults to <code class="code highlight ini docutils literal highlight-ini"><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">min</span></code>.</p>
+<p>Finally, we have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">remesh_iter</span></code> in which the user can specify after how many iterations a remeshing should be performed. It is given by</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">remesh_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span>
+</pre></div>
+</div>
+<p>where <code class="code highlight ini docutils literal highlight-ini"><span class="na">remesh_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span></code> means that no automatic remeshing is performed (this is the default), and <code class="code highlight ini docutils literal highlight-ini"><span class="na">remesh_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">n</span></code> means that remeshing is performed after each <cite>n</cite> iterations. Note that to use this parameter and avoid unexpected results, it might be beneficial to the the lower and upper mesh quality tolerances to a low value, so that the “quality based remeshing” does not interfere with the “iteration based remeshing”, but both can be used in combination.</p>
+</section>
+<section id="section-output">
+<span id="config-shape-output"></span><h2>Section Output<a class="headerlink" href="#section-output" title="Link to this heading">#</a></h2>
+<p>In this section, the parameters for the output of the algorithm, either in the terminal
+or as files, are specified. First, we have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">verbose</span></code>. This is used to toggle the output of the
+optimization algorithm. It defaults to <code class="code highlight ini docutils literal highlight-ini"><span class="na">verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> and is controlled via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>The parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_results</span></code> is a boolean flag, which determines whether a history
+of the optimization algorithm, including cost functional value, gradient norm, accepted
+step sizes, and mesh quality, shall be saved to a .json file. This defaults to <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>,
+and can be set with</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">save_results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>Moreover, we define the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_txt</span></code></p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">save_txt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This saves the output of the optimization, which is usually shown in the terminal,
+to a .txt file, which is human-readable.</p>
+<p>The next line in the config file is</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">save_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>Here, the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_state</span></code> is set. This is a boolean flag, which can be set to
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">save_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> to enable that cashocs generates .xdmf files for the state variables for each iteration the optimization algorithm performs. These are great for visualizing the
+steps done by the optimization algorithm, but also need some disc space, so that they are disabled by default.
+Note, that for visualizing these files, you need <a class="reference external" href="https://www.paraview.org/">Paraview</a>.</p>
+<p>The next parameter, <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_adjoint</span></code> works analogously, and is given in the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">save_adjoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>If this is set to True, cashocs generates .xdmf files for the adjoint variables in each iteration of the optimization algorithm.
+Its main purpose is for debugging.</p>
+<p>The next parameter is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_gradient</span></code>, which is given in the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">save_gradient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This boolean flag ensures that a paraview with the computed shape gradient is saved in <code class="docutils literal notranslate"><span class="pre">result_dir/xdmf</span></code>. The main purpose of this is for debugging.</p>
+<p>Moreover, we also have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_mesh</span></code> that is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">save_mesh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>This is used to save the optimized geometry to a GMSH file. The default behavior
+is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_mesh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>. Note, that this is only
+possible if the input mesh was already generated by GMSH, and specified in <a class="reference internal" href="#config-shape-mesh"><span class="std std-ref">the Mesh
+section of the config file</span></a>. For any other meshes, the underlying mesh is also saved in
+the .xdmf files, so that you can at least always visualize the optimized geometry.</p>
+<p>In the end, we also have, like for optimal control problems, a parameter that specifies
+where the output is placed, again named <code class="code highlight ini docutils literal highlight-ini"><span class="na">result_dir</span></code>, which is given in the config file
+in the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">result_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">./results</span>
+</pre></div>
+</div>
+<p>As before, this is either a relative or absolute path to the directory where the
+results should be placed.</p>
+<p>The parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">precision</span></code>, which is set via</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">precision</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span>
+</pre></div>
+</div>
+<p>is an integer parameter which determines how many significant digits are printed in the output to the console and / or the result file.</p>
+<p>Moreover, we have the parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">time_suffix</span></code>, which adds a suffix to the result directory based on the current time. It is controlled by the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">time_suffix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+</section>
+<section id="summary">
+<span id="config-shape-summary"></span><h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">#</a></h2>
+<p>Finally, an overview over all parameters and their default values can be found
+in the following.</p>
+<section id="mesh">
+<h3>[Mesh]<a class="headerlink" href="#mesh" title="Link to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">mesh_file</span></code></p></td>
+<td><p>Only needed for remeshing</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">gmsh_file</span></code></p></td>
+<td><p>Only needed for remeshing</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">geo_file</span></code></p></td>
+<td><p>Only needed for remeshing</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">remesh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">remesh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, remeshing is enabled; this feature is experimental, use with care</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">show_gmsh_output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">show_gmsh_output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, shows the output of GMSH during remeshing in the console</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="statesystem">
+<h3>[StateSystem]<a class="headerlink" href="#statesystem" title="Link to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">is_linear</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>using <code class="code highlight ini docutils literal highlight-ini"><span class="na">is_linear</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> gives an error for nonlinear problems</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-11</span></code></p></td>
+<td><p>relative tolerance for Newton’s method</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-13</span></code></p></td>
+<td><p>absolute tolerance for Newton’s method</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span></code></p></td>
+<td><p>maximum iterations for Newton’s method</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, damping is enabled</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_inexact</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_inexact</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, an inexact Newton’s method is used</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">newton_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> enables verbose output of Newton’s method</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_iteration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_iteration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> enables Picard iteration; only has an effect for multiple
+variables</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-10</span></code></p></td>
+<td><p>relative tolerance for Picard iteration</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-12</span></code></p></td>
+<td><p>absolute tolerance for Picard iteration</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">50</span></code></p></td>
+<td><p>maximum iterations for Picard iteration</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">picard_verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> enables verbose output of Picard iteration</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="optimizationroutine">
+<h3>[OptimizationRoutine]<a class="headerlink" href="#optimizationroutine" title="Link to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">algorithm</span></code></p></td>
+<td><p>has to be specified by the user; see <a class="reference internal" href="../../../api/generated/cashocs.html#cashocs.OptimalControlProblem.solve" title="cashocs.OptimalControlProblem.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve</span></code></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">rtol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-3</span></code></p></td>
+<td><p>relative tolerance for the optimization algorithm</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">atol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code></p></td>
+<td><p>absolute tolerance for the optimization algorithm</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">max_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">100</span></code></p></td>
+<td><p>maximum iterations for the optimization algorithm</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">direct</span></code></p></td>
+<td><p>specifies the solver for computing the gradient, can be either <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">direct</span></code> or <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">iterative</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-9</span></code></p></td>
+<td><p>the relative tolerance in case an iterative solver is used to compute the gradient.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">soft_exit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">soft_exit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the optimization algorithm does not raise an exception if
+it did not converge</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="linesearch">
+<h3>[LineSearch]<a class="headerlink" href="#linesearch" title="Link to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">armijo</span></code></p></td>
+<td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">armijo</span></code> is a simple backtracking line search, whereas <code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">polynomial</span></code> uses polynomial models to compute trial stepsizes.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">initial_stepsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code></p></td>
+<td><p>initial stepsize for the first iteration in the Armijo rule</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">epsilon_armijo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-4</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">beta_armijo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2.0</span></code></p></td>
+<td></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">safeguard_stepsize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code></p></td>
+<td><p>De(-activates) a safeguard against poor scaling</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cubic</span></code></p></td>
+<td><p>This specifies, whether a cubic or quadratic model is used for computing trial stepsizes</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_high</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.5</span></code></p></td>
+<td><p>Safeguard for stepsize, upper bound</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_low</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.1</span></code></p></td>
+<td><p>Safeguard for stepsize, lower bound</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">fail_if_not_converged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">True</span></code>, then the line search fails if the state system can not be solved at the new iterate</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="algolbfgs">
+<h3>[AlgoLBFGS]<a class="headerlink" href="#algolbfgs" title="Link to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_memory_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">5</span></code></p></td>
+<td><p>memory size of the L-BFGS method</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">use_bfgs_scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_bfgs_scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, uses a scaled identity mapping as initial guess for the inverse Hessian</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0</span></code></p></td>
+<td><p>specifies, after how many iterations the method is restarted. If this is 0, no restarting is done.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>specifies whether damping for the BFGS method should be used to enforce the curvature condition and prevent restarting</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="algocg">
+<h3>[AlgoCG]<a class="headerlink" href="#algocg" title="Link to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">FR</span></code></p></td>
+<td><p>specifies which nonlinear CG method is used</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, enables periodic restart of NCG method</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_periodic_its</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">10</span></code></p></td>
+<td><p>specifies, after how many iterations the NCG method is restarted, if applicable</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_relative_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_relative_restart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, enables restart of NCG method based on a relative criterion</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">cg_restart_tol</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.25</span></code></p></td>
+<td><p>the tolerance of the relative restart criterion, if applicable</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="shapegradient">
+<h3>[ShapeGradient]<a class="headerlink" href="#shapegradient" title="Link to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">shape_bdry_def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span></code></p></td>
+<td><p>list of indices for the deformable boundaries</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">shape_bdry_fix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span></code></p></td>
+<td><p>list of indices for the fixed boundaries</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">shape_bdry_fix_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span></code></p></td>
+<td><p>list of indices for boundaries with fixed x values</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">shape_bdry_fix_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span></code></p></td>
+<td><p>list of indices for boundaries with fixed y values</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">shape_bdry_fix_z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span></code></p></td>
+<td><p>list of indices for boundaries with fixed z values</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">fixed_dimensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span></code></p></td>
+<td><p>a list of coordinates which should be fixed during the shape optimization (x=0, y=1, etc.)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">use_pull_back</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_pull_back</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>, shape derivative might be wrong; no pull-back for the material derivative is performed;
+only use with caution</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">lambda_lame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code></p></td>
+<td><p>value of the first Lamé parameter for the elasticity equations</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">damping_factor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code></p></td>
+<td><p>value of the damping parameter for the elasticity equations</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code></p></td>
+<td><p>value of the second Lamé parameter on the deformable boundaries</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_fix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code></p></td>
+<td><p>value of the second Lamé parameter on the fixed boundaries</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">use_sqrt_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_sqrt_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, uses the square root of the computed <code class="docutils literal notranslate"><span class="pre">mu_lame</span></code>; might be good for 3D problems</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">inhomogeneous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">inhomogeneous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, uses inhomogeneous elasticity equations, weighted by the local mesh size</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">update_inhomogeneous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">update_inhomogeneous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">inhomogeneous</span><span class="o">=</span><span class="s">True</span></code>, then the weighting with the local mesh size is updated as the mesh is deformed.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">inhomogeneous_exponent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code></p></td>
+<td><p>The exponent for the inhomogeneous mesh stiffness</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">use_distance_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_distance_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the value of the second Lamé parameter is computed via the distance to the boundary</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code></p></td>
+<td><p>Specifies the distance to the boundary, until which <span class="math notranslate nohighlight">\(\mu\)</span> is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_min</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code></p></td>
+<td><p>Specifies the distance to the boundary, until which <span class="math notranslate nohighlight">\(\mu\)</span> is given by <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_max</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code></p></td>
+<td><p>The value of <span class="math notranslate nohighlight">\(\mu\)</span> for a boundary distance smaller than <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_min</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_max</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1.0</span></code></p></td>
+<td><p>The value of <span class="math notranslate nohighlight">\(\mu\)</span> for a boundary distance larger than <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_max</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">boundaries_dist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span></code></p></td>
+<td><p>The indices of the boundaries, which shall be used to compute the distance, <code class="code highlight ini docutils literal highlight-ini"><span class="na">boundaries_dist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[]</span></code> means that all boundaries are considered</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">smooth_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>If false, a linear (continuous) interpolation between <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_min</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_max</span></code> is used, otherwise a cubic <span class="math notranslate nohighlight">\(C^1\)</span> interpolant is used</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">use_p_laplacian</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>If <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_p_laplacian</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, then the <span class="math notranslate nohighlight">\(p\)</span>-Laplacian is used to compute the shape gradient</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">p_laplacian_power</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">2</span></code></p></td>
+<td><p>The parameter <span class="math notranslate nohighlight">\(p\)</span> of the <span class="math notranslate nohighlight">\(p\)</span>-Laplacian</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">p_laplacian_stabilization</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code></p></td>
+<td><p>The stabilization parameter for the <span class="math notranslate nohighlight">\(p\)</span>-Laplacian problem. No stabilization is used when this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">p_laplacian_stabilization</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code>.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="regularization">
+<h3>[Regularization]<a class="headerlink" href="#regularization" title="Link to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code></p></td>
+<td><p>value of the regularization parameter for volume regularization; needs to be non-negative</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">target_volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code></p></td>
+<td><p>prescribed volume for the volume regularization</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">use_initial_volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_initial_volume</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> uses the volume of the initial geometry as prescribed volume</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code></p></td>
+<td><p>value of the regularization parameter for surface regularization; needs to be non-negative</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">target_surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code></p></td>
+<td><p>prescribed surface for the surface regularization</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">use_initial_surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_initial_surface</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> uses the surface area of the initial geometry as prescribed surface</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_curvature</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code></p></td>
+<td><p>value of the regularization parameter for curvature regularization; needs to be non-negative</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_barycenter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code></p></td>
+<td><p>value of the regularization parameter for barycenter regularization; needs to be non-negative</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">target_barycenter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[0.0, 0.0, 0.0]</span></code></p></td>
+<td><p>prescribed barycenter for the barycenter regularization</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">use_initial_barycenter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_initial_barycenter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> uses the barycenter of the initial geometry as prescribed barycenter</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">use_relative_scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">use_relative_scaling</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the regularization terms are scaling so that they have the magnitude specified in the respective factor for the initial iteration.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="meshquality">
+<h3>[MeshQuality]<a class="headerlink" href="#meshquality" title="Link to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">volume_change</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">inf</span></code></p></td>
+<td><p>determines by what factor the volume of a cell is allowed to change within a single deformation</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">angle_change</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">inf</span></code></p></td>
+<td><p>determines how much the angles of a cell are allowed to change within a single deformation</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">tol_lower</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">0.0</span></code></p></td>
+<td><p>if the mesh quality is lower than this tolerance, the state system is not solved
+for the Armijo rule, instead step size is decreased</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">tol_upper</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">1e-15</span></code></p></td>
+<td><p>if the mesh quality is between <code class="code highlight ini docutils literal highlight-ini"><span class="na">tol_lower</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">tol_upper</span></code>, the state
+system will still be solved for the Armijo rule. If the accepted step yields a quality
+lower than this, algorithm is terminated (or remeshing is initiated)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">measure</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">skewness</span></code></p></td>
+<td><p>determines which quality measure is used</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">min</span></code></p></td>
+<td><p>determines if minimal or average quality is considered</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="output">
+<h3>[Output]<a class="headerlink" href="#output" title="Link to this heading">#</a></h3>
+<table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter = Default value</p></th>
+<th class="head"><p>Remarks</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">verbose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the history of the optimization is printed to the console</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_results</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the history of the optimization is saved to a .json file</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_txt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_txt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the history of the optimization is saved to a human readable .txt file</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_state</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the history of the state variables over the optimization is
+saved in .xdmf files</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_adjoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_adjoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the history of the adjoint variables over the optimization is
+saved in .xdmf files</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_gradient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_gradient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, the history of the shape gradient over the optimization is saved in .xdmf files</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_mesh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>if <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_mesh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code>, saves the mesh for the optimized geometry; only available for GMSH input</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">result_dir</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">./results</span></code></p></td>
+<td><p>path to the directory, where the output should be placed</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">precision</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">3</span></code></p></td>
+<td><p>number of significant digits to be printed</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">time_suffix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></td>
+<td><p>Boolean flag, which adds a suffix to <code class="code highlight ini docutils literal highlight-ini"><span class="na">result_dir</span></code> based on the current time</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="demo_shape_poisson.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Shape Optimization with a Poisson Problem</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="demo_regularization.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Regularization for Shape Optimization Problems</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+  <div class="sidebar-secondary-item">
+
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-mesh">Section Mesh</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-statesystem">Section StateSystem</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-optimizationroutine">Section OptimizationRoutine</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-linesearch">Section LineSearch</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-algolbfgs">Section AlgoLBFGS</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-algocg">Section AlgoCG</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-shapegradient">Section ShapeGradient</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-regularization">Section Regularization</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-meshquality">Section MeshQuality</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#section-output">Section Output</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#summary">Summary</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mesh">[Mesh]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#statesystem">[StateSystem]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#optimizationroutine">[OptimizationRoutine]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#linesearch">[LineSearch]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#algolbfgs">[AlgoLBFGS]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#algocg">[AlgoCG]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#shapegradient">[ShapeGradient]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#regularization">[Regularization]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#meshquality">[MeshQuality]</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#output">[Output]</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/user/demos/shape_optimization/doc_config.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2024, Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

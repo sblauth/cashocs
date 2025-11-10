@@ -1,0 +1,932 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="16x16" href="../../_static/favicon/favicon-16x16.jpg" type="image/jpeg">
+    <link rel="icon" sizes="32x32" href="../../_static/favicon/favicon-32x32.jpg" type="image/jpeg">
+    <title>cashocs.IntegralFunctional &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/generated/cashocs.IntegralFunctional';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="cashocs.MinMaxFunctional" href="cashocs.MinMaxFunctional.html" />
+    <link rel="prev" title="cashocs.Functional" href="cashocs.Functional.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="cashocs.html">cashocs</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cashocs.create_dirichlet_bcs.html">cashocs.create_dirichlet_bcs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.interpolate_levelset_function_to_cells.html">cashocs.interpolate_levelset_function_to_cells</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.compute_mesh_quality.html">cashocs.compute_mesh_quality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.interval_mesh.html">cashocs.interval_mesh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.regular_box_mesh.html">cashocs.regular_box_mesh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.regular_mesh.html">cashocs.regular_mesh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.convert.html">cashocs.convert</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.import_mesh.html">cashocs.import_mesh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.load_config.html">cashocs.load_config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.set_log_level.html">cashocs.set_log_level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.linear_solve.html">cashocs.linear_solve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.newton_solve.html">cashocs.newton_solve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.picard_iteration.html">cashocs.picard_iteration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.snes_solve.html">cashocs.snes_solve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.ts_pseudo_solve.html">cashocs.ts_pseudo_solve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.ConstrainedOptimalControlProblem.html">cashocs.ConstrainedOptimalControlProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.ConstrainedShapeOptimizationProblem.html">cashocs.ConstrainedShapeOptimizationProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.EqualityConstraint.html">cashocs.EqualityConstraint</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.InequalityConstraint.html">cashocs.InequalityConstraint</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.DeflatedTopologyOptimizationProblem.html">cashocs.DeflatedTopologyOptimizationProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.DeflatedOptimalControlProblem.html">cashocs.DeflatedOptimalControlProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.Functional.html">cashocs.Functional</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">cashocs.IntegralFunctional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.MinMaxFunctional.html">cashocs.MinMaxFunctional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.ScalarTrackingFunctional.html">cashocs.ScalarTrackingFunctional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.OptimalControlProblem.html">cashocs.OptimalControlProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.ShapeOptimizationProblem.html">cashocs.ShapeOptimizationProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.TopologyOptimizationProblem.html">cashocs.TopologyOptimizationProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.Interpolator.html">cashocs.Interpolator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.LogLevel.html">cashocs.LogLevel</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="cashocs.geometry.html">cashocs.geometry</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.compute_boundary_distance.html">cashocs.geometry.compute_boundary_distance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.generate_measure.html">cashocs.geometry.generate_measure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.interval_mesh.html">cashocs.geometry.interval_mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.regular_box_mesh.html">cashocs.geometry.regular_box_mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.regular_mesh.html">cashocs.geometry.regular_mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.compute_mesh_quality.html">cashocs.geometry.compute_mesh_quality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.DeformationHandler.html">cashocs.geometry.DeformationHandler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.MeshQuality.html">cashocs.geometry.MeshQuality</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.boundary_distance.html">cashocs.geometry.boundary_distance</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.boundary_distance.compute_boundary_distance.html">cashocs.geometry.boundary_distance.compute_boundary_distance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.boundary_distance.compute_boundary_distance_eikonal.html">cashocs.geometry.boundary_distance.compute_boundary_distance_eikonal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.boundary_distance.compute_boundary_distance_poisson.html">cashocs.geometry.boundary_distance.compute_boundary_distance_poisson</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.deformations.html">cashocs.geometry.deformations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.deformations.DeformationHandler.html">cashocs.geometry.deformations.DeformationHandler</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.measure.html">cashocs.geometry.measure</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.measure.generate_measure.html">cashocs.geometry.measure.generate_measure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.measure.NamedMeasure.html">cashocs.geometry.measure.NamedMeasure</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.mesh.html">cashocs.geometry.mesh</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh.interval_mesh.html">cashocs.geometry.mesh.interval_mesh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh.regular_box_mesh.html">cashocs.geometry.mesh.regular_box_mesh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh.regular_mesh.html">cashocs.geometry.mesh.regular_mesh</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.mesh_handler.html">cashocs.geometry.mesh_handler</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh_handler.check_mesh_quality_tolerance.html">cashocs.geometry.mesh_handler.check_mesh_quality_tolerance</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.mesh_testing.html">cashocs.geometry.mesh_testing</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh_testing.APrioriMeshTester.html">cashocs.geometry.mesh_testing.APrioriMeshTester</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh_testing.CollisionCounter.html">cashocs.geometry.mesh_testing.CollisionCounter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh_testing.IntersectionTester.html">cashocs.geometry.mesh_testing.IntersectionTester</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.quality.html">cashocs.geometry.quality</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.compute_mesh_quality.html">cashocs.geometry.quality.compute_mesh_quality</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.ConditionNumberCalculator.html">cashocs.geometry.quality.ConditionNumberCalculator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.MaximumAngleCalculator.html">cashocs.geometry.quality.MaximumAngleCalculator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.MeshQuality.html">cashocs.geometry.quality.MeshQuality</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.MeshQualityCalculator.html">cashocs.geometry.quality.MeshQualityCalculator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.RadiusRatiosCalculator.html">cashocs.geometry.quality.RadiusRatiosCalculator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.SkewnessCalculator.html">cashocs.geometry.quality.SkewnessCalculator</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="cashocs.io.html">cashocs.io</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.load_config.html">cashocs.io.load_config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.import_function.html">cashocs.io.import_function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.read_function_from_xdmf.html">cashocs.io.read_function_from_xdmf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.convert.html">cashocs.io.convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.export_mesh.html">cashocs.io.export_mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.extract_mesh_from_xdmf.html">cashocs.io.extract_mesh_from_xdmf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.import_mesh.html">cashocs.io.import_mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.read_mesh_from_xdmf.html">cashocs.io.read_mesh_from_xdmf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.write_out_mesh.html">cashocs.io.write_out_mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.Config.html">cashocs.io.Config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.OutputManager.html">cashocs.io.OutputManager</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.io.config.html">cashocs.io.config</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.config.load_config.html">cashocs.io.config.load_config</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.config.Config.html">cashocs.io.config.Config</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.io.function.html">cashocs.io.function</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.function.import_function.html">cashocs.io.function.import_function</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.function.read_function_from_xdmf.html">cashocs.io.function.read_function_from_xdmf</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.io.managers.html">cashocs.io.managers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.generate_output_str.html">cashocs.io.managers.generate_output_str</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.generate_summary_str.html">cashocs.io.managers.generate_summary_str</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.ConsoleManager.html">cashocs.io.managers.ConsoleManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.FileManager.html">cashocs.io.managers.FileManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.IOManager.html">cashocs.io.managers.IOManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.MeshManager.html">cashocs.io.managers.MeshManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.ResultManager.html">cashocs.io.managers.ResultManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.TempFileManager.html">cashocs.io.managers.TempFileManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.XDMFFileManager.html">cashocs.io.managers.XDMFFileManager</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.io.mesh.html">cashocs.io.mesh</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.check_mesh_compatibility.html">cashocs.io.mesh.check_mesh_compatibility</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.convert.html">cashocs.io.mesh.convert</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.create_point_representation.html">cashocs.io.mesh.create_point_representation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.export_mesh.html">cashocs.io.mesh.export_mesh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.extract_mesh_from_xdmf.html">cashocs.io.mesh.extract_mesh_from_xdmf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.gather_coordinates.html">cashocs.io.mesh.gather_coordinates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.import_mesh.html">cashocs.io.mesh.import_mesh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.parse_file.html">cashocs.io.mesh.parse_file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.read_mesh_from_xdmf.html">cashocs.io.mesh.read_mesh_from_xdmf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.write_out_mesh.html">cashocs.io.mesh.write_out_mesh</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.io.output.html">cashocs.io.output</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.output.OutputManager.html">cashocs.io.output.OutputManager</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="cashocs.log.html">cashocs.log</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.add_handler.html">cashocs.log.add_handler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.add_logfile.html">cashocs.log.add_logfile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.add_timestamps.html">cashocs.log.add_timestamps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.begin.html">cashocs.log.begin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.critical.html">cashocs.log.critical</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.debug.html">cashocs.log.debug</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.end.html">cashocs.log.end</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.error.html">cashocs.log.error</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.info.html">cashocs.log.info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.remove_timestamps.html">cashocs.log.remove_timestamps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.set_log_level.html">cashocs.log.set_log_level</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.warning.html">cashocs.log.warning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.LogLevel.html">cashocs.log.LogLevel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.Logger.html">cashocs.log.Logger</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="cashocs.nonlinear_solvers.html">cashocs.nonlinear_solvers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.nonlinear_solvers.linear_solve.html">cashocs.nonlinear_solvers.linear_solve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.nonlinear_solvers.newton_solve.html">cashocs.nonlinear_solvers.newton_solve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.nonlinear_solvers.picard_iteration.html">cashocs.nonlinear_solvers.picard_iteration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.nonlinear_solvers.snes_solve.html">cashocs.nonlinear_solvers.snes_solve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.nonlinear_solvers.ts_pseudo_solve.html">cashocs.nonlinear_solvers.ts_pseudo_solve</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.nonlinear_solvers.linear_solver.html">cashocs.nonlinear_solvers.linear_solver</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.linear_solver.linear_solve.html">cashocs.nonlinear_solvers.linear_solver.linear_solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.nonlinear_solvers.newton_solver.html">cashocs.nonlinear_solvers.newton_solver</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.newton_solver.newton_solve.html">cashocs.nonlinear_solvers.newton_solver.newton_solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.nonlinear_solvers.picard_solver.html">cashocs.nonlinear_solvers.picard_solver</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.picard_solver.picard_iteration.html">cashocs.nonlinear_solvers.picard_solver.picard_iteration</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.nonlinear_solvers.snes.html">cashocs.nonlinear_solvers.snes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.snes.snes_solve.html">cashocs.nonlinear_solvers.snes.snes_solve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.snes.SNESSolver.html">cashocs.nonlinear_solvers.snes.SNESSolver</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.nonlinear_solvers.ts.html">cashocs.nonlinear_solvers.ts</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.ts.ts_pseudo_solve.html">cashocs.nonlinear_solvers.ts.ts_pseudo_solve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.ts.TSPseudoSolver.html">cashocs.nonlinear_solvers.ts.TSPseudoSolver</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="cashocs.space_mapping.html">cashocs.space_mapping</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.space_mapping.optimal_control.html">cashocs.space_mapping.optimal_control</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.optimal_control.CoarseModel.html">cashocs.space_mapping.optimal_control.CoarseModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.optimal_control.FineModel.html">cashocs.space_mapping.optimal_control.FineModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.optimal_control.ParameterExtraction.html">cashocs.space_mapping.optimal_control.ParameterExtraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.optimal_control.SpaceMappingProblem.html">cashocs.space_mapping.optimal_control.SpaceMappingProblem</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.space_mapping.shape_optimization.html">cashocs.space_mapping.shape_optimization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.shape_optimization.CoarseModel.html">cashocs.space_mapping.shape_optimization.CoarseModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.shape_optimization.FineModel.html">cashocs.space_mapping.shape_optimization.FineModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.shape_optimization.ParameterExtraction.html">cashocs.space_mapping.shape_optimization.ParameterExtraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.shape_optimization.SpaceMappingProblem.html">cashocs.space_mapping.shape_optimization.SpaceMappingProblem</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.space_mapping.topology_optimization.html">cashocs.space_mapping.topology_optimization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.topology_optimization.CoarseModel.html">cashocs.space_mapping.topology_optimization.CoarseModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.topology_optimization.FineModel.html">cashocs.space_mapping.topology_optimization.FineModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.topology_optimization.ParameterExtraction.html">cashocs.space_mapping.topology_optimization.ParameterExtraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.topology_optimization.SpaceMappingProblem.html">cashocs.space_mapping.topology_optimization.SpaceMappingProblem</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="cashocs.verification.html">cashocs.verification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.verification.compute_convergence_rates.html">cashocs.verification.compute_convergence_rates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.verification.control_gradient_test.html">cashocs.verification.control_gradient_test</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.verification.shape_gradient_test.html">cashocs.verification.shape_gradient_test</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">cashocs API Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="cashocs.html" class="nav-link">cashocs</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">cashocs.IntegralFunctional</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="cashocs-integralfunctional">
+<h1>cashocs.IntegralFunctional<a class="headerlink" href="#cashocs-integralfunctional" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cashocs.IntegralFunctional">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cashocs.</span></span><span class="sig-name descname"><span class="pre">IntegralFunctional</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">form</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ufl_legacy.Form</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cashocs/_optimization/cost_functional.html#IntegralFunctional"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cashocs.IntegralFunctional" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <a class="reference internal" href="cashocs.Functional.html#cashocs.Functional" title="cashocs._optimization.cost_functional.Functional"><code class="xref py py-class docutils literal notranslate"><span class="pre">Functional</span></code></a></p>
+<p>A functional which is given by the integral of <code class="docutils literal notranslate"><span class="pre">form</span></code>.</p>
+<p>Initializes self.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>form</strong> (<em>ufl.Form</em>) – The form of the integrand, which is to be calculated for evaluating
+the functional.</p>
+</dd>
+</dl>
+<p class="rubric">Methods Summary</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.IntegralFunctional.coefficients" title="cashocs.IntegralFunctional.coefficients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coefficients</span></code></a>()</p></td>
+<td><p>Computes the ufl coefficients which are used in the functional.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.IntegralFunctional.derivative" title="cashocs.IntegralFunctional.derivative"><code class="xref py py-obj docutils literal notranslate"><span class="pre">derivative</span></code></a>(argument, direction)</p></td>
+<td><p>Computes the derivative of the functional w.r.t.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.IntegralFunctional.evaluate" title="cashocs.IntegralFunctional.evaluate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">evaluate</span></code></a>()</p></td>
+<td><p>Evaluates the functional.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.IntegralFunctional.scale" title="cashocs.IntegralFunctional.scale"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale</span></code></a>(scaling_factor)</p></td>
+<td><p>Scales the functional by a scalar.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.IntegralFunctional.update" title="cashocs.IntegralFunctional.update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code></a>()</p></td>
+<td><p>Updates the functional after solving the state equation.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Methods Documentation</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.IntegralFunctional.coefficients">
+<span class="sig-name descname"><span class="pre">coefficients</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">fenics.Function</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../../_modules/cashocs/_optimization/cost_functional.html#IntegralFunctional.coefficients"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cashocs.IntegralFunctional.coefficients" title="Link to this definition">#</a></dt>
+<dd><p>Computes the ufl coefficients which are used in the functional.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The set of used coefficients.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>tuple[fenics.Function]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.IntegralFunctional.derivative">
+<span class="sig-name descname"><span class="pre">derivative</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">argument</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ufl_legacy.core.expr.Expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">direction</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ufl_legacy.core.expr.Expr</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ufl_legacy.Form</span></span></span><a class="reference internal" href="../../_modules/cashocs/_optimization/cost_functional.html#IntegralFunctional.derivative"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cashocs.IntegralFunctional.derivative" title="Link to this definition">#</a></dt>
+<dd><p>Computes the derivative of the functional w.r.t. argument towards direction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>argument</strong> (<em>ufl_legacy.core.expr.Expr</em>) – The argument, w.r.t. which the functional is differentiated</p></li>
+<li><p><strong>direction</strong> (<em>ufl_legacy.core.expr.Expr</em>) – The direction into which the derivative is computed</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A form of the resulting derivative</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ufl_legacy.Form</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.IntegralFunctional.evaluate">
+<span class="sig-name descname"><span class="pre">evaluate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../../_modules/cashocs/_optimization/cost_functional.html#IntegralFunctional.evaluate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cashocs.IntegralFunctional.evaluate" title="Link to this definition">#</a></dt>
+<dd><p>Evaluates the functional.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The current value of the functional.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.IntegralFunctional.scale">
+<span class="sig-name descname"><span class="pre">scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">scaling_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/cashocs/_optimization/cost_functional.html#IntegralFunctional.scale"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cashocs.IntegralFunctional.scale" title="Link to this definition">#</a></dt>
+<dd><p>Scales the functional by a scalar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>scaling_factor</strong> (<em>float</em><em> | </em><em>int</em>) – The scaling factor used to scale the functional</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.IntegralFunctional.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/cashocs/_optimization/cost_functional.html#IntegralFunctional.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cashocs.IntegralFunctional.update" title="Link to this definition">#</a></dt>
+<dd><p>Updates the functional after solving the state equation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="cashocs.Functional.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">cashocs.Functional</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="cashocs.MinMaxFunctional.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">cashocs.MinMaxFunctional</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.IntegralFunctional"><code class="docutils literal notranslate"><span class="pre">IntegralFunctional</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.IntegralFunctional.coefficients"><code class="docutils literal notranslate"><span class="pre">IntegralFunctional.coefficients()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.IntegralFunctional.derivative"><code class="docutils literal notranslate"><span class="pre">IntegralFunctional.derivative()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.IntegralFunctional.evaluate"><code class="docutils literal notranslate"><span class="pre">IntegralFunctional.evaluate()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.IntegralFunctional.scale"><code class="docutils literal notranslate"><span class="pre">IntegralFunctional.scale()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.IntegralFunctional.update"><code class="docutils literal notranslate"><span class="pre">IntegralFunctional.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/api/generated/cashocs.IntegralFunctional.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

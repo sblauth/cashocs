@@ -1,0 +1,1296 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cashocs.geometry.mesh_handler &#8212; cashocs 2.1.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script src="../../../_static/documentation_options.js?v=14dbad98"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/cashocs/geometry/mesh_handler';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.14.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <script>document.write(`<img src="../../../_static/logo.jpg" class="logo__image only-dark" alt="cashocs"/>`);</script>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../about/index.html">
+                        About
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../user/index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../api/index.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../development/index.html">
+                        Development
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../release_notes.html">
+                        Release Notes
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item">
+<nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../about/index.html">
+                        About
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../user/index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../api/index.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../development/index.html">
+                        Development
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../release_notes.html">
+                        Release Notes
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-3"
+      type="button"
+      class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-3"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-3"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-3">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<nav class="sidebar-indices-items">
+  <p class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">cashocs.geom...</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <h1>Source code for cashocs.geometry.mesh_handler</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2020-2024 Sebastian Blauth</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of cashocs.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with cashocs.  If not, see &lt;https://www.gnu.org/licenses/&gt;.</span>
+
+
+<span class="sd">&quot;&quot;&quot;Management of finite element meshes.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>  <span class="c1"># nosec B404</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+<span class="kn">import</span> <span class="nn">weakref</span>
+
+<span class="kn">import</span> <span class="nn">fenics</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_exceptions</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_loggers</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_utils</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">io</span>
+<span class="kn">from</span> <span class="nn">cashocs._optimization</span> <span class="kn">import</span> <span class="n">line_search</span> <span class="k">as</span> <span class="n">ls</span>
+<span class="kn">from</span> <span class="nn">cashocs.geometry</span> <span class="kn">import</span> <span class="n">deformations</span>
+<span class="kn">from</span> <span class="nn">cashocs.geometry</span> <span class="kn">import</span> <span class="n">quality</span>
+<span class="kn">from</span> <span class="nn">cashocs.io.mesh</span> <span class="kn">import</span> <span class="n">import_mesh</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_forms</span>
+    <span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_typing</span>
+    <span class="kn">from</span> <span class="nn">cashocs._database</span> <span class="kn">import</span> <span class="n">database</span>
+    <span class="kn">from</span> <span class="nn">cashocs._optimization.optimization_algorithms</span> <span class="kn">import</span> <span class="n">OptimizationAlgorithm</span>
+    <span class="kn">from</span> <span class="nn">cashocs.geometry</span> <span class="kn">import</span> <span class="n">mesh_testing</span>
+
+
+<span class="k">def</span> <span class="nf">_remove_gmsh_parametrizations</span><span class="p">(</span><span class="n">mesh_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Removes the parametrizations section from a Gmsh file.</span>
+
+<span class="sd">    This is needed in case several remeshing iterations have to be executed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mesh_file: Path to the Gmsh file, has to end in .msh.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">temp_location</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mesh_file</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="si">}</span><span class="s2">_temp.msh&quot;</span>
+    <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">mesh_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">in_file</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span>
+            <span class="n">temp_location</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">temp_file</span><span class="p">:</span>
+            <span class="n">parametrizations_section</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">in_file</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;$Parametrizations</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">:</span>
+                    <span class="n">parametrizations_section</span> <span class="o">=</span> <span class="kc">True</span>
+
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">parametrizations_section</span><span class="p">:</span>
+                    <span class="n">temp_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">pass</span>
+
+                <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;$EndParametrizations</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">:</span>
+                    <span class="n">parametrizations_section</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;mv&quot;</span><span class="p">,</span> <span class="n">temp_location</span><span class="p">,</span> <span class="n">mesh_file</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># nosec B603, B607</span>
+    <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="check_mesh_quality_tolerance">
+<a class="viewcode-back" href="../../../api/generated/cashocs.geometry.mesh_handler.html#cashocs.geometry.mesh_handler.check_mesh_quality_tolerance">[docs]</a>
+<span class="k">def</span> <span class="nf">check_mesh_quality_tolerance</span><span class="p">(</span><span class="n">mesh_quality</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Compares the current mesh quality with the (upper) tolerance.</span>
+
+<span class="sd">    This function raises an appropriate exception, when the mesh quality is not</span>
+<span class="sd">    sufficiently high.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mesh_quality: The current mesh quality.</span>
+<span class="sd">        tolerance: The upper mesh quality tolerance.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">mesh_quality</span> <span class="o">&lt;</span> <span class="n">tolerance</span><span class="p">:</span>
+        <span class="n">fail_msg</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s2">&quot;The quality of the mesh file you have specified is not &quot;</span>
+            <span class="s2">&quot;sufficient for computing the shape gradient.</span><span class="se">\n</span><span class="s2"> &quot;</span>
+            <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;It currently is </span><span class="si">{</span><span class="n">mesh_quality</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2"> but has to &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;be at least </span><span class="si">{</span><span class="n">tolerance</span><span class="si">:</span><span class="s2">.3e</span><span class="si">}</span><span class="s2">.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">InputError</span><span class="p">(</span>
+            <span class="s2">&quot;cashocs.geometry.import_mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;input_arg&quot;</span><span class="p">,</span> <span class="n">fail_msg</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="k">class</span> <span class="nc">_MeshHandler</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Handles the mesh for shape optimization problems.</span>
+
+<span class="sd">    This class implements all mesh related things for the shape optimization, such as</span>
+<span class="sd">    transformations and remeshing. Also includes mesh quality control checks.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">db</span><span class="p">:</span> <span class="n">database</span><span class="o">.</span><span class="n">Database</span><span class="p">,</span>
+        <span class="n">form_handler</span><span class="p">:</span> <span class="n">_forms</span><span class="o">.</span><span class="n">ShapeFormHandler</span><span class="p">,</span>
+        <span class="n">a_priori_tester</span><span class="p">:</span> <span class="n">mesh_testing</span><span class="o">.</span><span class="n">APrioriMeshTester</span><span class="p">,</span>
+        <span class="n">a_posteriori_tester</span><span class="p">:</span> <span class="n">mesh_testing</span><span class="o">.</span><span class="n">IntersectionTester</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            db: The database of the problem.</span>
+<span class="sd">            form_handler: The corresponding shape optimization problem.</span>
+<span class="sd">            a_priori_tester: The tester before mesh modification.</span>
+<span class="sd">            a_posteriori_tester: The tester after mesh modification.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">weakref</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="n">db</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span> <span class="o">=</span> <span class="n">form_handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a_priori_tester</span> <span class="o">=</span> <span class="n">a_priori_tester</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a_posteriori_tester</span> <span class="o">=</span> <span class="n">a_posteriori_tester</span>
+
+        <span class="c1"># Namespacing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">geometry_db</span><span class="o">.</span><span class="n">mesh</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deformation_handler</span> <span class="o">=</span> <span class="n">deformations</span><span class="o">.</span><span class="n">DeformationHandler</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_priori_tester</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_posteriori_tester</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">geometry_db</span><span class="o">.</span><span class="n">dx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bbtree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">bounding_box_tree</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">config</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_mesh_quality</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gmsh_file</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="c1"># setup from config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">volume_change</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MeshQuality&quot;</span><span class="p">,</span> <span class="s2">&quot;volume_change&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angle_change</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MeshQuality&quot;</span><span class="p">,</span> <span class="s2">&quot;angle_change&quot;</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_for_intersections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span>
+            <span class="s2">&quot;ShapeGradient&quot;</span><span class="p">,</span> <span class="s2">&quot;test_for_intersections&quot;</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh_quality_tol_lower</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span>
+            <span class="s2">&quot;MeshQuality&quot;</span><span class="p">,</span> <span class="s2">&quot;tol_lower&quot;</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh_quality_tol_upper</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span>
+            <span class="s2">&quot;MeshQuality&quot;</span><span class="p">,</span> <span class="s2">&quot;tol_upper&quot;</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh_quality_tol_lower</span> <span class="o">&gt;</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh_quality_tol_upper</span><span class="p">:</span>
+            <span class="n">_loggers</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;You are using a lower remesh tolerance (tol_lower) close to the upper &quot;</span>
+                <span class="s2">&quot;one (tol_upper). This may slow down the optimization considerably.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh_quality_measure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MeshQuality&quot;</span><span class="p">,</span> <span class="s2">&quot;measure&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mesh_quality_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MeshQuality&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_mesh_quality</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">quality</span><span class="o">.</span><span class="n">compute_mesh_quality</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh_quality_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh_quality_measure</span>
+        <span class="p">)</span>
+
+        <span class="n">check_mesh_quality_tolerance</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_mesh_quality</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh_quality_tol_upper</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">options_frobenius</span><span class="p">:</span> <span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ksp_type&quot;</span><span class="p">:</span> <span class="s2">&quot;preonly&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;jacobi&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pc_jacobi_type&quot;</span><span class="p">:</span> <span class="s2">&quot;diagonal&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ksp_rtol&quot;</span><span class="p">:</span> <span class="mf">1e-16</span><span class="p">,</span>
+            <span class="s2">&quot;ksp_atol&quot;</span><span class="p">:</span> <span class="mf">1e-20</span><span class="p">,</span>
+            <span class="s2">&quot;ksp_max_it&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">trial_dg0</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">TrialFunction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">dg_function_space</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_dg0</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">TestFunction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">dg_function_space</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">search_direction_container</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">control_spaces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">a_frobenius</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_frobenius</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_decrease_computation</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">options_prior</span><span class="p">:</span> <span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;ksp_type&quot;</span><span class="p">:</span> <span class="s2">&quot;preonly&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pc_type&quot;</span><span class="p">:</span> <span class="s2">&quot;jacobi&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;pc_jacobi_type&quot;</span><span class="p">:</span> <span class="s2">&quot;diagonal&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ksp_rtol&quot;</span><span class="p">:</span> <span class="mf">1e-16</span><span class="p">,</span>
+            <span class="s2">&quot;ksp_atol&quot;</span><span class="p">:</span> <span class="mf">1e-20</span><span class="p">,</span>
+            <span class="s2">&quot;ksp_max_it&quot;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">transformation_container</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">control_spaces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">A_prior</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># pylint: disable=invalid-name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">l_prior</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># Remeshing initializations</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_remesh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;remesh&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_optimized_mesh</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Output&quot;</span><span class="p">,</span> <span class="s2">&quot;save_mesh&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_remesh</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_optimized_mesh</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mesh_directory</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;gmsh_file&quot;</span><span class="p">))</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="o">.</span><span class="n">parent</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">gmsh_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_remesh</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gmsh_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;gmsh_file&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+                <span class="s2">&quot;remesh_counter&quot;</span><span class="p">,</span> <span class="mi">0</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">is_remeshed</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">remesh_directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span>
+                        <span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;cashocs_remesh_&quot;</span><span class="p">,</span> <span class="nb">dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh_directory</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">remesh_directory</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span>
+                    <span class="n">remesh_directory</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span>
+                <span class="p">)</span>
+                <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span>
+                    <span class="s2">&quot;remesh_directory&quot;</span>
+                <span class="p">]</span>
+            <span class="n">remesh_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">remesh_path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+                <span class="n">remesh_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remesh_geo_file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="si">}</span><span class="s2">/remesh.geo&quot;</span>
+
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_optimized_mesh</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gmsh_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;gmsh_file&quot;</span><span class="p">)</span>
+
+        <span class="c1"># create a copy of the initial mesh file</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_remesh</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gmsh_file_init</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.msh&quot;</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>  <span class="c1"># nosec 603</span>
+                    <span class="p">[</span><span class="s2">&quot;cp&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmsh_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmsh_file_init</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">gmsh_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmsh_file_init</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">current_mesh_quality</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The current mesh quality.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_current_mesh_quality</span>
+
+    <span class="nd">@current_mesh_quality</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">current_mesh_quality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">optimization_state</span><span class="p">[</span><span class="s2">&quot;mesh_quality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_mesh_quality</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">gmsh_file</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_gmsh_file</span>
+
+    <span class="nd">@gmsh_file</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">gmsh_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">gmsh_file_path</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_gmsh_file</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">move_mesh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">transformation</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Transforms the mesh by perturbation of identity.</span>
+
+<span class="sd">        Moves the mesh according to the deformation given by</span>
+
+<span class="sd">        .. math:: \text{id} + \mathcal{V}(x),</span>
+
+<span class="sd">        where :math:`\mathcal{V}` is the transformation. This</span>
+<span class="sd">        represents the perturbation of identity.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            transformation: The transformation for the mesh, a vector CG1 Function.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="n">transformation</span><span class="o">.</span><span class="n">ufl_element</span><span class="p">()</span><span class="o">.</span><span class="n">family</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Lagrange&quot;</span>
+            <span class="ow">and</span> <span class="n">transformation</span><span class="o">.</span><span class="n">ufl_element</span><span class="p">()</span><span class="o">.</span><span class="n">degree</span><span class="p">()</span> <span class="o">==</span> <span class="mi">1</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">CashocsException</span><span class="p">(</span><span class="s2">&quot;Not a valid mesh transformation&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">a_priori_tester</span><span class="o">.</span><span class="n">test</span><span class="p">(</span><span class="n">transformation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">volume_change</span><span class="p">):</span>
+            <span class="n">_loggers</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Mesh transformation rejected due to a priori check.&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">success_flag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">deformation_handler</span><span class="o">.</span><span class="n">move_mesh</span><span class="p">(</span>
+                <span class="n">transformation</span><span class="p">,</span>
+                <span class="n">validated_a_priori</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">test_for_intersections</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">test_for_intersections</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_mesh_quality</span> <span class="o">=</span> <span class="n">quality</span><span class="o">.</span><span class="n">compute_mesh_quality</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh_quality_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh_quality_measure</span>
+            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">success_flag</span>
+
+    <span class="k">def</span> <span class="nf">revert_transformation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reverts the previous mesh transformation.</span>
+
+<span class="sd">        This is used when the mesh quality for the resulting deformed mesh</span>
+<span class="sd">        is not sufficient, or when the solution algorithm terminates, e.g., due</span>
+<span class="sd">        to lack of sufficient decrease in the Armijo rule</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">deformation_handler</span><span class="o">.</span><span class="n">revert_transformation</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_setup_decrease_computation</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes attributes and solver for the frobenius norm check.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle_change</span> <span class="o">!=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">a_frobenius</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trial_dg0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_dg0</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">l_frobenius</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">fenics</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+                    <span class="n">fenics</span><span class="o">.</span><span class="n">inner</span><span class="p">(</span>
+                        <span class="n">fenics</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">search_direction_container</span><span class="p">),</span>
+                        <span class="n">fenics</span><span class="o">.</span><span class="n">grad</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">search_direction_container</span><span class="p">),</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_dg0</span>
+                <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">compute_decreases</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">search_direction</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">],</span> <span class="n">stepsize</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Estimates the number of Armijo decreases for a certain mesh quality.</span>
+
+<span class="sd">        Gives a better estimation of the stepsize. The output is</span>
+<span class="sd">        the number of Armijo decreases we have to do in order to</span>
+<span class="sd">        get a transformation that satisfies norm(transformation)_fro &lt;= tol,</span>
+<span class="sd">        where transformation = stepsize*search_direction and tol is specified in</span>
+<span class="sd">        the config file under &quot;angle_change&quot;. Due to the linearity</span>
+<span class="sd">        of the norm this has to be done only once, all smaller stepsizes are</span>
+<span class="sd">        feasible w.r.t. this criterion as well.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            search_direction: The search direction in the optimization routine / descent</span>
+<span class="sd">                algorithm.</span>
+<span class="sd">            stepsize: The stepsize in the descent algorithm.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A guess for the number of &quot;Armijo halvings&quot; to get a better stepsize.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle_change</span> <span class="o">==</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="mi">0</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">search_direction_container</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span><span class="o">.</span><span class="n">aypx</span><span class="p">(</span>
+                <span class="mf">0.0</span><span class="p">,</span> <span class="n">search_direction</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">search_direction_container</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+            <span class="n">x</span> <span class="o">=</span> <span class="n">_utils</span><span class="o">.</span><span class="n">assemble_and_solve_linear</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">a_frobenius</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">l_frobenius</span><span class="p">,</span>
+                <span class="n">ksp_options</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options_frobenius</span><span class="p">,</span>
+                <span class="n">comm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">geometry_db</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">frobenius_norm</span> <span class="o">=</span> <span class="n">x</span><span class="o">.</span><span class="n">max</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">beta_armijo</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="s2">&quot;LineSearch&quot;</span><span class="p">,</span> <span class="s2">&quot;beta_armijo&quot;</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="nb">int</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span>
+                        <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">angle_change</span> <span class="o">/</span> <span class="n">stepsize</span> <span class="o">/</span> <span class="n">frobenius_norm</span><span class="p">)</span>
+                        <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="n">beta_armijo</span><span class="p">)</span>
+                    <span class="p">),</span>
+                    <span class="mf">0.0</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_generate_remesh_geo</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">input_mesh_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates a .geo file used for remeshing.</span>
+
+<span class="sd">        The .geo file is generated via the original .geo file for the initial geometry,</span>
+<span class="sd">        so that mesh size fields are correctly given for the remeshing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            input_mesh_file: Path to the mesh file used for generating the new .geo</span>
+<span class="sd">                file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">remesh_geo_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">temp_name</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">input_mesh_file</span><span class="p">)</span><span class="o">.</span><span class="n">name</span>
+
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Merge &#39;</span><span class="si">{</span><span class="n">temp_name</span><span class="si">}</span><span class="s2">&#39;;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;CreateGeometry;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+                <span class="n">geo_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;geo_file&quot;</span><span class="p">]</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">geo_file</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">islower</span><span class="p">():</span>
+                            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">line</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Field&quot;</span><span class="p">:</span>
+                            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">line</span><span class="p">[:</span><span class="mi">16</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Background Field&quot;</span><span class="p">:</span>
+                            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">line</span><span class="p">[:</span><span class="mi">19</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;BoundaryLayer Field&quot;</span><span class="p">:</span>
+                            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">line</span><span class="p">[:</span><span class="mi">5</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Mesh.&quot;</span><span class="p">:</span>
+                            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">clean_previous_gmsh_files</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Removes the gmsh files from the previous remeshing iterations.&quot;&quot;&quot;</span>
+        <span class="n">gmsh_file</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.msh&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">gmsh_file</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;rm&quot;</span><span class="p">,</span> <span class="n">gmsh_file</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># nosec 603</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+        <span class="n">gmsh_pre_remesh_file</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span><span class="o">-</span><span class="mi">1</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">_pre_remesh.msh&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">gmsh_pre_remesh_file</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;rm&quot;</span><span class="p">,</span> <span class="n">gmsh_pre_remesh_file</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># nosec 603</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+        <span class="n">mesh_h5_file</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="si">}</span><span class="s2">/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span><span class="o">-</span><span class="mi">1</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.h5&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">mesh_h5_file</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;rm&quot;</span><span class="p">,</span> <span class="n">mesh_h5_file</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># nosec 603</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+        <span class="n">mesh_xdmf_file</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span><span class="o">-</span><span class="mi">1</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.xdmf&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">mesh_xdmf_file</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;rm&quot;</span><span class="p">,</span> <span class="n">mesh_xdmf_file</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># nosec 603</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+        <span class="n">boundaries_h5_file</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span><span class="o">-</span><span class="mi">1</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">_boundaries.h5&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">boundaries_h5_file</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;rm&quot;</span><span class="p">,</span> <span class="n">boundaries_h5_file</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># nosec 603</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+        <span class="n">boundaries_xdmf_file</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span><span class="o">-</span><span class="mi">1</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">_boundaries.xdmf&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">boundaries_xdmf_file</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;rm&quot;</span><span class="p">,</span> <span class="n">boundaries_xdmf_file</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># nosec 603</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+        <span class="n">subdomains_h5_file</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span><span class="o">-</span><span class="mi">1</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">_subdomains.h5&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">subdomains_h5_file</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;rm&quot;</span><span class="p">,</span> <span class="n">subdomains_h5_file</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># nosec 603</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+        <span class="n">subdomains_xdmf_file</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span><span class="o">-</span><span class="mi">1</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">_subdomains.xdmf&quot;</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">subdomains_xdmf_file</span><span class="p">)</span><span class="o">.</span><span class="n">is_file</span><span class="p">()</span>
+            <span class="ow">and</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="p">):</span>
+            <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;rm&quot;</span><span class="p">,</span> <span class="n">subdomains_xdmf_file</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># nosec 603</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_reinitialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n">OptimizationAlgorithm</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">optimization_problem</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># type: ignore # pylint: disable=C2801</span>
+            <span class="n">solver</span><span class="o">.</span><span class="n">optimization_problem</span><span class="o">.</span><span class="n">mesh_parametrization</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;mesh_file&quot;</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">solver</span><span class="o">.</span><span class="n">optimization_problem</span><span class="o">.</span><span class="n">initialize_solve_parameters</span><span class="p">()</span>
+
+        <span class="n">line_search_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;LineSearch&quot;</span><span class="p">,</span> <span class="s2">&quot;method&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">line_search_type</span> <span class="o">==</span> <span class="s2">&quot;armijo&quot;</span><span class="p">:</span>
+            <span class="n">line_search</span><span class="p">:</span> <span class="n">ls</span><span class="o">.</span><span class="n">LineSearch</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">ArmijoLineSearch</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">optimization_problem</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">line_search_type</span> <span class="o">==</span> <span class="s2">&quot;polynomial&quot;</span><span class="p">:</span>
+            <span class="n">line_search</span> <span class="o">=</span> <span class="n">ls</span><span class="o">.</span><span class="n">PolynomialLineSearch</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">optimization_problem</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">CashocsException</span><span class="p">(</span><span class="s2">&quot;This code cannot be reached.&quot;</span><span class="p">)</span>
+
+        <span class="n">solver</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>  <span class="c1"># type: ignore # pylint: disable=C2801</span>
+            <span class="n">solver</span><span class="o">.</span><span class="n">optimization_problem</span><span class="o">.</span><span class="n">db</span><span class="p">,</span>
+            <span class="n">solver</span><span class="o">.</span><span class="n">optimization_problem</span><span class="p">,</span>
+            <span class="n">line_search</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">remesh</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n">OptimizationAlgorithm</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Remeshes the current geometry with Gmsh.</span>
+
+<span class="sd">        Performs a remeshing of the geometry, and then restarts the optimization problem</span>
+<span class="sd">        with the new mesh.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            solver: The optimization algorithm used to solve the problem.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A boolean that indicated whether a remeshing has been performed successfully</span>
+<span class="sd">            (if it is `True`) or not (if it is `False`). A possible reason why remeshing</span>
+<span class="sd">            was not successful is that it is not activated in the configuration.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_remesh</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">temp_file</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">_pre_remesh.msh&quot;</span>
+            <span class="p">)</span>
+            <span class="n">io</span><span class="o">.</span><span class="n">write_out_mesh</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gmsh_file</span><span class="p">,</span> <span class="n">temp_file</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_generate_remesh_geo</span><span class="p">(</span><span class="n">temp_file</span><span class="p">)</span>
+
+            <span class="c1"># save the output dict (without the last entries since they are &quot;remeshed&quot;)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;output_dict&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;output_dict&quot;</span><span class="p">][</span>
+                <span class="s2">&quot;state_solves&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">state_problem</span><span class="o">.</span><span class="n">number_of_solves</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;output_dict&quot;</span><span class="p">][</span>
+                <span class="s2">&quot;adjoint_solves&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">adjoint_problem</span><span class="o">.</span><span class="n">number_of_solves</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;output_dict&quot;</span><span class="p">][</span><span class="s2">&quot;iterations&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">solver</span><span class="o">.</span><span class="n">iteration</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="p">)</span>
+
+            <span class="n">output_dict</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">output_manager</span><span class="o">.</span><span class="n">output_dict</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;output_dict&quot;</span><span class="p">][</span>
+                <span class="s2">&quot;cost_function_value&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">output_dict</span><span class="p">[</span><span class="s2">&quot;cost_function_value&quot;</span><span class="p">][:]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;output_dict&quot;</span><span class="p">][</span>
+                <span class="s2">&quot;gradient_norm&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">output_dict</span><span class="p">[</span><span class="s2">&quot;gradient_norm&quot;</span><span class="p">][:]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;output_dict&quot;</span><span class="p">][</span><span class="s2">&quot;stepsize&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_dict</span><span class="p">[</span>
+                <span class="s2">&quot;stepsize&quot;</span>
+            <span class="p">][:]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;output_dict&quot;</span><span class="p">][</span><span class="s2">&quot;MeshQuality&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_dict</span><span class="p">[</span>
+                <span class="s2">&quot;MeshQuality&quot;</span>
+            <span class="p">][:]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;output_dict&quot;</span><span class="p">][</span><span class="s2">&quot;angle&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_dict</span><span class="p">[</span>
+                <span class="s2">&quot;angle&quot;</span>
+            <span class="p">][:]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;OptimizationRoutine&quot;</span><span class="p">][</span>
+                <span class="s2">&quot;rtol&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="s2">&quot;OptimizationRoutine&quot;</span><span class="p">,</span> <span class="s2">&quot;rtol&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;OptimizationRoutine&quot;</span><span class="p">][</span>
+                <span class="s2">&quot;atol&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="s2">&quot;OptimizationRoutine&quot;</span><span class="p">,</span> <span class="s2">&quot;atol&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;OptimizationRoutine&quot;</span><span class="p">][</span>
+                <span class="s2">&quot;max_iter&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s2">&quot;OptimizationRoutine&quot;</span><span class="p">,</span> <span class="s2">&quot;max_iter&quot;</span><span class="p">)</span>
+
+            <span class="n">dim</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="o">.</span><span class="n">geometric_dimension</span><span class="p">()</span>
+
+            <span class="n">new_gmsh_file</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.msh&quot;</span>
+            <span class="p">)</span>
+
+            <span class="n">gmsh_cmd_list</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s2">&quot;gmsh&quot;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">remesh_geo_file</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;-</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;-o&quot;</span><span class="p">,</span>
+                <span class="n">new_gmsh_file</span><span class="p">,</span>
+            <span class="p">]</span>
+            <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;show_gmsh_output&quot;</span><span class="p">):</span>
+                    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>  <span class="c1"># nosec 603</span>
+                        <span class="n">gmsh_cmd_list</span><span class="p">,</span>
+                        <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                        <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">DEVNULL</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">gmsh_cmd_list</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># nosec 603</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+            <span class="n">_remove_gmsh_parametrizations</span><span class="p">(</span><span class="n">new_gmsh_file</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;remesh_counter&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span>
+                <span class="s2">&quot;remesh_directory&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span>
+                <span class="s2">&quot;result_dir&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">output_manager</span><span class="o">.</span><span class="n">result_dir</span>
+
+            <span class="n">new_xdmf_file</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">remesh_counter</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.xdmf&quot;</span>
+            <span class="p">)</span>
+
+            <span class="n">io</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">new_gmsh_file</span><span class="p">,</span> <span class="n">new_xdmf_file</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">clean_previous_gmsh_files</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;mesh_file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_xdmf_file</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;gmsh_file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_gmsh_file</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;OptimizationRoutine&quot;</span><span class="p">][</span>
+                <span class="s2">&quot;iteration_counter&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">iteration</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;OptimizationRoutine&quot;</span><span class="p">][</span>
+                <span class="s2">&quot;gradient_norm_initial&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">gradient_norm_initial</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_mesh_transfer_matrix</span><span class="p">(</span><span class="n">new_xdmf_file</span><span class="p">,</span> <span class="n">solver</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reinitialize</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_imported_mesh_quality</span><span class="p">(</span><span class="n">solver</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_check_imported_mesh_quality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n">OptimizationAlgorithm</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks the quality of an imported mesh.</span>
+
+<span class="sd">        This function raises exceptions when the mesh does not satisfy the desired</span>
+<span class="sd">        quality criteria.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            solver: The solver instance carrying the new mesh</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">mesh_quality_tol_lower</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="s2">&quot;MeshQuality&quot;</span><span class="p">,</span> <span class="s2">&quot;tol_lower&quot;</span><span class="p">)</span>
+        <span class="n">mesh_quality_tol_upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="s2">&quot;MeshQuality&quot;</span><span class="p">,</span> <span class="s2">&quot;tol_upper&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">mesh_quality_tol_lower</span> <span class="o">&gt;</span> <span class="mf">0.9</span> <span class="o">*</span> <span class="n">mesh_quality_tol_upper</span><span class="p">:</span>
+            <span class="n">_loggers</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                <span class="s2">&quot;You are using a lower remesh tolerance (tol_lower) close to &quot;</span>
+                <span class="s2">&quot;the upper one (tol_upper). This may slow down the &quot;</span>
+                <span class="s2">&quot;optimization considerably.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">mesh_quality_measure</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MeshQuality&quot;</span><span class="p">,</span> <span class="s2">&quot;measure&quot;</span><span class="p">)</span>
+        <span class="n">mesh_quality_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;MeshQuality&quot;</span><span class="p">,</span> <span class="s2">&quot;type&quot;</span><span class="p">)</span>
+
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">optimization_problem</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">mesh</span><span class="p">()</span>
+
+        <span class="n">current_mesh_quality</span> <span class="o">=</span> <span class="n">quality</span><span class="o">.</span><span class="n">compute_mesh_quality</span><span class="p">(</span>
+            <span class="n">mesh</span><span class="p">,</span>
+            <span class="n">mesh_quality_type</span><span class="p">,</span>
+            <span class="n">mesh_quality_measure</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="n">check_mesh_quality_tolerance</span><span class="p">(</span><span class="n">current_mesh_quality</span><span class="p">,</span> <span class="n">mesh_quality_tol_upper</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_update_mesh_transfer_matrix</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">xdmf_filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">solver</span><span class="p">:</span> <span class="n">OptimizationAlgorithm</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updates the transfer matrix for the global deformation after remeshing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            xdmf_filename: The filename for the new mesh (in XDMF format).</span>
+<span class="sd">            solver: The optimization algorithm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;ShapeGradient&quot;</span><span class="p">,</span> <span class="s2">&quot;global_deformation&quot;</span><span class="p">):</span>
+            <span class="n">pre_log_level</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">_loggers</span><span class="o">.</span><span class="n">_cashocs_logger</span><span class="o">.</span><span class="n">level</span>  <span class="c1"># pylint: disable=protected-access</span>
+            <span class="p">)</span>
+            <span class="n">_loggers</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">_loggers</span><span class="o">.</span><span class="n">LogLevel</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span>
+            <span class="n">mesh</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">import_mesh</span><span class="p">(</span><span class="n">xdmf_filename</span><span class="p">)</span>
+            <span class="n">_loggers</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">pre_log_level</span><span class="p">)</span>
+
+            <span class="n">deformation_space</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">VectorFunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">interpolator</span> <span class="o">=</span> <span class="n">_utils</span><span class="o">.</span><span class="n">Interpolator</span><span class="p">(</span>
+                <span class="n">deformation_space</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">control_spaces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">new_transfer_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">geometry_db</span><span class="o">.</span><span class="n">transfer_matrix</span><span class="o">.</span><span class="n">matMult</span><span class="p">(</span>
+                <span class="n">interpolator</span><span class="o">.</span><span class="n">transfer_matrix</span>
+            <span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span>
+                <span class="s2">&quot;transfer_matrix&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">new_transfer_matrix</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span>
+                <span class="s2">&quot;old_transfer_matrix&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">geometry_db</span><span class="o">.</span><span class="n">transfer_matrix</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span>
+                <span class="s2">&quot;deformation_function&quot;</span>
+            <span class="p">]</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">line_search</span><span class="o">.</span><span class="n">deformation_function</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2024, Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

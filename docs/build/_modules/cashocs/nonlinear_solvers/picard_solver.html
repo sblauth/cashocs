@@ -1,0 +1,789 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cashocs.nonlinear_solvers.picard_solver &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/cashocs/nonlinear_solvers/picard_solver';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">cashocs.nonlinear_solvers.picard_solver</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for cashocs.nonlinear_solvers.picard_solver</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of cashocs.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with cashocs.  If not, see &lt;https://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;A Picard iteration for coupled PDEs.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span><span class="p">,</span> <span class="n">TypeVar</span>
+
+<span class="kn">import</span> <span class="nn">fenics</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ufl_legacy</span> <span class="k">as</span> <span class="nn">ufl</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ufl</span>
+
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_exceptions</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_utils</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">cashocs.nonlinear_solvers</span> <span class="kn">import</span> <span class="n">snes</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_typing</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_setup_obj</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">T</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="kc">None</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Returns a list of None if obj is None, else returns obj.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        obj: The object which is checked.</span>
+<span class="sd">        dim: The dimension of the list.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Either the obj (if not None) or a list of None.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">dim</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+
+<span class="k">def</span> <span class="nf">_create_homogenized_bcs</span><span class="p">(</span>
+    <span class="n">bcs_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">]],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Copies the bcs_list and homogenizes the boundary conditions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bcs_list: The list of boundary conditions</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The homogenized list of boundary conditions</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bcs_list_hom</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">bcs_list</span><span class="p">)):</span>
+        <span class="n">temp_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">bc</span> <span class="ow">in</span> <span class="n">bcs_list</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+            <span class="n">bc_hom</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">(</span><span class="n">bc</span><span class="p">)</span>
+            <span class="n">bc_hom</span><span class="o">.</span><span class="n">homogenize</span><span class="p">()</span>
+            <span class="n">temp_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bc_hom</span><span class="p">)</span>
+        <span class="n">bcs_list_hom</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_list</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">bcs_list_hom</span>
+
+
+<span class="k">def</span> <span class="nf">_enlist_picard</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">length</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">[</span><span class="n">T</span> <span class="o">|</span> <span class="kc">None</span><span class="p">]:</span>
+    <span class="k">if</span> <span class="n">obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">length</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+
+<div class="viewcode-block" id="picard_iteration">
+<a class="viewcode-back" href="../../../api/generated/cashocs.picard_iteration.html#cashocs.nonlinear_solvers.picard_iteration">[docs]</a>
+<span class="k">def</span> <span class="nf">picard_iteration</span><span class="p">(</span>
+    <span class="n">form_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">form</span><span class="p">]</span> <span class="o">|</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">,</span>
+    <span class="n">u_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]</span> <span class="o">|</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
+    <span class="n">bcs_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">]</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">]],</span>
+    <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span>
+    <span class="n">rtol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span><span class="p">,</span>
+    <span class="n">atol</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-10</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="n">inner_max_iter</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">25</span><span class="p">,</span>
+    <span class="n">ksp_options</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="n">A_tensors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">PETScMatrix</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">b_tensors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">PETScVector</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">preconditioner_forms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">]</span> <span class="o">|</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">newton_linearizations</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Solves a system of coupled PDEs via a Picard iteration.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        form_list: list of the coupled PDEs.</span>
+<span class="sd">        u_list: list of the state variables (to be solved for).</span>
+<span class="sd">        bcs_list: list of boundary conditions for the PDEs.</span>
+<span class="sd">        max_iter: The maximum number of iterations for the Picard iteration.</span>
+<span class="sd">        rtol: The relative tolerance for the Picard iteration, default is 1e-10.</span>
+<span class="sd">        atol: The absolute tolerance for the Picard iteration, default is 1e-10.</span>
+<span class="sd">        verbose: Boolean flag, if ``True``, output is written to stdout, default is</span>
+<span class="sd">            ``True``.</span>
+<span class="sd">        inner_max_iter: Maximum number of iterations for the inner Newton solver;</span>
+<span class="sd">            default is 25.</span>
+<span class="sd">        ksp_options: list of options for the KSP objects.</span>
+<span class="sd">        A_tensors: list of matrices for the right-hand sides of the inner (linearized)</span>
+<span class="sd">            equations.</span>
+<span class="sd">        b_tensors: list of vectors for the left-hand sides of the inner (linearized)</span>
+<span class="sd">            equations.</span>
+<span class="sd">        preconditioner_forms: The list of forms for the preconditioner. The default</span>
+<span class="sd">            is `None`, so that the preconditioner matrix is the same as the system</span>
+<span class="sd">            matrix.</span>
+<span class="sd">        newton_linearizations: A list of UFL forms describing which (alternative)</span>
+<span class="sd">            linearizations should be used for the (nonlinear) equations when</span>
+<span class="sd">            solving them (with Newton&#39;s method). The default is `None`, so that the</span>
+<span class="sd">            Jacobian of the supplied state forms is used.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">form_list</span> <span class="o">=</span> <span class="n">_utils</span><span class="o">.</span><span class="n">enlist</span><span class="p">(</span><span class="n">form_list</span><span class="p">)</span>
+    <span class="n">u_list</span> <span class="o">=</span> <span class="n">_utils</span><span class="o">.</span><span class="n">enlist</span><span class="p">(</span><span class="n">u_list</span><span class="p">)</span>
+    <span class="n">bcs_list</span> <span class="o">=</span> <span class="n">_utils</span><span class="o">.</span><span class="n">check_and_enlist_bcs</span><span class="p">(</span><span class="n">bcs_list</span><span class="p">)</span>
+    <span class="n">bcs_list_hom</span> <span class="o">=</span> <span class="n">_create_homogenized_bcs</span><span class="p">(</span><span class="n">bcs_list</span><span class="p">)</span>
+
+    <span class="n">preconditioner_form_list</span> <span class="o">=</span> <span class="n">_enlist_picard</span><span class="p">(</span><span class="n">preconditioner_forms</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_list</span><span class="p">))</span>
+    <span class="n">newton_linearization_list</span> <span class="o">=</span> <span class="n">_enlist_picard</span><span class="p">(</span><span class="n">newton_linearizations</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">u_list</span><span class="p">))</span>
+
+    <span class="n">comm</span> <span class="o">=</span> <span class="n">u_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">mesh</span><span class="p">()</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">()</span>
+
+    <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;Picard iteration:  &quot;</span>
+
+    <span class="n">res_tensor</span> <span class="o">=</span> <span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">PETScVector</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">u_list</span><span class="p">]</span>
+    <span class="n">eta_max</span> <span class="o">=</span> <span class="mf">0.9</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.9</span>
+    <span class="n">res_0</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">tol</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">max_iter</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="n">_compute_residual</span><span class="p">(</span><span class="n">form_list</span><span class="p">,</span> <span class="n">res_tensor</span><span class="p">,</span> <span class="n">bcs_list_hom</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">res_0</span> <span class="o">=</span> <span class="n">res</span>
+            <span class="n">tol</span> <span class="o">=</span> <span class="n">atol</span> <span class="o">+</span> <span class="n">rtol</span> <span class="o">*</span> <span class="n">res_0</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">info_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s2">iter,  abs. residual,  rel. residual</span><span class="se">\n\n</span><span class="s2">&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">info_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">val_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}{</span><span class="n">i</span><span class="si">:</span><span class="s2">4d</span><span class="si">}</span><span class="s2">,  </span><span class="si">{</span><span class="n">res</span><span class="si">:</span><span class="s2">&gt;13.3e</span><span class="si">}</span><span class="s2">,  </span><span class="si">{</span><span class="n">res</span><span class="o">/</span><span class="n">res_0</span><span class="si">:</span><span class="s2">&gt;13.3e</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">if</span> <span class="n">verbose</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">info_str</span> <span class="o">+</span> <span class="n">val_str</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">info_str</span> <span class="o">+</span> <span class="n">val_str</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">res</span> <span class="o">&lt;=</span> <span class="n">tol</span><span class="p">:</span>
+            <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">max_iter</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">NotConvergedError</span><span class="p">(</span><span class="s2">&quot;Picard iteration&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">u_list</span><span class="p">)):</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">gamma</span> <span class="o">*</span> <span class="n">res</span><span class="p">,</span> <span class="n">eta_max</span><span class="p">)</span>
+            <span class="n">eta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
+                <span class="n">eta_max</span><span class="p">,</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">eta</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">tol</span> <span class="o">/</span> <span class="n">res</span><span class="p">),</span>
+            <span class="p">)</span>
+
+            <span class="n">ksp_option</span><span class="p">,</span> <span class="n">A_tensor</span><span class="p">,</span> <span class="n">b_tensor</span> <span class="o">=</span> <span class="n">_get_linear_solver_options</span><span class="p">(</span>
+                <span class="n">j</span><span class="p">,</span> <span class="n">ksp_options</span><span class="p">,</span> <span class="n">A_tensors</span><span class="p">,</span> <span class="n">b_tensors</span>
+            <span class="p">)</span>
+
+            <span class="n">snes</span><span class="o">.</span><span class="n">snes_solve</span><span class="p">(</span>
+                <span class="n">form_list</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                <span class="n">u_list</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                <span class="n">bcs_list</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                <span class="n">derivative</span><span class="o">=</span><span class="n">newton_linearization_list</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                <span class="n">petsc_options</span><span class="o">=</span><span class="n">ksp_option</span><span class="p">,</span>
+                <span class="n">rtol</span><span class="o">=</span><span class="n">eta</span><span class="p">,</span>
+                <span class="n">atol</span><span class="o">=</span><span class="n">atol</span> <span class="o">*</span> <span class="mf">1e-1</span><span class="p">,</span>
+                <span class="n">max_iter</span><span class="o">=</span><span class="n">inner_max_iter</span><span class="p">,</span>
+                <span class="n">A_tensor</span><span class="o">=</span><span class="n">A_tensor</span><span class="p">,</span>
+                <span class="n">b_tensor</span><span class="o">=</span><span class="n">b_tensor</span><span class="p">,</span>
+                <span class="n">preconditioner_form</span><span class="o">=</span><span class="n">preconditioner_form_list</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+            <span class="p">)</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_compute_residual</span><span class="p">(</span>
+    <span class="n">form_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">],</span>
+    <span class="n">res_tensor</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">PETScVector</span><span class="p">],</span>
+    <span class="n">bcs_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">]],</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the residual for the picard iteration.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        form_list: The list of forms which make the system.</span>
+<span class="sd">        res_tensor: The vectors into which the residual shall be assembled.</span>
+<span class="sd">        bcs_list: The list of boundary conditions for the system.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The residual of the system to be solved with a Picard iteration.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">form_list</span><span class="p">)):</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="n">form_list</span><span class="p">[</span><span class="n">j</span><span class="p">],</span> <span class="n">tensor</span><span class="o">=</span><span class="n">res_tensor</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">bc</span> <span class="ow">in</span> <span class="n">bcs_list</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+            <span class="n">bc</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">res_tensor</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+
+        <span class="c1"># TODO: Include very first solve to adjust absolute tolerance</span>
+        <span class="n">res</span> <span class="o">+=</span> <span class="nb">pow</span><span class="p">(</span><span class="n">res_tensor</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="s2">&quot;l2&quot;</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">result</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+
+<span class="k">def</span> <span class="nf">_get_linear_solver_options</span><span class="p">(</span>
+    <span class="n">j</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="n">ksp_options</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="n">A_tensors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">PETScMatrix</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">b_tensors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">PETScVector</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">_typing</span><span class="o">.</span><span class="n">KspOption</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">PETScMatrix</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">PETScVector</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the arguments for the individual components considered in the iteration.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A tuple [ksp_option, A_tensor, b_tensor].</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ksp_option</span> <span class="o">=</span> <span class="n">ksp_options</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">if</span> <span class="n">ksp_options</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="c1"># pylint: disable=invalid-name</span>
+    <span class="n">A_tensor</span> <span class="o">=</span> <span class="n">A_tensors</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">if</span> <span class="n">A_tensors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">b_tensor</span> <span class="o">=</span> <span class="n">b_tensors</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="k">if</span> <span class="n">b_tensors</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">ksp_option</span><span class="p">,</span> <span class="n">A_tensor</span><span class="p">,</span> <span class="n">b_tensor</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

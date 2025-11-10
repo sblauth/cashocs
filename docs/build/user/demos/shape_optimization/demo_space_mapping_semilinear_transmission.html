@@ -1,0 +1,1057 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="16x16" href="../../../_static/favicon/favicon-16x16.jpg" type="image/jpeg">
+    <link rel="icon" sizes="32x32" href="../../../_static/favicon/favicon-32x32.jpg" type="image/jpeg">
+    <title>Space Mapping Shape Optimization - Semilinear Transmission Problem &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user/demos/shape_optimization/demo_space_mapping_semilinear_transmission';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Space Mapping Shape Optimization - Uniform Flow Distribution" href="demo_space_mapping_uniform_flow_distribution.html" />
+    <link rel="prev" title="Shape Optimization with the p-Laplacian" href="demo_p_laplacian.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">List of tutorial topics:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../optimal_control/index.html">Optimal Control Problems</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_poisson.html">Distributed Control of a Poisson Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/doc_config.html">Documentation of the Config Files for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_box_constraints.html">Control Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_neumann_control.html">Neumann Boundary Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_multiple_variables.html">Using Multiple Variables and PDEs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_monolithic_problems.html">Coupled Problems - Monolithic Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_picard_iteration.html">Coupled Problems - Picard Iteration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_stokes.html">Distributed Control of a Stokes Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_heat_equation.html">Distributed Control for Time Dependent Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_nonlinear_pdes.html">Optimal Control with Nonlinear PDE Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_dirichlet_control.html">Dirichlet Boundary Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_iterative_solvers.html">Iterative Solvers for State and Adjoint Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_state_constraints.html">Optimal Control with State Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_sparse_control.html">Sparse Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_scalar_control_tracking.html">Tracking of Scalar Functionals for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_constraints.html">Treatment of additional constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_control_boundary_conditions.html">Boundary conditions for control variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_pre_post_callbacks.html">Pre- and Post-Callbacks for the optimization</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Shape Optimization Problems</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="demo_shape_poisson.html">Shape Optimization with a Poisson Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc_config.html">Documentation of the Config Files for Shape Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_regularization.html">Regularization for Shape Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_inverse_tomography.html">Inverse Problem in Electric Impedance Tomography</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_shape_stokes.html">Optimization of an Obstacle in Stokes Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_remeshing.html">Remeshing with cashocs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_custom_scalar_product.html">Custom Scalar Products for Shape Gradient Computation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_scaling.html">Scaling of the Cost Functional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_prescribed_mu.html">Computing the Shape Stiffness via Distance to the Boundaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_p_laplacian.html">Shape Optimization with the p-Laplacian</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Space Mapping Shape Optimization - Semilinear Transmission Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_space_mapping_uniform_flow_distribution.html">Space Mapping Shape Optimization - Uniform Flow Distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_pseudo_time_stepping.html">Pseudo Time Stepping for Steady State Problems</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../topology_optimization/index.html">Topology Optimization Problems</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_poisson_clover.html">Topology Optimization with a Poisson Equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/doc_config.html">Documentation of the Config Files for Topology Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_cantilever.html">Topology Optimization with Linear Elasticity - Cantilever</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_pipe_bend.html">Topology Optimization with Stokes Flow - Pipe Bend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_projection.html">Topology Optimization with a Volume Constraint</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../topology_optimization/demo_deflation.html">Computing Multiple Local Minimizers of Topology Optimization Problems - Five-holes Double-pipe</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../cashocs_as_solver/index.html">Using cashocs as a solver</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../cashocs_as_solver/demo_control_solver.html">cashocs as Solver for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cashocs_as_solver/demo_shape_solver.html">cashocs as Solver for Shape Optimization Problems</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../misc/index.html">Miscellaneous Topics</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/demo_logging.html">Logging with cashocs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/demo_xdmf_io.html">Writing and Reading XDMF Files</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">cashocs Tutorial</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Shape Optimization Problems</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Space Mapping Shape Optimization - Semilinear Transmission Problem</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="space-mapping-shape-optimization-semilinear-transmission-problem">
+<span id="demo-space-mapping-semilinear-transmission"></span><h1>Space Mapping Shape Optimization - Semilinear Transmission Problem<a class="headerlink" href="#space-mapping-shape-optimization-semilinear-transmission-problem" title="Link to this heading">#</a></h1>
+<section id="problem-formulation">
+<h2>Problem Formulation<a class="headerlink" href="#problem-formulation" title="Link to this heading">#</a></h2>
+<p>In this demo we detail the space mapping capabilities of cashocs. The space mapping
+technique is used to optimize a fine (detailed, costly, expensive) model with the help
+of a coarse (cheaper, approximate) one. In particular, only coarse model optimizations
+are required, whereas for the fine model we only require simulations. This makes the
+technique very attractive when using commercial solvers for the fine model, while
+using, e.g., cashocs, as solver for the coarse model optimization problem.
+For an overview over the space mapping technique, we refer the reader, e.g., to
+<a class="reference external" href="https://doi.org/10.1023/A:1016086220943">Bakr, Bandler, Madsen, Sondergaard - An Introduction to the Space Mapping Technique</a> and <a class="reference external" href="https://doi.org/10.2478/cmam-2005-0006">Echeverria and Hemker - Space mapping
+and defect correction</a>. For a detailed
+description of the methods in the context of shape optimization, we refer to
+<a class="reference external" href="https://arxiv.org/abs/2208.05747">Blauth - Space Mapping for PDE Constrained Shape Optimization</a>.</p>
+<p>For this example, we consider the one investigated numerically in Section 4.2 of
+<a class="reference external" href="https://arxiv.org/abs/2208.05747">Blauth - Space Mapping for PDE Constrained Shape Optimization</a>.
+Let us now state the semi linear transmission which we want to solve. It is given by</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align}
+    &amp;\min_\Omega J(u_f, \Omega) = \int_D (u_f - u_\mathrm{des})^2 \text{ d}x \\
+    &amp;\text{subject to} \qquad
+    \begin{alignedat}[t]{2}
+        -\nabla (\alpha \nabla u_f) + \beta u_f^3 &amp;= f \quad &amp;&amp;\text{ in } D,\\
+        u_f &amp;= 0 \quad &amp;&amp;\text{ on } \partial D,\\
+        [\![ u_f ]\!]_{\Gamma} &amp;= 0,\\
+        [\![ \alpha \partial_n u_f ]\!]_{\Gamma} &amp;= 0.
+    \end{alignedat}
+\end{align}
+\end{split}\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(\alpha\)</span> is given by <span class="math notranslate nohighlight">\(\alpha(x) = \chi_\Omega(x) \alpha_1 + (1 - \chi_\Omega(x))
+\alpha_2\)</span> and <span class="math notranslate nohighlight">\(f\)</span> is given by <span class="math notranslate nohighlight">\(f(x) = \chi_\Omega(x) f_1 + (1 - \chi_\Omega(x)) f_2\)</span>.
+The above optimization problem plays the role of the fine model. Note that the
+difficulty of this problem comes from the nonlinear term in the state equation, which
+makes the PDE constraint harder to solver than a linear equation. Therefore, we want
+to use an approximate model which is easier to solve. Our coarse model for this
+problem is given by</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align}
+    &amp;\min_\Omega J(u_c, \Omega) = \int_D (u_c - u_\mathrm{des})^2 \text{ d}x \\
+    &amp;\text{subject to} \qquad
+    \begin{alignedat}[t]{2}
+        -\nabla (\alpha \nabla u_c) &amp;= f \quad &amp;&amp;\text{ in } D,\\
+        u_c &amp;= 0 \quad &amp;&amp;\text{ on } \partial D,\\
+        [\![ u_c ]\!]_{\Gamma} &amp;= 0,\\
+        [\![ \alpha \partial_n u_c ]\!]_{\Gamma} &amp;= 0.
+    \end{alignedat}
+\end{align}
+\end{split}\]</div>
+<p>The difference between the fine and the coarse model optimization problems is now only
+the difference in the PDE constraints, i.e., the coarse model problem is the same as
+the fine model with <span class="math notranslate nohighlight">\(\beta = 0\)</span>. This can also be interpreted as linearization of the
+fine model around <span class="math notranslate nohighlight">\(u = 0\)</span>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Note that we also need a misalignment function in order to match the fine and coarse
+model outputs. For this problem, a natural choice is to use the misalignment function</p>
+<div class="math notranslate nohighlight">
+\[
+r(u, v) = \int_D (u - v)^2 \text{ d}x.
+\]</div>
+<p>This leads to a parameter extraction step in which the following subproblem has to be
+solved</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align}
+    &amp;\min_\Omega J(u_p, \Omega) = \int_D (u_p - u_f)^2 \text{ d}x \\
+    &amp;\text{subject to} \qquad
+    \begin{alignedat}[t]{2}
+        - \nabla (\alpha \nabla u_p) &amp;= f \quad &amp;&amp;\text{ in } D,\\
+        u_p &amp;= 0 \quad &amp;&amp;\text{ on } \partial D,\\
+        [\![ u_p ]\!]_{\Gamma} &amp;= 0,\\
+        [\![ \alpha \partial_n u_p ]\!]_{\Gamma} &amp;= 0.
+    \end{alignedat}
+\end{align}
+\end{split}\]</div>
+</div>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
+<p>The complete python code can be found in the file
+<a class="reference download internal" download="" href="../../../_downloads/3d7110a342f5495bd23e3848cf6358b1/demo_space_mapping_semilinear_transmission.py"><code class="xref download docutils literal notranslate"><span class="pre">demo_space_mapping_semilinear_transmission.py</span></code></a>
+and the corresponding config can be found in <a class="reference download internal" download="" href="../../../_downloads/bfceb03a886031ccf940558e171f010a/config.ini"><code class="xref download docutils literal notranslate"><span class="pre">config.ini</span></code></a>.</p>
+<section id="the-coarse-model">
+<h3>The coarse model<a class="headerlink" href="#the-coarse-model" title="Link to this heading">#</a></h3>
+<p>We start our description of the space mapping technqiue with the implementation of the
+coarse model. For this, we can use standard cashocs syntax, with the difference that
+we will not put the cost functional, etc., into a
+<a class="reference internal" href="../../../api/generated/cashocs.ShapeOptimizationProblem.html#cashocs.ShapeOptimizationProblem" title="cashocs.ShapeOptimizationProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.ShapeOptimizationProblem</span></code></a>, but we will use a
+<a class="reference internal" href="../../../api/generated/cashocs.space_mapping.shape_optimization.CoarseModel.html#cashocs.space_mapping.shape_optimization.CoarseModel" title="cashocs.space_mapping.shape_optimization.CoarseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoarseModel</span></code></a> for the
+coarse model.</p>
+<p>As usual, we begin the script with importing cashocs and fenics</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">fenics</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">cashocs</span>
+</pre></div>
+</div>
+<p>Next, we define the space mapping module we are using in the line</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">space_mapping</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">space_mapping</span><span class="o">.</span><span class="n">shape_optimization</span>
+</pre></div>
+</div>
+<p>and, further, we decrease the verbosity of cashocs so that we can see only the output
+of the space mapping routine</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cashocs</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">cashocs</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">ERROR</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, we define the path to the current directory (where the script is located) via</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Next, we define some model parameters and load the configuration file for the problem</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">alpha_1</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">alpha_2</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="n">f_1</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">f_2</span> <span class="o">=</span> <span class="mf">10.0</span>
+<span class="n">beta</span> <span class="o">=</span> <span class="mf">100.0</span>
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">load_config</span><span class="p">(</span><span class="s2">&quot;config.ini&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the next step, we define our desired state <span class="math notranslate nohighlight">\(u_\mathrm{des}\)</span> as solution of the fine
+model state constraint with a given geometry <span class="math notranslate nohighlight">\(\Omega\)</span></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">create_desired_state</span><span class="p">(</span><span class="n">alpha_1</span><span class="p">,</span> <span class="n">alpha_2</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">f_1</span><span class="p">,</span> <span class="n">f_2</span><span class="p">):</span>
+    <span class="n">mesh</span><span class="p">,</span> <span class="n">subdomains</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">dS</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">import_mesh</span><span class="p">(</span>
+        <span class="s2">&quot;./mesh/reference.xdmf&quot;</span>
+    <span class="p">)</span>
+    <span class="n">V</span> <span class="o">=</span> <span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">TestFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+    <span class="n">F</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">Constant</span><span class="p">(</span><span class="n">alpha_1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="o">+</span> <span class="n">Constant</span><span class="p">(</span><span class="n">alpha_2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="o">+</span> <span class="n">Constant</span><span class="p">(</span><span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">v</span> <span class="o">*</span> <span class="n">dx</span>
+        <span class="o">-</span> <span class="n">Constant</span><span class="p">(</span><span class="n">f_1</span><span class="p">)</span> <span class="o">*</span> <span class="n">v</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="o">-</span> <span class="n">Constant</span><span class="p">(</span><span class="n">f_2</span><span class="p">)</span> <span class="o">*</span> <span class="n">v</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">bcs</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">create_dirichlet_bcs</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span> <span class="n">boundaries</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+    <span class="n">cashocs</span><span class="o">.</span><span class="n">snes_solve</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">bcs</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">u</span>
+
+
+<span class="n">u_des_fixed</span> <span class="o">=</span> <span class="n">create_desired_state</span><span class="p">(</span><span class="n">alpha_1</span><span class="p">,</span> <span class="n">alpha_2</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">f_1</span><span class="p">,</span> <span class="n">f_2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, <code class="code highlight python docutils literal highlight-python"><span class="n">u_des_fixed</span></code> plays the role of the fixed desired state, which is given
+on a different mesh than the one we consider for the optimization later on.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As <code class="code highlight python docutils literal highlight-python"><span class="n">u_des_fixed</span></code> is given on another mesh and represents a fixed state, it has to be
+re-interpolated during each iteration of the optimization algorithms. This is due to
+the fact that, otherwise, it would be moved along with the mesh / geometry that is to
+be optimized and then become distorted. Therefore, a re-interpolation has to happen.</p>
+</div>
+<p>Now, we can define the coarse model, in analogy to <a class="reference internal" href="demo_shape_poisson.html#demo-shape-poisson"><span class="std std-ref">Shape Optimization with a Poisson Problem</span></a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mesh</span><span class="p">,</span> <span class="n">subdomains</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">dS</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">import_mesh</span><span class="p">(</span><span class="s2">&quot;./mesh/mesh.xdmf&quot;</span><span class="p">)</span>
+<span class="n">V</span> <span class="o">=</span> <span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">u</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">u_des</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">F</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Constant</span><span class="p">(</span><span class="n">alpha_1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="o">+</span> <span class="n">Constant</span><span class="p">(</span><span class="n">alpha_2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="o">-</span> <span class="n">Constant</span><span class="p">(</span><span class="n">f_1</span><span class="p">)</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="o">-</span> <span class="n">Constant</span><span class="p">(</span><span class="n">f_2</span><span class="p">)</span> <span class="o">*</span> <span class="n">p</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">bcs</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">create_dirichlet_bcs</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span> <span class="n">boundaries</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="n">J</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">IntegralFunctional</span><span class="p">(</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">u_des</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span><span class="p">)</span>
+<span class="n">coarse_model</span> <span class="o">=</span> <span class="n">space_mapping</span><span class="o">.</span><span class="n">CoarseModel</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">bcs</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">cfg</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As mentioned earlier, we now use the <a class="reference internal" href="../../../api/generated/cashocs.space_mapping.shape_optimization.CoarseModel.html#cashocs.space_mapping.shape_optimization.CoarseModel" title="cashocs.space_mapping.shape_optimization.CoarseModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">CoarseModel</span></code></a> instead of
+<a class="reference internal" href="../../../api/generated/cashocs.ShapeOptimizationProblem.html#cashocs.ShapeOptimizationProblem" title="cashocs.ShapeOptimizationProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">ShapeOptimizationProblem</span></code></a>.</p>
+</section>
+<section id="the-fine-model">
+<h3>The fine model<a class="headerlink" href="#the-fine-model" title="Link to this heading">#</a></h3>
+<p>After defining the coarse model, we can now define the fine model by overloading the
+<a class="reference internal" href="../../../api/generated/cashocs.space_mapping.shape_optimization.FineModel.html#cashocs.space_mapping.shape_optimization.FineModel" title="cashocs.space_mapping.shape_optimization.FineModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">FineModel</span></code></a> class</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">FineModel</span><span class="p">(</span><span class="n">space_mapping</span><span class="o">.</span><span class="n">FineModel</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">alpha_1</span><span class="p">,</span> <span class="n">alpha_2</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">f_1</span><span class="p">,</span> <span class="n">f_2</span><span class="p">,</span> <span class="n">u_des_fixed</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha_1</span> <span class="o">=</span> <span class="n">alpha_1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha_2</span> <span class="o">=</span> <span class="n">alpha_2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">beta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_1</span> <span class="o">=</span> <span class="n">f_1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_2</span> <span class="o">=</span> <span class="n">f_2</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">u_des_fixed</span> <span class="o">=</span> <span class="n">u_des_fixed</span>
+
+    <span class="k">def</span> <span class="nf">solve_and_evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">cashocs</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">write_out_mesh</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;./mesh/mesh.msh&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;./mesh/fine/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="si">}</span><span class="s2">.msh&quot;</span>
+        <span class="p">)</span>
+        <span class="n">cashocs</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">dir</span><span class="si">}</span><span class="s2">/mesh/fine/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="si">}</span><span class="s2">.msh&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">dir</span><span class="si">}</span><span class="s2">/mesh/fine/mesh.xdmf&quot;</span>
+        <span class="p">)</span>
+        <span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">subdomains</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">dS</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">import_mesh</span><span class="p">(</span>
+            <span class="s2">&quot;./mesh/fine/mesh.xdmf&quot;</span>
+        <span class="p">)</span>
+
+        <span class="n">V</span> <span class="o">=</span> <span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">u</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+        <span class="n">u_des</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">TestFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+        <span class="n">F</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">v</span> <span class="o">*</span> <span class="n">dx</span>
+            <span class="o">-</span> <span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_1</span><span class="p">)</span> <span class="o">*</span> <span class="n">v</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="o">-</span> <span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_2</span><span class="p">)</span> <span class="o">*</span> <span class="n">v</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">bcs</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">create_dirichlet_bcs</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span> <span class="n">boundaries</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+        <span class="n">cashocs</span><span class="o">.</span><span class="n">snes_solve</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">bcs</span><span class="p">)</span>
+
+        <span class="n">LagrangeInterpolator</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">u_des</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_des_fixed</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cost_functional_value</span> <span class="o">=</span> <span class="n">assemble</span><span class="p">(</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">u_des</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="n">u</span>
+</pre></div>
+</div>
+<p>Let us now take a deeper look at the fine model</p>
+<div class="admonition-description-of-the-finemodel admonition">
+<p class="admonition-title">Description of the FineModel</p>
+<p>The <code class="xref py py-meth docutils literal notranslate"><span class="pre">__init__()</span></code> method of the fine model initializes the model and saves the
+parameters to make them accessible to the class.
+Users have to overload the <a class="reference internal" href="../../../api/generated/cashocs.space_mapping.shape_optimization.FineModel.html#cashocs.space_mapping.shape_optimization.FineModel.solve_and_evaluate" title="cashocs.space_mapping.shape_optimization.FineModel.solve_and_evaluate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve_and_evaluate</span></code></a> method of
+the <a class="reference internal" href="../../../api/generated/cashocs.space_mapping.shape_optimization.FineModel.html#cashocs.space_mapping.shape_optimization.FineModel" title="cashocs.space_mapping.shape_optimization.FineModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">FineModel</span></code></a> class
+so that the fine model is actually solved and the cost function value is computed
+during the call to this method.</p>
+<p>Let us go over some implementation details of the fine model’s
+<a class="reference internal" href="../../../api/generated/cashocs.space_mapping.shape_optimization.FineModel.html#cashocs.space_mapping.shape_optimization.FineModel.solve_and_evaluate" title="cashocs.space_mapping.shape_optimization.FineModel.solve_and_evaluate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve_and_evaluate</span></code></a>
+method, as defined here. First, an iteration counter is incremented with the line</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">iter</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+</div>
+<p>Next, the fine model mesh is saved to a file. This is done in order to be able to
+re-import it with the correct physical tags as defined with Gmsh. This is done with
+the lines</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cashocs</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">write_out_mesh</span><span class="p">(</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;./mesh/mesh.msh&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;./mesh/fine/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="si">}</span><span class="s2">.msh&quot;</span>
+<span class="p">)</span>
+<span class="n">cashocs</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span>
+    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">dir</span><span class="si">}</span><span class="s2">/mesh/fine/mesh_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">iter</span><span class="si">}</span><span class="s2">.msh&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">dir</span><span class="si">}</span><span class="s2">/mesh/fine/mesh.xdmf&quot;</span>
+<span class="p">)</span>
+<span class="n">mesh</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">subdomains</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">dS</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">import_mesh</span><span class="p">(</span>
+    <span class="s2">&quot;./mesh/fine/mesh.xdmf&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>In the following lines, the fine model state constraint is defined and then solved</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">V</span> <span class="o">=</span> <span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">u_des</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">TestFunction</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">F</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_1</span><span class="p">)</span> <span class="o">*</span> <span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="o">+</span> <span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dot</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="o">+</span> <span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">)</span> <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">v</span> <span class="o">*</span> <span class="n">dx</span>
+    <span class="o">-</span> <span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_1</span><span class="p">)</span> <span class="o">*</span> <span class="n">v</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="o">-</span> <span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_2</span><span class="p">)</span> <span class="o">*</span> <span class="n">v</span> <span class="o">*</span> <span class="n">dx</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">)</span>
+<span class="n">bcs</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">create_dirichlet_bcs</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span> <span class="n">boundaries</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="n">cashocs</span><span class="o">.</span><span class="n">snes_solve</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">bcs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>After solving the fine model PDE constraint, we re-interpolate the desired state to
+the current mesh with the line</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">LagrangeInterpolator</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">u_des</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">u_des_fixed</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, <code class="code highlight python docutils literal highlight-python"><span class="n">u_des</span></code> is the desired state on the fine model mesh. Finally, we
+evaluate the cost functional and store the solution of the PDE constraint with the
+lines</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">cost_functional_value</span> <span class="o">=</span> <span class="n">assemble</span><span class="p">(</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span><span class="n">u</span> <span class="o">-</span> <span class="n">u_des</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span><span class="p">)</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">u</span> <span class="o">=</span> <span class="n">u</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition attention">
+<p class="admonition-title">Attention</p>
+<p>Users have to overwrite the attribute <code class="code highlight python docutils literal highlight-python"><span class="n">cost_functional_value</span></code> of the fine
+model class since the space mapping algorithm makes usage of this attribute.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the <a class="reference internal" href="../../../api/generated/cashocs.space_mapping.shape_optimization.FineModel.html#cashocs.space_mapping.shape_optimization.FineModel.solve_and_evaluate" title="cashocs.space_mapping.shape_optimization.FineModel.solve_and_evaluate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve_and_evaluate</span></code></a> method, we
+do not have to use the same discretization of the geometry for the coarse and fine
+models. In particular, we could remesh the geometry with a finer discretization. For
+an overview of how this can be done, we refer to
+<a class="reference internal" href="demo_space_mapping_uniform_flow_distribution.html#demo-space-mapping-uniform-flow-distribution"><span class="std std-ref">Space Mapping Shape Optimization - Uniform Flow Distribution</span></a>.</p>
+</div>
+<p>After having define the fine model class, we instantiate it and define a placeholder
+function for the solution of the fine model</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">fine_model</span> <span class="o">=</span> <span class="n">FineModel</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">alpha_1</span><span class="p">,</span> <span class="n">alpha_2</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">f_1</span><span class="p">,</span> <span class="n">f_2</span><span class="p">,</span> <span class="n">u_des_fixed</span><span class="p">)</span>
+<span class="n">u_fine</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As mentioned earlier, due to the fact that the geometry changes during the
+optimization, the desired state has to be re-interpolated to the changing mesh in each
+iteration. We do so by using a callback function which is defined as</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">callback</span><span class="p">():</span>
+    <span class="n">LagrangeInterpolator</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">u_des</span><span class="p">,</span> <span class="n">u_des_fixed</span><span class="p">)</span>
+    <span class="n">LagrangeInterpolator</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">u_fine</span><span class="p">,</span> <span class="n">fine_model</span><span class="o">.</span><span class="n">u</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="parameter-extraction">
+<h3>Parameter Extraction<a class="headerlink" href="#parameter-extraction" title="Link to this heading">#</a></h3>
+<p>As mentioned in the beginning, in order to perform the space mapping, we have to
+establish a connection between the coarse and the fine models. This is done via the
+parameter extraction step, which we now detail. For this, a new cost functional (the
+misalignment function) has to be defined, and the corresponding optimization problem
+(constrained by the coarse model) is solved in each space mapping iteration. For our
+problem, this is done via</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">u_param</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">J_param</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">IntegralFunctional</span><span class="p">(</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span><span class="n">u_param</span> <span class="o">-</span> <span class="n">u_fine</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span><span class="p">)</span>
+<span class="n">parameter_extraction</span> <span class="o">=</span> <span class="n">space_mapping</span><span class="o">.</span><span class="n">ParameterExtraction</span><span class="p">(</span>
+    <span class="n">coarse_model</span><span class="p">,</span> <span class="n">J_param</span><span class="p">,</span> <span class="n">u_param</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">cfg</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;initial&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>but of course other approaches are possible.</p>
+</section>
+<section id="space-mapping-problem-and-solution">
+<h3>Space Mapping Problem and Solution<a class="headerlink" href="#space-mapping-problem-and-solution" title="Link to this heading">#</a></h3>
+<p>Finally, we have all ingredients available to define the space mapping problem and
+solve it. This is done with the lines</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">problem</span> <span class="o">=</span> <span class="n">space_mapping</span><span class="o">.</span><span class="n">SpaceMappingProblem</span><span class="p">(</span>
+    <span class="n">fine_model</span><span class="p">,</span>
+    <span class="n">coarse_model</span><span class="p">,</span>
+    <span class="n">parameter_extraction</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s2">&quot;broyden&quot;</span><span class="p">,</span>
+    <span class="n">max_iter</span><span class="o">=</span><span class="mi">25</span><span class="p">,</span>
+    <span class="n">tol</span><span class="o">=</span><span class="mf">1e-2</span><span class="p">,</span>
+    <span class="n">use_backtracking_line_search</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">broyden_type</span><span class="o">=</span><span class="s2">&quot;good&quot;</span><span class="p">,</span>
+    <span class="n">memory_size</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">save_history</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="n">problem</span><span class="o">.</span><span class="n">inject_pre_callback</span><span class="p">(</span><span class="n">callback</span><span class="p">)</span>
+<span class="n">problem</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>There, we first define the problem, then inject the callback function we defined above
+so that the required re-interpolation takes place, and solve the problem with the call
+of it’s <a class="reference internal" href="../../../api/generated/cashocs.space_mapping.shape_optimization.SpaceMappingProblem.html#cashocs.space_mapping.shape_optimization.SpaceMappingProblem.solve" title="cashocs.space_mapping.shape_optimization.SpaceMappingProblem.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve</span></code></a> method.</p>
+<p>Finally, we perform a post-processing of the results with the code</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">))</span>
+
+<span class="n">ax_coarse</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">fig_coarse</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">subdomains</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Coarse Model Optimal Geometry&quot;</span><span class="p">)</span>
+
+<span class="n">ax_fine</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">fig_fine</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">fine_model</span><span class="o">.</span><span class="n">subdomains</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Fine Model Optimal Geometry&quot;</span><span class="p">)</span>
+
+<span class="n">mesh</span><span class="p">,</span> <span class="n">subdomains</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">import_mesh</span><span class="p">(</span><span class="s2">&quot;./mesh/reference.xdmf&quot;</span><span class="p">)</span>
+<span class="n">ax_ref</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">fig_ref</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">subdomains</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Reference Geometry&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="c1"># plt.savefig(</span>
+<span class="c1">#     &quot;./img_space_mapping_semilinear_transmission.png&quot;, dpi=150, bbox_inches=&quot;tight&quot;</span>
+<span class="c1"># )</span>
+</pre></div>
+</div>
+<p>and the result should look as follows
+<img alt="" src="../../../_images/img_space_mapping_semilinear_transmission.png" /></p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The left image shows the optimized geometry with the coarse model, the middle image
+shows the optimized geometry with the fine model (with the space mapping technique),
+and the right image shows the reference geometry, which we were trying to reconstruct.
+We can see that using the coarse model alone as approximation of the original problem
+does not work sufficiently well as we recover some kind of rotated peanut shape,
+instead of a rotated ellipse. However, we see that the space mapping approach works
+very well for recovering the desired ellipse.</p>
+</div>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="demo_p_laplacian.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Shape Optimization with the p-Laplacian</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="demo_space_mapping_uniform_flow_distribution.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Space Mapping Shape Optimization - Uniform Flow Distribution</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem-formulation">Problem Formulation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-coarse-model">The coarse model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-fine-model">The fine model</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parameter-extraction">Parameter Extraction</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#space-mapping-problem-and-solution">Space Mapping Problem and Solution</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/user/demos/shape_optimization/demo_space_mapping_semilinear_transmission.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

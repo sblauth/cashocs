@@ -1,0 +1,722 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="16x16" href="../../../_static/favicon/favicon-16x16.jpg" type="image/jpeg">
+    <link rel="icon" sizes="32x32" href="../../../_static/favicon/favicon-32x32.jpg" type="image/jpeg">
+    <title>Computing the Shape Stiffness via Distance to the Boundaries &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user/demos/shape_optimization/demo_eikonal_stiffness';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Computing the Shape Stiffness via Distance to the Boundaries</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="computing-the-shape-stiffness-via-distance-to-the-boundaries">
+<span id="demo-eikonal-stiffness"></span><h1>Computing the Shape Stiffness via Distance to the Boundaries<a class="headerlink" href="#computing-the-shape-stiffness-via-distance-to-the-boundaries" title="Link to this heading">#</a></h1>
+<section id="problem-formulation">
+<h2>Problem Formulation<a class="headerlink" href="#problem-formulation" title="Link to this heading">#</a></h2>
+<p>We are solving the same problem as in <a class="reference internal" href="demo_shape_stokes.html#demo-shape-stokes"><span class="std std-ref">Optimization of an Obstacle in Stokes Flow</span></a>, but now use
+a different approach for computing the stiffness of the shape gradient.
+Recall, that the corresponding (regularized) shape optimization problem is given by</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align}
+    \min_\Omega J(u, \Omega) = &amp;\int_{\Omega^\text{flow}} Du : Du\ \text{ d}x +
+    \frac{\mu_\text{vol}}{2} \left( \int_\Omega 1 \text{ d}x
+    - \text{vol}(\Omega_0) \right)^2 \\
+    &amp;+ \frac{\mu_\text{bary}}{2} \left\lvert \frac{1}{\text{vol}(\Omega)}
+    \int_\Omega x \text{ d}x - \text{bary}(\Omega_0) \right\rvert^2 \\
+    &amp;\text{subject to } \qquad
+    \begin{alignedat}[t]{2}
+        - \Delta u + \nabla p &amp;= 0 \quad &amp;&amp;\text{ in } \Omega, \\
+        \text{div}(u) &amp;= 0 \quad &amp;&amp;\text{ in } \Omega, \\
+        u &amp;= u^\text{in} \quad &amp;&amp;\text{ on } \Gamma^\text{in}, \\
+        u &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma^\text{wall} \cup \Gamma^\text{obs}, \\
+        \partial_n u - p n &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma^\text{out}.
+    \end{alignedat}
+\end{align}
+\end{split}\]</div>
+<p>For a background on the stiffness of the shape gradient, we refer to
+<a class="reference internal" href="doc_config.html#config-shape-shape-gradient"><span class="std std-ref">Section ShapeGradient</span></a>, where it is defined as the parameter
+<span class="math notranslate nohighlight">\(\mu\)</span> used in the computation of the shape gradient. Note that the distance
+computation is done via an eikonal equation, hence the name of the demo.</p>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
+<p>The complete python code can be found in the file <code class="xref download docutils literal notranslate"><span class="pre">demo_eikonal_stiffness.py</span></code>
+and the corresponding config can be found in <code class="xref download docutils literal notranslate"><span class="pre">config.ini</span></code>.</p>
+<section id="changes-in-the-config-file">
+<h3>Changes in the config file<a class="headerlink" href="#changes-in-the-config-file" title="Link to this heading">#</a></h3>
+<p>In order to compute the stiffness <span class="math notranslate nohighlight">\(\mu\)</span> based on the distance to selected boundaries,
+we only have to change the configuration file we are using, the python code
+for solving the shape optimization problem with cashocs stays exactly as
+it was in <a class="reference internal" href="demo_shape_stokes.html#demo-shape-stokes"><span class="std std-ref">Optimization of an Obstacle in Stokes Flow</span></a>.</p>
+<p>To use the stiffness computation based on the distance to the boundary, we add the
+following lines to the config file</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">config.ini</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">ShapeGradient</span><span class="p">]</span>
+<span class="n">use_distance_mu</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">dist_min</span> <span class="o">=</span> <span class="mf">0.05</span>
+<span class="n">dist_max</span> <span class="o">=</span> <span class="mf">1.25</span>
+<span class="n">mu_min</span> <span class="o">=</span> <span class="mf">5e2</span>
+<span class="n">mu_max</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">smooth_mu</span> <span class="o">=</span> <span class="n">false</span>
+<span class="n">boundaries_dist</span> <span class="o">=</span> <span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<p>The first line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">use_distance_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+<p>ensures that the stiffness will be computed based on the distance to the boundary.</p>
+<p>The next four lines then specify the behavior of this computation. In particular,
+we have the following behavior for <span class="math notranslate nohighlight">\(\mu\)</span></p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\mu = \begin{cases}
+    \mu_\mathrm{min} \quad \text{ if } \delta \leq \delta_\mathrm{min},\\
+    \mu_\mathrm{max} \quad \text{ if } \delta \geq \delta_\mathrm{max}
+\end{cases}
+\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(\delta\)</span> denotes the distance to the boundary and <span class="math notranslate nohighlight">\(\delta_\mathrm{min}\)</span>
+and <span class="math notranslate nohighlight">\(\delta_\mathrm{max}\)</span> correspond to <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_min</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_max</span></code>,
+respectively.</p>
+<p>The values in-between are given by interpolation. Either a linear, continuous
+interpolation is used, or a smooth <span class="math notranslate nohighlight">\(C^1\)</span> interpolation given by a third order
+polynomial. These can be selected with the option</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">smooth_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span>
+</pre></div>
+</div>
+<p>where <code class="code highlight ini docutils literal highlight-ini"><span class="na">smooth_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> uses the third order polynomial, and
+<code class="code highlight ini docutils literal highlight-ini"><span class="na">smooth_mu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code> uses the linear function.</p>
+<p>Finally, the line</p>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="na">boundaries_dist</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">[4]</span>
+</pre></div>
+</div>
+<p>specifies, which boundaries are considered for the distance computation. These are
+again specified using the boundary markers, as it was previously explained in
+<a class="reference internal" href="doc_config.html#config-shape-shape-gradient"><span class="std std-ref">Section ShapeGradient</span></a>.</p>
+<p>For the sake of completeness, here is the code for solving the problem</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fenics</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">cashocs</span>
+
+<span class="n">config</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">load_config</span><span class="p">(</span><span class="s2">&quot;./config.ini&quot;</span><span class="p">)</span>
+<span class="n">mesh</span><span class="p">,</span> <span class="n">subdomains</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">dS</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">import_mesh</span><span class="p">(</span><span class="s2">&quot;./mesh/mesh.xdmf&quot;</span><span class="p">)</span>
+
+<span class="n">v_elem</span> <span class="o">=</span> <span class="n">VectorElement</span><span class="p">(</span><span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">ufl_cell</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">p_elem</span> <span class="o">=</span> <span class="n">FiniteElement</span><span class="p">(</span><span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">ufl_cell</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">V</span> <span class="o">=</span> <span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">MixedElement</span><span class="p">([</span><span class="n">v_elem</span><span class="p">,</span> <span class="n">p_elem</span><span class="p">]))</span>
+
+<span class="n">up</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">u</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">up</span><span class="p">)</span>
+<span class="n">vq</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">v</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">vq</span><span class="p">)</span>
+
+<span class="n">e</span> <span class="o">=</span> <span class="n">inner</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">-</span> <span class="n">p</span> <span class="o">*</span> <span class="n">div</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">-</span> <span class="n">q</span> <span class="o">*</span> <span class="n">div</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span>
+
+<span class="n">u_in</span> <span class="o">=</span> <span class="n">Expression</span><span class="p">((</span><span class="s2">&quot;-1.0/4.0*(x[1] - 2.0)*(x[1] + 2.0)&quot;</span><span class="p">,</span> <span class="s2">&quot;0.0&quot;</span><span class="p">),</span> <span class="n">degree</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">bc_in</span> <span class="o">=</span> <span class="n">DirichletBC</span><span class="p">(</span><span class="n">V</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">u_in</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">bc_no_slip</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">create_dirichlet_bcs</span><span class="p">(</span>
+    <span class="n">V</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">Constant</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">boundaries</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]</span>
+<span class="p">)</span>
+<span class="n">bcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">bc_in</span><span class="p">]</span> <span class="o">+</span> <span class="n">bc_no_slip</span>
+
+<span class="n">J</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">IntegralFunctional</span><span class="p">(</span><span class="n">inner</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span><span class="p">)</span>
+
+<span class="n">sop</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">ShapeOptimizationProblem</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">bcs</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">up</span><span class="p">,</span> <span class="n">vq</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+<span class="n">sop</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+<span class="n">ax_mesh</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">fig_mesh</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Discretization of the optimized geometry&quot;</span><span class="p">)</span>
+
+<span class="n">ax_u</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">ax_u</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">ax_mesh</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
+<span class="n">ax_u</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ax_mesh</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">())</span>
+<span class="n">fig_u</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">fig_u</span><span class="p">,</span> <span class="n">fraction</span><span class="o">=</span><span class="mf">0.046</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.04</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;State variable u&quot;</span><span class="p">)</span>
+
+
+<span class="n">ax_p</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">ax_p</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">ax_mesh</span><span class="o">.</span><span class="n">get_xlim</span><span class="p">())</span>
+<span class="n">ax_p</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">ax_mesh</span><span class="o">.</span><span class="n">get_ylim</span><span class="p">())</span>
+<span class="n">fig_p</span> <span class="o">=</span> <span class="n">plot</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">fig_p</span><span class="p">,</span> <span class="n">fraction</span><span class="o">=</span><span class="mf">0.046</span><span class="p">,</span> <span class="n">pad</span><span class="o">=</span><span class="mf">0.04</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;State variable p&quot;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="c1"># plt.savefig(&quot;./img_eikonal_stiffness.png&quot;, dpi=150, bbox_inches=&quot;tight&quot;)</span>
+</pre></div>
+</div>
+<p>The results should look like this
+<img alt="" src="../../../_images/img_shape_stokes.png" /></p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem-formulation">Problem Formulation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changes-in-the-config-file">Changes in the config file</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/user/demos/shape_optimization/demo_eikonal_stiffness.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

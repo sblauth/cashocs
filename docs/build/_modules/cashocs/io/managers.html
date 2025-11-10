@@ -1,0 +1,1320 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cashocs.io.managers &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/cashocs/io/managers';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">cashocs.io.managers</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for cashocs.io.managers</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of cashocs.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with cashocs.  If not, see &lt;https://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;Output managers for cashocs.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>  <span class="c1"># nosec B404</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">cast</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">import</span> <span class="nn">fenics</span>
+
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">cashocs.io</span> <span class="kn">import</span> <span class="n">mesh</span> <span class="k">as</span> <span class="n">iomesh</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cashocs._database</span> <span class="kn">import</span> <span class="n">database</span>
+
+
+<span class="n">output_mapping</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;iteration&quot;</span><span class="p">:</span> <span class="s2">&quot;iter&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;objective_value&quot;</span><span class="p">:</span> <span class="s2">&quot;cost function&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;relative_norm&quot;</span><span class="p">:</span> <span class="s2">&quot;rel. grad. norm&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;gradient_norm&quot;</span><span class="p">:</span> <span class="s2">&quot;abs. grad. norm&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mesh_quality&quot;</span><span class="p">:</span> <span class="s2">&quot;mesh qlty&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;angle&quot;</span><span class="p">:</span> <span class="s2">&quot;angle&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;stepsize&quot;</span><span class="p">:</span> <span class="s2">&quot;step size&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;constraint_violation&quot;</span><span class="p">:</span> <span class="s2">&quot;constraint violation&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;mu&quot;</span><span class="p">:</span> <span class="s2">&quot;mu&quot;</span><span class="p">,</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="generate_summary_str">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.generate_summary_str.html#cashocs.io.managers.generate_summary_str">[docs]</a>
+<span class="k">def</span> <span class="nf">generate_summary_str</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">database</span><span class="o">.</span><span class="n">Database</span><span class="p">,</span> <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates a string for the summary of the optimization.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        db: The database of the problem.</span>
+<span class="sd">        precision: The precision used for displaying the numbers.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The summary string.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">optimization_state</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">optimization_state</span>
+
+    <span class="n">summary_str_list</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Optimization was successful.</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;Statistics:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+        <span class="sa">f</span><span class="s2">&quot;    total iterations: </span><span class="si">{</span><span class="n">optimization_state</span><span class="p">[</span><span class="s1">&#39;iteration&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">4d</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">output_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">optimization_state</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="ow">and</span> <span class="n">key</span> <span class="o">!=</span> <span class="s2">&quot;iteration&quot;</span><span class="p">:</span>
+            <span class="n">parameter_name</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="n">parameter_value</span> <span class="o">=</span> <span class="n">optimization_state</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+            <span class="n">summary_str_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;    final </span><span class="si">{</span><span class="n">parameter_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">parameter_value</span><span class="si">:</span><span class="s2">.</span><span class="si">{</span><span class="n">precision</span><span class="si">}</span><span class="s2">e</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">if</span> <span class="s2">&quot;no_state_solves&quot;</span> <span class="ow">in</span> <span class="n">optimization_state</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">summary_str_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="s2">&quot;    total number of state systems solved: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">optimization_state</span><span class="p">[</span><span class="s1">&#39;no_state_solves&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">4d</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">if</span> <span class="s2">&quot;no_adjoint_solves&quot;</span> <span class="ow">in</span> <span class="n">optimization_state</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">summary_str_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="s2">&quot;    total number of adjoint systems solved: &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">optimization_state</span><span class="p">[</span><span class="s1">&#39;no_adjoint_solves&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">4d</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">summary_str_list</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="generate_output_str">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.generate_output_str.html#cashocs.io.managers.generate_output_str">[docs]</a>
+<span class="k">def</span> <span class="nf">generate_output_str</span><span class="p">(</span><span class="n">db</span><span class="p">:</span> <span class="n">database</span><span class="o">.</span><span class="n">Database</span><span class="p">,</span> <span class="n">precision</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generates the string which can be written to console and file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        db: The database of the problem.</span>
+<span class="sd">        precision: The precision used for displaying the numbers.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The output string, which is used later.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">optimization_state</span> <span class="o">=</span> <span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">optimization_state</span>
+
+    <span class="n">iteration</span> <span class="o">=</span> <span class="n">optimization_state</span><span class="p">[</span><span class="s2">&quot;iteration&quot;</span><span class="p">]</span>
+
+    <span class="n">info_str_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">output_str_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">if</span> <span class="n">iteration</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">info_str_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">output_mapping</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">optimization_state</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;iteration&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">iteration</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">info_str_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;iter,  &quot;</span><span class="p">)</span>
+                <span class="n">output_str_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">iteration</span><span class="si">:</span><span class="s2">4d</span><span class="si">}</span><span class="s2">,  &quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">parameter_value</span> <span class="o">=</span> <span class="n">optimization_state</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+                <span class="n">parameter_name</span> <span class="o">=</span> <span class="n">value</span>
+
+                <span class="n">temp_name_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parameter_name</span><span class="si">}</span><span class="s2">,  &quot;</span>
+                <span class="n">temp_value_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parameter_value</span><span class="si">:</span><span class="s2">.</span><span class="si">{</span><span class="n">precision</span><span class="si">}</span><span class="s2">e</span><span class="si">}</span><span class="s2">,  &quot;</span>
+                <span class="n">string_length</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">temp_name_str</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">temp_value_str</span><span class="p">))</span>
+
+                <span class="k">if</span> <span class="n">iteration</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">info_str_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parameter_name</span><span class="si">}</span><span class="s2">,  &quot;</span><span class="o">.</span><span class="n">rjust</span><span class="p">(</span><span class="n">string_length</span><span class="p">))</span>
+
+                <span class="n">output_str_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">parameter_value</span><span class="si">:</span><span class="s2">&gt;</span><span class="si">{</span><span class="n">string_length</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">3</span><span class="si">}</span><span class="s2">.</span><span class="si">{</span><span class="n">precision</span><span class="si">}</span><span class="s2">e</span><span class="si">}</span><span class="s2">,  &quot;</span>
+                <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">continue</span>
+
+    <span class="k">if</span> <span class="n">iteration</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">info_str_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">iteration</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">output_str_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">info_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">info_str_list</span><span class="p">)</span>
+    <span class="n">output_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_str_list</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">info_str</span> <span class="o">+</span> <span class="n">output_str</span></div>
+
+
+
+<div class="viewcode-block" id="IOManager">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.IOManager.html#cashocs.io.managers.IOManager">[docs]</a>
+<span class="k">class</span> <span class="nc">IOManager</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for input / output management.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">database</span><span class="o">.</span><span class="n">Database</span><span class="p">,</span> <span class="n">result_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            db: The database of the problem.</span>
+<span class="sd">            result_dir: Path to the directory, where the results are saved.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">db</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">result_dir</span> <span class="o">=</span> <span class="n">result_dir</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">config</span>
+
+<div class="viewcode-block" id="IOManager.output">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.IOManager.html#cashocs.io.managers.IOManager.output">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">output</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The output operation, which is performed after every iteration.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            solver: The optimization algorithm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="IOManager.output_summary">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.IOManager.html#cashocs.io.managers.IOManager.output_summary">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">output_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The output operation, which is performed after convergence.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            solver: The optimization algorithm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="IOManager.post_process">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.IOManager.html#cashocs.io.managers.IOManager.post_process">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">post_process</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The output operation which is performed as part of the postprocessing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            solver: The optimization algorithm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ResultManager">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.ResultManager.html#cashocs.io.managers.ResultManager">[docs]</a>
+<span class="k">class</span> <span class="nc">ResultManager</span><span class="p">(</span><span class="n">IOManager</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for managing the output of the optimization history.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">database</span><span class="o">.</span><span class="n">Database</span><span class="p">,</span> <span class="n">result_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            db: The database of the problem.</span>
+<span class="sd">            result_dir: Path to the directory, where the results are saved.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">result_dir</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Output&quot;</span><span class="p">,</span> <span class="s2">&quot;save_results&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">output_dict</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;output_dict&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">output_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span><span class="p">[</span><span class="s2">&quot;output_dict&quot;</span><span class="p">][</span>
+                    <span class="n">key</span>
+                <span class="p">]</span>
+
+<div class="viewcode-block" id="ResultManager.output">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.ResultManager.html#cashocs.io.managers.ResultManager.output">[docs]</a>
+    <span class="k">def</span> <span class="nf">output</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the optimization history to a dictionary.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">optimization_state</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dict</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">output_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">output_dict</span><span class="p">[</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">optimization_state</span><span class="p">[</span><span class="n">key</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="ResultManager.output_summary">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.ResultManager.html#cashocs.io.managers.ResultManager.output_summary">[docs]</a>
+    <span class="k">def</span> <span class="nf">output_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The output operation, which is performed after convergence.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            solver: The optimization algorithm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="ResultManager.post_process">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.ResultManager.html#cashocs.io.managers.ResultManager.post_process">[docs]</a>
+    <span class="k">def</span> <span class="nf">post_process</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the history of the optimization to a .json file.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_results</span> <span class="ow">and</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">result_dir</span><span class="si">}</span><span class="s2">/history.json&quot;</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dict</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ConsoleManager">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.ConsoleManager.html#cashocs.io.managers.ConsoleManager">[docs]</a>
+<span class="k">class</span> <span class="nc">ConsoleManager</span><span class="p">(</span><span class="n">IOManager</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Management of the console output.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">database</span><span class="o">.</span><span class="n">Database</span><span class="p">,</span> <span class="n">result_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">verbose</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            db: The database of the problem.</span>
+<span class="sd">            result_dir: The directory, where the results are written to.</span>
+<span class="sd">            verbose: Boolean which indicates whether the logging setup (False) or the</span>
+<span class="sd">                old setup with print (True) should be used. Default is `False`.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">result_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span> <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s2">&quot;Output&quot;</span><span class="p">,</span> <span class="s2">&quot;precision&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ConsoleManager.output">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.ConsoleManager.html#cashocs.io.managers.ConsoleManager.output">[docs]</a>
+    <span class="k">def</span> <span class="nf">output</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prints the output string to the console.&quot;&quot;&quot;</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">generate_output_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConsoleManager.output_summary">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.ConsoleManager.html#cashocs.io.managers.ConsoleManager.output_summary">[docs]</a>
+    <span class="k">def</span> <span class="nf">output_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Prints the summary in the console.&quot;&quot;&quot;</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">generate_summary_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConsoleManager.post_process">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.ConsoleManager.html#cashocs.io.managers.ConsoleManager.post_process">[docs]</a>
+    <span class="k">def</span> <span class="nf">post_process</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The output operation which is performed as part of the postprocessing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            solver: The optimization algorithm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="FileManager">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.FileManager.html#cashocs.io.managers.FileManager">[docs]</a>
+<span class="k">class</span> <span class="nc">FileManager</span><span class="p">(</span><span class="n">IOManager</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for managing the human-readable output of cashocs.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">db</span><span class="p">:</span> <span class="n">database</span><span class="o">.</span><span class="n">Database</span><span class="p">,</span> <span class="n">result_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            db: The database of the problem.</span>
+<span class="sd">            result_dir: The directory, where the results are written to.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">result_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">precision</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="s2">&quot;Output&quot;</span><span class="p">,</span> <span class="s2">&quot;precision&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FileManager.output">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.FileManager.html#cashocs.io.managers.FileManager.output">[docs]</a>
+    <span class="k">def</span> <span class="nf">output</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the output string in a file.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">optimization_state</span><span class="p">[</span><span class="s2">&quot;iteration&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">file_attr</span> <span class="o">=</span> <span class="s2">&quot;w&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">file_attr</span> <span class="o">=</span> <span class="s2">&quot;a&quot;</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">result_dir</span><span class="si">}</span><span class="s2">/history.txt&quot;</span><span class="p">,</span> <span class="n">file_attr</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span>
+            <span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">generate_output_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span><span class="w"> </span><span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">)</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FileManager.output_summary">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.FileManager.html#cashocs.io.managers.FileManager.output_summary">[docs]</a>
+    <span class="k">def</span> <span class="nf">output_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Save the summary in a file.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">result_dir</span><span class="si">}</span><span class="s2">/history.txt&quot;</span><span class="p">,</span> <span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">generate_summary_str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">precision</span><span class="p">))</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="FileManager.post_process">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.FileManager.html#cashocs.io.managers.FileManager.post_process">[docs]</a>
+    <span class="k">def</span> <span class="nf">post_process</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The output operation which is performed as part of the postprocessing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            solver: The optimization algorithm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="TempFileManager">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.TempFileManager.html#cashocs.io.managers.TempFileManager">[docs]</a>
+<span class="k">class</span> <span class="nc">TempFileManager</span><span class="p">(</span><span class="n">IOManager</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for managing temporary files.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TempFileManager.output">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.TempFileManager.html#cashocs.io.managers.TempFileManager.output">[docs]</a>
+    <span class="k">def</span> <span class="nf">output</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The output operation, which is performed after every iteration.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            solver: The optimization algorithm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="TempFileManager.output_summary">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.TempFileManager.html#cashocs.io.managers.TempFileManager.output_summary">[docs]</a>
+    <span class="k">def</span> <span class="nf">output_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The output operation, which is performed after convergence.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            solver: The optimization algorithm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="TempFileManager.post_process">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.TempFileManager.html#cashocs.io.managers.TempFileManager.post_process">[docs]</a>
+    <span class="k">def</span> <span class="nf">post_process</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deletes temporary files.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">problem_type</span> <span class="o">==</span> <span class="s2">&quot;shape&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;remesh&quot;</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Debug&quot;</span><span class="p">,</span> <span class="s2">&quot;remeshing&quot;</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">temp_dict</span>
+                <span class="ow">and</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+            <span class="p">):</span>
+                <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>  <span class="c1"># nosec B603, B607</span>
+                    <span class="p">[</span><span class="s2">&quot;rm&quot;</span><span class="p">,</span> <span class="s2">&quot;-r&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">remesh_directory</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span>
+                <span class="p">)</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MeshManager">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.MeshManager.html#cashocs.io.managers.MeshManager">[docs]</a>
+<span class="k">class</span> <span class="nc">MeshManager</span><span class="p">(</span><span class="n">IOManager</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manages the output of meshes.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="MeshManager.output">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.MeshManager.html#cashocs.io.managers.MeshManager.output">[docs]</a>
+    <span class="k">def</span> <span class="nf">output</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the mesh as checkpoint for each iteration.&quot;&quot;&quot;</span>
+        <span class="n">iteration</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">optimization_state</span><span class="p">[</span><span class="s2">&quot;iteration&quot;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">gmsh_file_path</span><span class="p">:</span>
+            <span class="n">gmsh_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;gmsh_file&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gmsh_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">gmsh_file_path</span>
+
+        <span class="n">iomesh</span><span class="o">.</span><span class="n">write_out_mesh</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">geometry_db</span><span class="o">.</span><span class="n">mesh</span><span class="p">,</span>
+            <span class="n">gmsh_file</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">result_dir</span><span class="si">}</span><span class="s2">/checkpoints/mesh/mesh_</span><span class="si">{</span><span class="n">iteration</span><span class="si">}</span><span class="s2">.msh&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MeshManager.output_summary">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.MeshManager.html#cashocs.io.managers.MeshManager.output_summary">[docs]</a>
+    <span class="k">def</span> <span class="nf">output_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The output operation, which is performed after convergence.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            solver: The optimization algorithm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MeshManager.post_process">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.MeshManager.html#cashocs.io.managers.MeshManager.post_process">[docs]</a>
+    <span class="k">def</span> <span class="nf">post_process</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves a copy of the optimized mesh in Gmsh format.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">gmsh_file_path</span><span class="p">:</span>
+            <span class="n">gmsh_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;Mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;gmsh_file&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">gmsh_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">gmsh_file_path</span>
+
+        <span class="n">iomesh</span><span class="o">.</span><span class="n">write_out_mesh</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">mesh</span><span class="p">(),</span>
+            <span class="n">gmsh_file</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">result_dir</span><span class="si">}</span><span class="s2">/optimized_mesh.msh&quot;</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="XDMFFileManager">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.XDMFFileManager.html#cashocs.io.managers.XDMFFileManager">[docs]</a>
+<span class="k">class</span> <span class="nc">XDMFFileManager</span><span class="p">(</span><span class="n">IOManager</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for managing visualization .xdmf files.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">db</span><span class="p">:</span> <span class="n">database</span><span class="o">.</span><span class="n">Database</span><span class="p">,</span>
+        <span class="n">result_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            db: The database of the problem.</span>
+<span class="sd">            result_dir: Path to the directory, where the output files are saved in.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">db</span><span class="p">,</span> <span class="n">result_dir</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Output&quot;</span><span class="p">,</span> <span class="s2">&quot;save_state&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_adjoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Output&quot;</span><span class="p">,</span> <span class="s2">&quot;save_adjoint&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">save_gradient</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="s2">&quot;Output&quot;</span><span class="p">,</span> <span class="s2">&quot;save_gradient&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_xdmf_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">control_xdmf_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">adjoint_xdmf_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gradient_xdmf_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">_initialize_states_xdmf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the list of xdmf files for the state variables.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_state</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">state_dim</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">state_xdmf_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_generate_xdmf_file_strings</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">state_spaces</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;state_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_initialize_controls_xdmf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the list of xdmf files for the control variables.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_state</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">problem_type</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s2">&quot;control&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;topology&quot;</span><span class="p">,</span>
+        <span class="p">]:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">control_dim</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">control_xdmf_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_generate_xdmf_file_strings</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">control_spaces</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;control_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_initialize_adjoints_xdmf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the list of xdmf files for the adjoint variables.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_adjoint</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">state_dim</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">adjoint_xdmf_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_generate_xdmf_file_strings</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">adjoint_spaces</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="sa">f</span><span class="s2">&quot;adjoint_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_initialize_gradients_xdmf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the list of xdmf files for the gradients.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_gradient</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">control_dim</span><span class="p">):</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">problem_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;control&quot;</span><span class="p">,</span> <span class="s2">&quot;topology&quot;</span><span class="p">]:</span>
+                    <span class="n">gradient_str</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;gradient_</span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">gradient_str</span> <span class="o">=</span> <span class="s2">&quot;shape_gradient&quot;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gradient_xdmf_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_generate_xdmf_file_strings</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">control_spaces</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">gradient_str</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_initialize_xdmf_lists</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes the lists of xdmf files.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_states_xdmf</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_controls_xdmf</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_adjoints_xdmf</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_gradients_xdmf</span><span class="p">()</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">is_initialized</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_generate_xdmf_file_strings</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">space</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate the strings (paths) to the xdmf files for visualization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            space: The FEM function space where the function is taken from.</span>
+<span class="sd">            name: The name of the function / file</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A string containing the path to the xdmf files for visualization.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">space</span><span class="o">.</span><span class="n">num_sub_spaces</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">space</span><span class="o">.</span><span class="n">ufl_element</span><span class="p">()</span><span class="o">.</span><span class="n">family</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;Mixed&quot;</span><span class="p">:</span>
+            <span class="n">lst</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">space</span><span class="o">.</span><span class="n">num_sub_spaces</span><span class="p">()):</span>
+                <span class="n">lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">result_dir</span><span class="si">}</span><span class="s2">/checkpoints/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">j</span><span class="si">:</span><span class="s2">d</span><span class="si">}</span><span class="s2">.xdmf&quot;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">lst</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">file</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">result_dir</span><span class="si">}</span><span class="s2">/checkpoints/</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">.xdmf&quot;</span>
+            <span class="k">return</span> <span class="n">file</span>
+
+    <span class="k">def</span> <span class="nf">_save_states</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the state variables to xdmf files.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            iteration: The current iteration count.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_state</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">state_dim</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_xdmf_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_xdmf_list</span><span class="p">[</span><span class="n">i</span><span class="p">])):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_write_xdmf_step</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">state_xdmf_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                            <span class="sa">f</span><span class="s2">&quot;state_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">_sub_</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="n">iteration</span><span class="p">,</span>
+                        <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_write_xdmf_step</span><span class="p">(</span>
+                        <span class="n">cast</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">state_xdmf_list</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">states</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                        <span class="sa">f</span><span class="s2">&quot;state_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">iteration</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_save_controls</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the control variables to xdmf.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            iteration: The current iteration count.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_state</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">problem_type</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s2">&quot;control&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;topology&quot;</span><span class="p">,</span>
+        <span class="p">]:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">controls</span><span class="p">)):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_write_xdmf_step</span><span class="p">(</span>
+                    <span class="n">cast</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">control_xdmf_list</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">controls</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="sa">f</span><span class="s2">&quot;control_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">iteration</span><span class="p">,</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_save_adjoints</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the adjoint variables to xdmf files.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            iteration: The current iteration count.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_adjoint</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">state_dim</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adjoint_xdmf_list</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">adjoint_xdmf_list</span><span class="p">[</span><span class="n">i</span><span class="p">])):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_write_xdmf_step</span><span class="p">(</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">adjoint_xdmf_list</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">j</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">adjoints</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="kc">True</span><span class="p">),</span>
+                            <span class="sa">f</span><span class="s2">&quot;adjoint_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">_sub_</span><span class="si">{</span><span class="n">j</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                            <span class="n">iteration</span><span class="p">,</span>
+                        <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_write_xdmf_step</span><span class="p">(</span>
+                        <span class="n">cast</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">adjoint_xdmf_list</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">adjoints</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                        <span class="sa">f</span><span class="s2">&quot;adjoint_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">iteration</span><span class="p">,</span>
+                    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_save_gradients</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the gradients to xdmf files.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            iteration: The current iteration count.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_gradient</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">control_dim</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_write_xdmf_step</span><span class="p">(</span>
+                    <span class="n">cast</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gradient_xdmf_list</span><span class="p">[</span><span class="n">i</span><span class="p">]),</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">function_db</span><span class="o">.</span><span class="n">gradient</span><span class="p">[</span><span class="n">i</span><span class="p">],</span>
+                    <span class="sa">f</span><span class="s2">&quot;gradient_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                    <span class="n">iteration</span><span class="p">,</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_write_xdmf_step</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">function</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span>
+        <span class="n">function_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Write the current function to the corresponding xdmf file for visualization.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename: The path to the xdmf file.</span>
+<span class="sd">            function: The function which is to be stored.</span>
+<span class="sd">            function_name: The label of the function in the xdmf file.</span>
+<span class="sd">            iteration: The current iteration counter.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">iteration</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">append</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">append</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">function</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">mesh</span><span class="p">()</span>
+        <span class="n">comm</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">function</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">ufl_element</span><span class="p">()</span><span class="o">.</span><span class="n">family</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span>
+            <span class="s2">&quot;Real&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;NodalEnrichedElement&quot;</span><span class="p">,</span>
+        <span class="p">]:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">function</span><span class="o">.</span><span class="n">ufl_shape</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">space</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">VectorFunctionSpace</span><span class="p">(</span>
+                    <span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="n">function</span><span class="o">.</span><span class="n">ufl_shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">space</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">function</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">function</span><span class="p">,</span> <span class="n">space</span><span class="p">)</span>
+
+        <span class="n">function</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">function_name</span><span class="p">,</span> <span class="n">function_name</span><span class="p">)</span>
+
+        <span class="k">with</span> <span class="n">fenics</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">(</span><span class="n">comm</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;flush_output&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">parameters</span><span class="p">[</span><span class="s2">&quot;functions_share_mesh&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write_checkpoint</span><span class="p">(</span>
+                <span class="n">function</span><span class="p">,</span>
+                <span class="n">function_name</span><span class="p">,</span>
+                <span class="n">iteration</span><span class="p">,</span>
+                <span class="n">fenics</span><span class="o">.</span><span class="n">XDMFFile</span><span class="o">.</span><span class="n">Encoding</span><span class="o">.</span><span class="n">HDF5</span><span class="p">,</span>
+                <span class="n">append</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span>
+
+<div class="viewcode-block" id="XDMFFileManager.output">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.XDMFFileManager.html#cashocs.io.managers.XDMFFileManager.output">[docs]</a>
+    <span class="k">def</span> <span class="nf">output</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the variables to xdmf files.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialize_xdmf_lists</span><span class="p">()</span>
+
+        <span class="n">iteration</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">optimization_state</span><span class="p">[</span><span class="s2">&quot;iteration&quot;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">iteration</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">directory</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">result_dir</span><span class="si">}</span><span class="s2">/checkpoints/&quot;</span>
+                <span class="k">for</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory</span><span class="p">):</span>
+                    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory</span><span class="p">,</span> <span class="n">files</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
+                        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+            <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_states</span><span class="p">(</span><span class="n">iteration</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_controls</span><span class="p">(</span><span class="n">iteration</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_adjoints</span><span class="p">(</span><span class="n">iteration</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_gradients</span><span class="p">(</span><span class="n">iteration</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="XDMFFileManager.output_summary">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.XDMFFileManager.html#cashocs.io.managers.XDMFFileManager.output_summary">[docs]</a>
+    <span class="k">def</span> <span class="nf">output_summary</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The output operation, which is performed after convergence.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            solver: The optimization algorithm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="XDMFFileManager.post_process">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.managers.XDMFFileManager.html#cashocs.io.managers.XDMFFileManager.post_process">[docs]</a>
+    <span class="k">def</span> <span class="nf">post_process</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The output operation which is performed as part of the postprocessing.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            solver: The optimization algorithm.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+</div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

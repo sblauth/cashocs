@@ -1,0 +1,875 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cashocs._utils.forms &#8212; cashocs 2.1.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=5b4479735964841361fd" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=5b4479735964841361fd" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.1.2/css/all.min.css?digest=5b4479735964841361fd" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.1.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd" />
+  <script src="../../../_static/vendor/fontawesome/6.1.2/js/all.min.js?digest=5b4479735964841361fd"></script>
+
+    <script src="../../../_static/documentation_options.js?v=14dbad98"></script>
+    <script src="../../../_static/doctools.js?v=888ff710"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/cashocs/_utils/forms';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.14.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <nav class="bd-header navbar navbar-expand-lg bd-navbar">
+<div class="bd-header__inner bd-page-width">
+  <label class="sidebar-toggle primary-toggle" for="__primary">
+    <span class="fa-solid fa-bars"></span>
+  </label>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <script>document.write(`<img src="../../../_static/logo.jpg" class="logo__image only-dark" alt="cashocs"/>`);</script>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../about/index.html">
+                        About
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../user/index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../api/index.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../development/index.html">
+                        Development
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../release_notes.html">
+                        Release Notes
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+      
+        <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-2"
+      type="button"
+      class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-2"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-2"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-2">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+</div>
+
+    </nav>
+  
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          <div class="navbar-item">
+<nav class="navbar-nav">
+  <p class="sidebar-header-items__title"
+     role="heading"
+     aria-level="1"
+     aria-label="Site Navigation">
+    Site Navigation
+  </p>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../about/index.html">
+                        About
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../user/index.html">
+                        User Guide
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../api/index.html">
+                        API Reference
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../development/index.html">
+                        Development
+                      </a>
+                    </li>
+                
+
+                    <li class="nav-item">
+                      <a class="nav-link nav-internal" href="../../../release_notes.html">
+                        Release Notes
+                      </a>
+                    </li>
+                
+  </ul>
+</nav></div>
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script></div>
+        
+          <div class="navbar-item">
+<script>
+document.write(`
+  <div class="version-switcher__container dropdown">
+    <button id="pst-version-switcher-button-3"
+      type="button"
+      class="version-switcher__button btn btn-sm navbar-btn dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-haspopup="listbox"
+      aria-controls="pst-version-switcher-list-3"
+      aria-label="Version switcher list"
+    >
+      Choose version  <!-- this text may get changed later by javascript -->
+      <span class="caret"></span>
+    </button>
+    <div id="pst-version-switcher-list-3"
+      class="version-switcher__menu dropdown-menu list-group-flush py-0"
+      role="listbox" aria-labelledby="pst-version-switcher-button-3">
+      <!-- dropdown will be populated by javascript on page load -->
+    </div>
+  </div>
+`);
+</script></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links navbar-nav"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><span><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i></span>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<nav class="sidebar-indices-items">
+  <p class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+
+
+<nav aria-label="Breadcrumb">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page">cashocs._utils.forms</li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article" role="main">
+                  
+  <h1>Source code for cashocs._utils.forms</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2020-2024 Sebastian Blauth</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of cashocs.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with cashocs.  If not, see &lt;https://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;Utilities for UFL forms.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">fenics</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ufl_legacy</span> <span class="k">as</span> <span class="nn">ufl</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ufl</span>
+
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_exceptions</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_loggers</span>
+
+<span class="n">T</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;T&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">summation</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sums elements of a list in a UFL friendly fashion.</span>
+
+<span class="sd">    This can be used to sum, e.g., UFL forms, or UFL expressions that can be used in UFL</span>
+<span class="sd">    forms.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: The list of entries that shall be summed.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Sum of input (same type as entries of input).</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        For &quot;usual&quot; summation of integers or floats, the built-in sum function</span>
+<span class="sd">        of python or the numpy variant are recommended. Still, they are</span>
+<span class="sd">        incompatible with FEniCS objects, so this function should be used for</span>
+<span class="sd">        the latter.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="n">_loggers</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Empty list handed to summation, returning 0.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">y</span> <span class="o">+=</span> <span class="n">item</span>
+
+    <span class="k">return</span> <span class="n">y</span>
+
+
+<span class="k">def</span> <span class="nf">multiplication</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">T</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">T</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Multiplies the elements of a list in a UFL friendly fashion.</span>
+
+<span class="sd">    Used to build the product of certain UFL expressions to construct a UFL form.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        x: The list whose entries shall be multiplied.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The result of the multiplication.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+        <span class="n">_loggers</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Empty list handed to multiplication, returning 1.&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">y</span> <span class="o">*=</span> <span class="n">item</span>
+
+    <span class="k">return</span> <span class="n">y</span>
+
+
+<span class="k">def</span> <span class="nf">max_</span><span class="p">(</span>
+    <span class="n">a</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">],</span> <span class="n">b</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the maximum of a and b.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a: The first parameter.</span>
+<span class="sd">        b: The second parameter.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The maximum of a and b.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">+</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">))</span> <span class="o">/</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">min_</span><span class="p">(</span>
+    <span class="n">a</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">],</span> <span class="n">b</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Computes the minimum of a and b.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        a: The first parameter.</span>
+<span class="sd">        b: The second parameter.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The minimum of a and b.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">a</span> <span class="o">+</span> <span class="n">b</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">a</span> <span class="o">-</span> <span class="n">b</span><span class="p">))</span> <span class="o">/</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">moreau_yosida_regularization</span><span class="p">(</span>
+    <span class="n">term</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span>
+    <span class="n">gamma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">measure</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Measure</span><span class="p">,</span>
+    <span class="n">lower_threshold</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">upper_threshold</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">shift_lower</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">shift_upper</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">:</span>
+<span class="w">    </span><span class="sa">r</span><span class="sd">&quot;&quot;&quot;Implements a Moreau-Yosida regularization of an inequality constraint.</span>
+
+<span class="sd">    The general form of the inequality is of the form ::</span>
+
+<span class="sd">        lower_threshold &lt;= term &lt;= upper_threshold</span>
+
+<span class="sd">    which is defined over the region specified in ``measure``.</span>
+
+<span class="sd">    In case ``lower_threshold`` or ``upper_threshold`` are ``None``, they are set to</span>
+<span class="sd">    :math:`-\infty` and :math:`\infty`, respectively.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        term: The term inside the inequality constraint.</span>
+<span class="sd">        gamma: The weighting factor of the regularization.</span>
+<span class="sd">        measure: The measure over which the inequality constraint is defined.</span>
+<span class="sd">        lower_threshold: The lower threshold for the inequality constraint. In case this</span>
+<span class="sd">            is ``None``, the lower bound is set to :math:`-\infty`. The default is</span>
+<span class="sd">            ``None``</span>
+<span class="sd">        upper_threshold: The upper threshold for the inequality constraint. In case this</span>
+<span class="sd">            is ``None``, the upper bound is set to :math:`\infty`. The default is</span>
+<span class="sd">            ``None``</span>
+<span class="sd">        shift_lower: A shift function for the lower bound of the Moreau-Yosida</span>
+<span class="sd">            regularization. Should be non-positive. In case this is ``None``, it is set</span>
+<span class="sd">            to 0. Default is ``None``.</span>
+<span class="sd">        shift_upper: A shift function for the upper bound of the Moreau-Yosida</span>
+<span class="sd">            regularization. Should be non-negative. In case this is ``None``, it is set</span>
+<span class="sd">            to 0. Default is ``None``.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The ufl form of the Moreau-Yosida regularization, to be used in the cost</span>
+<span class="sd">        functional.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">reg_lower</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">reg_upper</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="n">lower_threshold</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">upper_threshold</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">InputError</span><span class="p">(</span>
+            <span class="s2">&quot;cashocs._utils.moreau_yosida_regularization&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;upper_threshold, lower_threshold&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;At least one of the threshold parameters has to be defined.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">shift_lower</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">shift_lower</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">shift_upper</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">shift_upper</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+
+    <span class="n">reg</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">lower_threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">reg_lower</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">))</span>
+            <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span>
+                <span class="n">min_</span><span class="p">(</span>
+                    <span class="n">shift_lower</span> <span class="o">+</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">term</span> <span class="o">-</span> <span class="n">lower_threshold</span><span class="p">),</span>
+                    <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">*</span> <span class="n">measure</span>
+        <span class="p">)</span>
+        <span class="n">reg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reg_lower</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">upper_threshold</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">reg_upper</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">gamma</span><span class="p">))</span>
+            <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span>
+                <span class="n">max_</span><span class="p">(</span>
+                    <span class="n">shift_upper</span> <span class="o">+</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">term</span> <span class="o">-</span> <span class="n">upper_threshold</span><span class="p">),</span>
+                    <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+                <span class="p">),</span>
+                <span class="mi">2</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="o">*</span> <span class="n">measure</span>
+        <span class="p">)</span>
+        <span class="n">reg</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reg_upper</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">summation</span><span class="p">(</span><span class="n">reg</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="create_dirichlet_bcs">
+<a class="viewcode-back" href="../../../api/generated/cashocs.html#cashocs.create_dirichlet_bcs">[docs]</a>
+<span class="k">def</span> <span class="nf">create_dirichlet_bcs</span><span class="p">(</span>
+    <span class="n">function_space</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">,</span>
+    <span class="n">value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span>
+        <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Expression</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span>
+    <span class="p">],</span>
+    <span class="n">boundaries</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">,</span>
+    <span class="n">idcs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">]],</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create several Dirichlet boundary conditions at once.</span>
+
+<span class="sd">    Wraps multiple Dirichlet boundary conditions into a list, in case</span>
+<span class="sd">    they have the same value but are to be defined for multiple boundaries</span>
+<span class="sd">    with different markers. Particularly useful for defining homogeneous</span>
+<span class="sd">    boundary conditions.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        function_space: The function space onto which the BCs should be imposed on.</span>
+<span class="sd">        value: The value of the boundary condition. Has to be compatible with the</span>
+<span class="sd">            function_space, so that it could also be used as</span>
+<span class="sd">            ``fenics.DirichletBC(function_space, value, ...)``.</span>
+<span class="sd">        boundaries: The :py:class:`fenics.MeshFunction` object representing the</span>
+<span class="sd">            boundaries.</span>
+<span class="sd">        idcs: A list of indices / boundary markers that determine the boundaries</span>
+<span class="sd">            onto which the Dirichlet boundary conditions should be applied to.</span>
+<span class="sd">            Can also be a single entry for a single boundary. If your mesh file</span>
+<span class="sd">            is named, then you can also use the names of the boundaries to define the</span>
+<span class="sd">            boundary conditions.</span>
+<span class="sd">        **kwargs: Keyword arguments for fenics.DirichletBC</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A list of DirichletBC objects that represent the boundary conditions.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Generate homogeneous Dirichlet boundary conditions for all 4 sides of</span>
+<span class="sd">        the unit square ::</span>
+
+<span class="sd">            import fenics</span>
+<span class="sd">            import cashocs</span>
+
+<span class="sd">            mesh, _, _, _, _, _ = cashocs.regular_mesh(25)</span>
+<span class="sd">            V = fenics.FunctionSpace(mesh, &#39;CG&#39;, 1)</span>
+<span class="sd">            bcs = cashocs.create_dirichlet_bcs(V, fenics.Constant(0), boundaries,</span>
+<span class="sd">                [1,2,3,4])</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mesh</span> <span class="o">=</span> <span class="n">function_space</span><span class="o">.</span><span class="n">mesh</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">idcs</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">idcs</span> <span class="o">=</span> <span class="p">[</span><span class="n">idcs</span><span class="p">]</span>
+
+    <span class="n">bcs_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">idcs</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+            <span class="n">bcs_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">(</span><span class="n">function_space</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">entry</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">entry</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">physical_groups</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">physical_groups</span>
+            <span class="k">if</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">physical_groups</span><span class="p">[</span><span class="s2">&quot;ds&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">bcs_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">fenics</span><span class="o">.</span><span class="n">DirichletBC</span><span class="p">(</span>
+                        <span class="n">function_space</span><span class="p">,</span>
+                        <span class="n">value</span><span class="p">,</span>
+                        <span class="n">boundaries</span><span class="p">,</span>
+                        <span class="n">physical_groups</span><span class="p">[</span><span class="s2">&quot;ds&quot;</span><span class="p">][</span><span class="n">entry</span><span class="p">],</span>
+                        <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">InputError</span><span class="p">(</span>
+                    <span class="s2">&quot;cashocs.create_dirichlet_bcs&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;idcs&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;The string you have supplied is not associated with a boundary.&quot;</span><span class="p">,</span>
+                <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">bcs_list</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">bilinear_boundary_form_modification</span><span class="p">(</span><span class="n">forms</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Modifies a bilinear form for the case it is given on the boundary only.</span>
+
+<span class="sd">    This avoids a bug in fenics.SystemAssembler where the matrices&#39; sparsity pattern</span>
+<span class="sd">    is not initialized correctly.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mod_forms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">form</span> <span class="ow">in</span> <span class="n">forms</span><span class="p">:</span>
+        <span class="n">trial</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">arguments</span><span class="p">()</span>
+        <span class="n">mesh</span> <span class="o">=</span> <span class="n">trial</span><span class="o">.</span><span class="n">function_space</span><span class="p">()</span><span class="o">.</span><span class="n">mesh</span><span class="p">()</span>
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Measure</span><span class="p">(</span><span class="s2">&quot;dx&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">mesh</span><span class="p">)</span>
+        <span class="n">mod_forms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">form</span> <span class="o">+</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">fenics</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">trial</span><span class="p">,</span> <span class="n">test</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mod_forms</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=5b4479735964841361fd"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=5b4479735964841361fd"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2024, Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.2.6.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.14.4.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

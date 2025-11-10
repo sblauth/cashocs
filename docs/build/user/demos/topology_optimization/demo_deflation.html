@@ -1,0 +1,890 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="16x16" href="../../../_static/favicon/favicon-16x16.jpg" type="image/jpeg">
+    <link rel="icon" sizes="32x32" href="../../../_static/favicon/favicon-32x32.jpg" type="image/jpeg">
+    <title>Computing Multiple Local Minimizers of Topology Optimization Problems - Five-holes Double-pipe &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user/demos/topology_optimization/demo_deflation';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Using cashocs as a solver" href="../cashocs_as_solver/index.html" />
+    <link rel="prev" title="Topology Optimization with a Volume Constraint" href="demo_projection.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">List of tutorial topics:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../optimal_control/index.html">Optimal Control Problems</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_poisson.html">Distributed Control of a Poisson Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/doc_config.html">Documentation of the Config Files for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_box_constraints.html">Control Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_neumann_control.html">Neumann Boundary Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_multiple_variables.html">Using Multiple Variables and PDEs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_monolithic_problems.html">Coupled Problems - Monolithic Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_picard_iteration.html">Coupled Problems - Picard Iteration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_stokes.html">Distributed Control of a Stokes Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_heat_equation.html">Distributed Control for Time Dependent Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_nonlinear_pdes.html">Optimal Control with Nonlinear PDE Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_dirichlet_control.html">Dirichlet Boundary Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_iterative_solvers.html">Iterative Solvers for State and Adjoint Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_state_constraints.html">Optimal Control with State Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_sparse_control.html">Sparse Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_scalar_control_tracking.html">Tracking of Scalar Functionals for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_constraints.html">Treatment of additional constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_control_boundary_conditions.html">Boundary conditions for control variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_pre_post_callbacks.html">Pre- and Post-Callbacks for the optimization</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../shape_optimization/index.html">Shape Optimization Problems</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_shape_poisson.html">Shape Optimization with a Poisson Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/doc_config.html">Documentation of the Config Files for Shape Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_regularization.html">Regularization for Shape Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_inverse_tomography.html">Inverse Problem in Electric Impedance Tomography</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_shape_stokes.html">Optimization of an Obstacle in Stokes Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_remeshing.html">Remeshing with cashocs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_custom_scalar_product.html">Custom Scalar Products for Shape Gradient Computation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_scaling.html">Scaling of the Cost Functional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_prescribed_mu.html">Computing the Shape Stiffness via Distance to the Boundaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_p_laplacian.html">Shape Optimization with the p-Laplacian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_space_mapping_semilinear_transmission.html">Space Mapping Shape Optimization - Semilinear Transmission Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_space_mapping_uniform_flow_distribution.html">Space Mapping Shape Optimization - Uniform Flow Distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_pseudo_time_stepping.html">Pseudo Time Stepping for Steady State Problems</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Topology Optimization Problems</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="demo_poisson_clover.html">Topology Optimization with a Poisson Equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc_config.html">Documentation of the Config Files for Topology Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_cantilever.html">Topology Optimization with Linear Elasticity - Cantilever</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_pipe_bend.html">Topology Optimization with Stokes Flow - Pipe Bend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_projection.html">Topology Optimization with a Volume Constraint</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Computing Multiple Local Minimizers of Topology Optimization Problems - Five-holes Double-pipe</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../cashocs_as_solver/index.html">Using cashocs as a solver</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../cashocs_as_solver/demo_control_solver.html">cashocs as Solver for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cashocs_as_solver/demo_shape_solver.html">cashocs as Solver for Shape Optimization Problems</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../misc/index.html">Miscellaneous Topics</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/demo_logging.html">Logging with cashocs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/demo_xdmf_io.html">Writing and Reading XDMF Files</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">cashocs Tutorial</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Topology Optimization Problems</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Computing Multiple Local Minimizers of Topology Optimization Problems - Five-holes Double-pipe</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="computing-multiple-local-minimizers-of-topology-optimization-problems-five-holes-double-pipe">
+<span id="demo-deflation"></span><h1>Computing Multiple Local Minimizers of Topology Optimization Problems - Five-holes Double-pipe<a class="headerlink" href="#computing-multiple-local-minimizers-of-topology-optimization-problems-five-holes-double-pipe" title="Link to this heading">#</a></h1>
+<section id="problem-formulation">
+<h2>Problem Formulation<a class="headerlink" href="#problem-formulation" title="Link to this heading">#</a></h2>
+<p>Usually, topology optimization problems attain multiple local minimizers. In this demo,
+we compute multiple local minimizers of the five-holes double-pipe optimization problem.
+This problem has been investigated previously, e.g., in
+<a class="reference external" href="https://doi.org/10.1137/20M1326209">Papadopoulos, Farrell, Surowiec - Computing multiple solutions of topology optimization
+problems</a> and <a class="reference external" href="https://arxiv.org/abs/2406.17491">Baeck, Blauth, Leithaeuser, Pinnau,
+Sturm - A Novel Deflation Approach for Topology Optimization and Application for Optimization
+of Bipolar Plates of Electrolysis Cells</a>. The problem can be written
+as follows</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align}
+&amp;\min_{\Omega,u} J(\Omega, u) = \int_\mathrm{D} \nabla u : \nabla u +
+\alpha_\Omega u \cdot u \text{d}x \\
+&amp;\text{subject to} \qquad
+\begin{alignedat}{2}
+    -\Delta u + \nabla p + \alpha_\Omega u &amp;= 0 \quad &amp;&amp;\text{ in } \mathrm{D},\\
+    \nabla \cdot u &amp;= 0 \quad &amp;&amp;\text{ in } \mathrm{D},\\
+    u &amp;= u_D \quad &amp;&amp;\text{ on } \partial \mathrm{D},\\
+    V_L &amp;\leq |\Omega| \leq V_U.
+\end{alignedat}
+\end{align}
+\end{split}\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(u\)</span> and <span class="math notranslate nohighlight">\(p\)</span> denote the fluids velocity and pressure, respectively.
+Moreover,
+<span class="math notranslate nohighlight">\(\alpha\)</span> denotes the viscous resistance or inverse permeability of the material,
+which is used to distinguish between fluid (where <span class="math notranslate nohighlight">\(\alpha\)</span> is low) and solid
+(where <span class="math notranslate nohighlight">\(\alpha\)</span> is high). As in the previous demos, e.g. <a class="reference internal" href="demo_pipe_bend.html#demo-pipe-bend"><span class="std std-ref">Topology Optimization with Stokes Flow - Pipe Bend</span></a>,
+<span class="math notranslate nohighlight">\(\alpha\)</span> represents a jumping coefficient between the considered materials,
+i.e., it is given by <span class="math notranslate nohighlight">\(\alpha_\Omega(x) = \chi_\Omega(x)\alpha_\mathrm{in} + \chi_{\Omega^c}(x) \alpha_\mathrm{out}\)</span>, so that
+<span class="math notranslate nohighlight">\(\Omega\)</span> models our fluid and <span class="math notranslate nohighlight">\(\Omega^c\)</span> models the solid part.</p>
+<p>On the outer boundary of the hold-all domain,
+Dirichlet boundary conditions are specified,
+indicating, where the fluid enters and exits. Moreover, the goal of the optimization
+problem is to minimize the energy dissipation of the fluid while achieving a certain
+volume of the fluid region. For more details on this problem, we refer the reader
+to <a class="reference external" href="https://arxiv.org/abs/2406.17491">Baeck, Blauth, Leithaeuser, Pinnau, Sturm - A Novel Deflation Approach for
+Topology Optimization and Application for Optimization of Bipolar Plates of
+Electrolysis Cells</a>.</p>
+<p>The generalized topological derivative for this problem is given by</p>
+<div class="math notranslate nohighlight">
+\[
+\mathcal{D}J(\Omega)(x) = \left(\alpha_\mathrm{in} - \alpha_\mathrm{out}\right)
+u(x)\cdot (u(x) + v(x)).
+\]</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We do not specify the adjoint equation here, as this is derived automatically
+by cashocs as in previous demos.</p>
+</div>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
+<p>The complete python code can be found in the file <a class="reference download internal" download="" href="../../../_downloads/b7763c55946490e43f9db82db04cb39c/demo_deflation.py"><code class="xref download docutils literal notranslate"><span class="pre">demo_deflation.py</span></code></a>,
+and the corresponding config can be found in <a class="reference download internal" download="" href="../../../_downloads/fe3b1dcd177e3e3d3a43c02b788107d9/config.ini"><code class="xref download docutils literal notranslate"><span class="pre">config.ini</span></code></a>.</p>
+<p>The first part of the code is completely analogous to <a class="reference internal" href="demo_pipe_bend.html#demo-pipe-bend"><span class="std std-ref">Topology Optimization with Stokes Flow - Pipe Bend</span></a>
+and therefore we omit the details here and just state the corresponding code</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fenics</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">cashocs</span>
+
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">load_config</span><span class="p">(</span><span class="s2">&quot;config.ini&quot;</span><span class="p">)</span>
+<span class="n">mesh</span><span class="p">,</span> <span class="n">subdomains</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">dS</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">import_mesh</span><span class="p">(</span><span class="s2">&quot;mesh_deflation.xdmf&quot;</span><span class="p">)</span>
+
+<span class="n">v_elem</span> <span class="o">=</span> <span class="n">VectorElement</span><span class="p">(</span><span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">ufl_cell</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">p_elem</span> <span class="o">=</span> <span class="n">FiniteElement</span><span class="p">(</span><span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">ufl_cell</span><span class="p">(),</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">V</span> <span class="o">=</span> <span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">v_elem</span> <span class="o">*</span> <span class="n">p_elem</span><span class="p">)</span>
+<span class="n">CG1</span> <span class="o">=</span> <span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">DG0</span> <span class="o">=</span> <span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;DG&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="n">alpha_in</span> <span class="o">=</span> <span class="mf">2.5</span> <span class="o">/</span> <span class="p">(</span><span class="mi">100</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">alpha_out</span> <span class="o">=</span> <span class="mf">2.5</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.005</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">alpha</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">DG0</span><span class="p">)</span>
+
+<span class="n">psi</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">CG1</span><span class="p">)</span>
+<span class="n">psi</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">psi</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+<span class="n">up</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">u</span><span class="p">,</span> <span class="n">p</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">up</span><span class="p">)</span>
+<span class="n">vq</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">v</span><span class="p">,</span> <span class="n">q</span> <span class="o">=</span> <span class="n">split</span><span class="p">(</span><span class="n">vq</span><span class="p">)</span>
+
+<span class="n">F</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">inner</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span>
+    <span class="o">-</span> <span class="n">p</span> <span class="o">*</span> <span class="n">div</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span>
+    <span class="o">-</span> <span class="n">q</span> <span class="o">*</span> <span class="n">div</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span>
+    <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>For the Dirichlet boundary conditions, we specify that we have two inflows at
+left part of the boundary as well as two outflows on the right part,
+with the following expressions. Altogether, the boundary conditions are specified
+using the code</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">v_1</span> <span class="o">=</span> <span class="n">Expression</span><span class="p">((</span><span class="s1">&#39;-144*(x[1]-1.0/6)*(x[1]-2.0/6)&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0&#39;</span><span class="p">),</span> <span class="n">degree</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">v_2</span> <span class="o">=</span> <span class="n">Expression</span><span class="p">((</span><span class="s1">&#39;-144*(x[1]-4.0/6)*(x[1]-5.0/6)&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0&#39;</span><span class="p">),</span> <span class="n">degree</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">bcs</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">create_dirichlet_bcs</span><span class="p">(</span><span class="n">V</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">Constant</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)),</span> <span class="n">boundaries</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">bcs</span> <span class="o">+=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">create_dirichlet_bcs</span><span class="p">(</span><span class="n">V</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">v_1</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+<span class="n">bcs</span> <span class="o">+=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">create_dirichlet_bcs</span><span class="p">(</span><span class="n">V</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">v_2</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Additionally, we specify the volume constraint by</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">vol_des</span> <span class="o">=</span> <span class="mf">0.5</span>
+</pre></div>
+</div>
+<p>We define the cost functional of our problem as well as its corresponding
+generalized topological derivative with the lines, where the penalization
+for the volume constraint is not considered here in comparison to
+<a class="reference internal" href="demo_pipe_bend.html#demo-pipe-bend"><span class="std std-ref">Topology Optimization with Stokes Flow - Pipe Bend</span></a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">J</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">IntegralFunctional</span><span class="p">(</span>
+    <span class="n">inner</span><span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span>
+    <span class="o">+</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u</span><span class="p">)</span> <span class="o">*</span> <span class="n">dx</span>
+<span class="p">)</span>
+<span class="n">dJ_in</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">(</span><span class="n">alpha_in</span> <span class="o">-</span> <span class="n">alpha_out</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u</span><span class="p">))</span>
+<span class="n">dJ_out</span> <span class="o">=</span> <span class="n">Constant</span><span class="p">(</span><span class="n">alpha_in</span> <span class="o">-</span> <span class="n">alpha_out</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">+</span> <span class="n">dot</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">u</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As in <a class="reference internal" href="demo_poisson_clover.html#demo-poisson-clover"><span class="std std-ref">Topology Optimization with a Poisson Equation</span></a>, the generalized topological derivative for this
+problem is identical in <span class="math notranslate nohighlight">\(\Omega\)</span> and <span class="math notranslate nohighlight">\(\Omega^c\)</span>, which is usually not the
+case. For this reason, the special structure of the problem can be exploited with the
+following lines in the configuration file</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">config.ini</span><a class="headerlink" href="#id1" title="Link to this code">#</a></div>
+<div class="highlight-ini notranslate"><div class="highlight"><pre><span></span><span class="k">[TopologyOptimization]</span>
+<span class="na">topological_derivative_is_identical</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>As in the previous demos, we have to specify the update routine of the level-set
+function <code class="docutils literal notranslate"><span class="pre">update_level_set</span></code>, which we do as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">update_level_set</span><span class="p">():</span>
+    <span class="n">cashocs</span><span class="o">.</span><span class="n">interpolate_levelset_function_to_cells</span><span class="p">(</span><span class="n">psi</span><span class="p">,</span> <span class="n">alpha_in</span><span class="p">,</span> <span class="n">alpha_out</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>That is, in the <code class="docutils literal notranslate"><span class="pre">update_level_set</span></code> function, the jumping coefficient is updated
+with the <a class="reference internal" href="../../../api/generated/cashocs.interpolate_levelset_function_to_cells.html#cashocs.interpolate_levelset_function_to_cells" title="cashocs.interpolate_levelset_function_to_cells"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate_levelset_function_to_cells</span></code></a> function.</p>
+<section id="the-deflation-approach">
+<h3>The Deflation Approach<a class="headerlink" href="#the-deflation-approach" title="Link to this heading">#</a></h3>
+<p>To compute multiple local minizers of this topology optimization problem, we use
+the approach presented in <a class="reference external" href="https://arxiv.org/abs/2406.17491">Baeck, Blauth, Leithaeuser, Pinnau,
+Sturm - A Novel Deflation Approach for Topology Optimization and Application for Optimization
+of Bipolar Plates of Electrolysis Cells</a>. Here,
+the distance to previously found local minimizers is penalized in the objective
+function. The deflated topology optimization problem
+<a class="reference internal" href="../../../api/generated/cashocs.DeflatedTopologyOptimizationProblem.html#cashocs.DeflatedTopologyOptimizationProblem" title="cashocs.DeflatedTopologyOptimizationProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeflatedTopologyOptimizationProblem</span></code></a>
+can then be defined via the lines</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dtop</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">DeflatedTopologyOptimizationProblem</span><span class="p">(</span>
+    <span class="n">F</span><span class="p">,</span> <span class="n">bcs</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">up</span><span class="p">,</span> <span class="n">vq</span><span class="p">,</span> <span class="n">psi</span><span class="p">,</span> <span class="n">dJ_in</span><span class="p">,</span> <span class="n">dJ_out</span><span class="p">,</span> <span class="n">update_level_set</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">cfg</span><span class="p">,</span>
+    <span class="n">volume_restriction</span><span class="o">=</span><span class="n">vol_des</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The definition of the deflated topology optimization problem is similar to the
+definition of a usual topology optimization problem, see, e.g.,
+<a class="reference internal" href="../shape_optimization/demo_shape_stokes.html#demo-shape-stokes"><span class="std std-ref">Optimization of an Obstacle in Stokes Flow</span></a>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The volume constraint is handled as in <a class="reference internal" href="demo_projection.html#demo-projection"><span class="std std-ref">Topology Optimization with a Volume Constraint</span></a> by a projection of the
+level-set function.</p>
+</div>
+<p>Now, we can solve the topology optimization problem with the following lines</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">delta</span> <span class="o">=</span> <span class="mf">1000000.</span>
+<span class="n">gamma</span> <span class="o">=</span> <span class="mf">0.7</span>
+<span class="n">dtop</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="mf">1e-6</span><span class="p">,</span> <span class="n">it_deflation</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="n">gamma</span><span class="p">,</span> <span class="n">delta</span><span class="o">=</span><span class="n">delta</span><span class="p">,</span> <span class="n">inner_rtol</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">inner_atol</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">angle_tol</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here, <code class="docutils literal notranslate"><span class="pre">it_deflation</span></code> denotes the number of iterations of the deflation procedure, and
+<code class="docutils literal notranslate"><span class="pre">gamma</span></code> and <code class="docutils literal notranslate"><span class="pre">delta</span></code> are the penalty parameters of the penalty function. The Parameters
+<code class="docutils literal notranslate"><span class="pre">gamma</span></code> denotes the local support of the penalty function, and the parameter <code class="docutils literal notranslate"><span class="pre">delta</span></code>
+is the penalty parameter. Overall, the code results in a maximum of two times
+<code class="docutils literal notranslate"><span class="pre">it_deflation</span></code> solves of a topology optimization problem.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The choice of the penalty parameters <code class="docutils literal notranslate"><span class="pre">gamma</span></code> and <code class="docutils literal notranslate"><span class="pre">delta</span></code> is not trivial and was chosen by
+a numerical parameter studies. For a more detailed discussion about the choices of the
+parameters, we refer to <a class="reference external" href="https://arxiv.org/abs/2406.17491">Baeck, Blauth, Leithaeuser, Pinnau,
+Sturm - A Novel Deflation Approach for Topology Optimization and Application for Optimization
+of Bipolar Plates of Electrolysis Cells</a>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In density based topology optimization, the optimization problems reduces to an optimal
+control problem. A deflated optimal control problem can be defined in a similar fashion
+with
+<a class="reference internal" href="../../../api/generated/cashocs.DeflatedOptimalControlProblem.html#cashocs.DeflatedOptimalControlProblem" title="cashocs.DeflatedOptimalControlProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">DeflatedOptimalControlProblem</span></code></a>.
+The solution of the optimization problem is then analog to the topology optimization
+case.</p>
+</div>
+</section>
+<section id="visualization">
+<h3>Visualization<a class="headerlink" href="#visualization" title="Link to this heading">#</a></h3>
+<p>We visualize the local minimizers found by the deflation procedure with</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">colors</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="n">rgbvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">107</span><span class="p">,</span> <span class="mi">164</span><span class="p">],</span> <span class="p">[</span><span class="mi">255</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">14</span><span class="p">]])</span> <span class="o">/</span> <span class="mf">255.0</span>
+<span class="n">cmap</span> <span class="o">=</span> <span class="n">colors</span><span class="o">.</span><span class="n">LinearSegmentedColormap</span><span class="o">.</span><span class="n">from_list</span><span class="p">(</span>
+    <span class="s2">&quot;tab10_colorblind&quot;</span><span class="p">,</span> <span class="n">rgbvals</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">256</span>
+<span class="p">)</span>
+
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dtop</span><span class="o">.</span><span class="n">control_list_final</span><span class="p">)):</span>
+    <span class="n">plot</span><span class="p">(</span><span class="n">dtop</span><span class="o">.</span><span class="n">control_list_final</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">cmap</span><span class="o">=</span><span class="n">cmap</span><span class="p">,</span> <span class="n">vmin</span><span class="o">=-</span><span class="mf">1e-10</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;./deflation_shape_</span><span class="si">{i}</span><span class="s2">.png&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="p">),</span> <span class="n">bbox_inches</span><span class="o">=</span><span class="s1">&#39;tight&#39;</span><span class="p">)</span>
+    <span class="c1"># plt.show()</span>
+</pre></div>
+</div>
+<p>and the results look as follows
+<img alt="" src="../../../_images/deflation_shape_0.png" />
+<img alt="" src="../../../_images/deflation_shape_1.png" />
+<img alt="" src="../../../_images/deflation_shape_2.png" />
+<img alt="" src="../../../_images/deflation_shape_3.png" />
+<img alt="" src="../../../_images/deflation_shape_4.png" />
+<img alt="" src="../../../_images/deflation_shape_5.png" /></p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="demo_projection.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Topology Optimization with a Volume Constraint</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../cashocs_as_solver/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Using cashocs as a solver</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem-formulation">Problem Formulation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-deflation-approach">The Deflation Approach</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visualization">Visualization</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/user/demos/topology_optimization/demo_deflation.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

@@ -1,0 +1,1233 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cashocs.io.mesh &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/cashocs/io/mesh';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">cashocs.io.mesh</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for cashocs.io.mesh</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of cashocs.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with cashocs.  If not, see &lt;https://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;Mesh input and output.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">configparser</span>
+<span class="kn">import</span> <span class="nn">gc</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>  <span class="c1"># nosec B404</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">import</span> <span class="nn">fenics</span>
+<span class="kn">import</span> <span class="nn">h5py</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_exceptions</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_utils</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">cashocs._cli._convert</span> <span class="kn">import</span> <span class="n">convert</span> <span class="k">as</span> <span class="n">cli_convert</span>
+<span class="kn">from</span> <span class="nn">cashocs.geometry.measure</span> <span class="kn">import</span> <span class="n">NamedMeasure</span>
+<span class="kn">from</span> <span class="nn">cashocs.geometry.mesh</span> <span class="kn">import</span> <span class="n">_get_mesh_stats</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">mpi4py</span> <span class="kn">import</span> <span class="n">MPI</span>
+
+    <span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_typing</span>
+
+
+<div class="viewcode-block" id="import_mesh">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.mesh.import_mesh.html#cashocs.import_mesh">[docs]</a>
+<span class="k">def</span> <span class="nf">import_mesh</span><span class="p">(</span><span class="n">mesh_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">comm</span><span class="p">:</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Comm</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_typing</span><span class="o">.</span><span class="n">MeshTuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Imports a mesh file for use with cashocs / FEniCS.</span>
+
+<span class="sd">    This function imports a mesh file. The mesh file can either be a Gmsh mesh file</span>
+<span class="sd">    or an xdmf mesh file that was generated by GMSH and converted to</span>
+<span class="sd">    .xdmf with the function :py:func:`cashocs.convert`.</span>
+<span class="sd">    If there are Physical quantities specified in the GMSH file, these are imported</span>
+<span class="sd">    to the subdomains and boundaries output of this function and can also be directly</span>
+<span class="sd">    accessed via the measures, e.g., with ``dx(1)``, ``ds(1)``, etc.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mesh_file: The location of the mesh file in .xdmf or .msh file format.</span>
+<span class="sd">        comm: MPI communicator that is to be used for creating the mesh.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported</span>
+<span class="sd">        FEM mesh, subdomains is a mesh function for the subdomains, boundaries is a mesh</span>
+<span class="sd">        function for the boundaries, dx is a volume measure, ds is a surface measure,</span>
+<span class="sd">        and dS is a measure for the interior facets.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        In case the boundaries in the Gmsh .msh file are not only marked with numbers</span>
+<span class="sd">        (as physical groups), but also with names (i.e. strings), these strings can be</span>
+<span class="sd">        used with the integration measures ``dx`` and ``ds`` returned by this method.</span>
+<span class="sd">        E.g., if one specified the following in a 2D Gmsh .geo file ::</span>
+
+<span class="sd">            Physical Surface(&quot;domain&quot;, 1) = {i,j,k};</span>
+
+<span class="sd">        where i,j,k are representative for some integers, then this can be used in the</span>
+<span class="sd">        measure ``dx`` (as we are 2D) as follows. The command ::</span>
+
+<span class="sd">            dx(1)</span>
+
+<span class="sd">        is completely equivalent to ::</span>
+
+<span class="sd">           dx(&quot;domain&quot;)</span>
+
+<span class="sd">        and both can be used interchangeably.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mesh_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">mesh_file</span><span class="p">)</span>
+    <span class="n">mesh_type</span> <span class="o">=</span> <span class="n">mesh_path</span><span class="o">.</span><span class="n">suffix</span>
+
+    <span class="k">if</span> <span class="n">mesh_type</span> <span class="o">==</span> <span class="s2">&quot;.msh&quot;</span><span class="p">:</span>
+        <span class="n">mesh_tuple</span> <span class="o">=</span> <span class="n">_import_gmsh_mesh</span><span class="p">(</span><span class="n">mesh_file</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">mesh_type</span> <span class="o">==</span> <span class="s2">&quot;.xdmf&quot;</span><span class="p">:</span>
+        <span class="n">mesh_tuple</span> <span class="o">=</span> <span class="n">_import_xdmf_mesh</span><span class="p">(</span><span class="n">mesh_file</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">InputError</span><span class="p">(</span>
+            <span class="s2">&quot;cashocs.io.mesh.import_mesh&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mesh_file&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Only XDMF (.xdmf) or Gmsh (.msh) meshes are supported.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">mesh_tuple</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_import_gmsh_mesh</span><span class="p">(</span>
+    <span class="n">mesh_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">comm</span><span class="p">:</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Comm</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_typing</span><span class="o">.</span><span class="n">MeshTuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Imports a mesh file for use with cashocs / FEniCS.</span>
+
+<span class="sd">    This function imports a mesh file that was generated by GMSH.</span>
+<span class="sd">    If there are Physical quantities specified in the GMSH file, these are imported</span>
+<span class="sd">    to the subdomains and boundaries output of this function and can also be directly</span>
+<span class="sd">    accessed via the measures, e.g., with ``dx(1)``, ``ds(1)``, etc.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mesh_file: The location of the mesh file in .xdmf file format.</span>
+<span class="sd">        comm: MPI communicator that is to be used for creating the mesh.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported</span>
+<span class="sd">        FEM mesh, subdomains is a mesh function for the subdomains, boundaries is a mesh</span>
+<span class="sd">        function for the boundaries, dx is a volume measure, ds is a surface measure,</span>
+<span class="sd">        and dS is a measure for the interior facets.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        In case the boundaries in the Gmsh .msh file are not only marked with numbers</span>
+<span class="sd">        (as physical groups), but also with names (i.e. strings), these strings can be</span>
+<span class="sd">        used with the integration measures ``dx`` and ``ds`` returned by this method.</span>
+<span class="sd">        E.g., if one specified the following in a 2D Gmsh .geo file ::</span>
+
+<span class="sd">            Physical Surface(&quot;domain&quot;, 1) = {i,j,k};</span>
+
+<span class="sd">        where i,j,k are representative for some integers, then this can be used in the</span>
+<span class="sd">        measure ``dx`` (as we are 2D) as follows. The command ::</span>
+
+<span class="sd">            dx(1)</span>
+
+<span class="sd">        is completely equivalent to ::</span>
+
+<span class="sd">           dx(&quot;domain&quot;)</span>
+
+<span class="sd">        and both can be used interchangeably.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">convert</span><span class="p">(</span><span class="n">mesh_file</span><span class="p">,</span> <span class="n">quiet</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">mesh_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">mesh_file</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span><span class="si">}</span><span class="s2">.xdmf&quot;</span>
+    <span class="n">mesh_tuple</span> <span class="o">=</span> <span class="n">_import_xdmf_mesh</span><span class="p">(</span><span class="n">mesh_filename</span><span class="p">,</span> <span class="n">comm</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mesh_tuple</span>
+
+
+<span class="nd">@_get_mesh_stats</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s2">&quot;import&quot;</span><span class="p">)</span>  <span class="c1"># pylint:disable=protected-access</span>
+<span class="k">def</span> <span class="nf">_import_xdmf_mesh</span><span class="p">(</span>
+    <span class="n">mesh_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">comm</span><span class="p">:</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Comm</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">_typing</span><span class="o">.</span><span class="n">MeshTuple</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Imports a mesh file for use with cashocs / FEniCS.</span>
+
+<span class="sd">    This function imports a mesh file that was generated by GMSH and converted to</span>
+<span class="sd">    .xdmf with the function :py:func:`cashocs.convert`.</span>
+<span class="sd">    If there are Physical quantities specified in the GMSH file, these are imported</span>
+<span class="sd">    to the subdomains and boundaries output of this function and can also be directly</span>
+<span class="sd">    accessed via the measures, e.g., with ``dx(1)``, ``ds(1)``, etc.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mesh_file: The location of the mesh file in .xdmf file format.</span>
+<span class="sd">        comm: MPI communicator that is to be used for creating the mesh.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A tuple (mesh, subdomains, boundaries, dx, ds, dS), where mesh is the imported</span>
+<span class="sd">        FEM mesh, subdomains is a mesh function for the subdomains, boundaries is a mesh</span>
+<span class="sd">        function for the boundaries, dx is a volume measure, ds is a surface measure,</span>
+<span class="sd">        and dS is a measure for the interior facets.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        In case the boundaries in the Gmsh .msh file are not only marked with numbers</span>
+<span class="sd">        (as physical groups), but also with names (i.e. strings), these strings can be</span>
+<span class="sd">        used with the integration measures ``dx`` and ``ds`` returned by this method.</span>
+<span class="sd">        E.g., if one specified the following in a 2D Gmsh .geo file ::</span>
+
+<span class="sd">            Physical Surface(&quot;domain&quot;, 1) = {i,j,k};</span>
+
+<span class="sd">        where i,j,k are representative for some integers, then this can be used in the</span>
+<span class="sd">        measure ``dx`` (as we are 2D) as follows. The command ::</span>
+
+<span class="sd">            dx(1)</span>
+
+<span class="sd">        is completely equivalent to ::</span>
+
+<span class="sd">           dx(&quot;domain&quot;)</span>
+
+<span class="sd">        and both can be used interchangeably.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mesh_file</span><span class="p">,</span> <span class="n">configparser</span><span class="o">.</span><span class="n">ConfigParser</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">InputError</span><span class="p">(</span>
+            <span class="s2">&quot;cashocs.import_mesh&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;mesh_file&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Calling cashocs.import_mesh with a ConfigParser instance&quot;</span>
+            <span class="s2">&quot; is not allowed anymore starting with cashocs v2.&quot;</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="c1"># Check for the file format</span>
+    <span class="n">file_string</span> <span class="o">=</span> <span class="n">mesh_file</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">comm</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span>
+
+    <span class="n">mesh</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Mesh</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span>
+    <span class="n">xdmf_file</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">(),</span> <span class="n">mesh_file</span><span class="p">)</span>
+    <span class="n">xdmf_file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+    <span class="n">xdmf_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">subdomains_mvc</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MeshValueCollection</span><span class="p">(</span>
+        <span class="s2">&quot;size_t&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">geometric_dimension</span><span class="p">()</span>
+    <span class="p">)</span>
+    <span class="n">boundaries_mvc</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MeshValueCollection</span><span class="p">(</span>
+        <span class="s2">&quot;size_t&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">mesh</span><span class="o">.</span><span class="n">geometric_dimension</span><span class="p">()</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="p">)</span>
+
+    <span class="n">subdomains_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file_string</span><span class="si">}</span><span class="s2">_subdomains.xdmf&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">subdomains_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="n">xdmf_subdomains</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">subdomains_path</span><span class="p">))</span>
+        <span class="n">xdmf_subdomains</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">subdomains_mvc</span><span class="p">,</span> <span class="s2">&quot;subdomains&quot;</span><span class="p">)</span>
+        <span class="n">xdmf_subdomains</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">boundaries_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file_string</span><span class="si">}</span><span class="s2">_boundaries.xdmf&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">boundaries_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="n">xdmf_boundaries</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">(</span><span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">(),</span> <span class="nb">str</span><span class="p">(</span><span class="n">boundaries_path</span><span class="p">))</span>
+        <span class="n">xdmf_boundaries</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">boundaries_mvc</span><span class="p">,</span> <span class="s2">&quot;boundaries&quot;</span><span class="p">)</span>
+        <span class="n">xdmf_boundaries</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">physical_groups</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">physical_groups_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">file_string</span><span class="si">}</span><span class="s2">_physical_groups.json&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">physical_groups_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">with</span> <span class="n">physical_groups_path</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">physical_groups</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+
+    <span class="n">subdomains</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">(</span><span class="s2">&quot;size_t&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">subdomains_mvc</span><span class="p">)</span>
+    <span class="n">boundaries</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MeshFunction</span><span class="p">(</span><span class="s2">&quot;size_t&quot;</span><span class="p">,</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">boundaries_mvc</span><span class="p">)</span>
+
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">NamedMeasure</span><span class="p">(</span>
+        <span class="s2">&quot;dx&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span> <span class="n">subdomain_data</span><span class="o">=</span><span class="n">subdomains</span><span class="p">,</span> <span class="n">physical_groups</span><span class="o">=</span><span class="n">physical_groups</span>
+    <span class="p">)</span>
+    <span class="n">ds</span> <span class="o">=</span> <span class="n">NamedMeasure</span><span class="p">(</span>
+        <span class="s2">&quot;ds&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span> <span class="n">subdomain_data</span><span class="o">=</span><span class="n">boundaries</span><span class="p">,</span> <span class="n">physical_groups</span><span class="o">=</span><span class="n">physical_groups</span>
+    <span class="p">)</span>
+    <span class="n">d_interior_facet</span> <span class="o">=</span> <span class="n">NamedMeasure</span><span class="p">(</span>
+        <span class="s2">&quot;dS&quot;</span><span class="p">,</span> <span class="n">domain</span><span class="o">=</span><span class="n">mesh</span><span class="p">,</span> <span class="n">subdomain_data</span><span class="o">=</span><span class="n">boundaries</span><span class="p">,</span> <span class="n">physical_groups</span><span class="o">=</span><span class="n">physical_groups</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Add the physical groups to the mesh in case they are present</span>
+    <span class="k">if</span> <span class="n">physical_groups</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">mesh</span><span class="o">.</span><span class="n">physical_groups</span> <span class="o">=</span> <span class="n">physical_groups</span>
+
+    <span class="k">return</span> <span class="n">mesh</span><span class="p">,</span> <span class="n">subdomains</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">d_interior_facet</span>
+
+
+<div class="viewcode-block" id="export_mesh">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.mesh.export_mesh.html#cashocs.export_mesh">[docs]</a>
+<span class="k">def</span> <span class="nf">export_mesh</span><span class="p">(</span>
+    <span class="n">mesh</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span>
+    <span class="n">mesh_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">subdomains</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MeshFunction</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">boundaries</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MeshFunction</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">comm</span><span class="p">:</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Comm</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Exports a mesh (together with its subdomains and boundaries).</span>
+
+<span class="sd">    This is useful so that the mesh can be reimported later on again. This is used for</span>
+<span class="sd">    checkpointing in cashocs, but also has other use cases, e.g., storing a function</span>
+<span class="sd">    on hard disk and later reimporting it to perform a post-processing.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mesh: The fenics mesh which shall be exported.</span>
+<span class="sd">        mesh_file: Filename / path to the exported mesh. Has to end in .xdmf. Boundaries</span>
+<span class="sd">            and subdomains will be named accordingly.</span>
+<span class="sd">        subdomains: The subdomains meshfunction corresponding to the mesh. Optional,</span>
+<span class="sd">            default is `None`, so that no subdomain information is used.</span>
+<span class="sd">        boundaries: The boundaries meshfunction corresponding to the mesh. Optional,</span>
+<span class="sd">            default is `None`, so that no boundary information is used.</span>
+<span class="sd">        comm: The MPI communicator used. Optional, default is `None`, so that the</span>
+<span class="sd">            `fenics.MPI.comm_world` is used.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">comm</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span>
+
+    <span class="n">_utils</span><span class="o">.</span><span class="n">check_file_extension</span><span class="p">(</span><span class="n">mesh_file</span><span class="p">,</span> <span class="s2">&quot;xdmf&quot;</span><span class="p">)</span>
+
+    <span class="n">filepath</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">mesh_file</span><span class="p">)</span>
+    <span class="n">folder_path</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">parent</span>
+    <span class="n">filename</span> <span class="o">=</span> <span class="n">filepath</span><span class="o">.</span><span class="n">stem</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">folder_path</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="n">folder_path</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">with</span> <span class="n">fenics</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">(</span><span class="n">comm</span><span class="p">,</span> <span class="n">mesh_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">subdomains</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">fenics</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">(</span>
+            <span class="n">comm</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">_subdomains.xdmf&quot;</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">subdomains</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">boundaries</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">fenics</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">(</span>
+            <span class="n">comm</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">folder_path</span><span class="p">)</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">_boundaries.xdmf&quot;</span>
+        <span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">boundaries</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="convert">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.mesh.convert.html#cashocs.convert">[docs]</a>
+<span class="k">def</span> <span class="nf">convert</span><span class="p">(</span>
+    <span class="n">input_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">output_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;physical&quot;</span><span class="p">,</span>
+    <span class="n">quiet</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Converts the input mesh file to a xdmf mesh file for cashocs to work with.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        input_file: A gmsh .msh file.</span>
+<span class="sd">        output_file: The name of the output .xdmf file or ``None``. If this is ``None``,</span>
+<span class="sd">            then a file name.msh will be converted to name.xdmf, i.e., the name of the</span>
+<span class="sd">            input file stays the same</span>
+<span class="sd">        quiet: A boolean flag which silences the output.</span>
+<span class="sd">        mode: The mode which is used to define the subdomains and boundaries. Should be</span>
+<span class="sd">            one of &#39;physical&#39; (the default), &#39;geometrical&#39;, or &#39;none&#39;.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">input_file</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">output_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;-o&quot;</span><span class="p">,</span> <span class="n">output_file</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">quiet</span><span class="p">:</span>
+        <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;-q&quot;</span><span class="p">]</span>
+
+    <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;--mode&quot;</span><span class="p">,</span> <span class="n">mode</span><span class="p">]</span>
+
+    <span class="n">cli_convert</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+    <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="create_point_representation">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.mesh.create_point_representation.html#cashocs.create_point_representation">[docs]</a>
+<span class="k">def</span> <span class="nf">create_point_representation</span><span class="p">(</span>
+    <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">idcs</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">subwrite_counter</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Creates the representation of the mesh coordinates for gmsh .msh file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        dim: Dimension of the mesh.</span>
+<span class="sd">        points: The array of the mesh coordinates.</span>
+<span class="sd">        idcs: The list of indices of the points for the current element.</span>
+<span class="sd">        subwrite_counter: A counter for looping over the indices.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A string representation of the mesh coordinates.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">mod_line</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">dim</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">mod_line</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">points</span><span class="p">[</span><span class="n">idcs</span><span class="p">[</span><span class="n">subwrite_counter</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.16e</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">points</span><span class="p">[</span><span class="n">idcs</span><span class="p">[</span><span class="n">subwrite_counter</span><span class="p">]][</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.16e</span><span class="si">}</span><span class="s2"> 0</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">dim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">mod_line</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">points</span><span class="p">[</span><span class="n">idcs</span><span class="p">[</span><span class="n">subwrite_counter</span><span class="p">]][</span><span class="mi">0</span><span class="p">]</span><span class="si">:</span><span class="s2">.16e</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">points</span><span class="p">[</span><span class="n">idcs</span><span class="p">[</span><span class="n">subwrite_counter</span><span class="p">]][</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">.16e</span><span class="si">}</span><span class="s2"> &quot;</span>
+            <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">points</span><span class="p">[</span><span class="n">idcs</span><span class="p">[</span><span class="n">subwrite_counter</span><span class="p">]][</span><span class="mi">2</span><span class="p">]</span><span class="si">:</span><span class="s2">.16e</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mod_line</span></div>
+
+
+
+<div class="viewcode-block" id="gather_coordinates">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.mesh.gather_coordinates.html#cashocs.gather_coordinates">[docs]</a>
+<span class="k">def</span> <span class="nf">gather_coordinates</span><span class="p">(</span><span class="n">mesh</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Mesh</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gathers the mesh coordinates on process 0 to write out the mesh to a Gmsh file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mesh: The corresponding mesh.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A numpy array which contains the vertex coordinates of the mesh</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">comm</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">mpi_comm</span><span class="p">()</span>
+    <span class="n">rank</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">Get_rank</span><span class="p">()</span>
+    <span class="n">top</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">topology</span><span class="p">()</span>
+    <span class="n">global_vertex_indices</span> <span class="o">=</span> <span class="n">top</span><span class="o">.</span><span class="n">global_indices</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">num_global_vertices</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">num_entities_global</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">local_mesh_coordinates</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">coordinates</span><span class="p">()</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">local_coordinates_list</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">local_mesh_coordinates</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">vertex_map_list</span> <span class="o">=</span> <span class="n">comm</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="n">global_vertex_indices</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_global_vertices</span><span class="p">,</span> <span class="n">local_mesh_coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">coords</span><span class="p">,</span> <span class="n">verts</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">local_coordinates_list</span><span class="p">,</span> <span class="n">vertex_map_list</span><span class="p">):</span>
+            <span class="n">coordinates</span><span class="p">[</span><span class="n">verts</span><span class="p">]</span> <span class="o">=</span> <span class="n">coords</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">coordinates</span></div>
+
+
+
+<div class="viewcode-block" id="parse_file">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.mesh.parse_file.html#cashocs.parse_file">[docs]</a>
+<span class="k">def</span> <span class="nf">parse_file</span><span class="p">(</span>
+    <span class="n">original_msh_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">out_msh_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">points</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">dim</span><span class="p">:</span> <span class="nb">int</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Parses the mesh file and writes a new, corresponding one.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        original_msh_file: Path to the original GMSH mesh file of the mesh object, has</span>
+<span class="sd">            to end with .msh.</span>
+<span class="sd">        out_msh_file: Path to the output mesh file, has to end with .msh.</span>
+<span class="sd">        points: The mesh coordinates gathered on process 0</span>
+<span class="sd">        dim: The dimensionality of the mesh</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">with</span> <span class="p">(</span>
+        <span class="nb">open</span><span class="p">(</span><span class="n">original_msh_file</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">old_file</span><span class="p">,</span>
+        <span class="nb">open</span><span class="p">(</span><span class="n">out_msh_file</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">new_file</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">node_section</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">info_section</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">subnode_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">subwrite_counter</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">idcs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">old_file</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;$EndNodes</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">:</span>
+                <span class="n">node_section</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">node_section</span><span class="p">:</span>
+                <span class="n">new_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">split_line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">info_section</span><span class="p">:</span>
+                    <span class="n">new_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="n">info_section</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_line</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+                        <span class="n">num_subnodes</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">split_line</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                        <span class="n">subnode_counter</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="n">subwrite_counter</span> <span class="o">=</span> <span class="mi">0</span>
+                        <span class="n">idcs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_subnodes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+                        <span class="n">new_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_line</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">idcs</span><span class="p">[</span><span class="n">subnode_counter</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">split_line</span><span class="p">[</span><span class="mi">0</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>
+                        <span class="n">subnode_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="n">new_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">split_line</span><span class="p">)</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                        <span class="n">mod_line</span> <span class="o">=</span> <span class="n">create_point_representation</span><span class="p">(</span>
+                            <span class="n">dim</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">idcs</span><span class="p">,</span> <span class="n">subwrite_counter</span>
+                        <span class="p">)</span>
+
+                        <span class="n">new_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">mod_line</span><span class="p">)</span>
+                        <span class="n">subwrite_counter</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;$Nodes</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">:</span>
+                <span class="n">node_section</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">info_section</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+
+<div class="viewcode-block" id="check_mesh_compatibility">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.mesh.check_mesh_compatibility.html#cashocs.check_mesh_compatibility">[docs]</a>
+<span class="k">def</span> <span class="nf">check_mesh_compatibility</span><span class="p">(</span><span class="n">mesh</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span> <span class="n">original_mesh_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks, whether the supplied mesh file is compatible with the mesh used.</span>
+
+<span class="sd">    This function returns `None` if they are compatible and raises an exception</span>
+<span class="sd">    otherwise.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mesh: The mesh that is currently used.</span>
+<span class="sd">        original_mesh_file: The path to the mesh file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">num_points</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">original_mesh_file</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="n">node_info</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">file</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">node_info</span><span class="p">:</span>
+                    <span class="n">split_line</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+                    <span class="n">num_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">split_line</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+                    <span class="k">break</span>
+
+                <span class="k">if</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;$Nodes</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">:</span>
+                    <span class="n">node_info</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+    <span class="n">number_of_points</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">num_points</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">mesh</span><span class="o">.</span><span class="n">num_entities_global</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="o">!=</span> <span class="n">number_of_points</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">CashocsException</span><span class="p">(</span>
+            <span class="s2">&quot;The mesh supplied in the configuration file is not &quot;</span>
+            <span class="s2">&quot;compatible with the mesh used.&quot;</span>
+        <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="write_out_mesh">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.write_out_mesh.html#cashocs.write_out_mesh">[docs]</a>
+<span class="k">def</span> <span class="nf">write_out_mesh</span><span class="p">(</span>  <span class="c1"># noqa: C901</span>
+    <span class="n">mesh</span><span class="p">:</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Mesh</span><span class="p">,</span> <span class="n">original_msh_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">out_msh_file</span><span class="p">:</span> <span class="nb">str</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Writes out mesh as Gmsh .msh file.</span>
+
+<span class="sd">    This method updates the vertex positions in the ``original_gmsh_file``, the</span>
+<span class="sd">    topology of the mesh and its connections are the same. The original GMSH</span>
+<span class="sd">    file is kept, and a new one is generated under ``out_mesh_file``.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        mesh: The mesh object in fenics that should be saved as Gmsh file.</span>
+<span class="sd">        original_msh_file: Path to the original GMSH mesh file of the mesh object, has</span>
+<span class="sd">            to end with .msh.</span>
+<span class="sd">        out_msh_file: Path to the output mesh file, has to end with .msh.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">        The method only works with GMSH 4.1 file format. Others might also work, but</span>
+<span class="sd">        this is not tested or ensured in any way.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">check_mesh_compatibility</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">original_msh_file</span><span class="p">)</span>
+    <span class="n">dim</span> <span class="o">=</span> <span class="n">mesh</span><span class="o">.</span><span class="n">geometric_dimension</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">out_msh_file</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">is_dir</span><span class="p">():</span>
+        <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">out_msh_file</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">points</span> <span class="o">=</span> <span class="n">gather_coordinates</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">parse_file</span><span class="p">(</span><span class="n">original_msh_file</span><span class="p">,</span> <span class="n">out_msh_file</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">dim</span><span class="p">)</span>
+    <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="read_mesh_from_xdmf">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.read_mesh_from_xdmf.html#cashocs.read_mesh_from_xdmf">[docs]</a>
+<span class="k">def</span> <span class="nf">read_mesh_from_xdmf</span><span class="p">(</span>
+    <span class="n">filename</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">step</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">comm</span><span class="p">:</span> <span class="n">MPI</span><span class="o">.</span><span class="n">Comm</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Mesh</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reads a mesh from a .xdmf file containing a checkpointed function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        filename: The filename to the .xdmf file.</span>
+<span class="sd">        step: The checkpoint number. Default is ``0``.</span>
+<span class="sd">        comm: MPI communicator that is to be used for creating the mesh.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The corresponding mesh for the checkpoint number.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">h5_filename</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">filename</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span><span class="si">}</span><span class="s2">.h5&quot;</span>
+    <span class="k">with</span> <span class="n">h5py</span><span class="o">.</span><span class="n">File</span><span class="p">(</span><span class="n">h5_filename</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">file</span><span class="o">.</span><span class="n">keys</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">step_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">step</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">coordinates</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">step_name</span><span class="p">][</span><span class="s2">&quot;mesh&quot;</span><span class="p">][</span><span class="s2">&quot;geometry&quot;</span><span class="p">][()]</span>
+        <span class="n">cells</span> <span class="o">=</span> <span class="n">file</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">step_name</span><span class="p">][</span><span class="s2">&quot;mesh&quot;</span><span class="p">][</span><span class="s2">&quot;topology&quot;</span><span class="p">][()]</span>
+
+    <span class="n">gdim</span> <span class="o">=</span> <span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">cells</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">tdim</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">cell_type</span> <span class="o">=</span> <span class="s2">&quot;line&quot;</span>
+    <span class="k">elif</span> <span class="n">cells</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">tdim</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="n">cell_type</span> <span class="o">=</span> <span class="s2">&quot;triangle&quot;</span>
+    <span class="k">elif</span> <span class="n">cells</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">tdim</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="n">cell_type</span> <span class="o">=</span> <span class="s2">&quot;tetrahedron&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">CashocsException</span><span class="p">(</span><span class="s2">&quot;The mesh saved in the xdmf file is faulty.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">tdim</span> <span class="o">&gt;</span> <span class="n">gdim</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">CashocsException</span><span class="p">(</span>
+            <span class="s2">&quot;The topological dimension of a mesh must not be larger than its &quot;</span>
+            <span class="s2">&quot;geometrical dimension&quot;</span>
+        <span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">comm</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">comm</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span>
+
+    <span class="n">mesh</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Mesh</span><span class="p">(</span><span class="n">comm</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">mesh_editor</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MeshEditor</span><span class="p">()</span>
+        <span class="n">mesh_editor</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">cell_type</span><span class="p">,</span> <span class="n">tdim</span><span class="p">,</span> <span class="n">gdim</span><span class="p">)</span>
+        <span class="n">mesh_editor</span><span class="o">.</span><span class="n">init_vertices</span><span class="p">(</span><span class="n">coordinates</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="n">mesh_editor</span><span class="o">.</span><span class="n">init_cells</span><span class="p">(</span><span class="n">cells</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">vertex</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">coordinates</span><span class="p">):</span>
+            <span class="n">mesh_editor</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">vertex</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">cell</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">cells</span><span class="p">):</span>
+            <span class="n">mesh_editor</span><span class="o">.</span><span class="n">add_cell</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">cell</span><span class="p">)</span>
+
+        <span class="n">mesh_editor</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="n">mesh</span><span class="o">.</span><span class="n">init</span><span class="p">()</span>
+        <span class="n">mesh</span><span class="o">.</span><span class="n">order</span><span class="p">()</span>
+
+    <span class="n">fenics</span><span class="o">.</span><span class="n">MeshPartitioning</span><span class="o">.</span><span class="n">build_distributed_mesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">mesh</span></div>
+
+
+
+<div class="viewcode-block" id="extract_mesh_from_xdmf">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.mesh.extract_mesh_from_xdmf.html#cashocs.extract_mesh_from_xdmf">[docs]</a>
+<span class="k">def</span> <span class="nf">extract_mesh_from_xdmf</span><span class="p">(</span>
+    <span class="n">xdmffile</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">iteration</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">outputfile</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">original_gmsh_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">quiet</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>  <span class="c1"># pylint: disable= unused-argument</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Extracts a Gmsh mesh file from an XDMF state file.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        xdmffile: The path to the XDMF state file.</span>
+<span class="sd">        iteration: The iteration of interest (for a time series saved in the XDMF file),</span>
+<span class="sd">            default is 0.</span>
+<span class="sd">        outputfile: The path to the output Gmsh file. The default is `None` in which</span>
+<span class="sd">            case the output is saved in the same directory as the XDMF state file.</span>
+<span class="sd">        original_gmsh_file: The original gmsh .msh file used to create the mesh. This</span>
+<span class="sd">            can be used to generate output files which preserve, e.g., physical tags</span>
+<span class="sd">            and only updates the nodal positions. This will not work if the geometry</span>
+<span class="sd">            has been remeshed. The default is `None`, which uses a more robust (but</span>
+<span class="sd">            less detailed) approach.</span>
+<span class="sd">        quiet: When this is set to `True`, verbose output is disabled. Default is</span>
+<span class="sd">            `False`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">begin</span><span class="p">(</span><span class="s2">&quot;Extracting the mesh from the XDMF file&quot;</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">log</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+
+    <span class="n">_utils</span><span class="o">.</span><span class="n">check_file_extension</span><span class="p">(</span><span class="n">xdmffile</span><span class="p">,</span> <span class="s2">&quot;xdmf&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">outputfile</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">outputfile</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">xdmffile</span><span class="p">[:</span><span class="o">-</span><span class="mi">5</span><span class="p">]</span><span class="si">}</span><span class="s2">.msh&quot;</span>
+    <span class="n">_utils</span><span class="o">.</span><span class="n">check_file_extension</span><span class="p">(</span><span class="n">outputfile</span><span class="p">,</span> <span class="s2">&quot;msh&quot;</span><span class="p">)</span>
+
+    <span class="n">mesh</span> <span class="o">=</span> <span class="n">read_mesh_from_xdmf</span><span class="p">(</span><span class="n">xdmffile</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="n">iteration</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">(</span><span class="n">prefix</span><span class="o">=</span><span class="s2">&quot;cashocs_tmp_&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+    <span class="n">tempdir</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="o">.</span><span class="n">bcast</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">mesh_location_xdmf</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">tempdir</span><span class="si">}</span><span class="s2">/mesh.xdmf&quot;</span>
+    <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">original_gmsh_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">fenics</span><span class="o">.</span><span class="n">XDMFFile</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">,</span> <span class="n">mesh_location_xdmf</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">fenics</span><span class="o">.</span><span class="n">XDMFFile</span><span class="o">.</span><span class="n">Encoding</span><span class="o">.</span><span class="n">HDF5</span><span class="p">)</span>
+
+            <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span>  <span class="c1"># nosec B603, B607</span>
+                    <span class="p">[</span>
+                        <span class="s2">&quot;meshio&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;convert&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;--output-format&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;gmsh&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;--ascii&quot;</span><span class="p">,</span>
+                        <span class="n">mesh_location_xdmf</span><span class="p">,</span>
+                        <span class="n">outputfile</span><span class="p">,</span>
+                    <span class="p">],</span>
+                    <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">rank</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s2">&quot;rm&quot;</span><span class="p">,</span> <span class="s2">&quot;-r&quot;</span><span class="p">,</span> <span class="n">tempdir</span><span class="p">],</span> <span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># nosec B603, B607</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">barrier</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">MPI</span><span class="o">.</span><span class="n">comm_world</span><span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">write_out_mesh</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">original_gmsh_file</span><span class="p">,</span> <span class="n">outputfile</span><span class="p">)</span>
+
+    <span class="n">log</span><span class="o">.</span><span class="n">end</span><span class="p">()</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

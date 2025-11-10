@@ -1,0 +1,1264 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="16x16" href="../../_static/favicon/favicon-16x16.jpg" type="image/jpeg">
+    <link rel="icon" sizes="32x32" href="../../_static/favicon/favicon-32x32.jpg" type="image/jpeg">
+    <title>cashocs.io.config.Config &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api/generated/cashocs.io.config.Config';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="cashocs.io.function" href="cashocs.io.function.html" />
+    <link rel="prev" title="cashocs.io.config.load_config" href="cashocs.io.config.load_config.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="cashocs.html">cashocs</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cashocs.create_dirichlet_bcs.html">cashocs.create_dirichlet_bcs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.interpolate_levelset_function_to_cells.html">cashocs.interpolate_levelset_function_to_cells</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.compute_mesh_quality.html">cashocs.compute_mesh_quality</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.interval_mesh.html">cashocs.interval_mesh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.regular_box_mesh.html">cashocs.regular_box_mesh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.regular_mesh.html">cashocs.regular_mesh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.convert.html">cashocs.convert</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.import_mesh.html">cashocs.import_mesh</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.load_config.html">cashocs.load_config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.set_log_level.html">cashocs.set_log_level</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.linear_solve.html">cashocs.linear_solve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.newton_solve.html">cashocs.newton_solve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.picard_iteration.html">cashocs.picard_iteration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.snes_solve.html">cashocs.snes_solve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.ts_pseudo_solve.html">cashocs.ts_pseudo_solve</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.ConstrainedOptimalControlProblem.html">cashocs.ConstrainedOptimalControlProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.ConstrainedShapeOptimizationProblem.html">cashocs.ConstrainedShapeOptimizationProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.EqualityConstraint.html">cashocs.EqualityConstraint</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.InequalityConstraint.html">cashocs.InequalityConstraint</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.DeflatedTopologyOptimizationProblem.html">cashocs.DeflatedTopologyOptimizationProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.DeflatedOptimalControlProblem.html">cashocs.DeflatedOptimalControlProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.Functional.html">cashocs.Functional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.IntegralFunctional.html">cashocs.IntegralFunctional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.MinMaxFunctional.html">cashocs.MinMaxFunctional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.ScalarTrackingFunctional.html">cashocs.ScalarTrackingFunctional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.OptimalControlProblem.html">cashocs.OptimalControlProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.ShapeOptimizationProblem.html">cashocs.ShapeOptimizationProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.TopologyOptimizationProblem.html">cashocs.TopologyOptimizationProblem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.Interpolator.html">cashocs.Interpolator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cashocs.LogLevel.html">cashocs.LogLevel</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="cashocs.geometry.html">cashocs.geometry</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.compute_boundary_distance.html">cashocs.geometry.compute_boundary_distance</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.generate_measure.html">cashocs.geometry.generate_measure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.interval_mesh.html">cashocs.geometry.interval_mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.regular_box_mesh.html">cashocs.geometry.regular_box_mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.regular_mesh.html">cashocs.geometry.regular_mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.compute_mesh_quality.html">cashocs.geometry.compute_mesh_quality</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.DeformationHandler.html">cashocs.geometry.DeformationHandler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.geometry.MeshQuality.html">cashocs.geometry.MeshQuality</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.boundary_distance.html">cashocs.geometry.boundary_distance</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.boundary_distance.compute_boundary_distance.html">cashocs.geometry.boundary_distance.compute_boundary_distance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.boundary_distance.compute_boundary_distance_eikonal.html">cashocs.geometry.boundary_distance.compute_boundary_distance_eikonal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.boundary_distance.compute_boundary_distance_poisson.html">cashocs.geometry.boundary_distance.compute_boundary_distance_poisson</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.deformations.html">cashocs.geometry.deformations</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.deformations.DeformationHandler.html">cashocs.geometry.deformations.DeformationHandler</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.measure.html">cashocs.geometry.measure</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.measure.generate_measure.html">cashocs.geometry.measure.generate_measure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.measure.NamedMeasure.html">cashocs.geometry.measure.NamedMeasure</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.mesh.html">cashocs.geometry.mesh</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh.interval_mesh.html">cashocs.geometry.mesh.interval_mesh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh.regular_box_mesh.html">cashocs.geometry.mesh.regular_box_mesh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh.regular_mesh.html">cashocs.geometry.mesh.regular_mesh</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.mesh_handler.html">cashocs.geometry.mesh_handler</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh_handler.check_mesh_quality_tolerance.html">cashocs.geometry.mesh_handler.check_mesh_quality_tolerance</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.mesh_testing.html">cashocs.geometry.mesh_testing</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh_testing.APrioriMeshTester.html">cashocs.geometry.mesh_testing.APrioriMeshTester</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh_testing.CollisionCounter.html">cashocs.geometry.mesh_testing.CollisionCounter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.mesh_testing.IntersectionTester.html">cashocs.geometry.mesh_testing.IntersectionTester</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.geometry.quality.html">cashocs.geometry.quality</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.compute_mesh_quality.html">cashocs.geometry.quality.compute_mesh_quality</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.ConditionNumberCalculator.html">cashocs.geometry.quality.ConditionNumberCalculator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.MaximumAngleCalculator.html">cashocs.geometry.quality.MaximumAngleCalculator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.MeshQuality.html">cashocs.geometry.quality.MeshQuality</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.MeshQualityCalculator.html">cashocs.geometry.quality.MeshQualityCalculator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.RadiusRatiosCalculator.html">cashocs.geometry.quality.RadiusRatiosCalculator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.geometry.quality.SkewnessCalculator.html">cashocs.geometry.quality.SkewnessCalculator</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="cashocs.io.html">cashocs.io</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.load_config.html">cashocs.io.load_config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.import_function.html">cashocs.io.import_function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.read_function_from_xdmf.html">cashocs.io.read_function_from_xdmf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.convert.html">cashocs.io.convert</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.export_mesh.html">cashocs.io.export_mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.extract_mesh_from_xdmf.html">cashocs.io.extract_mesh_from_xdmf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.import_mesh.html">cashocs.io.import_mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.read_mesh_from_xdmf.html">cashocs.io.read_mesh_from_xdmf</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.write_out_mesh.html">cashocs.io.write_out_mesh</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.Config.html">cashocs.io.Config</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.io.OutputManager.html">cashocs.io.OutputManager</a></li>
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="cashocs.io.config.html">cashocs.io.config</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.config.load_config.html">cashocs.io.config.load_config</a></li>
+<li class="toctree-l4 current active"><a class="current reference internal" href="#">cashocs.io.config.Config</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.io.function.html">cashocs.io.function</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.function.import_function.html">cashocs.io.function.import_function</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.function.read_function_from_xdmf.html">cashocs.io.function.read_function_from_xdmf</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.io.managers.html">cashocs.io.managers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.generate_output_str.html">cashocs.io.managers.generate_output_str</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.generate_summary_str.html">cashocs.io.managers.generate_summary_str</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.ConsoleManager.html">cashocs.io.managers.ConsoleManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.FileManager.html">cashocs.io.managers.FileManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.IOManager.html">cashocs.io.managers.IOManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.MeshManager.html">cashocs.io.managers.MeshManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.ResultManager.html">cashocs.io.managers.ResultManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.TempFileManager.html">cashocs.io.managers.TempFileManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.managers.XDMFFileManager.html">cashocs.io.managers.XDMFFileManager</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.io.mesh.html">cashocs.io.mesh</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.check_mesh_compatibility.html">cashocs.io.mesh.check_mesh_compatibility</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.convert.html">cashocs.io.mesh.convert</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.create_point_representation.html">cashocs.io.mesh.create_point_representation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.export_mesh.html">cashocs.io.mesh.export_mesh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.extract_mesh_from_xdmf.html">cashocs.io.mesh.extract_mesh_from_xdmf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.gather_coordinates.html">cashocs.io.mesh.gather_coordinates</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.import_mesh.html">cashocs.io.mesh.import_mesh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.parse_file.html">cashocs.io.mesh.parse_file</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.read_mesh_from_xdmf.html">cashocs.io.mesh.read_mesh_from_xdmf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.mesh.write_out_mesh.html">cashocs.io.mesh.write_out_mesh</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.io.output.html">cashocs.io.output</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.io.output.OutputManager.html">cashocs.io.output.OutputManager</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="cashocs.log.html">cashocs.log</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.add_handler.html">cashocs.log.add_handler</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.add_logfile.html">cashocs.log.add_logfile</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.add_timestamps.html">cashocs.log.add_timestamps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.begin.html">cashocs.log.begin</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.critical.html">cashocs.log.critical</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.debug.html">cashocs.log.debug</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.end.html">cashocs.log.end</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.error.html">cashocs.log.error</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.info.html">cashocs.log.info</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.remove_timestamps.html">cashocs.log.remove_timestamps</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.set_log_level.html">cashocs.log.set_log_level</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.warning.html">cashocs.log.warning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.LogLevel.html">cashocs.log.LogLevel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.log.Logger.html">cashocs.log.Logger</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="cashocs.nonlinear_solvers.html">cashocs.nonlinear_solvers</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.nonlinear_solvers.linear_solve.html">cashocs.nonlinear_solvers.linear_solve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.nonlinear_solvers.newton_solve.html">cashocs.nonlinear_solvers.newton_solve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.nonlinear_solvers.picard_iteration.html">cashocs.nonlinear_solvers.picard_iteration</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.nonlinear_solvers.snes_solve.html">cashocs.nonlinear_solvers.snes_solve</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.nonlinear_solvers.ts_pseudo_solve.html">cashocs.nonlinear_solvers.ts_pseudo_solve</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.nonlinear_solvers.linear_solver.html">cashocs.nonlinear_solvers.linear_solver</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.linear_solver.linear_solve.html">cashocs.nonlinear_solvers.linear_solver.linear_solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.nonlinear_solvers.newton_solver.html">cashocs.nonlinear_solvers.newton_solver</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.newton_solver.newton_solve.html">cashocs.nonlinear_solvers.newton_solver.newton_solve</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.nonlinear_solvers.picard_solver.html">cashocs.nonlinear_solvers.picard_solver</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.picard_solver.picard_iteration.html">cashocs.nonlinear_solvers.picard_solver.picard_iteration</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.nonlinear_solvers.snes.html">cashocs.nonlinear_solvers.snes</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.snes.snes_solve.html">cashocs.nonlinear_solvers.snes.snes_solve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.snes.SNESSolver.html">cashocs.nonlinear_solvers.snes.SNESSolver</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.nonlinear_solvers.ts.html">cashocs.nonlinear_solvers.ts</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.ts.ts_pseudo_solve.html">cashocs.nonlinear_solvers.ts.ts_pseudo_solve</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.nonlinear_solvers.ts.TSPseudoSolver.html">cashocs.nonlinear_solvers.ts.TSPseudoSolver</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="cashocs.space_mapping.html">cashocs.space_mapping</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.space_mapping.optimal_control.html">cashocs.space_mapping.optimal_control</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.optimal_control.CoarseModel.html">cashocs.space_mapping.optimal_control.CoarseModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.optimal_control.FineModel.html">cashocs.space_mapping.optimal_control.FineModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.optimal_control.ParameterExtraction.html">cashocs.space_mapping.optimal_control.ParameterExtraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.optimal_control.SpaceMappingProblem.html">cashocs.space_mapping.optimal_control.SpaceMappingProblem</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.space_mapping.shape_optimization.html">cashocs.space_mapping.shape_optimization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.shape_optimization.CoarseModel.html">cashocs.space_mapping.shape_optimization.CoarseModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.shape_optimization.FineModel.html">cashocs.space_mapping.shape_optimization.FineModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.shape_optimization.ParameterExtraction.html">cashocs.space_mapping.shape_optimization.ParameterExtraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.shape_optimization.SpaceMappingProblem.html">cashocs.space_mapping.shape_optimization.SpaceMappingProblem</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="cashocs.space_mapping.topology_optimization.html">cashocs.space_mapping.topology_optimization</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.topology_optimization.CoarseModel.html">cashocs.space_mapping.topology_optimization.CoarseModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.topology_optimization.FineModel.html">cashocs.space_mapping.topology_optimization.FineModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.topology_optimization.ParameterExtraction.html">cashocs.space_mapping.topology_optimization.ParameterExtraction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="cashocs.space_mapping.topology_optimization.SpaceMappingProblem.html">cashocs.space_mapping.topology_optimization.SpaceMappingProblem</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="cashocs.verification.html">cashocs.verification</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.verification.compute_convergence_rates.html">cashocs.verification.compute_convergence_rates</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.verification.control_gradient_test.html">cashocs.verification.control_gradient_test</a></li>
+<li class="toctree-l3"><a class="reference internal" href="cashocs.verification.shape_gradient_test.html">cashocs.verification.shape_gradient_test</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../index.html" class="nav-link">cashocs API Reference</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="cashocs.html" class="nav-link">cashocs</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="cashocs.io.html" class="nav-link">cashocs.io</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="cashocs.io.config.html" class="nav-link">cashocs.io.config</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">cashocs.io.config.Config</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="cashocs-io-config-config">
+<h1>cashocs.io.config.Config<a class="headerlink" href="#cashocs-io-config-config" title="Link to this heading">#</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="cashocs.io.config.Config">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">cashocs.io.config.</span></span><span class="sig-name descname"><span class="pre">Config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../../_modules/cashocs/io/config.html#Config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cashocs.io.config.Config" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ConfigParser</span></code></p>
+<p>Class for handling the config in cashocs.</p>
+<p>Initializes self.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config_file</strong> (<em>str</em><em> | </em><em>None</em>) – Path to the config file.</p>
+</dd>
+</dl>
+<p class="rubric">Methods Summary</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.add_section" title="cashocs.io.config.Config.add_section"><code class="xref py py-obj docutils literal notranslate"><span class="pre">add_section</span></code></a>(section)</p></td>
+<td><p>Create a new section in the configuration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.clear" title="cashocs.io.config.Config.clear"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clear</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.defaults" title="cashocs.io.config.Config.defaults"><code class="xref py py-obj docutils literal notranslate"><span class="pre">defaults</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.get" title="cashocs.io.config.Config.get"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get</span></code></a>(section, option, *[, raw, vars, fallback])</p></td>
+<td><p>Get an option value for a given section.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.getboolean" title="cashocs.io.config.Config.getboolean"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getboolean</span></code></a>(section, option, *[, raw, vars, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.getfloat" title="cashocs.io.config.Config.getfloat"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getfloat</span></code></a>(section, option, *[, raw, vars, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.getint" title="cashocs.io.config.Config.getint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getint</span></code></a>(section, option, *[, raw, vars, fallback])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.getlist" title="cashocs.io.config.Config.getlist"><code class="xref py py-obj docutils literal notranslate"><span class="pre">getlist</span></code></a>(section, option, **kwargs)</p></td>
+<td><p>Extracts a list from a config file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.has_option" title="cashocs.io.config.Config.has_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_option</span></code></a>(section, option)</p></td>
+<td><p>Check for the existence of a given option in a given section. If the specified <a href="#id1"><span class="problematic" id="id2">`</span></a>section' is None or an empty string, DEFAULT is assumed. If the specified <a href="#id3"><span class="problematic" id="id4">`</span></a>section' does not exist, returns False.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.has_section" title="cashocs.io.config.Config.has_section"><code class="xref py py-obj docutils literal notranslate"><span class="pre">has_section</span></code></a>(section)</p></td>
+<td><p>Indicate whether the named section is present in the configuration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.items" title="cashocs.io.config.Config.items"><code class="xref py py-obj docutils literal notranslate"><span class="pre">items</span></code></a>([section, raw, vars])</p></td>
+<td><p>Return a list of (name, value) tuples for each option in a section.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.keys" title="cashocs.io.config.Config.keys"><code class="xref py py-obj docutils literal notranslate"><span class="pre">keys</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.options" title="cashocs.io.config.Config.options"><code class="xref py py-obj docutils literal notranslate"><span class="pre">options</span></code></a>(section)</p></td>
+<td><p>Return a list of option names for the given section name.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.optionxform" title="cashocs.io.config.Config.optionxform"><code class="xref py py-obj docutils literal notranslate"><span class="pre">optionxform</span></code></a>(optionstr)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.pop" title="cashocs.io.config.Config.pop"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pop</span></code></a>(k[,d])</p></td>
+<td><p>If key is not found, d is returned if given, otherwise KeyError is raised.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.popitem" title="cashocs.io.config.Config.popitem"><code class="xref py py-obj docutils literal notranslate"><span class="pre">popitem</span></code></a>()</p></td>
+<td><p>Remove a section from the parser and return it as a (section_name, section_proxy) tuple.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.read" title="cashocs.io.config.Config.read"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read</span></code></a>(filenames[, encoding])</p></td>
+<td><p>Read and parse a filename or an iterable of filenames.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.read_dict" title="cashocs.io.config.Config.read_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_dict</span></code></a>(dictionary[, source])</p></td>
+<td><p>Read configuration from a dictionary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.read_file" title="cashocs.io.config.Config.read_file"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_file</span></code></a>(f[, source])</p></td>
+<td><p>Like read() but the argument must be a file-like object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.read_string" title="cashocs.io.config.Config.read_string"><code class="xref py py-obj docutils literal notranslate"><span class="pre">read_string</span></code></a>(string[, source])</p></td>
+<td><p>Read configuration from a given string.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.readfp" title="cashocs.io.config.Config.readfp"><code class="xref py py-obj docutils literal notranslate"><span class="pre">readfp</span></code></a>(fp[, filename])</p></td>
+<td><p>Deprecated, use read_file instead.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.remove_option" title="cashocs.io.config.Config.remove_option"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_option</span></code></a>(section, option)</p></td>
+<td><p>Remove an option.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.remove_section" title="cashocs.io.config.Config.remove_section"><code class="xref py py-obj docutils literal notranslate"><span class="pre">remove_section</span></code></a>(section)</p></td>
+<td><p>Remove a file section.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.sections" title="cashocs.io.config.Config.sections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sections</span></code></a>()</p></td>
+<td><p>Return a list of section names, excluding [DEFAULT]</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.set" title="cashocs.io.config.Config.set"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set</span></code></a>(section, option[, value])</p></td>
+<td><p>Set an option.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.setdefault" title="cashocs.io.config.Config.setdefault"><code class="xref py py-obj docutils literal notranslate"><span class="pre">setdefault</span></code></a>(k[,d])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.update" title="cashocs.io.config.Config.update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update</span></code></a>([E, ]**F)</p></td>
+<td><p>If E present and has a .keys() method, does:     for k in E: D[k] = E[k] If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v In either case, this is followed by: for k, v in F.items(): D[k] = v</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.validate_config" title="cashocs.io.config.Config.validate_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">validate_config</span></code></a>()</p></td>
+<td><p>Validates the configuration file.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.values" title="cashocs.io.config.Config.values"><code class="xref py py-obj docutils literal notranslate"><span class="pre">values</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.write" title="cashocs.io.config.Config.write"><code class="xref py py-obj docutils literal notranslate"><span class="pre">write</span></code></a>(fp[, space_around_delimiters])</p></td>
+<td><p>Write an .ini-format representation of the configuration state.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Attributes Summary</p>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.BOOLEAN_STATES" title="cashocs.io.config.Config.BOOLEAN_STATES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BOOLEAN_STATES</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.NONSPACECRE" title="cashocs.io.config.Config.NONSPACECRE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NONSPACECRE</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.OPTCRE" title="cashocs.io.config.Config.OPTCRE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OPTCRE</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.OPTCRE_NV" title="cashocs.io.config.Config.OPTCRE_NV"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OPTCRE_NV</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#cashocs.io.config.Config.SECTCRE" title="cashocs.io.config.Config.SECTCRE"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SECTCRE</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#cashocs.io.config.Config.converters" title="cashocs.io.config.Config.converters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">converters</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="rubric">Methods Documentation</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.add_section">
+<span class="sig-name descname"><span class="pre">add_section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.add_section" title="Link to this definition">#</a></dt>
+<dd><p>Create a new section in the configuration.  Extends
+RawConfigParser.add_section by validating if the section name is
+a string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Remove</span> <span class="pre">all</span> <span class="pre">items</span> <span class="pre">from</span> <span class="pre">D.</span></span></span><a class="headerlink" href="#cashocs.io.config.Config.clear" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.defaults">
+<span class="sig-name descname"><span class="pre">defaults</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.defaults" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vars=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fallback=&lt;object</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.get" title="Link to this definition">#</a></dt>
+<dd><p>Get an option value for a given section.</p>
+<p>If <a href="#id5"><span class="problematic" id="id6">`</span></a>vars’ is provided, it must be a dictionary. The option is looked up
+in <a href="#id7"><span class="problematic" id="id8">`</span></a>vars’ (if provided), <a href="#id9"><span class="problematic" id="id10">`</span></a>section’, and in <a href="#id11"><span class="problematic" id="id12">`</span></a>DEFAULTSECT’ in that order.
+If the key is not found and <a href="#id13"><span class="problematic" id="id14">`</span></a>fallback’ is provided, it is used as
+a fallback value. <a href="#id15"><span class="problematic" id="id16">`</span></a>None’ can be provided as a <a href="#id17"><span class="problematic" id="id18">`</span></a>fallback’ value.</p>
+<p>If interpolation is enabled and the optional argument <a href="#id19"><span class="problematic" id="id20">`</span></a>raw’ is False,
+all interpolations are expanded in the return values.</p>
+<p>Arguments <a href="#id21"><span class="problematic" id="id22">`</span></a>raw’, <a href="#id23"><span class="problematic" id="id24">`</span></a>vars’, and <a href="#id25"><span class="problematic" id="id26">`</span></a>fallback’ are keyword only.</p>
+<p>The section DEFAULT is special.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.getboolean">
+<span class="sig-name descname"><span class="pre">getboolean</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vars=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fallback=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.getboolean" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.getfloat">
+<span class="sig-name descname"><span class="pre">getfloat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vars=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fallback=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.getfloat" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.getint">
+<span class="sig-name descname"><span class="pre">getint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vars=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fallback=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">**kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.getint" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.getlist">
+<span class="sig-name descname"><span class="pre">getlist</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="../../_modules/cashocs/io/config.html#Config.getlist"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cashocs.io.config.Config.getlist" title="Link to this definition">#</a></dt>
+<dd><p>Extracts a list from a config file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>section</strong> (<em>str</em>) – The section where the list is placed.</p></li>
+<li><p><strong>option</strong> (<em>str</em>) – The option which contains the list.</p></li>
+<li><p><strong>**kwargs</strong> (<em>Any</em>) – A list of keyword arguments that get passed to
+:py:meth:<code class="docutils literal notranslate"><span class="pre">self.get</span></code></p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The list which is specified in section <code class="docutils literal notranslate"><span class="pre">section</span></code> and key <code class="docutils literal notranslate"><span class="pre">option</span></code>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.has_option">
+<span class="sig-name descname"><span class="pre">has_option</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.has_option" title="Link to this definition">#</a></dt>
+<dd><p>Check for the existence of a given option in a given section.
+If the specified <a href="#id27"><span class="problematic" id="id28">`</span></a>section’ is None or an empty string, DEFAULT is
+assumed. If the specified <a href="#id29"><span class="problematic" id="id30">`</span></a>section’ does not exist, returns False.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.has_section">
+<span class="sig-name descname"><span class="pre">has_section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.has_section" title="Link to this definition">#</a></dt>
+<dd><p>Indicate whether the named section is present in the configuration.</p>
+<p>The DEFAULT section is not acknowledged.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.items">
+<span class="sig-name descname"><span class="pre">items</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section=&lt;object</span> <span class="pre">object&gt;</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raw=False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vars=None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.items" title="Link to this definition">#</a></dt>
+<dd><p>Return a list of (name, value) tuples for each option in a section.</p>
+<p>All % interpolations are expanded in the return values, based on the
+defaults passed into the constructor, unless the optional argument
+<a href="#id31"><span class="problematic" id="id32">`</span></a>raw’ is true.  Additional substitutions may be provided using the
+<a href="#id33"><span class="problematic" id="id34">`</span></a>vars’ argument, which must be a dictionary whose contents overrides
+any pre-existing defaults.</p>
+<p>The section DEFAULT is special.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.keys">
+<span class="sig-name descname"><span class="pre">keys</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">a</span> <span class="pre">set-like</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">keys</span></span></span><a class="headerlink" href="#cashocs.io.config.Config.keys" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.options">
+<span class="sig-name descname"><span class="pre">options</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.options" title="Link to this definition">#</a></dt>
+<dd><p>Return a list of option names for the given section name.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.optionxform">
+<span class="sig-name descname"><span class="pre">optionxform</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optionstr</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.optionxform" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.pop">
+<span class="sig-name descname"><span class="pre">pop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">v,</span> <span class="pre">remove</span> <span class="pre">specified</span> <span class="pre">key</span> <span class="pre">and</span> <span class="pre">return</span> <span class="pre">the</span> <span class="pre">corresponding</span> <span class="pre">value.</span></span></span><a class="headerlink" href="#cashocs.io.config.Config.pop" title="Link to this definition">#</a></dt>
+<dd><p>If key is not found, d is returned if given, otherwise KeyError is raised.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.popitem">
+<span class="sig-name descname"><span class="pre">popitem</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.popitem" title="Link to this definition">#</a></dt>
+<dd><p>Remove a section from the parser and return it as
+a (section_name, section_proxy) tuple. If no section is present, raise
+KeyError.</p>
+<p>The section DEFAULT is never returned because it cannot be removed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.read">
+<span class="sig-name descname"><span class="pre">read</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filenames</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">encoding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.read" title="Link to this definition">#</a></dt>
+<dd><p>Read and parse a filename or an iterable of filenames.</p>
+<p>Files that cannot be opened are silently ignored; this is
+designed so that you can specify an iterable of potential
+configuration file locations (e.g. current directory, user’s
+home directory, systemwide directory), and all existing
+configuration files in the iterable will be read.  A single
+filename may also be given.</p>
+<p>Return list of successfully read files.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.read_dict">
+<span class="sig-name descname"><span class="pre">read_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dictionary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'&lt;dict&gt;'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.read_dict" title="Link to this definition">#</a></dt>
+<dd><p>Read configuration from a dictionary.</p>
+<p>Keys are section names, values are dictionaries with keys and values
+that should be present in the section. If the used dictionary type
+preserves order, sections and their keys will be added in order.</p>
+<p>All types held in the dictionary are converted to strings during
+reading, including section names, option names and keys.</p>
+<p>Optional second argument is the <a href="#id35"><span class="problematic" id="id36">`</span></a>source’ specifying the name of the
+dictionary being read.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.read_file">
+<span class="sig-name descname"><span class="pre">read_file</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.read_file" title="Link to this definition">#</a></dt>
+<dd><p>Like read() but the argument must be a file-like object.</p>
+<p>The <a href="#id37"><span class="problematic" id="id38">`</span></a>f’ argument must be iterable, returning one line at a time.
+Optional second argument is the <a href="#id39"><span class="problematic" id="id40">`</span></a>source’ specifying the name of the
+file being read. If not given, it is taken from f.name. If <a href="#id41"><span class="problematic" id="id42">`</span></a>f’ has no
+<a href="#id43"><span class="problematic" id="id44">`</span></a>name’ attribute, <a href="#id45"><span class="problematic" id="id46">`</span></a>&lt;???&gt;’ is used.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.read_string">
+<span class="sig-name descname"><span class="pre">read_string</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">string</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">source</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'&lt;string&gt;'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.read_string" title="Link to this definition">#</a></dt>
+<dd><p>Read configuration from a given string.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.readfp">
+<span class="sig-name descname"><span class="pre">readfp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.readfp" title="Link to this definition">#</a></dt>
+<dd><p>Deprecated, use read_file instead.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.remove_option">
+<span class="sig-name descname"><span class="pre">remove_option</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.remove_option" title="Link to this definition">#</a></dt>
+<dd><p>Remove an option.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.remove_section">
+<span class="sig-name descname"><span class="pre">remove_section</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.remove_section" title="Link to this definition">#</a></dt>
+<dd><p>Remove a file section.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.sections">
+<span class="sig-name descname"><span class="pre">sections</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.sections" title="Link to this definition">#</a></dt>
+<dd><p>Return a list of section names, excluding [DEFAULT]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.set">
+<span class="sig-name descname"><span class="pre">set</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">section</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">option</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.set" title="Link to this definition">#</a></dt>
+<dd><p>Set an option.  Extends RawConfigParser.set by validating type and
+interpolation syntax on the value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.setdefault">
+<span class="sig-name descname"><span class="pre">setdefault</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k</span></span></em><span class="optional">[</span>, <em class="sig-param"><span class="n"><span class="pre">d</span></span></em><span class="optional">]</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">D.get(k,d),</span> <span class="pre">also</span> <span class="pre">set</span> <span class="pre">D[k]=d</span> <span class="pre">if</span> <span class="pre">k</span> <span class="pre">not</span> <span class="pre">in</span> <span class="pre">D</span></span></span><a class="headerlink" href="#cashocs.io.config.Config.setdefault" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.update">
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><span class="optional">[</span><em class="sig-param"><span class="n"><span class="pre">E</span></span></em>, <span class="optional">]</span><em class="sig-param"><span class="n"><span class="pre">**F</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None.</span>&#160; <span class="pre">Update</span> <span class="pre">D</span> <span class="pre">from</span> <span class="pre">mapping/iterable</span> <span class="pre">E</span> <span class="pre">and</span> <span class="pre">F.</span></span></span><a class="headerlink" href="#cashocs.io.config.Config.update" title="Link to this definition">#</a></dt>
+<dd><p>If E present and has a .keys() method, does:     for k in E: D[k] = E[k]
+If E present and lacks .keys() method, does:     for (k, v) in E: D[k] = v
+In either case, this is followed by: for k, v in F.items(): D[k] = v</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.validate_config">
+<span class="sig-name descname"><span class="pre">validate_config</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../../_modules/cashocs/io/config.html#Config.validate_config"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#cashocs.io.config.Config.validate_config" title="Link to this definition">#</a></dt>
+<dd><p>Validates the configuration file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.values">
+<span class="sig-name descname"><span class="pre">values</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">an</span> <span class="pre">object</span> <span class="pre">providing</span> <span class="pre">a</span> <span class="pre">view</span> <span class="pre">on</span> <span class="pre">D's</span> <span class="pre">values</span></span></span><a class="headerlink" href="#cashocs.io.config.Config.values" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.write">
+<span class="sig-name descname"><span class="pre">write</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">space_around_delimiters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#cashocs.io.config.Config.write" title="Link to this definition">#</a></dt>
+<dd><p>Write an .ini-format representation of the configuration state.</p>
+<p>If <a href="#id47"><span class="problematic" id="id48">`</span></a>space_around_delimiters’ is True (the default), delimiters
+between keys and values are surrounded by spaces.</p>
+<p>Please note that comments in the original configuration file are not
+preserved when writing the configuration back.</p>
+</dd></dl>
+
+<p class="rubric">Attributes Documentation</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.BOOLEAN_STATES">
+<span class="sig-name descname"><span class="pre">BOOLEAN_STATES</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'0':</span> <span class="pre">False,</span> <span class="pre">'1':</span> <span class="pre">True,</span> <span class="pre">'false':</span> <span class="pre">False,</span> <span class="pre">'no':</span> <span class="pre">False,</span> <span class="pre">'off':</span> <span class="pre">False,</span> <span class="pre">'on':</span> <span class="pre">True,</span> <span class="pre">'true':</span> <span class="pre">True,</span> <span class="pre">'yes':</span> <span class="pre">True}</span></em><a class="headerlink" href="#cashocs.io.config.Config.BOOLEAN_STATES" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.NONSPACECRE">
+<span class="sig-name descname"><span class="pre">NONSPACECRE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">re.compile('\\S')</span></em><a class="headerlink" href="#cashocs.io.config.Config.NONSPACECRE" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.OPTCRE">
+<span class="sig-name descname"><span class="pre">OPTCRE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">re.compile('\n</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">(?P&lt;option&gt;.*?)</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">very</span> <span class="pre">permissive!\n</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">\\s*(?P&lt;vi&gt;=|:)\\s*</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">any</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">space/tab,\n</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">followed</span> <span class="pre">by</span> <span class="pre">any</span> <span class="pre">of</span> <span class="pre">t,</span> <span class="pre">re.VERBOSE)</span></em><a class="headerlink" href="#cashocs.io.config.Config.OPTCRE" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.OPTCRE_NV">
+<span class="sig-name descname"><span class="pre">OPTCRE_NV</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">re.compile('\n</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">(?P&lt;option&gt;.*?)</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">very</span> <span class="pre">permissive!\n</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">\\s*(?:</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">any</span> <span class="pre">number</span> <span class="pre">of</span> <span class="pre">space/tab,\n</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">(?P&lt;vi&gt;=|:)\\s*</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">optionally</span> <span class="pre">followed</span> <span class="pre">,</span> <span class="pre">re.VERBOSE)</span></em><a class="headerlink" href="#cashocs.io.config.Config.OPTCRE_NV" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.SECTCRE">
+<span class="sig-name descname"><span class="pre">SECTCRE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">re.compile('\n</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">\\[</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">[\n</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">(?P&lt;header&gt;[^]]+)</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">very</span> <span class="pre">permissive!\n</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">\\]</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">#</span> <span class="pre">]\n</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">',</span> <span class="pre">re.VERBOSE)</span></em><a class="headerlink" href="#cashocs.io.config.Config.SECTCRE" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="cashocs.io.config.Config.converters">
+<span class="sig-name descname"><span class="pre">converters</span></span><a class="headerlink" href="#cashocs.io.config.Config.converters" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="cashocs.io.config.load_config.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">cashocs.io.config.load_config</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="cashocs.io.function.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">cashocs.io.function</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config"><code class="docutils literal notranslate"><span class="pre">Config</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.add_section"><code class="docutils literal notranslate"><span class="pre">Config.add_section()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.clear"><code class="docutils literal notranslate"><span class="pre">Config.clear()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.defaults"><code class="docutils literal notranslate"><span class="pre">Config.defaults()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.get"><code class="docutils literal notranslate"><span class="pre">Config.get()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.getboolean"><code class="docutils literal notranslate"><span class="pre">Config.getboolean()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.getfloat"><code class="docutils literal notranslate"><span class="pre">Config.getfloat()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.getint"><code class="docutils literal notranslate"><span class="pre">Config.getint()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.getlist"><code class="docutils literal notranslate"><span class="pre">Config.getlist()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.has_option"><code class="docutils literal notranslate"><span class="pre">Config.has_option()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.has_section"><code class="docutils literal notranslate"><span class="pre">Config.has_section()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.items"><code class="docutils literal notranslate"><span class="pre">Config.items()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.keys"><code class="docutils literal notranslate"><span class="pre">Config.keys()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.options"><code class="docutils literal notranslate"><span class="pre">Config.options()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.optionxform"><code class="docutils literal notranslate"><span class="pre">Config.optionxform()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.pop"><code class="docutils literal notranslate"><span class="pre">Config.pop()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.popitem"><code class="docutils literal notranslate"><span class="pre">Config.popitem()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.read"><code class="docutils literal notranslate"><span class="pre">Config.read()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.read_dict"><code class="docutils literal notranslate"><span class="pre">Config.read_dict()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.read_file"><code class="docutils literal notranslate"><span class="pre">Config.read_file()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.read_string"><code class="docutils literal notranslate"><span class="pre">Config.read_string()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.readfp"><code class="docutils literal notranslate"><span class="pre">Config.readfp()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.remove_option"><code class="docutils literal notranslate"><span class="pre">Config.remove_option()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.remove_section"><code class="docutils literal notranslate"><span class="pre">Config.remove_section()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.sections"><code class="docutils literal notranslate"><span class="pre">Config.sections()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.set"><code class="docutils literal notranslate"><span class="pre">Config.set()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.setdefault"><code class="docutils literal notranslate"><span class="pre">Config.setdefault()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.update"><code class="docutils literal notranslate"><span class="pre">Config.update()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.validate_config"><code class="docutils literal notranslate"><span class="pre">Config.validate_config()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.values"><code class="docutils literal notranslate"><span class="pre">Config.values()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.write"><code class="docutils literal notranslate"><span class="pre">Config.write()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.BOOLEAN_STATES"><code class="docutils literal notranslate"><span class="pre">Config.BOOLEAN_STATES</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.NONSPACECRE"><code class="docutils literal notranslate"><span class="pre">Config.NONSPACECRE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.OPTCRE"><code class="docutils literal notranslate"><span class="pre">Config.OPTCRE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.OPTCRE_NV"><code class="docutils literal notranslate"><span class="pre">Config.OPTCRE_NV</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.SECTCRE"><code class="docutils literal notranslate"><span class="pre">Config.SECTCRE</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cashocs.io.config.Config.converters"><code class="docutils literal notranslate"><span class="pre">Config.converters</span></code></a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../_sources/api/generated/cashocs.io.config.Config.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

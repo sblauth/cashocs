@@ -1,0 +1,919 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="16x16" href="_static/favicon/favicon-16x16.jpg" type="image/jpeg">
+    <link rel="icon" sizes="32x32" href="_static/favicon/favicon-32x32.jpg" type="image/jpeg">
+    <title>Release Notes &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'release_notes';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Code of Conduct" href="development/code_of_conduct.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Release Notes</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="release-notes">
+<h1>Release Notes<a class="headerlink" href="#release-notes" title="Link to this heading">#</a></h1>
+<p>These are cashocs’ release notes. Note, that only major and minor releases are covered
+here as they add new functionality or might change the API. For a documentation
+of the maintenance releases, please take a look at
+<a class="github reference external" href="https://github.com/sblauth/cashocs/releases">sblauth/cashocs</a>.</p>
+<section id="in-development">
+<h2>2.5.0 (in development)<a class="headerlink" href="#in-development" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Add support for Python 3.13</p></li>
+</ul>
+</section>
+<section id="january-24-2025">
+<h2>2.4.0 (January 24, 2025)<a class="headerlink" href="#january-24-2025" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Add support for named Gmsh meshes, so that the names can not only be used with <a class="reference internal" href="api/generated/cashocs.create_dirichlet_bcs.html#cashocs.create_dirichlet_bcs" title="cashocs.create_dirichlet_bcs"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.create_dirichlet_bcs()</span></code></a>, but also with the <code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.NamedMeasure</span></code> objects created with <a class="reference internal" href="api/generated/cashocs.import_mesh.html#cashocs.import_mesh" title="cashocs.import_mesh"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.import_mesh()</span></code></a>.</p></li>
+<li><p>Add a pseudo time stepping solver for nonlinear equations. This uses PETSc’s TS and is implemented in <a class="reference internal" href="api/generated/cashocs.ts_pseudo_solve.html#cashocs.ts_pseudo_solve" title="cashocs.ts_pseudo_solve"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.ts_pseudo_solve()</span></code></a>. The pseudo time stepping is also available for optimization problems and documented at <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/demo_pseudo_time_stepping/">https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/demo_pseudo_time_stepping/</a>.</p></li>
+<li><p>Add a Poisson approach for computing the distance to the wall. This should be more robust than the previous approach of solving the Eikonal equation but less robust. The method can be changed in the configuration (see “New configuration file parameters” below).</p></li>
+<li><p>New configuration file parameters:</p>
+<ul>
+<li><p>Section ShapeGradient</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">distance_method</span></code> specifies which method should be used to compute the distance to the boundary. The default is <code class="code highlight ini docutils literal highlight-ini"><span class="na">distance_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">eikonal</span></code>, but the new Poisson approach can be used with <code class="code highlight ini docutils literal highlight-ini"><span class="na">distance_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">poisson</span></code>.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="november-12-2024">
+<h2>2.3.0 (November 12, 2024)<a class="headerlink" href="#november-12-2024" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>The handling of the terminal output (and some other outputs) has changed significantly and now uses the python logging library. This allows for a greater flexibility and automatically times operations. The downside of this is, that the configuration has to change. Particularly, the <code class="code highlight ini docutils literal highlight-ini"><span class="na">verbose</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_txt</span></code> parameters are now deprecated and will be removed in the future. These are kept for backwards compatibility reasons, but their default value is set to <cite>False</cite> to use the new logging-based approach. Moreover, almost any place where a flag such as a keyword argument <code class="code highlight python docutils literal highlight-python"><span class="n">verbose</span></code> or <code class="code highlight python docutils literal highlight-python"><span class="n">quiet</span></code> is used, is deprecated and will be removed in the future. Here, too, the logging-based approach is used by default now. If your applications are too verbose for you now, you can call <code class="code highlight python docutils literal highlight-python"><span class="n">cashocs</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">set_log_level</span><span class="p">(</span><span class="n">cashocs</span><span class="o">.</span><span class="n">log</span><span class="o">.</span><span class="n">WARNING</span><span class="p">)</span></code> to increase the log level. A brief documentation of the logging capabilities can be found at <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/misc/demo_logging/">https://cashocs.readthedocs.io/en/stable/user/demos/misc/demo_logging/</a>.</p></li>
+<li><p>Properly handle the output for nested problems in the context of space mapping and additional constraints. The output config is applied to all problems and the sub- and main problems all write their history to files and console.</p></li>
+<li><p>Topology optimization problems now work as expected in parallel, with the exception that there is no support for angle-weighted interpolation of the topological derivative. Now, a corresponding exception is raised by cashocs.</p></li>
+<li><p>Add additional documentation for the configuration parameters for topology optimization which can be found at <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/topology_optimization/doc_config/">https://cashocs.readthedocs.io/en/stable/user/demos/topology_optimization/doc_config/</a>.</p></li>
+</ul>
+</section>
+<section id="august-28-2024">
+<h2>2.2.0 (August 28, 2024)<a class="headerlink" href="#august-28-2024" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Add a wrapper for PETSc’s SNES solver for nonlinear equations. This is used internally in cashocs whenever possible. For the solution of the state system, our own Newton solver is the default for backwards compatibility. Users can use the new SNES backend by specifying <code class="code highlight ini docutils literal highlight-ini"><span class="na">backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">petsc</span></code> in the Section StateSystem of the configuration.</p></li>
+<li><p>Allows nesting of PETSc Fieldsplit PCs with the command line option “pc_fieldsplit_%d_fields &lt;a,b,…&gt;, as explained at <a class="reference external" href="https://petsc.org/main/manualpages/PC/PCFieldSplitSetFields/">https://petsc.org/main/manualpages/PC/PCFieldSplitSetFields/</a></p></li>
+<li><p>Increase the precision of the Gmsh output from cashocs</p></li>
+<li><p>New configuration file parameters:</p>
+<ul>
+<li><p>Section StateSystem</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">backend</span></code> specifies which backend is used for solving nonlinear equations. The default is <code class="code highlight ini docutils literal highlight-ini"><span class="na">backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cashocs</span></code>, which is the “old” behavior, and <code class="code highlight ini docutils literal highlight-ini"><span class="na">backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">petsc</span></code> uses the new PETSc SNES interface.</p></li>
+</ul>
+</li>
+<li><p>Section ShapeGradient</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">test_for_intersections</span></code> is used to disable the (post mesh movement) check for intersections of the mesh, which ensures physically reasonable designs. This should not be set to <cite>False</cite>.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="february-6-2024">
+<h2>2.1.0 (February 6, 2024)<a class="headerlink" href="#february-6-2024" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>The class <code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.DeformationHandler</span></code> cannot be used anymore. Instead, use the class by calling <a class="reference internal" href="api/generated/cashocs.geometry.DeformationHandler.html#cashocs.geometry.DeformationHandler" title="cashocs.geometry.DeformationHandler"><code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.geometry.DeformationHandler</span></code></a>.</p></li>
+<li><p>Add the keyword arguments <code class="code highlight python docutils literal highlight-python"><span class="n">pre_callback</span></code> and <code class="code highlight python docutils literal highlight-python"><span class="n">post_callback</span></code> to define callbacks when an optimization problem is instanciated.</p></li>
+<li><p>Callbacks can now have one parameter - the parameter supplied when being called during runtime is the optimization problem itself</p></li>
+<li><p>Add a new function <a class="reference internal" href="api/generated/cashocs.io.extract_mesh_from_xdmf.html#cashocs.io.extract_mesh_from_xdmf" title="cashocs.io.extract_mesh_from_xdmf"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.io.extract_mesh_from_xdmf()</span></code></a> which extracts (any, not only Gmsh) meshes from some XDMF state file (e.g. written by cashocs) and saves the underlying mesh in Gmsh file format.</p></li>
+<li><p>Add a new command line interface <code class="code highlight bash docutils literal highlight-bash">cashocs-extract_mesh</code> which can be used to invoke <a class="reference internal" href="api/generated/cashocs.io.extract_mesh_from_xdmf.html#cashocs.io.extract_mesh_from_xdmf" title="cashocs.io.extract_mesh_from_xdmf"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.io.extract_mesh_from_xdmf()</span></code></a>.</p></li>
+<li><p>The output routines save the xdmf files not in a folder called <cite>xdmf</cite> anymore, but the folder is called <cite>checkpoints</cite></p></li>
+<li><p>The output parameter <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_mesh</span></code> does now not only save the optimized mesh, but also writes a Gmsh .msh file of the current iterated mesh for each iteration. This is very useful for restarting simulations.</p></li>
+<li><p>Added the function <a class="reference internal" href="api/generated/cashocs.io.import_function.html#cashocs.io.import_function" title="cashocs.io.import_function"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.io.import_function()</span></code></a> which can be used to load a XDMF Function with a function space. This is very useful for checkpointing (first, read the saved mesh, define the function space, then call <a class="reference internal" href="api/generated/cashocs.io.import_function.html#cashocs.io.import_function" title="cashocs.io.import_function"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.io.import_function()</span></code></a>.</p></li>
+<li><p><a class="reference internal" href="api/generated/cashocs.import_mesh.html#cashocs.import_mesh" title="cashocs.import_mesh"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.import_mesh()</span></code></a> can now also directly import a Gmsh mesh file. Internally, the mesh is directly converted to xdmf and then read. At the moment, this only supports the conversion mode <cite>physical</cite>.</p></li>
+<li><p>Add the kwargs <cite>linear_solver</cite> and (where applicable) <cite>adjoint_linear_solver</cite>. These can be used to define custom python KSP objects via petsc4py, most importantly, custom python-based preconditioners can be used with these. The feature is covered in the undocumented demo “demos/shape_optimization/python_pc”.</p></li>
+<li><p>Add the kwarg <cite>newton_linearization</cite> to the optimization problem classes. This can be used to specify which (alternative) linearization techniques can be used for solving the nonlinear state systems.</p></li>
+<li><p>The function <a class="reference internal" href="api/generated/cashocs.newton_solve.html#cashocs.newton_solve" title="cashocs.newton_solve"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.newton_solve()</span></code></a> does not change the user-specified tolerance (in the ksp_options) anymore, unless the kwarg <cite>inexact=True</cite> is set. This means, that the user can use custom “inexact Newton” schemes (e.g., gain one digit in accuracy) too. The old default was to use the relative tolerance of the nonlinear iteration multiplied with a safety factor (0.1).</p></li>
+<li><p>New configuration file parameters:</p>
+<ul>
+<li><p>Section LineSearch</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">fail_if_not_converged</span></code> determines, whether the line search is cancelled once the state system cannot be solved or if a new iterate is tried instead.</p></li>
+</ul>
+</li>
+<li><p>Section ShapeGradient</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">inhomogeneous_exponent</span></code> is a float, which specifies an exponent for the inhomogeneous mesh stiffness</p></li>
+</ul>
+</li>
+<li><p>Section MeshQuality</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">remesh_iter</span></code> is used to perform a remeshing after a certain amount of iterations.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="may-16-2023">
+<h2>2.0.0 (May 16, 2023)<a class="headerlink" href="#may-16-2023" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>cashocs has a new docstyle. It now uses the <a class="reference external" href="https://pydata-sphinx-theme.readthedocs.io/en/latest/">pydata-sphinx-theme</a>.</p></li>
+<li><p>Added space mapping methods to cashocs. The space mapping methods can utilize parallelism via MPI.</p></li>
+<li><p>Added polynomial based models for computing trial stepsizes in an extended Armijo rule.</p></li>
+<li><p>implemented a wrapper for <code class="code highlight bash docutils literal highlight-bash">cashocs-convert</code>, so that this can be used from inside python too. Simply call <a class="reference internal" href="api/generated/cashocs.convert.html#cashocs.convert" title="cashocs.convert"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.convert()</span></code></a>.</p></li>
+<li><p><code class="code highlight bash docutils literal highlight-bash">cashocs-convert</code> now has a default output argument (which is the same name as the input file). This can be invoked with the <code class="code highlight bash docutils literal highlight-bash">-o</code> or <code class="code highlight bash docutils literal highlight-bash">--outfile<span class="w"> </span>flag</code>.</p></li>
+<li><p><code class="code highlight bash docutils literal highlight-bash">cashocs-convert</code> now has an additional quiet flag, which can be invoked with <code class="code highlight bash docutils literal highlight-bash">-q</code> or <code class="code highlight bash docutils literal highlight-bash">--quiet</code>. Analogously, <a class="reference internal" href="api/generated/cashocs.convert.html#cashocs.convert" title="cashocs.convert"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.convert()</span></code></a> also has a keyword argument <code class="code highlight python docutils literal highlight-python"><span class="n">quiet</span></code>. These arguments / flags suppress its output.</p></li>
+<li><p>cashocs now saves files in XDMF file format for visualization and does not use .pvd files anymore. This greatly reduces the number of files needed and also enables better visualization for remeshing.</p></li>
+<li><p>cashocs’ print calls now flush the output buffer, which helps when sys.stdout is a file.</p></li>
+<li><p>The “hook” methods of cashocs (<code class="code highlight python docutils literal highlight-python"><span class="n">pre_hook</span></code> and <code class="code highlight python docutils literal highlight-python"><span class="n">post_hook</span></code>) are renamed to “callback”, see, e.g., <code class="xref py py-meth docutils literal notranslate"><span class="pre">inject_pre_callback</span></code>.</p></li>
+<li><p>cashocs now uses pathlib over os.path</p></li>
+<li><p>cashocs’ loggers are now not colored anymore, which makes reading the log easier if one logs to a file</p></li>
+<li><p>Added i/o possibilites to read meshes and functions from the data saved in the xdmf files for visualization. This is documented <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/misc/demo_xdmf_io/">here</a>.</p></li>
+<li><p>Deprecated functions have been removed. In particular, the functions <code class="xref py py-func docutils literal notranslate"><span class="pre">create_bcs_list()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">create_config()</span></code>, <code class="xref py py-func docutils literal notranslate"><span class="pre">damped_newton_solve()</span></code> are removed. They are replaced by <a class="reference internal" href="api/generated/cashocs.create_dirichlet_bcs.html#cashocs.create_dirichlet_bcs" title="cashocs.create_dirichlet_bcs"><code class="xref py py-func docutils literal notranslate"><span class="pre">create_dirichlet_bcs</span></code></a>, <a class="reference internal" href="api/generated/cashocs.load_config.html#cashocs.load_config" title="cashocs.load_config"><code class="xref py py-func docutils literal notranslate"><span class="pre">load_config</span></code></a>, and <a class="reference internal" href="api/generated/cashocs.newton_solve.html#cashocs.newton_solve" title="cashocs.newton_solve"><code class="xref py py-func docutils literal notranslate"><span class="pre">newton_solve</span></code></a>.</p></li>
+<li><p>The usage of the keyword arguments <code class="code highlight python docutils literal highlight-python"><span class="n">scalar_tracking_forms</span></code> and <code class="code highlight python docutils literal highlight-python"><span class="n">min_max_terms</span></code> in <a class="reference internal" href="api/generated/cashocs.ShapeOptimizationProblem.html#cashocs.ShapeOptimizationProblem" title="cashocs.ShapeOptimizationProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">ShapeOptimizationProblem</span></code></a> and <a class="reference internal" href="api/generated/cashocs.OptimalControlProblem.html#cashocs.OptimalControlProblem" title="cashocs.OptimalControlProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">OptimalControlProblem</span></code></a> has been removed. Instead, every cost functional is now passed via the <code class="code highlight python docutils literal highlight-python"><span class="n">cost_functional_list</span></code> parameter. Scalar tracking forms are now realized via <a class="reference internal" href="api/generated/cashocs.ScalarTrackingFunctional.html#cashocs.ScalarTrackingFunctional" title="cashocs.ScalarTrackingFunctional"><code class="xref py py-class docutils literal notranslate"><span class="pre">ScalarTrackingFunctional</span></code></a> and min-max terms via <a class="reference internal" href="api/generated/cashocs.MinMaxFunctional.html#cashocs.MinMaxFunctional" title="cashocs.MinMaxFunctional"><code class="xref py py-class docutils literal notranslate"><span class="pre">MinMaxFunctional</span></code></a>, see <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/optimal_control/demo_scalar_control_tracking">https://cashocs.readthedocs.io/en/stable/user/demos/optimal_control/demo_scalar_control_tracking</a>.</p></li>
+<li><p>BFGS methods can now be used in a restarted fashion, if desired.</p></li>
+<li><p>The BFGS method can now be used in a damped fashion. This ensures that the inverse Hessian approximation stays positive definite.</p></li>
+<li><p>The options for defining parameters which are to be supplied to PETSc KSP objects have changed their datatype: They are now given by (lists of) dictionaries instead of nested lists. For options without a value in the command line (e.g. the option <code class="code highlight bash docutils literal highlight-bash">-ksp_view</code>) have a value of <code class="code highlight python docutils literal highlight-python"><span class="kc">None</span></code> in the dictionary (so <code class="code highlight python docutils literal highlight-python"><span class="s1">&#39;ksp_view&#39;</span><span class="p">:</span> <span class="kc">None</span></code> can be used inside the dictionary to supply the aforementioned option).</p></li>
+<li><p>cashocs now includes a <a class="reference internal" href="api/generated/cashocs.linear_solve.html#cashocs.linear_solve" title="cashocs.linear_solve"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.linear_solve()</span></code></a> that can be used to solve linear problems.</p></li>
+<li><p>Optimization problems, constrained problems, space mapping problems, and linear and nonlinear solvers now include the keyword argument <code class="code highlight python docutils literal highlight-python"><span class="n">preconditioner_forms</span></code>, which is a list of UFL forms used to define the preconditioner matrices for solving the respective PDEs.</p></li>
+<li><p>Added different mesh conversion modes for <a class="reference internal" href="api/generated/cashocs.convert.html#cashocs.convert" title="cashocs.convert"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.convert()</span></code></a>, which are <code class="code highlight python docutils literal highlight-python"><span class="s2">&quot;physical&quot;</span></code>, <code class="code highlight python docutils literal highlight-python"><span class="s2">&quot;geometrical&quot;</span></code>, and <code class="code highlight python docutils literal highlight-python"><span class="s2">&quot;none&quot;</span></code>. These are used to either use the physical or geometrical entities of Gmsh for the definition of the boundaries and subdomains (or neither of these).</p></li>
+<li><p>Changed configuration file parameters</p>
+<ul>
+<li><p>Section OptimizationRoutine</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">maximum_iterations</span></code> is now called <code class="code highlight ini docutils literal highlight-ini"><span class="na">max_iter</span></code></p></li>
+</ul>
+</li>
+<li><p>Section Output</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_pvd</span></code> is now called <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_state</span></code>, functionality is the same</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_pvd_adjoint</span></code> is now called <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_adjoint</span></code>, functionality is the same</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_pvd_gradient</span></code> is now called <code class="code highlight ini docutils literal highlight-ini"><span class="na">save_gradient</span></code>, functionality is the same</p></li>
+</ul>
+</li>
+<li><p>Section LineSearch</p>
+<ul>
+<li><p>The parameters <code class="code highlight ini docutils literal highlight-ini"><span class="na">initial_stepsize</span></code>, <code class="code highlight ini docutils literal highlight-ini"><span class="na">epsilon_armijo</span></code>, <code class="code highlight ini docutils literal highlight-ini"><span class="na">beta_armijo</span></code>, and <code class="code highlight ini docutils literal highlight-ini"><span class="na">safeguard_stepsize</span></code> are moved from the OptimizationRoutine section to the LineSearch section. Their behavior is unaltered.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>New configuration file parameters</p>
+<ul>
+<li><p>Section AlgoLBFGS</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">bfgs_periodic_restart</span></code> is an integer parameter. If this is 0 (the default), no restarting is done. If this is &gt;0, then the BFGS method is restarted after as many iterations, as given in the parameter</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">damped</span></code> is a boolean flag which indicates, whether damping should be used for the BFGS method. The default is <code class="code highlight ini docutils literal highlight-ini"><span class="na">damped</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code>.</p></li>
+</ul>
+</li>
+<li><p>Section LineSearch is a completely new section where the line searches can be configured.</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span></code> is a string parameter, which can take the values <code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">armijo</span></code> (which is the default previous line search) and <code class="code highlight ini docutils literal highlight-ini"><span class="na">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">polynomial</span></code> (which are the new models)</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span></code> is a string parameter which can be either <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">quadratic</span></code> or <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cubic</span></code>. In case this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">quadratic</span></code>, three values (current function value, directional derivative, and trial function value) are used to generate a quadratic model of the one-dimensional cost functional. If this is <code class="code highlight ini docutils literal highlight-ini"><span class="na">polynmomial_model</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">cubic</span></code>, a cubic model is generated based on the last two guesses for the stepsize. These models are exactly minimized to get a new trial stepsize and a safeguarding is applied so that the steps remain feasible.</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_high</span></code> is one parameter for the safeguarding, the upper bound for the search interval for the stepsize (this is multiplied with the previous stepsize)</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_low</span></code> is the other parameter for the safeguarding, the lower bound for the search interval for the stepsize (this is multiplied with the previous stepsize)</p></li>
+</ul>
+</li>
+<li><p>Section Output</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">precision</span></code> is an integer which specifies the precision (number of significant digits) when printing to console or file. Default is, as before, 3 significant digits.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="july-6-2022">
+<h2>1.8.0 (July 6, 2022)<a class="headerlink" href="#july-6-2022" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>cashocs now has a better memory efficiency</p></li>
+<li><p>The printing and file output of cashocs has been modified to better readable and fit the default console window</p></li>
+<li><p>The ksp keyword argument for solver routines in the <code class="code highlight python docutils literal highlight-python"><span class="n">_utils</span></code> module has been removed. Now, KSP objects can be interfaced only directly via <code class="code highlight python docutils literal highlight-python"><span class="n">ksp_options</span></code></p></li>
+<li><p>Rename the default branch from “master” to “main”</p></li>
+<li><p>Implement the “guard against poor scaling” for the stepsize computation from Kelley, but only for the initial stepsize</p></li>
+<li><p>New configuration file parameters</p>
+<ul>
+<li><p>Section OptimizationRoutine</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">safeguard_stepsize</span></code> is a boolean parameter which dis-/enables the guard against poor scaling for the initial iteration</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="april-20-2022">
+<h2>1.7.0 (April 20, 2022)<a class="headerlink" href="#april-20-2022" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>MPI Support - cashocs now has full MPI support. All of its features, including remeshing, now work out of the box in parallel. Nearly any script using cashocs can be run in parallel by invoking it via <code class="code highlight bash docutils literal highlight-bash">mpirun<span class="w"> </span>-n<span class="w"> </span>p<span class="w"> </span>python<span class="w"> </span>script.py</code>, where <code class="code highlight bash docutils literal highlight-bash">p</code> is the number of MPI processes. Note, that running in parallel may sometimes cause unexpected behavior as it is not tested as well as the serial usage. If you should encounter any bugs, please report them.</p></li>
+</ul>
+</section>
+<section id="april-4-2022">
+<h2>1.6.0 (April 4, 2022)<a class="headerlink" href="#april-4-2022" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Added the possibility to define additional constraints for the optimization problems as well as solvers which can be used to solve these new problems. This includes Augmented Lagrangian and Quadratic Penalty methods. This feature is documented at <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/optimal_control/demo_constraints">https://cashocs.readthedocs.io/en/stable/user/demos/optimal_control/demo_constraints</a>.</p></li>
+<li><p>Added the possibility for users to execute their own code before each solution of the state system or after each computation of the gradient with the help of <code class="xref py py-meth docutils literal notranslate"><span class="pre">inject_pre_callback</span></code> and <code class="xref py py-meth docutils literal notranslate"><span class="pre">inject_post_callback</span></code>. This is documented at <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/optimal_control/demo_pre_post_callbacks">https://cashocs.readthedocs.io/en/stable/user/demos/optimal_control/demo_pre_post_callbacks</a>.</p></li>
+<li><p>Added the possibility to define boundary conditions for control variables. This is documented at <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/optimal_control/demo_control_boundary_conditions">https://cashocs.readthedocs.io/en/stable/user/demos/optimal_control/demo_control_boundary_conditions</a>.</p></li>
+<li><p>Added new style cost functionals, namely <a class="reference internal" href="api/generated/cashocs.IntegralFunctional.html#cashocs.IntegralFunctional" title="cashocs.IntegralFunctional"><code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.IntegralFunctional</span></code></a>, <a class="reference internal" href="api/generated/cashocs.ScalarTrackingFunctional.html#cashocs.ScalarTrackingFunctional" title="cashocs.ScalarTrackingFunctional"><code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.ScalarTrackingFunctional</span></code></a> and <a class="reference internal" href="api/generated/cashocs.MinMaxFunctional.html#cashocs.MinMaxFunctional" title="cashocs.MinMaxFunctional"><code class="xref py py-class docutils literal notranslate"><span class="pre">cashocs.MinMaxFunctional</span></code></a>. These allow for a clearer definition of cost functionals and will replace the keyword arguments <code class="code highlight python docutils literal highlight-python"><span class="n">scalar_tracking_forms</span></code> and <code class="code highlight python docutils literal highlight-python"><span class="n">min_max_terms</span></code> in the future. The new style cost functionals allow for greater flexibility and extensibility in the future.</p></li>
+<li><p>Added the possibility to choose between a direct and iterative solver for computing (shape) gradients.</p></li>
+<li><p>Reworked the private interface of cashocs for better extensibility. The <code class="code highlight python docutils literal highlight-python"><span class="n">utils</span></code> submodule is now private. Added a new <a class="reference internal" href="api/generated/cashocs.io.html#module-cashocs.io" title="cashocs.io"><code class="xref py py-mod docutils literal notranslate"><span class="pre">cashocs.io</span></code></a> submodule for handling in- and output.</p></li>
+<li><p>Reworked the way configuration files are treated in cashocs. Now, they are validated and an exception is raised if a config is found to be invalid.</p></li>
+<li><p>New configuration file parameters:</p>
+<ul>
+<li><p>Section OptimizationRoutine</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span></code> is either <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">direct</span></code> or <code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">iterative</span></code> and specifies that the corresponding type of solver is used to compute the gradient.</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">gradient_tol</span></code> specifies the tolerance which is used in case an iterative solver is used to compute the (shape) gradient.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="december-22-2021">
+<h2>1.5.0 (December 22, 2021)<a class="headerlink" href="#december-22-2021" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Major performance increase (particularly for large problems)</p></li>
+<li><p>Added support for using the p-Laplacian to compute the shape gradient.</p></li>
+<li><p>cashocs now also imports Gmsh Physical Group information when it is given by strings, which can be used in integration measures (e.g., <code class="code highlight python docutils literal highlight-python"><span class="n">dx</span><span class="p">(</span><span class="s1">&#39;part1&#39;</span><span class="p">)</span></code> or <code class="code highlight python docutils literal highlight-python"><span class="n">ds</span><span class="p">(</span><span class="s1">&#39;inlet&#39;</span><span class="p">)</span></code>, or for creating Dirichlet boundary conditions (e.g. <code class="code highlight python docutils literal highlight-python"><span class="n">cashocs</span><span class="o">.</span><span class="n">create_dirichlet_bcs</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span> <span class="n">boundaries</span><span class="p">,</span> <span class="s1">&#39;dirichlet_boundary&#39;</span><span class="p">)</span></code>).</p></li>
+<li><p>The nonlinear solver (Newton’s method) got an additional <code class="code highlight python docutils literal highlight-python"><span class="n">inexact</span></code> parameter, which allows users to use an inexact Newton’s method with iterative solvers. Additionally, users can specify their own Jacobians to be used in Newton’s method with the keyword argument <code class="code highlight python docutils literal highlight-python"><span class="n">dF</span></code>.</p></li>
+<li><p>Users can now specify the weight of the scalar tracking terms individually (this is now documented).</p></li>
+<li><p>New configuration file parameters:</p>
+<ul>
+<li><p>Section ShapeGradient</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">use_p_laplacian</span></code> is a boolean flag which enables the use of the p-Laplacian for the computation of the shape gradient</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">p_laplacian_power</span></code> is an integer parameter specifying the power p used for the p-Laplacian</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">p_laplacian_stabilization</span></code> is a float parameter, which acts as stabilization term for the p-Laplacian. This should be positive and small (e.g. 1e-3).</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">update_inhomogeneous</span></code> is a boolean parameter, which allows to update the cell volume when using <code class="code highlight ini docutils literal highlight-ini"><span class="na">inhomogeneous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">True</span></code> in the ShapeGradient section. This makes small elements have a higher stiffness and updates this over the course of the optimization. Default is <code class="code highlight ini docutils literal highlight-ini"><span class="na">update_inhomogeneous</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">False</span></code></p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="september-3-2021">
+<h2>1.4.0 (September 3, 2021)<a class="headerlink" href="#september-3-2021" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Added the possibility to compute the stiffness for the shape gradient based on the distance to the boundary using the eikonal equation</p></li>
+<li><p>Cashocs now supports the tracking of scalar quantities, which are given as integrals of the states / controls / geometric properties. Input parameter is <code class="code highlight python docutils literal highlight-python"><span class="n">scalar_tracking_forms</span></code>, which is a dictionary consisting of <code class="code highlight python docutils literal highlight-python"><span class="s1">&#39;integrand&#39;</span></code>, which is the integrand of the scalar quantity, and <code class="code highlight python docutils literal highlight-python"><span class="s1">&#39;tracking_goal&#39;</span></code>, which is the (scalar) value that shall be achieved. This feature is documented at <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/optimal_control/demo_scalar_control_tracking">https://cashocs.readthedocs.io/en/stable/user/demos/optimal_control/demo_scalar_control_tracking</a>.</p></li>
+<li><p>Fixed a bug concerning cashocs’ memory management, which would occur if several OptimizationProblems were created one after the other</p></li>
+<li><p>Changed the coding style to “black”</p></li>
+<li><p>Switched printing to f-string syntax for better readability</p></li>
+<li><p>Config files are now copied when they are passed to OptimizationProblems, so that manipulation of them is only possible before the instance is created</p></li>
+<li><p>New configuration file parameters:</p>
+<ul>
+<li><p>Section ShapeGradient</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">use_distance_mu</span></code> is a boolean flag which enables stiffness computation based on distances</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_min</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_max</span></code> describe the minimal and maximum distance to the boundary for which a certain stiffness is used (see below)</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_min</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">mu_max</span></code> describe the stiffness values: If the boundary distance is smaller than <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_min</span></code>, then <code class="code highlight python docutils literal highlight-python"><span class="n">mu</span> <span class="o">=</span> <span class="n">mu_min</span></code> and if the distance is larger than <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_max</span></code>, we have <code class="code highlight python docutils literal highlight-python"><span class="n">mu</span> <span class="o">=</span> <span class="n">mu_max</span></code></p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">smooth_mu</span></code> is a boolean flag, which determines how <code class="code highlight python docutils literal highlight-python"><span class="n">mu</span></code> is interpolated between <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_min</span></code> and <code class="code highlight ini docutils literal highlight-ini"><span class="na">dist_max</span></code>: If this is set to <cite>False</cite>, linear interpolation is used, otherwise, a cubic spline is used</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">boundaries_dist</span></code> is a list of boundary indices to which the distance shall be computed</p></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Small bugfixes and other improvements:</p>
+<ul>
+<li><p>Switched to pseudo random numbers for the tests for the sake of reproduceability</p></li>
+<li><p>fixed some tolerances for the tests</p></li>
+<li><p>replaced <code class="code highlight python docutils literal highlight-python"><span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">()</span></code> calls by <code class="code highlight python docutils literal highlight-python"><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></code></p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="june-11-2021">
+<h2>1.3.0 (June 11, 2021)<a class="headerlink" href="#june-11-2021" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Improved the remeshing workflow and fixed several smaller bugs concerning it</p></li>
+<li><p>New configuration file parameters:</p>
+<ul>
+<li><p>Section Output</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_pvd_adjoint</span></code> is a boolean flag which allows users to also save adjoint states in paraview format</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_pvd_gradient</span></code> is a boolean flag which allows users to save the (shape) gradient(s) in paraview format</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">save_txt</span></code> is a boolean flag, which allows users to capture the command line output as .txt file</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="december-01-2020">
+<h2>1.2.0 (December 01, 2020)<a class="headerlink" href="#december-01-2020" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Users can now supply their own bilinear form (or scalar product) for the computation of the shape gradient, which is then used instead of the linear elasticity formulation. This is documented at <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/demo_custom_scalar_product">https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/demo_custom_scalar_product</a>.</p></li>
+<li><p>Added a curvature regularization term for shape optimization, which can be enabled via the config files, similarly to already implemented regularizations. This is documented at <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/demo_regularization">https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/demo_regularization</a>.</p></li>
+<li><p>cashocs can now scale individual terms of the cost functional if this is desired. This allows for a more granular handling of problems with cost functionals consisting of multiple terms. This also extends to the regularizations for shape optimization, see <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/demo_regularization">https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/demo_regularization</a>. This feature is documented at <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/demo_scaling">https://cashocs.readthedocs.io/en/stable/user/demos/shape_optimization/demo_scaling</a>.</p></li>
+<li><p>cashocs now uses the logging module to issue messages for the user. The level of verbosity can be controlled via <a class="reference internal" href="api/generated/cashocs.set_log_level.html#cashocs.set_log_level" title="cashocs.set_log_level"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.set_log_level()</span></code></a>.</p></li>
+<li><p>New configuration file parameters:</p>
+<ul>
+<li><p>Section Regularization:</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">factor_curvature</span></code> can be used to specify the weight for the curvature regularization term.</p></li>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">use_relative_weights</span></code> is a boolean which specifies, whether the weights should be used as scaling factor in front of the regularization terms (if this is <cite>False</cite>), or whether they should be used to scale the regularization terms so that they have the prescribed value on the initial iteration (if this is <cite>True</cite>).</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="november-13-2020">
+<h2>1.1.0 (November 13, 2020)<a class="headerlink" href="#november-13-2020" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Added the functionality for cashocs to be used as a solver only, where users can specify their custom adjoint equations and (shape) derivatives for the optimization problems. This is documented at <a class="reference external" href="https://cashocs.readthedocs.io/en/stable/user/demos/cashocs_as_solver/index">https://cashocs.readthedocs.io/en/stable/user/demos/cashocs_as_solver/index</a>.</p></li>
+<li><p>Using <code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.create_config()</span></code> is deprecated and replaced by <a class="reference internal" href="api/generated/cashocs.load_config.html#cashocs.load_config" title="cashocs.load_config"><code class="xref py py-func docutils literal notranslate"><span class="pre">cashocs.load_config()</span></code></a>, but the former will still be supported.</p></li>
+<li><p>Configuration files are now not strictly necessary, but still very strongly recommended.</p></li>
+<li><p>New configuration file parameters:</p>
+<ul>
+<li><p>Section Output:</p>
+<ul>
+<li><p><code class="code highlight ini docutils literal highlight-ini"><span class="na">result_dir</span></code> can be used to specify where cashocs’ output files should be placed.</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="september-18-2020">
+<h2>1.0.0 (September 18, 2020)<a class="headerlink" href="#september-18-2020" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p>Initial release of cashocs.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="development/code_of_conduct.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Code of Conduct</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#in-development">2.5.0 (in development)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#january-24-2025">2.4.0 (January 24, 2025)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#november-12-2024">2.3.0 (November 12, 2024)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#august-28-2024">2.2.0 (August 28, 2024)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#february-6-2024">2.1.0 (February 6, 2024)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#may-16-2023">2.0.0 (May 16, 2023)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#july-6-2022">1.8.0 (July 6, 2022)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#april-20-2022">1.7.0 (April 20, 2022)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#april-4-2022">1.6.0 (April 4, 2022)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#december-22-2021">1.5.0 (December 22, 2021)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#september-3-2021">1.4.0 (September 3, 2021)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#june-11-2021">1.3.0 (June 11, 2021)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#december-01-2020">1.2.0 (December 01, 2020)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#november-13-2020">1.1.0 (November 13, 2020)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#september-18-2020">1.0.0 (September 18, 2020)</a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="_sources/release_notes.rst.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

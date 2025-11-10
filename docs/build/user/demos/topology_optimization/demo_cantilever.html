@@ -1,0 +1,944 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <link rel="icon" sizes="16x16" href="../../../_static/favicon/favicon-16x16.jpg" type="image/jpeg">
+    <link rel="icon" sizes="32x32" href="../../../_static/favicon/favicon-32x32.jpg" type="image/jpeg">
+    <title>Topology Optimization with Linear Elasticity - Cantilever &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'user/demos/topology_optimization/demo_cantilever';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Topology Optimization with Stokes Flow - Pipe Bend" href="demo_pipe_bend.html" />
+    <link rel="prev" title="Documentation of the Config Files for Topology Optimization Problems" href="doc_config.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="../../index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"><p aria-level="2" class="caption" role="heading"><span class="caption-text">List of tutorial topics:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../optimal_control/index.html">Optimal Control Problems</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_poisson.html">Distributed Control of a Poisson Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/doc_config.html">Documentation of the Config Files for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_box_constraints.html">Control Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_neumann_control.html">Neumann Boundary Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_multiple_variables.html">Using Multiple Variables and PDEs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_monolithic_problems.html">Coupled Problems - Monolithic Approach</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_picard_iteration.html">Coupled Problems - Picard Iteration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_stokes.html">Distributed Control of a Stokes Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_heat_equation.html">Distributed Control for Time Dependent Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_nonlinear_pdes.html">Optimal Control with Nonlinear PDE Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_dirichlet_control.html">Dirichlet Boundary Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_iterative_solvers.html">Iterative Solvers for State and Adjoint Systems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_state_constraints.html">Optimal Control with State Constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_sparse_control.html">Sparse Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_scalar_control_tracking.html">Tracking of Scalar Functionals for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_constraints.html">Treatment of additional constraints</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_control_boundary_conditions.html">Boundary conditions for control variables</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimal_control/demo_pre_post_callbacks.html">Pre- and Post-Callbacks for the optimization</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../shape_optimization/index.html">Shape Optimization Problems</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_shape_poisson.html">Shape Optimization with a Poisson Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/doc_config.html">Documentation of the Config Files for Shape Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_regularization.html">Regularization for Shape Optimization Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_inverse_tomography.html">Inverse Problem in Electric Impedance Tomography</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_shape_stokes.html">Optimization of an Obstacle in Stokes Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_remeshing.html">Remeshing with cashocs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_custom_scalar_product.html">Custom Scalar Products for Shape Gradient Computation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_scaling.html">Scaling of the Cost Functional</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_prescribed_mu.html">Computing the Shape Stiffness via Distance to the Boundaries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_p_laplacian.html">Shape Optimization with the p-Laplacian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_space_mapping_semilinear_transmission.html">Space Mapping Shape Optimization - Semilinear Transmission Problem</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_space_mapping_uniform_flow_distribution.html">Space Mapping Shape Optimization - Uniform Flow Distribution</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../shape_optimization/demo_pseudo_time_stepping.html">Pseudo Time Stepping for Steady State Problems</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="index.html">Topology Optimization Problems</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="demo_poisson_clover.html">Topology Optimization with a Poisson Equation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="doc_config.html">Documentation of the Config Files for Topology Optimization Problems</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">Topology Optimization with Linear Elasticity - Cantilever</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_pipe_bend.html">Topology Optimization with Stokes Flow - Pipe Bend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_projection.html">Topology Optimization with a Volume Constraint</a></li>
+<li class="toctree-l2"><a class="reference internal" href="demo_deflation.html">Computing Multiple Local Minimizers of Topology Optimization Problems - Five-holes Double-pipe</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../cashocs_as_solver/index.html">Using cashocs as a solver</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../cashocs_as_solver/demo_control_solver.html">cashocs as Solver for Optimal Control Problems</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cashocs_as_solver/demo_shape_solver.html">cashocs as Solver for Shape Optimization Problems</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../misc/index.html">Miscellaneous Topics</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../misc/demo_logging.html">Logging with cashocs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../misc/demo_xdmf_io.html">Writing and Reading XDMF Files</a></li>
+</ul>
+</details></li>
+</ul>
+</div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">cashocs Tutorial</a></li>
+    
+    
+    <li class="breadcrumb-item"><a href="index.html" class="nav-link">Topology Optimization Problems</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">Topology Optimization with Linear Elasticity - Cantilever</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="topology-optimization-with-linear-elasticity-cantilever">
+<span id="demo-cantilever"></span><h1>Topology Optimization with Linear Elasticity - Cantilever<a class="headerlink" href="#topology-optimization-with-linear-elasticity-cantilever" title="Link to this heading">#</a></h1>
+<section id="problem-formulation">
+<h2>Problem Formulation<a class="headerlink" href="#problem-formulation" title="Link to this heading">#</a></h2>
+<p>In this demo, we consider the topology optimization of linear elastic structures,
+using the well-known cantilever example, which has been investigated, e.g., in
+<a class="reference external" href="https://doi.org/10.1007/s00158-023-03653-2">Blauth and Sturm - Quasi-Newton methods for topology optimization
+using a level-set method</a> and
+<a class="reference external" href="https://doi.org/10.1016/j.jcp.2005.12.015">Amstutz and Andrä - A new algorithm for topology optimization using a level-set
+method</a>. Our goal is to minimize the
+compliance of a linear elastic material, which can be formulated via the topology
+optimization problem</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\begin{align}
+&amp;\min_{\Omega,u} J(\Omega,u) = \int_\mathrm{D} \alpha_\Omega \sigma(u):e(u) \text{d}x + \gamma \lvert \Omega \rvert \\
+&amp;\text{subject to} \qquad
+\begin{alignedat}{2}
+    -\text{div}(\alpha_\Omega \sigma(u)) &amp;= f \quad &amp;&amp;\text{ in } \mathrm{D},\\
+    u &amp;= 0 \quad &amp;&amp;\text{ on } \Gamma_D,\\
+    \alpha_\Omega \sigma(u)n &amp;= g \quad &amp;&amp;\text{ on } \Gamma_N.
+\end{alignedat}
+\end{align}
+\end{split}\]</div>
+<p>Here, <span class="math notranslate nohighlight">\(u\)</span> is the deformation of a linear elastic material, <span class="math notranslate nohighlight">\(\sigma(u) = 2 \mu e(u) + \lambda \text{tr}e(u)I\)</span> is Hooke’s tensor, where <span class="math notranslate nohighlight">\(e(u) = \frac{1}{2}\left( \nabla u + (\nabla u)^T \right)\)</span> is the symmetric gradient. The
+coefficients <span class="math notranslate nohighlight">\(\mu\)</span> and <span class="math notranslate nohighlight">\(\lambda\)</span> are the Lamé parameters which satisfy
+<span class="math notranslate nohighlight">\(\mu \geq 0\)</span> and <span class="math notranslate nohighlight">\(2\mu + d \lambda &gt; 0\)</span>, where <span class="math notranslate nohighlight">\(d\)</span> is the dimension
+of the problem. As in <a class="reference internal" href="demo_poisson_clover.html#demo-poisson-clover"><span class="std std-ref">Topology Optimization with a Poisson Equation</span></a>, the coefficient
+<span class="math notranslate nohighlight">\(\alpha_\Omega\)</span> is given by <span class="math notranslate nohighlight">\(\alpha_\Omega(x) = \chi_\Omega(x)\alpha_\mathrm{in} + \chi_{\Omega^c}(x) \alpha_\mathrm{out}\)</span>, and it
+models the elasticity of the material. We note that the term
+<span class="math notranslate nohighlight">\(\gamma \lvert \Omega\rvert\)</span> is used to penalize too large domains
+<span class="math notranslate nohighlight">\(\Omega\)</span> so that not the trivial solution <span class="math notranslate nohighlight">\(\Omega = \mathrm{D}\)</span> is found.
+On the Dirichlet boundary <span class="math notranslate nohighlight">\(\Gamma_D\)</span>, the material is fixed, and at the
+Neumann boundary <span class="math notranslate nohighlight">\(\Gamma_N\)</span> a load <span class="math notranslate nohighlight">\(g\)</span> is applied.</p>
+<p>Note that the generalized topological derivative for this problem is given by</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}
+\mathcal{D}J(\Omega)(x) =
+\begin{cases}
+    \alpha_\mathrm{in} \frac{r_\mathrm{in} - 1}{\kappa r_\mathrm{in} +1}
+    \frac{\kappa + 1}{2}\left( 2 \sigma(u): e(u) +
+    \frac{(r_\mathrm{in}-1)(\kappa - 2)}{\kappa + 2 r_\mathrm{in} - 1}
+    \text{tr}\sigma(u)\text{tr}e(u) \right) + \gamma \quad &amp;\text{ for } x \in \Omega,\\
+    -\alpha_\mathrm{out} \frac{r_\mathrm{out} - 1}{\kappa r_\mathrm{out} + 1}
+    \frac{\kappa + 1}{2} \left( 2 \sigma(u):e(u) +
+    \frac{(r_\mathrm{out} - 1)(\kappa - 2)}{\kappa + 2r_\mathrm{out} - 1} \text{tr}
+    \sigma(u) \text{tr}e(u) \right) + \gamma \quad &amp;\text{ for } x \in
+    \Omega^c = \mathrm{D}\setminus \bar{\Omega},
+\end{cases}
+\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(r_\mathrm{in} = \frac{\alpha_\mathrm{out}}{\alpha_\mathrm{in}}\)</span>,
+<span class="math notranslate nohighlight">\(r_\mathrm{out} = \frac{\alpha_\mathrm{in}}{\alpha_\mathrm{out}}\)</span>, and
+<span class="math notranslate nohighlight">\(\kappa = \frac{\lambda + 3\mu}{\lambda + \mu}\)</span>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In the following, we consider only two-dimensional problems. For this case of plane
+stress, the Lamé parameters are given by <span class="math notranslate nohighlight">\(\mu = \frac{E}{2(1+\nu)}\)</span> and
+<span class="math notranslate nohighlight">\(\lambda = \frac{2\mu \lambda^*}{\lambda^* + 2\mu}\)</span>, where <span class="math notranslate nohighlight">\(\lambda^* = \frac{E\nu}{(1+\nu)(1-2\nu)}\)</span> and <span class="math notranslate nohighlight">\(E\)</span> and <span class="math notranslate nohighlight">\(\nu\)</span> denote the Young’s
+modulus and Poisson’s ratio of the material, respectively.</p>
+</div>
+</section>
+<section id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Link to this heading">#</a></h2>
+<p>The complete python code can be found in the file <a class="reference download internal" download="" href="../../../_downloads/f73800b7ff5fe25b6baa6cb807d5c8bc/demo_cantilever.py"><code class="xref download docutils literal notranslate"><span class="pre">demo_cantilever.py</span></code></a>,
+and the corresponding config can be found in <a class="reference download internal" download="" href="../../../_downloads/fa903a6fcb1d400fb61ed29ae60b8994/config.ini"><code class="xref download docutils literal notranslate"><span class="pre">config.ini</span></code></a>.</p>
+<section id="initialization-and-setup">
+<h3>Initialization and Setup<a class="headerlink" href="#initialization-and-setup" title="Link to this heading">#</a></h3>
+<p>As with all other demos, we start by importing FEniCS and cashocs.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">fenics</span> <span class="kn">import</span> <span class="o">*</span>
+
+<span class="kn">import</span> <span class="nn">cashocs</span>
+</pre></div>
+</div>
+<p>Next, we load the configuration file of the problem with the line</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">load_config</span><span class="p">(</span><span class="s2">&quot;config.ini&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Following this, we define the computational domain, using the built-in
+<a class="reference internal" href="../../../api/generated/cashocs.regular_mesh.html#cashocs.regular_mesh" title="cashocs.regular_mesh"><code class="xref py py-func docutils literal notranslate"><span class="pre">regular_mesh</span></code></a> function, so that our hold-all domain
+is given by
+<span class="math notranslate nohighlight">\(\mathrm{D} = (0,2) \times (0,1)\)</span>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mesh</span><span class="p">,</span> <span class="n">subdomains</span><span class="p">,</span> <span class="n">boundaries</span><span class="p">,</span> <span class="n">dx</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">dS</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">regular_mesh</span><span class="p">(</span>
+    <span class="mi">32</span><span class="p">,</span> <span class="n">length_x</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">diagonal</span><span class="o">=</span><span class="s2">&quot;crossed&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Next up, we define the function spaces for the problems. The solution of the state
+(and adjoint) systems lives in a vector function space of piecewise linear Lagrange
+elements, which is defined with</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">V</span> <span class="o">=</span> <span class="n">VectorFunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We also define scalar piecewise linear Lagrange elements (the <code class="docutils literal notranslate"><span class="pre">CG1</span></code> space) and
+piecewise constant discontinuous Lagrange elements (the <code class="docutils literal notranslate"><span class="pre">DG0</span></code> space) in the following.
+The <code class="docutils literal notranslate"><span class="pre">CG1</span></code> space is needed to represent the level-set function and the <code class="docutils literal notranslate"><span class="pre">DG0</span></code> space
+is used to treat the jumping coefficients.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">CG1</span> <span class="o">=</span> <span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;CG&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">DG0</span> <span class="o">=</span> <span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;DG&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now, we define the level-set function which represents our geometry (see
+<a class="reference internal" href="demo_poisson_clover.html#demo-poisson-clover"><span class="std std-ref">the previous demo</span></a>), and we initialize it with
+<span class="math notranslate nohighlight">\(\Psi = -1\)</span>, so that <span class="math notranslate nohighlight">\(\Omega = \mathrm{D}\)</span> as initial guess.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">psi</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">CG1</span><span class="p">)</span>
+<span class="n">psi</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">psi</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="definition-of-the-material-parameters">
+<h3>Definition of the Material Parameters<a class="headerlink" href="#definition-of-the-material-parameters" title="Link to this heading">#</a></h3>
+<p>In the following lines, we define the physical and numerical parameters for the
+material and optimization problem. First, the penalty parameter <span class="math notranslate nohighlight">\(\gamma\)</span> is
+defined as</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">gamma</span> <span class="o">=</span> <span class="mf">100.0</span>
+</pre></div>
+</div>
+<p>Next, we define the Lamé parameters for the material, using a Young’s modulus of
+<span class="math notranslate nohighlight">\(E = 1\)</span> and Poisson’s ratio of <span class="math notranslate nohighlight">\(\nu = 0.3\)</span></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">E</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">nu</span> <span class="o">=</span> <span class="mf">0.3</span>
+<span class="n">mu</span> <span class="o">=</span> <span class="n">E</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">nu</span><span class="p">))</span>
+<span class="n">lambd_star</span> <span class="o">=</span> <span class="n">E</span> <span class="o">*</span> <span class="n">nu</span> <span class="o">/</span> <span class="p">((</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">nu</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">nu</span><span class="p">))</span>
+<span class="n">lambd</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">mu</span> <span class="o">*</span> <span class="n">lambd_star</span> <span class="o">/</span> <span class="p">(</span><span class="n">lambd_star</span> <span class="o">+</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">mu</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, the parameters <span class="math notranslate nohighlight">\(\alpha_\mathrm{in}\)</span> and <span class="math notranslate nohighlight">\(\alpha_\mathrm{out}\)</span> are
+defined as</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">alpha_in</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">alpha_out</span> <span class="o">=</span> <span class="mf">1e-3</span>
+<span class="n">alpha</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">DG0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which models the presence of material in <span class="math notranslate nohighlight">\(\Omega\)</span> as well as the absence
+thereof in <span class="math notranslate nohighlight">\(\Omega^c\)</span>. As before, <span class="math notranslate nohighlight">\(\alpha\)</span> is a jumping coefficient,
+so that we define a piecewise constant FEM function which will represent it later.</p>
+<p>As we also need to take care of the volume <span class="math notranslate nohighlight">\(\lvert \Omega \rvert\)</span>, we define a
+indicator function for the domain <span class="math notranslate nohighlight">\(\Omega\)</span>, which is, as the jumping coefficient
+represented by a piecewise constant function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">indicator_omega</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">DG0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As cells cut by the level-set function
+will recieve averaged values in these piecewise constant functions, the integral
+of the indicator function even gives us the exact volume of <span class="math notranslate nohighlight">\(\Omega\)</span>.</p>
+</div>
+</section>
+<section id="definition-of-the-state-system">
+<h3>Definition of the State System<a class="headerlink" href="#definition-of-the-state-system" title="Link to this heading">#</a></h3>
+<p>In the following, we define two python functions which return Hooke’s tensor and
+the symmetrized gradient</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">eps</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Constant</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">+</span> <span class="n">grad</span><span class="p">(</span><span class="n">u</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">sigma</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Constant</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">mu</span><span class="p">)</span> <span class="o">*</span> <span class="n">eps</span><span class="p">(</span><span class="n">u</span><span class="p">)</span> <span class="o">+</span> <span class="n">Constant</span><span class="p">(</span><span class="n">lambd</span><span class="p">)</span> <span class="o">*</span> <span class="n">tr</span><span class="p">(</span><span class="n">eps</span><span class="p">(</span><span class="n">u</span><span class="p">))</span> <span class="o">*</span> <span class="n">Identity</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For the load applied to the system we use a unitary point load at (2, 0.5), i.e., in
+the middle of the outer rightmost boundary. To do so, a Dirac-Delta function can be
+defined via a FEniCS <code class="docutils literal notranslate"><span class="pre">UserExpression</span></code> as follows.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">Delta</span><span class="p">(</span><span class="n">UserExpression</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">near</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mf">2.0</span><span class="p">)</span> <span class="ow">and</span> <span class="n">near</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.5</span><span class="p">):</span>
+            <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.0</span> <span class="o">/</span> <span class="n">mesh</span><span class="o">.</span><span class="n">hmax</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+    <span class="k">def</span> <span class="nf">value_shape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">()</span>
+</pre></div>
+</div>
+<p>We use this definition to define the point load as follows</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">delta</span> <span class="o">=</span> <span class="n">Delta</span><span class="p">(</span><span class="n">degree</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">delta</span> <span class="o">*</span> <span class="n">Constant</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>Next, we define the state and adjoint variables <span class="math notranslate nohighlight">\(u\)</span> and <span class="math notranslate nohighlight">\(v\)</span></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">u</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">Function</span><span class="p">(</span><span class="n">V</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>as well as the state system, the linear elasticity equations</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">F</span> <span class="o">=</span> <span class="n">alpha</span> <span class="o">*</span> <span class="n">inner</span><span class="p">(</span><span class="n">sigma</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">eps</span><span class="p">(</span><span class="n">v</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">-</span> <span class="n">dot</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="o">*</span> <span class="n">ds</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which is supplied with boundary conditions of the form</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">bcs</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">create_dirichlet_bcs</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">Constant</span><span class="p">((</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)),</span> <span class="n">boundaries</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="setup-of-the-cost-functional-and-topological-derivative">
+<h3>Setup of the Cost Functional and Topological Derivative<a class="headerlink" href="#setup-of-the-cost-functional-and-topological-derivative" title="Link to this heading">#</a></h3>
+<p>To define the topology optimization problem, we first define the cost functional of
+the problem, given by</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">J</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">IntegralFunctional</span><span class="p">(</span>
+    <span class="n">alpha</span> <span class="o">*</span> <span class="n">inner</span><span class="p">(</span><span class="n">sigma</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">eps</span><span class="p">(</span><span class="n">u</span><span class="p">))</span> <span class="o">*</span> <span class="n">dx</span> <span class="o">+</span> <span class="n">Constant</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span> <span class="o">*</span> <span class="n">indicator_omega</span> <span class="o">*</span> <span class="n">dx</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As stated before, the integration of the function <code class="docutils literal notranslate"><span class="pre">indiciator_omega</span></code> gives the exact
+volume of <span class="math notranslate nohighlight">\(\Omega\)</span>, so that the regularization term can be written as above.</p>
+</div>
+<p>Finally, as stated previously, we have to specify the generalized topological
+derivative of the problem, which has been derived above. This is done with the lines</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">kappa</span> <span class="o">=</span> <span class="p">(</span><span class="n">lambd</span> <span class="o">+</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">lambd</span> <span class="o">+</span> <span class="n">mu</span><span class="p">)</span>
+<span class="n">r_in</span> <span class="o">=</span> <span class="n">alpha_out</span> <span class="o">/</span> <span class="n">alpha_in</span>
+<span class="n">r_out</span> <span class="o">=</span> <span class="n">alpha_in</span> <span class="o">/</span> <span class="n">alpha_out</span>
+
+<span class="n">dJ_in</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Constant</span><span class="p">(</span><span class="n">alpha_in</span> <span class="o">*</span> <span class="p">(</span><span class="n">r_in</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">kappa</span> <span class="o">*</span> <span class="n">r_in</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">kappa</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+    <span class="o">*</span> <span class="p">(</span>
+        <span class="n">Constant</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">inner</span><span class="p">(</span><span class="n">sigma</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">eps</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
+        <span class="o">+</span> <span class="n">Constant</span><span class="p">((</span><span class="n">r_in</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">kappa</span> <span class="o">-</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">kappa</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">r_in</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">))</span>
+        <span class="o">*</span> <span class="n">tr</span><span class="p">(</span><span class="n">sigma</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
+        <span class="o">*</span> <span class="n">tr</span><span class="p">(</span><span class="n">eps</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
+    <span class="p">)</span>
+<span class="p">)</span> <span class="o">+</span> <span class="n">Constant</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span>
+<span class="n">dJ_out</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="n">Constant</span><span class="p">(</span><span class="o">-</span><span class="n">alpha_out</span> <span class="o">*</span> <span class="p">(</span><span class="n">r_out</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">kappa</span> <span class="o">*</span> <span class="n">r_out</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">kappa</span> <span class="o">+</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">2.0</span><span class="p">)</span>
+    <span class="o">*</span> <span class="p">(</span>
+        <span class="n">Constant</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">inner</span><span class="p">(</span><span class="n">sigma</span><span class="p">(</span><span class="n">u</span><span class="p">),</span> <span class="n">eps</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
+        <span class="o">+</span> <span class="n">Constant</span><span class="p">((</span><span class="n">r_out</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">kappa</span> <span class="o">-</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">kappa</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">r_out</span> <span class="o">-</span> <span class="mf">1.0</span><span class="p">))</span>
+        <span class="o">*</span> <span class="n">tr</span><span class="p">(</span><span class="n">sigma</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
+        <span class="o">*</span> <span class="n">tr</span><span class="p">(</span><span class="n">eps</span><span class="p">(</span><span class="n">u</span><span class="p">))</span>
+    <span class="p">)</span>
+<span class="p">)</span> <span class="o">+</span> <span class="n">Constant</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As in <a class="reference internal" href="demo_poisson_clover.html#demo-poisson-clover"><span class="std std-ref">Topology Optimization with a Poisson Equation</span></a>, we now only have to specify what needs to happen
+when the level-set function is updated, i.e., when the geometry changes. Of course,
+the jumping coefficient <span class="math notranslate nohighlight">\(\alpha\)</span> needs to be updated with the
+<a class="reference internal" href="../../../api/generated/cashocs.interpolate_levelset_function_to_cells.html#cashocs.interpolate_levelset_function_to_cells" title="cashocs.interpolate_levelset_function_to_cells"><code class="xref py py-func docutils literal notranslate"><span class="pre">interpolate_levelset_function_to_cells</span></code></a> function, but so does the
+indicator function of the geometry. This is specified in the following function.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">update_level_set</span><span class="p">():</span>
+    <span class="n">cashocs</span><span class="o">.</span><span class="n">interpolate_levelset_function_to_cells</span><span class="p">(</span><span class="n">psi</span><span class="p">,</span> <span class="n">alpha_in</span><span class="p">,</span> <span class="n">alpha_out</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+    <span class="n">cashocs</span><span class="o">.</span><span class="n">interpolate_levelset_function_to_cells</span><span class="p">(</span><span class="n">psi</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">indicator_omega</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>As we want <code class="docutils literal notranslate"><span class="pre">indicator_omega</span></code> to be the indicator function of <span class="math notranslate nohighlight">\(\Omega\)</span>, the
+above call makes sure that it is <span class="math notranslate nohighlight">\(1\)</span> inside <span class="math notranslate nohighlight">\(\Omega\)</span> and <span class="math notranslate nohighlight">\(0\)</span> outside
+of it, representing a proper indicator function.</p>
+</div>
+</section>
+<section id="definition-and-solution-of-the-topology-optimization-problem">
+<h3>Definition and Solution of the Topology Optimization Problem<a class="headerlink" href="#definition-and-solution-of-the-topology-optimization-problem" title="Link to this heading">#</a></h3>
+<p>Now, all that is left to do is to define the
+<a class="reference internal" href="../../../api/generated/cashocs.TopologyOptimizationProblem.html#cashocs.TopologyOptimizationProblem" title="cashocs.TopologyOptimizationProblem"><code class="xref py py-class docutils literal notranslate"><span class="pre">TopologyOptimizationProblem</span></code></a> and
+solve it with its <a class="reference internal" href="../../../api/generated/cashocs.TopologyOptimizationProblem.html#cashocs.TopologyOptimizationProblem.solve" title="cashocs.TopologyOptimizationProblem.solve"><code class="xref py py-meth docutils literal notranslate"><span class="pre">solve</span></code></a> method.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">top</span> <span class="o">=</span> <span class="n">cashocs</span><span class="o">.</span><span class="n">TopologyOptimizationProblem</span><span class="p">(</span>
+    <span class="n">F</span><span class="p">,</span> <span class="n">bcs</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">psi</span><span class="p">,</span> <span class="n">dJ_in</span><span class="p">,</span> <span class="n">dJ_out</span><span class="p">,</span> <span class="n">update_level_set</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="n">cfg</span>
+<span class="p">)</span>
+<span class="n">top</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">algorithm</span><span class="o">=</span><span class="s2">&quot;bfgs&quot;</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">angle_tol</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">250</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As before, we can visualize the result using the following code</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="n">top</span><span class="o">.</span><span class="n">plot_shape</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Obtained Cantilever Design&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+<span class="c1"># plt.savefig(&quot;./img_cantilever.png&quot;, dpi=150, bbox_inches=&quot;tight&quot;)</span>
+</pre></div>
+</div>
+<p>and the result looks like this
+<img alt="" src="../../../_images/img_cantilever.png" /></p>
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="doc_config.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Documentation of the Config Files for Topology Optimization Problems</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="demo_pipe_bend.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Topology Optimization with Stokes Flow - Pipe Bend</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#problem-formulation">Problem Formulation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation">Implementation</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#initialization-and-setup">Initialization and Setup</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definition-of-the-material-parameters">Definition of the Material Parameters</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definition-of-the-state-system">Definition of the State System</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-of-the-cost-functional-and-topological-derivative">Setup of the Cost Functional and Topological Derivative</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definition-and-solution-of-the-topology-optimization-problem">Definition and Solution of the Topology Optimization Problem</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+
+  <div class="tocsection sourcelink">
+    <a href="../../../_sources/user/demos/topology_optimization/demo_cantilever.md.txt">
+      <i class="fa-solid fa-file-lines"></i> Show Source
+    </a>
+  </div>
+</div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

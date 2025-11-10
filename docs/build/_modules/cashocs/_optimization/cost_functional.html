@@ -1,0 +1,1183 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cashocs._optimization.cost_functional &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/cashocs/_optimization/cost_functional';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">cashocs._optimization.cost_functional</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for cashocs._optimization.cost_functional</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of cashocs.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with cashocs.  If not, see &lt;https://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;Reduced cost functionals.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">import</span> <span class="nn">abc</span>
+<span class="kn">import</span> <span class="nn">ctypes</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">cast</span><span class="p">,</span> <span class="n">TYPE_CHECKING</span>
+
+<span class="kn">import</span> <span class="nn">fenics</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ufl_legacy</span> <span class="k">as</span> <span class="nn">ufl</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">ufl</span>
+
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_exceptions</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_forms</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_utils</span>
+
+<span class="k">if</span> <span class="n">TYPE_CHECKING</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_pde_problems</span>
+    <span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_typing</span>
+    <span class="kn">from</span> <span class="nn">cashocs._database</span> <span class="kn">import</span> <span class="n">database</span>
+
+
+<span class="k">class</span> <span class="nc">ReducedCostFunctional</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reduced cost functional for PDE constrained optimization.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">db</span><span class="p">:</span> <span class="n">database</span><span class="o">.</span><span class="n">Database</span><span class="p">,</span>
+        <span class="n">form_handler</span><span class="p">:</span> <span class="n">_typing</span><span class="o">.</span><span class="n">FormHandler</span><span class="p">,</span>
+        <span class="n">state_problem</span><span class="p">:</span> <span class="n">_pde_problems</span><span class="o">.</span><span class="n">StateProblem</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            db: The database of the problem.</span>
+<span class="sd">            form_handler: The FormHandler object for the optimization problem.</span>
+<span class="sd">            state_problem: The StateProblem object corresponding to the state system.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">db</span> <span class="o">=</span> <span class="n">db</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span> <span class="o">=</span> <span class="n">form_handler</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_problem</span> <span class="o">=</span> <span class="n">state_problem</span>
+
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluates the reduced cost functional.</span>
+
+<span class="sd">        First solves the state system, so that the state variables are up-to-date,</span>
+<span class="sd">        and then evaluates the reduced cost functional by assembling the corresponding</span>
+<span class="sd">        UFL form.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The value of the reduced cost functional</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_problem</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">functional</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()</span> <span class="k">for</span> <span class="n">functional</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">form_db</span><span class="o">.</span><span class="n">cost_functional_list</span>
+        <span class="p">]</span>
+        <span class="n">val</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">vals</span><span class="p">)</span>
+        <span class="n">val</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="o">.</span><span class="n">cost_functional_shift</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">db</span><span class="o">.</span><span class="n">parameter_db</span><span class="o">.</span><span class="n">problem_type</span> <span class="o">==</span> <span class="s2">&quot;shape&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span> <span class="o">=</span> <span class="n">cast</span><span class="p">(</span><span class="n">_forms</span><span class="o">.</span><span class="n">ShapeFormHandler</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="p">)</span>
+            <span class="n">val</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_handler</span><span class="o">.</span><span class="n">shape_regularization</span><span class="o">.</span><span class="n">compute_objective</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">val</span>
+
+
+<div class="viewcode-block" id="Functional">
+<a class="viewcode-back" href="../../../api/generated/cashocs.Functional.html#cashocs.Functional">[docs]</a>
+<span class="k">class</span> <span class="nc">Functional</span><span class="p">(</span><span class="n">abc</span><span class="o">.</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Base class for all cost functionals.&quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Functional.evaluate">
+<a class="viewcode-back" href="../../../api/generated/cashocs.Functional.html#cashocs.Functional.evaluate">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluates the functional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The current value of the functional.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Functional.derivative">
+<a class="viewcode-back" href="../../../api/generated/cashocs.Functional.html#cashocs.Functional.derivative">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">derivative</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">argument</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the derivative of the functional w.r.t. argument towards direction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            argument: The argument, w.r.t. which the functional is differentiated</span>
+<span class="sd">            direction: The direction into which the derivative is computed</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A form of the resulting derivative</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Functional.coefficients">
+<a class="viewcode-back" href="../../../api/generated/cashocs.Functional.html#cashocs.Functional.coefficients">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">coefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the ufl coefficients which are used in the functional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The set of used coefficients.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Functional.scale">
+<a class="viewcode-back" href="../../../api/generated/cashocs.Functional.html#cashocs.Functional.scale">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scaling_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Scales the functional by a scalar.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            scaling_factor: The scaling factor used to scale the functional</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="Functional.update">
+<a class="viewcode-back" href="../../../api/generated/cashocs.Functional.html#cashocs.Functional.update">[docs]</a>
+    <span class="nd">@abc</span><span class="o">.</span><span class="n">abstractmethod</span>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updates the functional after solving the state equation.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="IntegralFunctional">
+<a class="viewcode-back" href="../../../api/generated/cashocs.IntegralFunctional.html#cashocs.IntegralFunctional">[docs]</a>
+<span class="k">class</span> <span class="nc">IntegralFunctional</span><span class="p">(</span><span class="n">Functional</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A functional which is given by the integral of ``form``.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            form: The form of the integrand, which is to be calculated for evaluating</span>
+<span class="sd">                the functional.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">form</span> <span class="o">=</span> <span class="n">form</span>
+
+<div class="viewcode-block" id="IntegralFunctional.evaluate">
+<a class="viewcode-back" href="../../../api/generated/cashocs.IntegralFunctional.html#cashocs.IntegralFunctional.evaluate">[docs]</a>
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluates the functional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The current value of the functional.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">form</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">val</span></div>
+
+
+<div class="viewcode-block" id="IntegralFunctional.derivative">
+<a class="viewcode-back" href="../../../api/generated/cashocs.IntegralFunctional.html#cashocs.IntegralFunctional.derivative">[docs]</a>
+    <span class="k">def</span> <span class="nf">derivative</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">argument</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the derivative of the functional w.r.t. argument towards direction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            argument: The argument, w.r.t. which the functional is differentiated</span>
+<span class="sd">            direction: The direction into which the derivative is computed</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A form of the resulting derivative</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">fenics</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">form</span><span class="p">,</span> <span class="n">argument</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="IntegralFunctional.coefficients">
+<a class="viewcode-back" href="../../../api/generated/cashocs.IntegralFunctional.html#cashocs.IntegralFunctional.coefficients">[docs]</a>
+    <span class="k">def</span> <span class="nf">coefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the ufl coefficients which are used in the functional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The set of used coefficients.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">coeffs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">form</span><span class="o">.</span><span class="n">coefficients</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">coeffs</span></div>
+
+
+<div class="viewcode-block" id="IntegralFunctional.scale">
+<a class="viewcode-back" href="../../../api/generated/cashocs.IntegralFunctional.html#cashocs.IntegralFunctional.scale">[docs]</a>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scaling_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Scales the functional by a scalar.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            scaling_factor: The scaling factor used to scale the functional</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">form</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="n">scaling_factor</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">form</span></div>
+
+
+<div class="viewcode-block" id="IntegralFunctional.update">
+<a class="viewcode-back" href="../../../api/generated/cashocs.IntegralFunctional.html#cashocs.IntegralFunctional.update">[docs]</a>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updates the functional after solving the state equation.&quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="ScalarTrackingFunctional">
+<a class="viewcode-back" href="../../../api/generated/cashocs.ScalarTrackingFunctional.html#cashocs.ScalarTrackingFunctional">[docs]</a>
+<span class="k">class</span> <span class="nc">ScalarTrackingFunctional</span><span class="p">(</span><span class="n">Functional</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Tracking cost functional for scalar quantities arising due to integration.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">integrand</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">,</span>
+        <span class="n">tracking_goal</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span> <span class="o">|</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">,</span>
+        <span class="n">weight</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            integrand: The integrand of the functional</span>
+<span class="sd">            tracking_goal: A real number, which the integral of the integrand should</span>
+<span class="sd">                track. Note, that when a ctypes object is passed, the float is assumed</span>
+<span class="sd">                to be mutable and the tracking_goal is updated every iteration.</span>
+<span class="sd">            weight: A real number which gives the scaling factor for this functional</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">integrand</span> <span class="o">=</span> <span class="n">integrand</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal</span> <span class="o">=</span> <span class="n">tracking_goal</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal</span><span class="p">,</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">integrand_value</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ScalarTrackingFunctional.evaluate">
+<a class="viewcode-back" href="../../../api/generated/cashocs.ScalarTrackingFunctional.html#cashocs.ScalarTrackingFunctional.evaluate">[docs]</a>
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluates the functional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The current value of the functional.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal</span><span class="p">,</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="n">scalar_integral_value</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">integrand</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">integrand_value</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">scalar_integral_value</span><span class="p">)</span>
+        <span class="n">val</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="o">/</span> <span class="mf">2.0</span>
+            <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span><span class="n">scalar_integral_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal_value</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">val</span></div>
+
+
+<div class="viewcode-block" id="ScalarTrackingFunctional.derivative">
+<a class="viewcode-back" href="../../../api/generated/cashocs.ScalarTrackingFunctional.html#cashocs.ScalarTrackingFunctional.derivative">[docs]</a>
+    <span class="k">def</span> <span class="nf">derivative</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">argument</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the derivative of the functional w.r.t. argument towards direction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            argument: The argument, w.r.t. which the functional is differentiated</span>
+<span class="sd">            direction: The direction into which the derivative is computed</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A form of the resulting derivative</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal</span><span class="p">,</span> <span class="p">(</span><span class="n">ctypes</span><span class="o">.</span><span class="n">c_float</span><span class="p">,</span> <span class="n">ctypes</span><span class="o">.</span><span class="n">c_double</span><span class="p">)):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal</span><span class="o">.</span><span class="n">value</span>
+
+        <span class="n">derivative</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weight</span>
+            <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">integrand_value</span> <span class="o">-</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tracking_goal_value</span><span class="p">))</span>
+            <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrand</span><span class="p">,</span>
+            <span class="n">argument</span><span class="p">,</span>
+            <span class="n">direction</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">derivative</span></div>
+
+
+<div class="viewcode-block" id="ScalarTrackingFunctional.coefficients">
+<a class="viewcode-back" href="../../../api/generated/cashocs.ScalarTrackingFunctional.html#cashocs.ScalarTrackingFunctional.coefficients">[docs]</a>
+    <span class="k">def</span> <span class="nf">coefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the ufl coefficients which are used in the functional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The set of used coefficients.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">coeffs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrand</span><span class="o">.</span><span class="n">coefficients</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">coeffs</span></div>
+
+
+<div class="viewcode-block" id="ScalarTrackingFunctional.scale">
+<a class="viewcode-back" href="../../../api/generated/cashocs.ScalarTrackingFunctional.html#cashocs.ScalarTrackingFunctional.scale">[docs]</a>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scaling_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Scales the functional by a scalar.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            scaling_factor: The scaling factor used to scale the functional</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">scaling_factor</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ScalarTrackingFunctional.update">
+<a class="viewcode-back" href="../../../api/generated/cashocs.ScalarTrackingFunctional.html#cashocs.ScalarTrackingFunctional.update">[docs]</a>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updates the functional after solving the state equation.&quot;&quot;&quot;</span>
+        <span class="n">scalar_integral_value</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">integrand</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">integrand_value</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">scalar_integral_value</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="MinMaxFunctional">
+<a class="viewcode-back" href="../../../api/generated/cashocs.MinMaxFunctional.html#cashocs.MinMaxFunctional">[docs]</a>
+<span class="k">class</span> <span class="nc">MinMaxFunctional</span><span class="p">(</span><span class="n">Functional</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Cost functional involving a maximum of 0 and a integral term squared.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">integrand</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">,</span>
+        <span class="n">lower_bound</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">upper_bound</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mu</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">lambd</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">integrand</span> <span class="o">=</span> <span class="n">integrand</span>
+
+        <span class="k">if</span> <span class="n">upper_bound</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lower_bound</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">InputError</span><span class="p">(</span>
+                <span class="s2">&quot;cashocs.MinMaxFunctional&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;lower_bound and upper_bound&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;At least one of lower_bound or upper_bound must not be None.&quot;</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lower_bound</span> <span class="o">=</span> <span class="n">lower_bound</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">upper_bound</span> <span class="o">=</span> <span class="n">upper_bound</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">integrand_value</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="n">mu</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="n">lambd</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MinMaxFunctional.evaluate">
+<a class="viewcode-back" href="../../../api/generated/cashocs.MinMaxFunctional.html#cashocs.MinMaxFunctional.evaluate">[docs]</a>
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Evaluates the functional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The current value of the functional.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">min_max_integrand_value</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">integrand</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">integrand_value</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">min_max_integrand_value</span><span class="p">)</span>
+
+        <span class="n">val</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower_bound</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="mi">1</span>
+                <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span>
+                        <span class="mf">0.0</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="o">*</span> <span class="p">(</span><span class="n">min_max_integrand_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower_bound</span><span class="p">),</span>
+                    <span class="p">),</span>
+                    <span class="mi">2</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper_bound</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="mi">1</span>
+                <span class="o">/</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="o">*</span> <span class="nb">pow</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span>
+                        <span class="mf">0.0</span><span class="p">,</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="o">*</span> <span class="p">(</span><span class="n">min_max_integrand_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper_bound</span><span class="p">),</span>
+                    <span class="p">),</span>
+                    <span class="mi">2</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">val</span></div>
+
+
+<div class="viewcode-block" id="MinMaxFunctional.derivative">
+<a class="viewcode-back" href="../../../api/generated/cashocs.MinMaxFunctional.html#cashocs.MinMaxFunctional.derivative">[docs]</a>
+    <span class="k">def</span> <span class="nf">derivative</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">argument</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the derivative of the functional w.r.t. argument towards direction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            argument: The argument, w.r.t. which the functional is differentiated</span>
+<span class="sd">            direction: The direction into which the derivative is computed</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A form of the resulting derivative</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">derivative_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower_bound</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">term_lower</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">integrand_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lower_bound</span>
+            <span class="p">)</span>
+            <span class="n">derivative</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span>
+                <span class="n">_utils</span><span class="o">.</span><span class="n">min_</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span> <span class="n">term_lower</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrand</span><span class="p">,</span>
+                <span class="n">argument</span><span class="p">,</span>
+                <span class="n">direction</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">derivative_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">derivative</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper_bound</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">term_upper</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambd</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">mu</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">integrand_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">upper_bound</span>
+            <span class="p">)</span>
+            <span class="n">derivative</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span>
+                <span class="n">_utils</span><span class="o">.</span><span class="n">max_</span><span class="p">(</span><span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span> <span class="n">term_upper</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrand</span><span class="p">,</span>
+                <span class="n">argument</span><span class="p">,</span>
+                <span class="n">direction</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="n">derivative_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">derivative</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">_utils</span><span class="o">.</span><span class="n">summation</span><span class="p">(</span><span class="n">derivative_list</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="MinMaxFunctional.coefficients">
+<a class="viewcode-back" href="../../../api/generated/cashocs.MinMaxFunctional.html#cashocs.MinMaxFunctional.coefficients">[docs]</a>
+    <span class="k">def</span> <span class="nf">coefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the ufl coefficients which are used in the functional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The set of used coefficients.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">coeffs</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">integrand</span><span class="o">.</span><span class="n">coefficients</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">coeffs</span></div>
+
+
+<div class="viewcode-block" id="MinMaxFunctional.scale">
+<a class="viewcode-back" href="../../../api/generated/cashocs.MinMaxFunctional.html#cashocs.MinMaxFunctional.scale">[docs]</a>
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scaling_factor</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Scales the functional by a scalar.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            scaling_factor: The scaling factor used to scale the functional</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="MinMaxFunctional.update">
+<a class="viewcode-back" href="../../../api/generated/cashocs.MinMaxFunctional.html#cashocs.MinMaxFunctional.update">[docs]</a>
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updates the functional after solving the state equation.&quot;&quot;&quot;</span>
+        <span class="n">min_max_integrand_value</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">integrand</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">integrand_value</span><span class="o">.</span><span class="n">assign</span><span class="p">(</span><span class="n">min_max_integrand_value</span><span class="p">)</span></div>
+</div>
+
+        
+
+<span class="k">class</span> <span class="nc">DeflationFunctional</span><span class="p">(</span><span class="n">Functional</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">gamma</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+                 <span class="n">distance</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">,</span>
+                 <span class="n">form_grad</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">,</span>
+                 <span class="n">weight</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">):</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="o">=</span> <span class="n">distance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Constant</span><span class="p">(</span><span class="n">gamma</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">form_grad</span> <span class="o">=</span> <span class="n">form_grad</span>
+
+        <span class="n">mesh</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="o">.</span><span class="n">integrals</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ufl_domain</span><span class="p">()</span><span class="o">.</span><span class="n">ufl_cargo</span><span class="p">()</span>
+        <span class="n">R</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">FunctionSpace</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="s2">&quot;R&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">weight</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">coefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="o">.</span><span class="n">coefficients</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">derivative</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">argument</span><span class="p">,</span> <span class="n">direction</span><span class="p">):</span>
+
+        <span class="n">deriv</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">conditional</span><span class="p">(</span>
+                <span class="n">fenics</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">*</span> <span class="n">fenics</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">))</span>
+                <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">/</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)),</span>
+                <span class="mf">0.</span>
+            <span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span>
+            <span class="n">argument</span><span class="p">,</span>
+            <span class="n">direction</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">deriv</span>
+
+    <span class="k">def</span> <span class="nf">evaluate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dist_value</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">dist_value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">dist_value</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+                        <span class="o">*</span> <span class="n">fenics</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">values</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span>
+                                     <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="o">.</span><span class="n">values</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()))</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="mf">0.</span>
+
+        <span class="k">return</span> <span class="n">val</span>
+
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scaling_factor</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">scaling_factor</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">update</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">dist_value</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">dist_value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">topological_derivative</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">:</span>
+        <span class="n">dist_value</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">assemble</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">vec</span><span class="p">()</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">dist_value</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span><span class="o">.</span><span class="n">vector</span><span class="p">()</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">top_gradient</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">conditional</span><span class="p">(</span>
+            <span class="n">fenics</span><span class="o">.</span><span class="n">lt</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">),</span>
+            <span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">/</span> <span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">fenics</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance_value</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_grad</span><span class="p">,</span>
+            <span class="mf">0.</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">form_grad</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">top_gradient</span>
+
+
+<span class="k">class</span> <span class="nc">Lagrangian</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;A Lagrangian function for the optimization problem.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">cost_functional_list</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">_typing</span><span class="o">.</span><span class="n">CostFunctional</span><span class="p">],</span>
+        <span class="n">state_forms</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">],</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cost_functional_list: The list of cost functionals.</span>
+<span class="sd">            state_forms: The list of state forms.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cost_functional_list</span> <span class="o">=</span> <span class="n">cost_functional_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_forms</span> <span class="o">=</span> <span class="n">state_forms</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">summed_state_forms</span> <span class="o">=</span> <span class="n">_utils</span><span class="o">.</span><span class="n">summation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">state_forms</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">derivative</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">argument</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span><span class="p">,</span> <span class="n">direction</span><span class="p">:</span> <span class="n">ufl</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Expr</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ufl</span><span class="o">.</span><span class="n">Form</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the derivative of the Lagrangian w.r.t. argument towards direction.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            argument: The argument, w.r.t. which the Lagrangian is differentiated</span>
+<span class="sd">            direction: The direction into which the derivative is computed</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A form of the resulting derivative</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">cost_functional_derivative_list</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">functional</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span><span class="n">argument</span><span class="p">,</span> <span class="n">direction</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">functional</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cost_functional_list</span>
+        <span class="p">]</span>
+        <span class="n">cost_functional_derivative</span> <span class="o">=</span> <span class="n">_utils</span><span class="o">.</span><span class="n">summation</span><span class="p">(</span><span class="n">cost_functional_derivative_list</span><span class="p">)</span>
+        <span class="n">state_forms_derivative</span> <span class="o">=</span> <span class="n">fenics</span><span class="o">.</span><span class="n">derivative</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">summed_state_forms</span><span class="p">,</span> <span class="n">argument</span><span class="p">,</span> <span class="n">direction</span>
+        <span class="p">)</span>
+        <span class="n">derivative</span> <span class="o">=</span> <span class="n">cost_functional_derivative</span> <span class="o">+</span> <span class="n">state_forms_derivative</span>
+        <span class="k">return</span> <span class="n">derivative</span>
+
+    <span class="k">def</span> <span class="nf">coefficients</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">set</span><span class="p">[</span><span class="n">fenics</span><span class="o">.</span><span class="n">Function</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Computes the ufl coefficients which are used in the functional.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The set of used coefficients.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">state_coeffs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">summed_state_forms</span><span class="o">.</span><span class="n">coefficients</span><span class="p">())</span>
+        <span class="n">functional_coeffs</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">set</span><span class="p">(</span><span class="n">functional</span><span class="o">.</span><span class="n">coefficients</span><span class="p">())</span> <span class="k">for</span> <span class="n">functional</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">cost_functional_list</span>
+        <span class="p">]</span>
+        <span class="n">coeffs</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="o">*</span><span class="n">functional_coeffs</span><span class="p">)</span>
+        <span class="n">coeffs</span><span class="o">.</span><span class="n">union</span><span class="p">(</span><span class="n">state_coeffs</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">coeffs</span>
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>

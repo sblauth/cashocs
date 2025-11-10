@@ -1,0 +1,1563 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>cashocs.io.config &#8212; cashocs 2.5.0-dev documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b76e3c8a" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/cashocs.css?v=71b45df7" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../_static/documentation_options.js?v=55cf4ea0"></script>
+    <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../../_static/design-tabs.js?v=36754332"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_modules/cashocs/io/config';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.0';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://cashocs.readthedocs.io/en/latest/_static/version_switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner = true;
+        </script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/logo.jpg" class="logo__image only-light" alt="cashocs"/>
+    <img src="../../../_static/logo.jpg" class="logo__image only-dark pst-js-only" alt="cashocs"/>
+  
+  
+    <p class="title logo__title">cashocs</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../about/index.html">
+    About
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../user/index.html">
+    User Guide
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../api/index.html">
+    API Reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../development/index.html">
+    Development
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="../../../release_notes.html">
+    Release Notes
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/sblauth/cashocs" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://pypi.org/project/cashocs/" title="PyPI" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">PyPI</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item"><nav class="sidebar-indices-items" aria-labelledby="pst-indices-navigation-heading-2">
+  <p id="pst-indices-navigation-heading-2" class="sidebar-indices-items__title" role="heading" aria-level="1">Indices</p>
+  <ul class="indices-link">
+        <li class="toctree-l1">
+          <a class="reference internal"
+             href="../../../genindex.html"
+             accesskey="I">General Index</a>
+        </li>
+        <li class="toctree-l1">
+          <a class="reference internal" href="../../../py-modindex.html">Python Module Index</a>
+        </li>
+  </ul>
+</nav></div>
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="../../../index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    
+    <li class="breadcrumb-item"><a href="../../index.html" class="nav-link">Module code</a></li>
+    
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">cashocs.io.config</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <h1>Source code for cashocs.io.config</h1><div class="highlight"><pre>
+<span></span><span class="c1"># Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth</span>
+<span class="c1">#</span>
+<span class="c1"># This file is part of cashocs.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># cashocs is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with cashocs.  If not, see &lt;https://www.gnu.org/licenses/&gt;.</span>
+
+<span class="sd">&quot;&quot;&quot;Management of configuration files.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">annotations</span>
+
+<span class="kn">from</span> <span class="nn">configparser</span> <span class="kn">import</span> <span class="n">ConfigParser</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">_exceptions</span>
+<span class="kn">from</span> <span class="nn">cashocs</span> <span class="kn">import</span> <span class="n">log</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">cashocs_extensions</span>  <span class="c1"># pylint: disable=unused-import # noqa: F401</span>
+
+    <span class="n">has_cashocs_extensions</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">has_cashocs_extensions</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="load_config">
+<a class="viewcode-back" href="../../../api/generated/cashocs.load_config.html#cashocs.io.load_config">[docs]</a>
+<span class="k">def</span> <span class="nf">load_config</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ConfigParser</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Loads a config object from a config file.</span>
+
+<span class="sd">    Loads the config from a .ini file via the configparser package.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path: The path to the .ini file storing the configuration.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        The output config file, which includes the path to the .ini file.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">Config</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_check_for_config_list</span><span class="p">(</span><span class="n">string</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Checks, if string is a valid python list consisting of numbers.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        string: The input string.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        ``True`` if the string is valid, ``False`` otherwise</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="n">string</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span>
+            <span class="n">char</span><span class="o">.</span><span class="n">isdigit</span><span class="p">()</span>
+            <span class="ow">or</span> <span class="n">char</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()</span>
+            <span class="ow">or</span> <span class="n">char</span><span class="o">.</span><span class="n">isspace</span><span class="p">()</span>
+            <span class="ow">or</span> <span class="n">char</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;[&quot;</span><span class="p">,</span> <span class="s2">&quot;]&quot;</span><span class="p">,</span> <span class="s2">&quot;.&quot;</span><span class="p">,</span> <span class="s2">&quot;,&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s1">&#39;&quot;&#39;</span><span class="p">,</span> <span class="s2">&quot;&#39;&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">]</span>
+        <span class="p">):</span>
+            <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">if</span> <span class="n">string</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;[&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="k">if</span> <span class="n">string</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;]&quot;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="Config">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.config.Config.html#cashocs.io.Config">[docs]</a>
+<span class="k">class</span> <span class="nc">Config</span><span class="p">(</span><span class="n">ConfigParser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class for handling the config in cashocs.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initializes self.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            config_file: Path to the config file.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]]</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Mesh&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;gmsh_file&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;file&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;file_extension&quot;</span><span class="p">:</span> <span class="s2">&quot;msh&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;geo_file&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;file&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;file_extension&quot;</span><span class="p">:</span> <span class="s2">&quot;geo&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;remesh&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;requires&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="s2">&quot;Mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;gmsh_file&quot;</span><span class="p">)],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;show_gmsh_output&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;StateSystem&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;is_linear&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;newton_rtol&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;less_than_one&quot;</span><span class="p">,</span> <span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;newton_atol&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;newton_iter&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;newton_damped&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;newton_inexact&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;newton_verbose&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;picard_iteration&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;picard_rtol&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">,</span> <span class="s2">&quot;less_than_one&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;picard_atol&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;picard_iter&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;picard_verbose&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;backend&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;possible_options&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;cashocs&quot;</span><span class="p">,</span> <span class="s2">&quot;petsc&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;OptimizationRoutine&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;algorithm&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;possible_options&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="s2">&quot;gd&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;gradient_descent&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;bfgs&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;lbfgs&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;nonlinear_cg&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;ncg&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;nonlinear_conjugate_gradient&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;conjugate_gradient&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;newton&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;sphere_combination&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;convex_combination&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;none&quot;</span><span class="p">,</span>
+                    <span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;rtol&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;less_than_one&quot;</span><span class="p">,</span> <span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;atol&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;max_iter&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;gradient_method&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;possible_options&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;direct&quot;</span><span class="p">,</span> <span class="s2">&quot;iterative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;gradient_tol&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;less_than_one&quot;</span><span class="p">,</span> <span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;soft_exit&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;LineSearch&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;method&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;possible_options&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;armijo&quot;</span><span class="p">,</span> <span class="s2">&quot;polynomial&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;initial_stepsize&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;epsilon_armijo&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">,</span> <span class="s2">&quot;less_than_one&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;beta_armijo&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">,</span> <span class="s2">&quot;larger_than_one&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;safeguard_stepsize&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">},</span>
+                <span class="s2">&quot;polynomial_model&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;possible_options&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;cubic&quot;</span><span class="p">,</span> <span class="s2">&quot;quadratic&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;factor_high&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;less_than_one&quot;</span><span class="p">,</span> <span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;larger_than&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;LineSearch&quot;</span><span class="p">,</span> <span class="s2">&quot;factor_low&quot;</span><span class="p">),</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;factor_low&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;less_than_one&quot;</span><span class="p">,</span> <span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;fail_if_not_converged&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;AlgoLBFGS&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;bfgs_memory_size&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;use_bfgs_scaling&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;bfgs_periodic_restart&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;damped&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;AlgoCG&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;cg_method&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;possible_options&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;fr&quot;</span><span class="p">,</span> <span class="s2">&quot;pr&quot;</span><span class="p">,</span> <span class="s2">&quot;hs&quot;</span><span class="p">,</span> <span class="s2">&quot;dy&quot;</span><span class="p">,</span> <span class="s2">&quot;hz&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;cg_periodic_restart&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;cg_periodic_its&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;cg_relative_restart&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;cg_restart_tol&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;AlgoTNM&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;inner_newton&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;possible_options&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;cg&quot;</span><span class="p">,</span> <span class="s2">&quot;cr&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;inner_newton_rtol&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">,</span> <span class="s2">&quot;less_than_one&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;inner_newton_atol&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;max_it_inner_newton&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;ShapeGradient&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;shape_bdry_def&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;shape_bdry_fix&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;shape_bdry_fix_x&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;shape_bdry_fix_y&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;shape_bdry_fix_z&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;fixed_dimensions&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;use_pull_back&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;lambda_lame&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;damping_factor&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;mu_def&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;mu_fix&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;use_sqrt_mu&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;inhomogeneous&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;update_inhomogeneous&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;inhomogeneous_exponent&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;use_distance_mu&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;dist_min&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;dist_max&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;larger_equal_than&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;ShapeGradient&quot;</span><span class="p">,</span> <span class="s2">&quot;dist_min&quot;</span><span class="p">),</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;mu_min&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;mu_max&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;boundaries_dist&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;distance_method&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;possible_options&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="s2">&quot;eikonal&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;poisson&quot;</span><span class="p">,</span>
+                    <span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;smooth_mu&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;use_p_laplacian&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;p_laplacian_power&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;larger_than_one&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;p_laplacian_stabilization&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">,</span> <span class="s2">&quot;less_than_one&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;degree_estimation&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;global_deformation&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;test_for_intersections&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;Regularization&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;factor_volume&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;target_volume&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;use_initial_volume&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;factor_surface&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;target_surface&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;use_initial_surface&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;factor_curvature&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;factor_barycenter&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;target_barycenter&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;list&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;use_initial_barycenter&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;x_start&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;x_end&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;larger_than&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Regularization&quot;</span><span class="p">,</span> <span class="s2">&quot;x_start&quot;</span><span class="p">),</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;y_start&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;y_end&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;larger_than&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Regularization&quot;</span><span class="p">,</span> <span class="s2">&quot;y_start&quot;</span><span class="p">),</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;z_start&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;z_end&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;larger_than&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;Regularization&quot;</span><span class="p">,</span> <span class="s2">&quot;z_start&quot;</span><span class="p">),</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;use_relative_scaling&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;MeshQuality&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;volume_change&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">,</span> <span class="s2">&quot;larger_than_one&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;angle_change&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;tol_lower&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;less_than_one&quot;</span><span class="p">,</span> <span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;tol_upper&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;less_than_one&quot;</span><span class="p">,</span> <span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                    <span class="s2">&quot;larger_than&quot;</span><span class="p">:</span> <span class="p">(</span><span class="s2">&quot;MeshQuality&quot;</span><span class="p">,</span> <span class="s2">&quot;tol_lower&quot;</span><span class="p">),</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;measure&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;possible_options&quot;</span><span class="p">:</span> <span class="p">[</span>
+                        <span class="s2">&quot;skewness&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;radius_ratios&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;maximum_angle&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;condition_number&quot;</span><span class="p">,</span>
+                    <span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;possible_options&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;min&quot;</span><span class="p">,</span> <span class="s2">&quot;avg&quot;</span><span class="p">,</span> <span class="s2">&quot;minimum&quot;</span><span class="p">,</span> <span class="s2">&quot;average&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;remesh_iter&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;TopologyOptimization&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;angle_tol&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;interpolation_scheme&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;possible_options&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;angle&quot;</span><span class="p">,</span> <span class="s2">&quot;volume&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;normalize_topological_derivative&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;re_normalize_levelset&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;topological_derivative_is_identical&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;tol_bisection&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;float&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;max_iter_bisection&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;non_negative&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;Output&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;verbose&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;save_results&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;save_txt&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;save_state&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;save_adjoint&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;save_gradient&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;save_mesh&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;requires&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="s2">&quot;Mesh&quot;</span><span class="p">,</span> <span class="s2">&quot;gmsh_file&quot;</span><span class="p">)],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;result_dir&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;str&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;precision&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;int&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;attributes&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;positive&quot;</span><span class="p">],</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;time_suffix&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;Debug&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;remeshing&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+                <span class="s2">&quot;restart&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;bool&quot;</span><span class="p">,</span>
+                <span class="p">},</span>
+            <span class="p">},</span>
+            <span class="s2">&quot;DEFAULT&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_config_str</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">[Mesh]</span>
+<span class="s2">remesh = False</span>
+<span class="s2">show_gmsh_output = False</span>
+
+<span class="s2">[StateSystem]</span>
+<span class="s2">is_linear = False</span>
+<span class="s2">newton_rtol = 1e-11</span>
+<span class="s2">newton_atol = 1e-13</span>
+<span class="s2">newton_iter = 50</span>
+<span class="s2">newton_damped = False</span>
+<span class="s2">newton_inexact = False</span>
+<span class="s2">newton_verbose = False</span>
+<span class="s2">picard_iteration = False</span>
+<span class="s2">picard_rtol = 1e-10</span>
+<span class="s2">picard_atol = 1e-12</span>
+<span class="s2">picard_iter = 50</span>
+<span class="s2">picard_verbose = False</span>
+<span class="s2">backend = cashocs</span>
+
+<span class="s2">[OptimizationRoutine]</span>
+<span class="s2">algorithm = none</span>
+<span class="s2">rtol = 1e-3</span>
+<span class="s2">atol = 0.0</span>
+<span class="s2">max_iter = 100</span>
+<span class="s2">soft_exit = False</span>
+<span class="s2">gradient_tol = 1e-9</span>
+<span class="s2">gradient_method = direct</span>
+
+<span class="s2">[LineSearch]</span>
+<span class="s2">method = armijo</span>
+<span class="s2">epsilon_armijo = 1e-4</span>
+<span class="s2">beta_armijo = 2.0</span>
+<span class="s2">initial_stepsize = 1.0</span>
+<span class="s2">safeguard_stepsize = True</span>
+<span class="s2">polynomial_model = cubic</span>
+<span class="s2">factor_high = 0.5</span>
+<span class="s2">factor_low = 0.1</span>
+<span class="s2">fail_if_not_converged = False</span>
+
+<span class="s2">[ShapeGradient]</span>
+<span class="s2">lambda_lame = 0.0</span>
+<span class="s2">damping_factor = 0.0</span>
+<span class="s2">mu_def = 1.0</span>
+<span class="s2">mu_fix = 1.0</span>
+<span class="s2">use_sqrt_mu = False</span>
+<span class="s2">use_p_laplacian = False</span>
+<span class="s2">p_laplacian_power = 2</span>
+<span class="s2">p_laplacian_stabilization = 0.0</span>
+<span class="s2">use_pull_back = True</span>
+<span class="s2">use_distance_mu = False</span>
+<span class="s2">mu_min = 1.0</span>
+<span class="s2">mu_max = 1.0</span>
+<span class="s2">dist_min = 1.0</span>
+<span class="s2">dist_max = 1.0</span>
+<span class="s2">boundaries_dist = []</span>
+<span class="s2">distance_method = eikonal</span>
+<span class="s2">smooth_mu = False</span>
+<span class="s2">inhomogeneous = False</span>
+<span class="s2">update_inhomogeneous = False</span>
+<span class="s2">inhomogeneous_exponent = 1.0</span>
+<span class="s2">fixed_dimensions = []</span>
+<span class="s2">shape_bdry_def = []</span>
+<span class="s2">shape_bdry_fix = []</span>
+<span class="s2">shape_bdry_fix_x = []</span>
+<span class="s2">shape_bdry_fix_y = []</span>
+<span class="s2">shape_bdry_fix_z = []</span>
+<span class="s2">degree_estimation = True</span>
+<span class="s2">global_deformation = False</span>
+<span class="s2">test_for_intersections = True</span>
+
+<span class="s2">[Regularization]</span>
+<span class="s2">factor_volume = 0.0</span>
+<span class="s2">target_volume = 0.0</span>
+<span class="s2">use_initial_volume = False</span>
+<span class="s2">factor_surface = 0.0</span>
+<span class="s2">target_surface = 0.0</span>
+<span class="s2">use_initial_surface = False</span>
+<span class="s2">factor_curvature = 0.0</span>
+<span class="s2">factor_barycenter = 0.0</span>
+<span class="s2">target_barycenter = [0.0, 0.0, 0.0]</span>
+<span class="s2">use_initial_barycenter = False</span>
+<span class="s2">use_relative_scaling = False</span>
+<span class="s2">x_start = 0.0</span>
+<span class="s2">x_end = 1.0</span>
+<span class="s2">y_start = 0.0</span>
+<span class="s2">y_end = 1.0</span>
+<span class="s2">z_start = 0.0</span>
+<span class="s2">z_end = 1.0</span>
+
+<span class="s2">[AlgoTNM]</span>
+<span class="s2">inner_newton = cr</span>
+<span class="s2">max_it_inner_newton = 50</span>
+<span class="s2">inner_newton_rtol = 1e-15</span>
+<span class="s2">inner_newton_atol = 0.0</span>
+
+<span class="s2">[AlgoLBFGS]</span>
+<span class="s2">bfgs_memory_size = 5</span>
+<span class="s2">use_bfgs_scaling = True</span>
+<span class="s2">bfgs_periodic_restart = 0</span>
+<span class="s2">damped = False</span>
+
+<span class="s2">[AlgoCG]</span>
+<span class="s2">cg_method = DY</span>
+<span class="s2">cg_periodic_restart = False</span>
+<span class="s2">cg_periodic_its = 10</span>
+<span class="s2">cg_relative_restart = False</span>
+<span class="s2">cg_restart_tol = 0.25</span>
+
+<span class="s2">[MeshQuality]</span>
+<span class="s2">tol_lower = 0.0</span>
+<span class="s2">tol_upper = 1e-15</span>
+<span class="s2">measure = skewness</span>
+<span class="s2">type = min</span>
+<span class="s2">volume_change = inf</span>
+<span class="s2">angle_change = inf</span>
+<span class="s2">remesh_iter = 0</span>
+
+<span class="s2">[TopologyOptimization]</span>
+<span class="s2">angle_tol = 1.0</span>
+<span class="s2">interpolation_scheme = volume</span>
+<span class="s2">normalize_topological_derivative = False</span>
+<span class="s2">re_normalize_levelset = False</span>
+<span class="s2">topological_derivative_is_identical = False</span>
+<span class="s2">tol_bisection = 1e-4</span>
+<span class="s2">max_iter_bisection = 100</span>
+
+<span class="s2">[Output]</span>
+<span class="s2">save_results = True</span>
+<span class="s2">verbose = False</span>
+<span class="s2">save_txt = False</span>
+<span class="s2">save_state = False</span>
+<span class="s2">save_adjoint = False</span>
+<span class="s2">save_gradient = False</span>
+<span class="s2">save_mesh = False</span>
+<span class="s2">result_dir = ./results</span>
+<span class="s2">precision = 3</span>
+<span class="s2">time_suffix = False</span>
+
+<span class="s2">[Debug]</span>
+<span class="s2">remeshing = False</span>
+<span class="s2">restart = False</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">read_string</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_config_str</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">has_cashocs_extensions</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">cashocs_extensions</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">read_string</span><span class="p">(</span><span class="n">cashocs_extensions</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">default_config_str</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">config_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">file</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Could not find the specified config file </span><span class="si">{</span><span class="n">config_file</span><span class="si">}</span><span class="s2">. &quot;</span>
+                    <span class="s2">&quot;Using cashocs default config instead.&quot;</span>
+                <span class="p">)</span>
+
+<div class="viewcode-block" id="Config.getlist">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.config.Config.html#cashocs.io.Config.getlist">[docs]</a>
+    <span class="k">def</span> <span class="nf">getlist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">option</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">list</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extracts a list from a config file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            section: The section where the list is placed.</span>
+<span class="sd">            option: The option which contains the list.</span>
+<span class="sd">            **kwargs: A list of keyword arguments that get passed to</span>
+<span class="sd">                :py:meth:``self.get``</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The list which is specified in section ``section`` and key ``option``.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">option</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;list&quot;</span>
+        <span class="p">)</span> <span class="ow">and</span> <span class="n">_check_for_config_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">)):</span>
+            <span class="n">py_list</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">option</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">))</span>
+            <span class="k">return</span> <span class="n">py_list</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">InputError</span><span class="p">(</span>
+                <span class="s2">&quot;Config.getlist&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;option&quot;</span><span class="p">,</span>
+                <span class="sa">f</span><span class="s2">&quot;option </span><span class="si">{</span><span class="n">option</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> cannot be used as list.&quot;</span><span class="p">,</span>
+            <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Config.validate_config">
+<a class="viewcode-back" href="../../../api/generated/cashocs.io.config.Config.html#cashocs.io.Config.validate_config">[docs]</a>
+    <span class="k">def</span> <span class="nf">validate_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Validates the configuration file.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_sections</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_keys</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">_exceptions</span><span class="o">.</span><span class="n">ConfigError</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="p">)</span></div>
+
+
+    <span class="k">def</span> <span class="nf">_check_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks whether all sections are valid.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">section_name</span><span class="p">,</span> <span class="n">section</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">section_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;The following section is not valid: </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_keys</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks the keys of the sections.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">section_name</span><span class="p">,</span> <span class="n">section</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">section</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">section_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">key</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section_name</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> is not valid for section </span><span class="si">{</span><span class="n">section_name</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_check_key_type</span><span class="p">(</span><span class="n">section_name</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_check_possible_options</span><span class="p">(</span><span class="n">section_name</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_check_attributes</span><span class="p">(</span><span class="n">section_name</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_check_key_requirements</span><span class="p">(</span><span class="n">section_name</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_check_larger_than_relation</span><span class="p">(</span><span class="n">section_name</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_check_larger_equal_than_relation</span><span class="p">(</span><span class="n">section_name</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_key_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks if the type of the key is correct.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            section: The corresponding section</span>
+<span class="sd">            key: The corresponding key</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">key_type</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;str&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">key_type</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;bool&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">getboolean</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">key_type</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;int&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">getint</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">key_type</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;float&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">key_type</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;list&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">_check_for_config_list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">)):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> has the wrong type. &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Required type is </span><span class="si">{</span><span class="n">key_type</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_key_requirements</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks, whether the requirements for the key are satisfied.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            section: The corresponding section</span>
+<span class="sd">            key: The corresponding key</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;bool&quot;</span>
+            <span class="ow">and</span> <span class="bp">self</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;true&quot;</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="s2">&quot;requires&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="n">requirements</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;requires&quot;</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">req</span> <span class="ow">in</span> <span class="n">requirements</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="n">req</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">req</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> requires &quot;</span>
+                            <span class="sa">f</span><span class="s2">&quot;key </span><span class="si">{</span><span class="n">req</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">req</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> to be present.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_possible_options</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks, whether the given option is possible.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            section: The corresponding section</span>
+<span class="sd">            key: The corresponding key</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;possible_options&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="bp">self</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">casefold</span><span class="p">()</span>
+                <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;possible_options&quot;</span><span class="p">]</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> has a wrong value. &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;Possible options are &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="s1">&#39;possible_options&#39;</span><span class="p">]</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_larger_than_relation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks, whether a given option is larger than one.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            section: The corresponding section</span>
+<span class="sd">            key: The corresponding key</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;larger_than&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">higher_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="n">partner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;larger_than&quot;</span><span class="p">]</span>
+            <span class="n">lower_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="n">partner</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">partner</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">lower_value</span> <span class="o">&gt;=</span> <span class="n">higher_value</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;The value of key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> is smaller than &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;the value of key </span><span class="si">{</span><span class="n">partner</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">partner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;but it should be larger.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_larger_equal_than_relation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks, whether a given option is larger or equal to another.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            section: The corresponding section</span>
+<span class="sd">            key: The corresponding key</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;larger_equal_than&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">higher_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+            <span class="n">partner</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;larger_equal_than&quot;</span><span class="p">]</span>
+            <span class="n">lower_value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="n">partner</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">partner</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">lower_value</span> <span class="o">&gt;</span> <span class="n">higher_value</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;The value of key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> is smaller than &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;the value of key </span><span class="si">{</span><span class="n">partner</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">partner</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;but it should be larger.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks the attributes of a key.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            section: The corresponding section</span>
+<span class="sd">            key: The corresponding key</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;attributes&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="n">key_attributes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;attributes&quot;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_file_attribute</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">key_attributes</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_non_negative_attribute</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">key_attributes</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_positive_attribute</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">key_attributes</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_less_than_one_attribute</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">key_attributes</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_larger_than_one_attribute</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">key_attributes</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_file_attribute</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key_attributes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks, whether a file specified in key exists.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            section: The corresponding section</span>
+<span class="sd">            key: The corresponding key</span>
+<span class="sd">            key_attributes: The list of attributes for key.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;file&quot;</span> <span class="ow">in</span> <span class="n">key_attributes</span><span class="p">:</span>
+            <span class="n">file</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">))</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">file</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> should point to a file, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;but the file does not exist.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_file_extension</span><span class="p">(</span>
+                <span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_scheme</span><span class="p">[</span><span class="n">section</span><span class="p">][</span><span class="n">key</span><span class="p">][</span><span class="s2">&quot;file_extension&quot;</span><span class="p">]</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_file_extension</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">extension</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks, whether key has the correct file extension.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            section: The corresponding section.</span>
+<span class="sd">            key: The corresponding key.</span>
+<span class="sd">            extension: The file extension.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">path_to_file</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">path_to_file</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">extension</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> has the wrong file extension, &quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;it should end in .</span><span class="si">{</span><span class="n">extension</span><span class="si">}</span><span class="s2">.</span><span class="se">\n</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_non_negative_attribute</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key_attributes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks, whether key is nonnegative.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            section: The corresponding section</span>
+<span class="sd">            key: The corresponding key</span>
+<span class="sd">            key_attributes: The list of attributes for key.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;non_negative&quot;</span> <span class="ow">in</span> <span class="n">key_attributes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> is negative, but it must not be.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_positive_attribute</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key_attributes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks, whether key is positive.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            section: The corresponding section</span>
+<span class="sd">            key: The corresponding key</span>
+<span class="sd">            key_attributes: The list of attributes for key.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;positive&quot;</span> <span class="ow">in</span> <span class="n">key_attributes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> is non-positive, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;but it most be positive.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_less_than_one_attribute</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key_attributes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks, whether key is less than one.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            section: The corresponding section</span>
+<span class="sd">            key: The corresponding key</span>
+<span class="sd">            key_attributes: The list of attributes for key.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;less_than_one&quot;</span> <span class="ow">in</span> <span class="n">key_attributes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> is larger than one, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;but it must be smaller.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_larger_than_one_attribute</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">key_attributes</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Checks, whether key is larger than one.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            section: The corresponding section</span>
+<span class="sd">            key: The corresponding key</span>
+<span class="sd">            key_attributes: The list of attributes for key.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="s2">&quot;larger_than_one&quot;</span> <span class="ow">in</span> <span class="n">key_attributes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">getfloat</span><span class="p">(</span><span class="n">section</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config_errors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Key </span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2"> in section </span><span class="si">{</span><span class="n">section</span><span class="si">}</span><span class="s2"> is smaller than one, &quot;</span>
+                    <span class="sa">f</span><span class="s2">&quot;but it must be larger.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                <span class="p">)</span></div>
+
+</pre></div>
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2020-2025, Fraunhofer ITWM and Sebastian Blauth.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 7.3.7.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.0.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
