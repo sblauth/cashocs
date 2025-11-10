@@ -74,6 +74,22 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.topological_derivative_pos = (
             optimization_problem.topological_derivative_pos
         )
+        for i in range(0, len(self.optimization_problem.cost_functional_list)):
+            if hasattr(
+                self.optimization_problem.cost_functional_list[i],
+                "topological_derivative",
+            ):
+                self.topological_derivative_pos += (
+                    self.optimization_problem.cost_functional_list[
+                        i
+                    ].topological_derivative()
+                )
+                self.topological_derivative_neg += (
+                    self.optimization_problem.cost_functional_list[
+                        i
+                    ].topological_derivative()
+                )
+
         self.update_levelset: Callable = optimization_problem.update_levelset
         self.config = optimization_problem.config
         self.re_normalize_levelset = optimization_problem.re_normalize_levelset
@@ -90,6 +106,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             optimization_problem._base_ocp
         )
         self._cashocs_problem.db.parameter_db.problem_type = "topology"
+        self._cashocs_problem.feasible = optimization_problem.projection.feasible
 
         self.mesh = optimization_problem.mesh
 
@@ -451,7 +468,7 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                     self._cashocs_problem.reduced_cost_functional.evaluate()
                 )
                 if cost_functional_new <= self.objective_value or (
-                    self.projection.volume_restriction is not None and k == 0
+                    not self.projection.feasible() and k == 0
                 ):
                     break
                 else:
