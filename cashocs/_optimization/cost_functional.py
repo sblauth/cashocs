@@ -438,30 +438,47 @@ class MinMaxFunctional(Functional):
 
 
 class DeflationFunctional(Functional):
+    """Cost functional for the deflation procedure."""
+
     def __init__(
         self,
-        gamma: Union[float, int],
+        gamma: float | int,
         distance: ufl.Form,
         form_grad: ufl.Form,
-        weight: Union[float, int] = 1.0,
-    ):
+        weight: float | int = 1.0,
+    ) -> None:
         super().__init__()
         self.distance = distance
         self.gamma = fenics.Constant(gamma)
         self.form_grad = form_grad
 
-        mesh = self.distance.integrals()[0].ufl_domain().ufl_cargo()
-        R = fenics.FunctionSpace(mesh, "R", 0)
-        self.distance_value = fenics.Function(R)
-        self.weight = fenics.Function(R)
-        self.weight.vector().vec().set(weight)
-        self.weight.vector().apply("")
+        self.distance_value = fenics.Constant(0.0)
+        self.weight = fenics.Constant(weight)
 
-    def coefficients(self):
-        return self.distance.coefficients()
+    def coefficients(self) -> tuple[fenics.Function]:
+        """Computes the ufl coefficients which are used in the functional.
 
-    def derivative(self, argument, direction):
-        deriv = fenics.derivative(
+        Returns:
+            The set of used coefficients.
+
+        """
+        coeffs: tuple[fenics.Function] = self.distance.coefficients()
+        return coeffs
+
+    def derivative(
+        self, argument: ufl.core.expr.Expr, direction: ufl.core.expr.Expr
+    ) -> ufl.Form:
+        """Computes the derivative of the functional w.r.t. argument towards direction.
+
+        Args:
+            argument: The argument, w.r.t. which the functional is differentiated
+            direction: The direction into which the derivative is computed
+
+        Returns:
+            A form of the resulting derivative
+
+        """
+        derivative = fenics.derivative(
             fenics.conditional(
                 fenics.lt(self.distance_value, self.gamma),
                 self.weight
@@ -473,37 +490,45 @@ class DeflationFunctional(Functional):
             argument,
             direction,
         )
+        return derivative
 
-        return deriv
+    def evaluate(self) -> float:
+        """Evaluates the functional.
 
-    def evaluate(self):
+        Returns:
+            The current value of the functional.
+
+        """
         dist_value = fenics.assemble(self.distance)
-        self.distance_value.vector().vec().set(dist_value)
-        self.distance_value.vector().apply("")
+        self.distance_value.assign(dist_value)
 
         if dist_value < self.gamma.values()[0]:
-            val = self.weight.vector().vec().sum() * fenics.exp(
-                self.gamma.values().sum()
-                / (self.distance_value.vector().sum() - self.gamma.values().sum())
+            val: float = self.weight.values()[0] * fenics.exp(
+                self.gamma.values()[0]
+                / (self.distance_value.values()[0] - self.gamma.values()[0])
             )
         else:
             val = 0.0
-
         return val
 
-    def scale(self, scaling_factor):
-        self.weight.vector().vec().set(scaling_factor)
-        self.weight.vector().apply("")
+    def scale(self, scaling_factor: float | int) -> None:
+        """Scales the functional by a scalar.
 
-    def update(self):
+        Args:
+            scaling_factor: The scaling factor used to scale the functional
+
+        """
+        self.weight.assign(scaling_factor)
+
+    def update(self) -> None:
+        """Updates the functional after solving the state equation."""
         dist_value = fenics.assemble(self.distance)
-        self.distance_value.vector().vec().set(dist_value)
-        self.distance_value.vector().apply("")
+        self.distance_value.assign(dist_value)
 
     def topological_derivative(self) -> ufl.Form:
+        """Computes the topological derivative."""
         dist_value = fenics.assemble(self.distance)
-        self.distance_value.vector().vec().set(dist_value)
-        self.distance_value.vector().apply("")
+        self.distance_value.assign(dist_value)
 
         top_gradient = fenics.conditional(
             fenics.lt(self.distance_value, self.gamma),

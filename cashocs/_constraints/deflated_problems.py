@@ -16,6 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+
+"""Deflation procedure for topology optimization and optimal control."""
+
 from __future__ import annotations
 
 import abc
@@ -24,7 +27,6 @@ import pathlib
 from typing import Callable, TYPE_CHECKING
 
 import fenics
-from typing_extensions import Literal
 
 try:
     import ufl_legacy as ufl
@@ -32,6 +34,7 @@ except ImportError:
     import ufl
 
 from cashocs import _utils
+from cashocs import io
 from cashocs import log
 from cashocs._database import database
 from cashocs._optimization import cost_functional
@@ -41,7 +44,6 @@ from cashocs.io import output
 
 if TYPE_CHECKING:
     from cashocs import _typing
-    from cashocs import io
 
 
 class DeflatedProblem(abc.ABC):
@@ -185,20 +187,22 @@ class DeflatedProblem(abc.ABC):
         self.abstract_control = fenics.Function
         self.abstract_control_init = fenics.function
         self.abstract_control_mapped = fenics.function
-        self.control_list_mapped = []
-        self.control_list_mapped_restart = []
-        self.control_list_mapped_final = []
-        self.control_list_final = []
+        self.control_list_mapped: list[fenics.Function] = []
+        self.control_list_mapped_restart: list[fenics.Function] = []
+        self.control_list_mapped_final: list[fenics.Function] = []
+        self.control_list_final: list[fenics.Function] = []
 
-    def distance_shapes(self):
-        """Computes the distance of a new local minimizer of the deflated problem
-        to all previously found ones.
+        self.dx: ufl.measure.Measure
+        self.initial_norm = 0.0
 
-             Returns:
-                 True if the distance of the new local minimizer to all previous
-                 found ones exceeds the threshold gamma. False if at least one
-                 distance does not meet the threshold (no new minimizer of the
-                 actual problem found).
+    def distance_shapes(self) -> bool:
+        """Computes the distance of a minimizer to previous ones.
+
+        Returns:
+            True if the distance of the new local minimizer to all previous
+            found ones exceeds the threshold gamma. False if at least one
+            distance does not meet the threshold (no new minimizer of the
+            actual problem found).
 
         """
         for i in range(0, len(self.control_list_mapped_final) - 1):
@@ -224,8 +228,8 @@ class DeflatedProblem(abc.ABC):
         inner_rtol: float | None = None,
         inner_atol: float | None = None,
         iteration: int = 0,
-        angle_tol: Optional[float] = 1.0,
-        restart: Optional[bool] = False,
+        angle_tol: float | None = 1.0,
+        restart: bool | None = False,
     ) -> None:
         """Solves the inner (unpenalized) optimization problem.
 
@@ -300,7 +304,7 @@ class DeflatedProblem(abc.ABC):
         self.inject_pre_callback(pre_function)
         self.inject_post_callback(post_function)
 
-    def check_for_restart(self):
+    def check_for_restart(self) -> bool:
         """Checks if a restart of the optimization of the unpenalized problem is needed.
 
         Returns:
@@ -310,7 +314,6 @@ class DeflatedProblem(abc.ABC):
             the deflated problem.
 
         """
-
         for i in range(1, len(self.cost_functional_form_deflation)):
             val = self.cost_functional_form_deflation[i].evaluate()
             if val > 1e-6:
@@ -326,7 +329,11 @@ class DeflatedProblem(abc.ABC):
         self.abstract_control.vector().apply("")
 
     @abc.abstractmethod
-    def construct_penalty_functions(self, gamma, delta) -> None:
+    def construct_penalty_functions(
+        self,
+        gamma: int | float,
+        delta: int | float,
+    ) -> None:
         """Constructs the penalty functions for the deflation procedure.
 
         Args:
@@ -348,11 +355,11 @@ class DeflatedProblem(abc.ABC):
         """
         pass
 
-    def save_functions(self, argument: Union[str, List[str]]) -> None:
+    def save_functions(self, argument: str | list[str]) -> None:
         """Stores the newly computed local minimizers during the deflation procedure.
 
         Args:
-            Argument: str that indicates in which list the abstract_control of the
+            argument: str that indicates in which list the abstract_control of the
                 newly computed minimizer gets stored. 'solution': local minimizer of the
                 deflated optimization problems. 'restart': local minimizers of the
                 restart procedure. 'final': (distinct) local minimizers of the
@@ -383,12 +390,11 @@ class DeflatedProblem(abc.ABC):
         it_deflation: int = 5,
         gamma: float = 0.5,
         delta: float = 1.0,
-        inner_rtol: Optional[float] = None,
-        inner_atol: Optional[float] = None,
-        angle_tol: Optional[float] = 1.0,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
+        angle_tol: float | None = 1.0,
     ) -> None:
-        """Deflation procedure to find multiple local minimizers of the optimization
-            problem.
+        """Deflation procedure to find multiple local minimizers.
 
         Args:
             tol: An overall tolerance to be used in the algorithm. This will set the
@@ -405,6 +411,7 @@ class DeflatedProblem(abc.ABC):
                 so that ``inner_atol = tol/10`` is used.
             angle_tol: Absolute tolerance for the inner topology optimization problem.
                 Default is ``None``.
+
         """
         self.gamma = gamma
         self.delta = delta
@@ -418,7 +425,7 @@ class DeflatedProblem(abc.ABC):
         self.save_functions(["solution", "restart", "final"])
 
         for num_defl in range(1, it_deflation + 1):
-            log.info("Iteration {it} of Deflation loop:".format(it=num_defl))
+            log.info(f"Iteration {num_defl} of Deflation loop:")
 
             self.cost_functional_form_deflation = (
                 self.cost_functional_form_initial.copy()
@@ -475,7 +482,7 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
         topological_derivative_neg: fenics.Function | ufl.Form,
         topological_derivative_pos: fenics.Function | ufl.Form,
         update_levelset: Callable,
-        volume_restriction: Union[float, tuple[float, float]] | None = None,
+        volume_restriction: float | tuple[float, float] | None = None,
         config: io.Config | None = None,
         riesz_scalar_products: list[ufl.Form] | ufl.Form | None = None,
         initial_guess: list[fenics.Function] | None = None,
@@ -611,7 +618,11 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
         self.dx = fenics.Measure("dx", self.abstract_control.function_space().mesh())
         self.abstract_control_mapped = fenics.Function(self.dg0_space)
 
-    def construct_penalty_functions(self, gamma, delta) -> None:
+    def construct_penalty_functions(
+        self,
+        gamma: int | float,
+        delta: int | float,
+    ) -> None:
         """Constructs the penalty functions for the deflation procedure.
 
         Args:
@@ -624,7 +635,7 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
         self.abstract_control_mapped = fenics.Function(self.dg0_space)
 
         for i in range(0, len(self.control_list_mapped)):
-            J_deflation = cost_functional.DeflationFunctional(
+            cost_function_deflation = cost_functional.DeflationFunctional(
                 gamma,
                 fenics.inner(
                     self.abstract_control_mapped - self.control_list_mapped[i],
@@ -635,7 +646,7 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
                 delta,
             )
 
-            self.cost_functional_form_deflation.append(J_deflation)
+            self.cost_functional_form_deflation.append(cost_function_deflation)
 
     def map_abstract_control(self) -> fenics.Function:
         """Maps the abstract control for the optimization problem.
@@ -652,7 +663,7 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
         )
         return abstract_control_mapped_temp
 
-    def update_level_set_deflation(self):
+    def update_level_set_deflation(self) -> None:
         """update_levelset function for the deflated topology optimization problem."""
         self.update_levelset()
         _utils.interpolate_levelset_function_to_cells(
@@ -662,11 +673,11 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
     def _solve_inner_problem(
         self,
         tol: float = 1e-2,
-        inner_rtol: Optional[float] = None,
-        inner_atol: Optional[float] = None,
+        inner_rtol: float | None = None,
+        inner_atol: float | None = None,
         iteration: int = 0,
-        angle_tol: Optional[float] = 1.0,
-        restart: Optional[bool] = False,
+        angle_tol: float | None = 1.0,
+        restart: float | None = False,
     ) -> None:
         """Solves the inner (unpenalized) optimization problem.
 
@@ -894,7 +905,11 @@ class DeflatedOptimalControlProblem(DeflatedProblem):
 
         self.dx = fenics.Measure("dx", self.abstract_control.function_space().mesh())
 
-    def construct_penalty_functions(self, gamma, delta) -> None:
+    def construct_penalty_functions(
+        self,
+        gamma: int | float,
+        delta: int | float,
+    ) -> None:
         """Constructs the penalty functions for the deflation procedure.
 
         Args:
@@ -904,9 +919,8 @@ class DeflatedOptimalControlProblem(DeflatedProblem):
             delta: Penalty parameter of the penalty function.
 
         """
-
         for i in range(0, len(self.control_list_mapped)):
-            J_deflation = cost_functional.DeflationFunctional(
+            cost_function_deflation = cost_functional.DeflationFunctional(
                 self.gamma,
                 fenics.inner(
                     self.abstract_control - self.control_list_mapped[i],
@@ -917,7 +931,7 @@ class DeflatedOptimalControlProblem(DeflatedProblem):
                 self.delta,
             )
 
-            self.cost_functional_form_deflation.append(J_deflation)
+            self.cost_functional_form_deflation.append(cost_function_deflation)
 
     def map_abstract_control(self) -> fenics.Function:
         """Maps the abstract control for the optimization problem.
@@ -942,8 +956,8 @@ class DeflatedOptimalControlProblem(DeflatedProblem):
         inner_rtol: float | None = None,
         inner_atol: float | None = None,
         iteration: int = 0,
-        angle_tol: Optional[float] = 1.0,
-        restart: Optional[bool] = False,
+        angle_tol: float | None = 1.0,
+        restart: bool | None = False,
     ) -> None:
         """Solves the inner (unpenalized) optimization problem.
 
@@ -956,6 +970,9 @@ class DeflatedOptimalControlProblem(DeflatedProblem):
             inner_atol: Absolute tolerance for the inner problem. Default is ``None``,
                 so that ``inner_atol = tol/10`` is used.
             iteration: The current outer iteration count
+            angle_tol: The absolute tolerance for the angle between topological
+                derivative and levelset function. If this is ``None``, then
+                the value provided in the config file is used. Default is ``None``.
             restart: If True a restart of the unpenalized optimization problem with
                 starting value as the minimizer of the perturbed optimization problem
                 is initiated.

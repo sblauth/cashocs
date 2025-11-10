@@ -302,6 +302,8 @@ class OptimizationProblem(abc.ABC):
 
         self.output_manager = io.OutputManager(self.db)
 
+        self.feasible: Callable
+
     @abc.abstractmethod
     def _erase_pde_memory(self) -> None:
         """Ensures that the PDEs are solved again, and no cache is used."""
