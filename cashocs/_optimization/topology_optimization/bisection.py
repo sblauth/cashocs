@@ -140,11 +140,14 @@ class LevelSetVolumeProjector:
 
     def feasible(self) -> bool:
         """Checks if the supplied level-set function is feasible.
+
         The function checks if the initial level-set function satisfies the volume
         constraint and is thus feasible.
+
         Returns:
             A bool that is True when the level-set function is feasible and False
             otherwise.
+
         """
         if self.volume_restriction is None:
             return True
