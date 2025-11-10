@@ -139,8 +139,9 @@ class LevelSetVolumeProjector:
         )
         self.levelset_function_temp.vector().apply("")
         if len(self.fixed_dofs) > 0:
-            self.levelset_function_temp.vector()[self.fixed_dofs] = \
+            self.levelset_function_temp.vector()[self.fixed_dofs] = (
                 self.levelset_function_temp.vector()[self.fixed_dofs] - iterate
+            )
         _utils.interpolate_levelset_function_to_cells(
             self.levelset_function_temp, 1.0, 0.0, self.indicator_omega
         )
@@ -161,7 +162,7 @@ class LevelSetVolumeProjector:
         if self.volume_restriction is None:
             return True
 
-        vol = self.evaluate(0., 0.)
+        vol = self.evaluate(0.0, 0.0)
         if vol > self.volume_restriction[1] or vol < self.volume_restriction[0]:
             return False
         else:
@@ -219,7 +220,8 @@ class LevelSetVolumeProjector:
         )
         self.levelset_function.vector().apply("")
         if len(self.fixed_dofs) > 0:
-            self.levelset_function.vector()[self.fixed_dofs] = \
+            self.levelset_function.vector()[self.fixed_dofs] = (
                 self.levelset_function.vector()[self.fixed_dofs] - iterate
+            )
 
         return None

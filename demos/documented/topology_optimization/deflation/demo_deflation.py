@@ -237,9 +237,10 @@ dtop.solve(tol=1e-6, it_deflation=4, gamma=gamma, delta=delta, inner_rtol=0., in
 #
 # We visualize the local minimizers found by the deflation procedure with
 
+from matplotlib import colors
+
 # +
 import matplotlib.pyplot as plt
-from matplotlib import colors
 import numpy as np
 
 rgbvals = np.array([[0, 107, 164], [255, 128, 14]]) / 255.0

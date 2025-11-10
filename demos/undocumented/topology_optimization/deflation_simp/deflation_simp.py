@@ -94,9 +94,9 @@ dtop = cashocs.DeflatedOptimalControlProblem(
 dtop.solve(1e-6, 3, 0.4, 5000., 0., 0.)
 
 # import packages for the plotting
+from matplotlib import colors
 from matplotlib import pyplot as pp
 import numpy as np
-from matplotlib import colors
 
 # define a costum color map
 rgbvals = np.array([[0, 107, 164], [255, 128, 14]]) / 255.0

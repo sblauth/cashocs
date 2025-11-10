@@ -435,15 +435,16 @@ class MinMaxFunctional(Functional):
         """Updates the functional after solving the state equation."""
         min_max_integrand_value = fenics.assemble(self.integrand)
         self.integrand_value.assign(min_max_integrand_value)
-        
+
 
 class DeflationFunctional(Functional):
-    def __init__(self,
-                 gamma: Union[float, int],
-                 distance: ufl.Form,
-                 form_grad: ufl.Form,
-                 weight: Union[float, int] = 1.0):
-
+    def __init__(
+        self,
+        gamma: Union[float, int],
+        distance: ufl.Form,
+        form_grad: ufl.Form,
+        weight: Union[float, int] = 1.0,
+    ):
         super().__init__()
         self.distance = distance
         self.gamma = fenics.Constant(gamma)
@@ -460,14 +461,15 @@ class DeflationFunctional(Functional):
         return self.distance.coefficients()
 
     def derivative(self, argument, direction):
-
         deriv = fenics.derivative(
             fenics.conditional(
                 fenics.lt(self.distance_value, self.gamma),
-                self.weight * fenics.exp(self.gamma / (self.distance_value - self.gamma))
+                self.weight
+                * fenics.exp(self.gamma / (self.distance_value - self.gamma))
                 * (-self.gamma / ((self.distance_value - self.gamma) ** 2)),
-                0.
-            ) * self.distance,
+                0.0,
+            )
+            * self.distance,
             argument,
             direction,
         )
@@ -480,13 +482,12 @@ class DeflationFunctional(Functional):
         self.distance_value.vector().apply("")
 
         if dist_value < self.gamma.values()[0]:
-            val = (
-                    self.weight.vector().vec().sum()
-                        * fenics.exp(self.gamma.values().sum() /
-                                     (self.distance_value.vector().sum() - self.gamma.values().sum()))
+            val = self.weight.vector().vec().sum() * fenics.exp(
+                self.gamma.values().sum()
+                / (self.distance_value.vector().sum() - self.gamma.values().sum())
             )
         else:
-            val = 0.
+            val = 0.0
 
         return val
 
@@ -506,9 +507,12 @@ class DeflationFunctional(Functional):
 
         top_gradient = fenics.conditional(
             fenics.lt(self.distance_value, self.gamma),
-            -self.weight * self.gamma / ((self.distance_value - self.gamma) ** 2) * fenics.exp(
-                self.gamma / (self.distance_value - self.gamma)) * self.form_grad,
-            0. * self.form_grad
+            -self.weight
+            * self.gamma
+            / ((self.distance_value - self.gamma) ** 2)
+            * fenics.exp(self.gamma / (self.distance_value - self.gamma))
+            * self.form_grad,
+            0.0 * self.form_grad,
         )
 
         return top_gradient
