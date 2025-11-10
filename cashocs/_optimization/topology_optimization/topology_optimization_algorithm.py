@@ -36,6 +36,7 @@ from cashocs import _exceptions
 from cashocs import _forms
 from cashocs import _pde_problems
 from cashocs import _utils
+from cashocs._optimization import cost_functional
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization.topology_optimization import topology_optimization_problem
 
@@ -74,21 +75,11 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.topological_derivative_pos = (
             optimization_problem.topological_derivative_pos
         )
-        for i in range(0, len(self.optimization_problem.cost_functional_list)):
-            if hasattr(
-                self.optimization_problem.cost_functional_list[i],
-                "topological_derivative",
-            ):
-                self.topological_derivative_pos += (
-                    self.optimization_problem.cost_functional_list[
-                        i
-                    ].topological_derivative()
-                )
-                self.topological_derivative_neg += (
-                    self.optimization_problem.cost_functional_list[
-                        i
-                    ].topological_derivative()
-                )
+
+        for fun in self.optimization_problem.cost_functional_list:
+            if isinstance(fun, cost_functional.DeflationFunctional):
+                self.topological_derivative_pos += fun.topological_derivative()
+                self.topological_derivative_neg += fun.topological_derivative()
 
         self.update_levelset: Callable = optimization_problem.update_levelset
         self.config = optimization_problem.config
@@ -106,7 +97,11 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             optimization_problem._base_ocp
         )
         self._cashocs_problem.db.parameter_db.problem_type = "topology"
-        self._cashocs_problem.feasible = optimization_problem.projection.feasible
+        if isinstance(
+            optimization_problem,
+            topology_optimization_problem.TopologyOptimizationProblem,
+        ):
+            self._cashocs_problem.feasible = optimization_problem.projection.feasible
 
         self.mesh = optimization_problem.mesh
 
