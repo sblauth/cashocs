@@ -97,11 +97,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             optimization_problem._base_ocp
         )
         self._cashocs_problem.db.parameter_db.problem_type = "topology"
-        if isinstance(
-            optimization_problem,
-            topology_optimization_problem.TopologyOptimizationProblem,
-        ):
-            self._cashocs_problem.feasible = optimization_problem.projection.feasible
+        self._cashocs_problem.feasible = optimization_problem.projection.feasible
 
         self.mesh = optimization_problem.mesh
 
