@@ -261,4 +261,3 @@ for i in range(0, len(dtop.control_list_final)):
 # ![](/../../demos/documented/topology_optimization/deflation/deflation_shape_2.png)
 # ![](/../../demos/documented/topology_optimization/deflation/deflation_shape_3.png)
 # ![](/../../demos/documented/topology_optimization/deflation/deflation_shape_4.png)
-# ![](/../../demos/documented/topology_optimization/deflation/deflation_shape_5.png)
