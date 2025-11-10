@@ -1,0 +1,103 @@
+name: Release on GitHub and PyPI
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions: read-all
+
+jobs:
+  run_tests:
+    name: Run tests before publishing
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/sblauth/cashocs:main
+      options: --user=root
+    env:
+      OMP_NUM_THREADS: 1
+
+    steps:
+    - name: Delete current installation in docker image
+      shell: bash
+      run: |
+        source /usr/local/bin/_entrypoint.sh
+        pip uninstall -y cashocs
+        rm -R /home/mambauser/cashocs
+
+    - name: Checkout repository
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+    - name: Install cashocs
+      shell: bash
+      run: |
+        source /usr/local/bin/_entrypoint.sh
+        pip install .[all]
+
+    - name: Run tests
+      shell: bash
+      run: |
+        source /usr/local/bin/_entrypoint.sh
+        python3 -m pytest -vv tests/
+
+
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    needs:
+      - run_tests
+    permissions:
+      contents: write
+    steps:
+    
+    - name: Checkout repository
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+
+    - name: Get tag name
+      id: tag_name
+      run: |
+        echo "TAG_PREFIX=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+
+    - name: Check if release is a pre-release
+      id: check_version
+      uses: nowsprinting/check-version-format-action@bb1181a02ee5d9ae4feead2842236183c85152c6 # v4.0.7
+      with:
+        prefix: 'v'
+
+
+    - name: Create Github release
+      id: create_release
+      uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
+      with:
+        name: cashocs ${{ steps.tag_name.outputs.TAG_PREFIX }}
+        generate_release_notes: ${{ steps.check_version.outputs.is_stable == 'true' }}
+        prerelease: ${{ steps.check_version.outputs.is_stable == 'false' }}
+
+
+  build_and_publish:
+    name: Build and publish python package
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+    needs:
+      - run_tests
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+    - name: Set up Python 3.14
+      uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+      with:
+        python-version: 3.14
+
+    - name: Install pypa/build
+      run: python -m pip install build --user
+
+    - name: Build a binary wheel and a source tarball
+      run: python -m build --sdist --wheel --outdir dist/ .
+
+    - name: Publish distribution to PyPI
+      uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e # release/v1
