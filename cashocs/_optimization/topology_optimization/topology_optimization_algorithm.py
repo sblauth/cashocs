@@ -97,7 +97,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             optimization_problem._base_ocp
         )
         self._cashocs_problem.db.parameter_db.problem_type = "topology"
-        self._cashocs_problem.feasible = optimization_problem.projection.feasible
+        self._cashocs_problem.is_feasible = optimization_problem.is_feasible
 
         self.mesh = optimization_problem.mesh
 
@@ -459,7 +459,7 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                     self._cashocs_problem.reduced_cost_functional.evaluate()
                 )
                 if cost_functional_new <= self.objective_value or (
-                    not self.projection.feasible() and k == 0
+                    k == 0 and not self._cashocs_problem.is_feasible
                 ):
                     break
                 else:

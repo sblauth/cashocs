@@ -302,7 +302,7 @@ class OptimizationProblem(abc.ABC):
 
         self.output_manager = io.OutputManager(self.db)
 
-        self.feasible: Callable
+        self.is_feasible: bool
 
     @abc.abstractmethod
     def _erase_pde_memory(self) -> None:

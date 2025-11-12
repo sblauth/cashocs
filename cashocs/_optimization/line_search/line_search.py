@@ -273,7 +273,7 @@ class LineSearch(abc.ABC):
                 < current_function_value + self.epsilon_armijo * decrease_measure
             )
         else:
-            if not self.optimization_problem.feasible() and solver.iteration == 0:
+            if solver.iteration == 0 and not self.optimization_problem.is_feasible:
                 val = True
             else:
                 val = bool(objective_step <= current_function_value)
