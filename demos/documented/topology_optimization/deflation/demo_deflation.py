@@ -23,7 +23,7 @@
 # [Papadopoulos, Farrell, Surowiec - Computing multiple solutions of topology optimization
 # problems](https://doi.org/10.1137/20M1326209) and [Baeck, Blauth, Leithaeuser, Pinnau,
 # Sturm - A Novel Deflation Approach for Topology Optimization and Application for Optimization
-# of Bipolar Plates of Electrolysis Cells](https://arxiv.org/abs/2406.17491). The problem can be written
+# of Bipolar Plates of Electrolysis Cells](https://doi.org/10.1137/24M1670913). The problem can be written
 # as follows
 #
 # $$
@@ -57,7 +57,7 @@
 # volume of the fluid region. For more details on this problem, we refer the reader
 # to [Baeck, Blauth, Leithaeuser, Pinnau, Sturm - A Novel Deflation Approach for
 # Topology Optimization and Application for Optimization of Bipolar Plates of
-# Electrolysis Cells](https://arxiv.org/abs/2406.17491).
+# Electrolysis Cells](https://doi.org/10.1137/24M1670913).
 #
 # The generalized topological derivative for this problem is given by
 #
@@ -178,7 +178,7 @@ def update_level_set():
 # To compute multiple local minizers of this topology optimization problem, we use
 # the approach presented in [Baeck, Blauth, Leithaeuser, Pinnau,
 # Sturm - A Novel Deflation Approach for Topology Optimization and Application for Optimization
-# of Bipolar Plates of Electrolysis Cells](https://arxiv.org/abs/2406.17491). Here,
+# of Bipolar Plates of Electrolysis Cells](https://doi.org/10.1137/24M1670913). Here,
 # the distance to previously found local minimizers is penalized in the objective
 # function. The deflated topology optimization problem
 # {py:class}`DeflatedTopologyOptimizationProblem <cashocs.DeflatedTopologyOptimizationProblem>`
@@ -221,7 +221,7 @@ dtop.solve(tol=1e-6, it_deflation=4, gamma=gamma, delta=delta, inner_rtol=0., in
 # a numerical parameter studies. For a more detailed discussion about the choices of the
 # parameters, we refer to [Baeck, Blauth, Leithaeuser, Pinnau,
 # Sturm - A Novel Deflation Approach for Topology Optimization and Application for Optimization
-# of Bipolar Plates of Electrolysis Cells](https://arxiv.org/abs/2406.17491).
+# of Bipolar Plates of Electrolysis Cells](https://doi.org/10.1137/24M1670913).
 # :::
 #
 # :::{note}
