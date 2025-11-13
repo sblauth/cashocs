@@ -452,7 +452,8 @@ def test_deflation(
     dJ_in_proj,
     dJ_out_proj,
     update_level_set_deflation,
-    config_top
+    config_top,
+    geometry
 ):
     config_top.set("OptimizationRoutine", "soft_exit", "True")
     config_top.set("OptimizationRoutine", "algorithm", "sphere_combination")
@@ -481,15 +482,16 @@ def test_deflation(
     dtop.solve(1e-6, 1, 0.75, 10000., inner_rtol=0., inner_atol=0., angle_tol=5.0)
 
     assert (
-        max(np.absolute(
-            dtop.control_list_mapped_final[0].vector()[:] - char_function_0.vector()[:]
+        assemble(
+            inner(dtop.control_list_mapped_final[0] - char_function_0,
+                  dtop.control_list_mapped_final[0] - char_function_0
+            ) * geometry.dx
         )
-        ) < 1e-3
-    )
+    ) < 1e-3
     assert (
-            max(np.absolute(
-                dtop.control_list_mapped_final[1].vector()[
-                :] - char_function_1.vector()[:]
-            )
-            ) < 1e-3
-    )
+        assemble(
+            inner(dtop.control_list_mapped_final[1] - char_function_1,
+                  dtop.control_list_mapped_final[1] - char_function_1
+            ) * geometry.dx
+        )
+    ) < 1e-3
