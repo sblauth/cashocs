@@ -52,7 +52,8 @@ class LineSearch(abc.ABC):
         """
         self.db = db
         self.problem_type = db.parameter_db.problem_type
-        self.is_feasible = optimization_problem.is_feasible
+        if self.problem_type == "topology":
+            self.is_feasible = optimization_problem.is_feasible
 
         self.config = self.db.config
         self.form_handler = optimization_problem.form_handler
