@@ -52,7 +52,7 @@ class LineSearch(abc.ABC):
         """
         self.db = db
         self.problem_type = db.parameter_db.problem_type
-        self.optimization_problem = optimization_problem
+        self.is_feasible = optimization_problem.is_feasible
 
         self.config = self.db.config
         self.form_handler = optimization_problem.form_handler
@@ -273,7 +273,7 @@ class LineSearch(abc.ABC):
                 < current_function_value + self.epsilon_armijo * decrease_measure
             )
         else:
-            if solver.iteration == 0 and not self.optimization_problem.is_feasible:
+            if solver.iteration == 0 and not self.is_feasible:
                 val = True
             else:
                 val = bool(objective_step <= current_function_value)
