@@ -453,18 +453,15 @@ def test_deflation(
     dJ_out_proj,
     update_level_set_deflation,
     config_top,
-    geometry
+    geometry,
+    DG0
 ):
     config_top.set("OptimizationRoutine", "soft_exit", "True")
     config_top.set("OptimizationRoutine", "algorithm", "sphere_combination")
 
-    dir_path = str(pathlib.Path(__file__).parent)
-    char_function_0 = cashocs.io.read_function_from_xdmf(
-        f"{dir_path}/xdmf_state/deflation_0.xdmf", "deflation_0", "DG", 0, step=0
-    )
-    char_function_1 = cashocs.io.read_function_from_xdmf(
-        f"{dir_path}/xdmf_state/deflation_1.xdmf", "deflation_1", "DG", 0, step=0
-    )
+    dir_path = pathlib.Path(__file__).parent
+    char_function_0 = cashocs.io.import_function(str(dir_path / "xdmf_state" / "deflation_0.xdmf"), DG0)
+    char_function_1 = cashocs.io.import_function(str(dir_path / "xdmf_state" / "deflation_1.xdmf"), DG0)
 
     dtop = cashocs.DeflatedTopologyOptimizationProblem(
         F,
