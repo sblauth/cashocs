@@ -272,6 +272,9 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
         self.projection = bisection.LevelSetVolumeProjector(
             self.levelset_function, volume_restriction, self.db
         )
+        self.is_feasible = self.projection.check_for_feasibility()
+        if not self.is_feasible:
+            log.info("The initial level-set function violates the volume constraint.")
 
     def _erase_pde_memory(self) -> None:  # pylint: disable=useless-parent-delegation
         super()._erase_pde_memory()

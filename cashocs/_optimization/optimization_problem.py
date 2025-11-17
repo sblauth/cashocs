@@ -86,6 +86,7 @@ class OptimizationProblem(abc.ABC):
     config: io.Config
     initial_guess: list[fenics.Function] | None
     cost_functional_list: list[_typing.CostFunctional]
+    is_feasible: bool
 
     def __init__(
         self,
