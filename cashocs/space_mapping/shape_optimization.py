@@ -21,13 +21,13 @@ from __future__ import annotations
 
 import abc
 import collections
+from collections.abc import Callable
 import copy
 import pathlib
-from typing import Callable, TYPE_CHECKING
+from typing import Literal, TYPE_CHECKING
 
 import fenics
 import numpy as np
-from typing_extensions import Literal
 
 try:
     import ufl_legacy as ufl

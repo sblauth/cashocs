@@ -19,10 +19,9 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Literal
 
 import fenics
-from typing_extensions import Literal
 
 try:
     import ufl_legacy as ufl
@@ -196,7 +195,7 @@ class NamedMeasure(ufl.Measure):
             )
 
         elif isinstance(subdomain_id, list) and all(
-            isinstance(x, (int, str)) for x in subdomain_id
+            isinstance(x, int | str) for x in subdomain_id
         ):
             return generate_measure(subdomain_id, self)
 

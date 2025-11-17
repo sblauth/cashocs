@@ -228,7 +228,7 @@ class ScalarTrackingFunctional(Functional):
         super().__init__()
         self.integrand = integrand
         self.tracking_goal = tracking_goal
-        if not isinstance(self.tracking_goal, (ctypes.c_float, ctypes.c_double)):
+        if not isinstance(self.tracking_goal, ctypes.c_float | ctypes.c_double):
             self.tracking_goal_value = self.tracking_goal
         else:
             self.tracking_goal_value = self.tracking_goal.value
@@ -243,7 +243,7 @@ class ScalarTrackingFunctional(Functional):
             The current value of the functional.
 
         """
-        if isinstance(self.tracking_goal, (ctypes.c_float, ctypes.c_double)):
+        if isinstance(self.tracking_goal, ctypes.c_float | ctypes.c_double):
             self.tracking_goal_value = self.tracking_goal.value
 
         scalar_integral_value = fenics.assemble(self.integrand)
@@ -268,7 +268,7 @@ class ScalarTrackingFunctional(Functional):
             A form of the resulting derivative
 
         """
-        if isinstance(self.tracking_goal, (ctypes.c_float, ctypes.c_double)):
+        if isinstance(self.tracking_goal, ctypes.c_float | ctypes.c_double):
             self.tracking_goal_value = self.tracking_goal.value
 
         derivative = fenics.derivative(

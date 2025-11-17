@@ -19,9 +19,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 import configparser
 import inspect
-from typing import Any, Callable, cast, TYPE_CHECKING, TypeVar, Union
+from typing import Any, cast, TYPE_CHECKING, TypeVar
 
 import fenics
 
@@ -97,14 +98,14 @@ def check_and_enlist_control_constraints(
         control_constraints[0], list
     ):
         control_constraints = cast(
-            list[list[Union[float, int, fenics.Function]]], control_constraints
+            list[list[float | int | fenics.Function]], control_constraints
         )
         return control_constraints
     elif isinstance(control_constraints, list) and not isinstance(
         control_constraints[0], list
     ):
         control_constraints = cast(
-            list[Union[float, int, fenics.Function]], control_constraints
+            list[float | int | fenics.Function], control_constraints
         )
         return [control_constraints]
     else:

@@ -25,8 +25,9 @@ optimization problems.
 from __future__ import annotations
 
 import abc
+from collections.abc import Callable
 import copy
-from typing import Callable, cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING
 import weakref
 
 import fenics
@@ -330,10 +331,10 @@ class OptimizationProblem(abc.ABC):
             if isinstance(
                 functional,
                 (
-                    cost_functional.IntegralFunctional,
-                    cost_functional.ScalarTrackingFunctional,
-                    cost_functional.MinMaxFunctional,
-                    cost_functional.Functional,
+                    cost_functional.IntegralFunctional
+                    | cost_functional.ScalarTrackingFunctional
+                    | cost_functional.MinMaxFunctional
+                    | cost_functional.Functional
                 ),
             ):
                 cost_functional_list.append(functional)

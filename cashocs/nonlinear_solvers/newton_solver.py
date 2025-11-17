@@ -20,11 +20,10 @@
 from __future__ import annotations
 
 import copy
-from typing import TYPE_CHECKING
+from typing import Literal, TYPE_CHECKING
 
 import fenics
 import numpy as np
-from typing_extensions import Literal
 
 try:
     import ufl_legacy as ufl

@@ -22,9 +22,10 @@
 from __future__ import annotations
 
 import abc
+from collections.abc import Callable
 import copy
 import pathlib
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 
