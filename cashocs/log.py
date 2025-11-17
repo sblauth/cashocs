@@ -19,10 +19,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 import datetime
 import functools
 import logging
-from typing import Any, Callable, TYPE_CHECKING, TypeVar
+from typing import Any, TYPE_CHECKING, TypeVar
 
 import fenics
 

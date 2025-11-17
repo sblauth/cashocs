@@ -19,8 +19,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 import copy
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import fenics
 from matplotlib import colors

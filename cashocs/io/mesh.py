@@ -399,7 +399,7 @@ def gather_coordinates(mesh: fenics.Mesh) -> np.ndarray:
 
     if comm.rank == 0:
         coordinates = np.zeros((num_global_vertices, local_mesh_coordinates.shape[1]))
-        for coords, verts in zip(local_coordinates_list, vertex_map_list):
+        for coords, verts in zip(local_coordinates_list, vertex_map_list, strict=True):
             coordinates[verts] = coords
     else:
         coordinates = np.zeros((1, 1))

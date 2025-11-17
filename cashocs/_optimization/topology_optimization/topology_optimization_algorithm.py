@@ -20,7 +20,8 @@
 from __future__ import annotations
 
 import abc
-from typing import Callable, cast, TYPE_CHECKING
+from collections.abc import Callable
+from typing import cast, TYPE_CHECKING
 
 import fenics
 import numpy as np
