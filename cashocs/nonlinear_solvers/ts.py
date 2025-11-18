@@ -313,7 +313,7 @@ class TSPseudoSolver:
 
         if self.preconditioner_form is not None:
             P = fenics.PETScMatrix(P)  # pylint: disable=invalid-name
-            self.assembler.assemble(P)
+            self.assembler_pc.assemble(P)
             P.ident_zeros()
 
             P_petsc = fenics.as_backend_type(P).mat()  # pylint: disable=invalid-name,
