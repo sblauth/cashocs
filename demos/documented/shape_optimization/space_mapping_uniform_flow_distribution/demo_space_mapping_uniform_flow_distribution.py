@@ -35,7 +35,8 @@
 # denoted by $\Omega$ and the wall of the pipe is denoted by $\Gamma_\mathrm{wall}$. A
 # sketch of this problem is shown below
 #
-# ![](/../../demos/documented/shape_optimization/space_mapping_uniform_flow_distribution/reference_pipe.png)
+# :::{image} /../../demos/documented/shape_optimization/space_mapping_uniform_flow_distribution/reference_pipe.png
+# :::
 #
 # We consider the optimization of the pipe system so that the flow of some fluid becomes
 # uniform over all three outlets. Therefore, let $u$ denote the fluid's velocity. The
@@ -533,7 +534,8 @@ plt.tight_layout()
 # -
 
 # and the output is shown below
-# ![](/../../demos/documented/shape_optimization/space_mapping_uniform_flow_distribution/img_space_mapping_uniform_flow_distribution.png)
+# :::{image} /../../demos/documented/shape_optimization/space_mapping_uniform_flow_distribution/img_space_mapping_uniform_flow_distribution.png
+# :::
 #
 # :::{note}
 # On the left side of the above image the results for the coarse model are shown,

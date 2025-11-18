@@ -478,10 +478,8 @@ class HessianFormHandler:
         if any(
             isinstance(
                 functional,
-                (
-                    cost_functional.ScalarTrackingFunctional,
-                    cost_functional.MinMaxFunctional,
-                ),
+                cost_functional.ScalarTrackingFunctional
+                | cost_functional.MinMaxFunctional,
             )
             for functional in self.db.form_db.cost_functional_list
         ):

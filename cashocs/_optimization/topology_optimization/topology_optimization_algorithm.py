@@ -20,7 +20,8 @@
 from __future__ import annotations
 
 import abc
-from typing import Callable, cast, TYPE_CHECKING
+from collections.abc import Callable
+from typing import cast, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -36,6 +37,7 @@ from cashocs import _exceptions
 from cashocs import _forms
 from cashocs import _pde_problems
 from cashocs import _utils
+from cashocs._optimization import cost_functional
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization.topology_optimization import topology_optimization_problem
 
@@ -74,6 +76,12 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
         self.topological_derivative_pos = (
             optimization_problem.topological_derivative_pos
         )
+
+        for fun in self.optimization_problem.cost_functional_list:
+            if isinstance(fun, cost_functional.DeflationFunctional):
+                self.topological_derivative_pos += fun.topological_derivative()
+                self.topological_derivative_neg += fun.topological_derivative()
+
         self.update_levelset: Callable = optimization_problem.update_levelset
         self.config = optimization_problem.config
         self.re_normalize_levelset = optimization_problem.re_normalize_levelset
@@ -90,6 +98,7 @@ class TopologyOptimizationAlgorithm(optimization_algorithms.OptimizationAlgorith
             optimization_problem._base_ocp
         )
         self._cashocs_problem.db.parameter_db.problem_type = "topology"
+        self._cashocs_problem.is_feasible = optimization_problem.is_feasible
 
         self.mesh = optimization_problem.mesh
 
@@ -451,7 +460,7 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                     self._cashocs_problem.reduced_cost_functional.evaluate()
                 )
                 if cost_functional_new <= self.objective_value or (
-                    self.projection.volume_restriction is not None and k == 0
+                    k == 0 and not self._cashocs_problem.is_feasible
                 ):
                     break
                 else:

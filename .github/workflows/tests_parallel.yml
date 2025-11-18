@@ -11,6 +11,11 @@ on:
 
 permissions: read-all
 
+env:
+  OMP_NUM_THREADS: 1
+  SCOTCH_DETERMINISTIC: 1
+  SCOTCH_RANDOM_FIXED_SEED: 1
+
 jobs:
   parallel_tests:
     name: Test (py=${{ matrix.python-version}}, ${{ matrix.mpi }})
@@ -21,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         mpi: [mpich, openmpi]
 
     steps:
@@ -49,7 +54,5 @@ jobs:
         pip install .[all]
     
     - name: Run tests in parallel
-      env: 
-        OMP_NUM_THREADS: 1
       run: |
         mpirun -n 2 python3 -m pytest -vv --timeout=1800 -p no:cacheprovider --randomly-seed=${{ github.run_id }} tests/

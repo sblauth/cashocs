@@ -267,7 +267,8 @@ plt.tight_layout()
 # -
 
 # and get the following results
-# ![](/../../demos/documented/shape_optimization/remeshing/img_remeshing.png)
+# :::{image} /../../demos/documented/shape_optimization/remeshing/img_remeshing.png
+# :::
 #
 # ::::{note}
 # The example for remeshing is somewhat artificial, as the problem does not

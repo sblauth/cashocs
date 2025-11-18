@@ -153,7 +153,8 @@ plt.tight_layout()
 # -
 
 # The result looks as follows
-# ![](/../../demos/documented/misc/xdmf_io/img_states.png)
+# :::{image} /../../demos/documented/misc/xdmf_io/img_states.png
+# :::
 #
 # Here, we can nicely see that we indeed have loaded variables from totally different
 # iterations.
@@ -183,4 +184,5 @@ plt.tight_layout()
 # plt.savefig("./img_shape_gradient.png", dpi=150, bbox_inches="tight")
 
 # The result looks as follows
-# ![](/../../demos/documented/misc/xdmf_io/img_shape_gradient.png)
+# :::{image} /../../demos/documented/misc/xdmf_io/img_shape_gradient.png
+# :::

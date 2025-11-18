@@ -11,6 +11,9 @@ on:
 
 permissions: read-all
 
+env:
+  OMP_NUM_THREADS: 1
+
 jobs:
   serial_tests:
     name: Test (py=${{ matrix.python-version}}, ubuntu-latest)
@@ -21,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
 
     steps:
     - name: Checkout repository
@@ -48,8 +51,6 @@ jobs:
         pip install .[all]
 
     - name: Run tests
-      env: 
-        OMP_NUM_THREADS: 2
       run: |
         python3 -m pytest -vv tests/
  

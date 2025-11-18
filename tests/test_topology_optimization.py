@@ -18,6 +18,7 @@
 """Tests for topology optimization problems."""
 
 from collections import namedtuple
+import pathlib
 
 from fenics import *
 import numpy as np
@@ -76,6 +77,13 @@ def psi(CG1):
 def psi_proj(CG1):
     levelset = Function(CG1)
     levelset.vector()[:] = -1.0
+    return levelset
+
+
+@pytest.fixture
+def psi_deflation(CG1):
+    levelset = Function(CG1)
+    levelset.vector()[:] = 1.0
     return levelset
 
 
@@ -273,6 +281,14 @@ def update_level_set_proj(psi, alpha, alpha_in, alpha_out):
 
 
 @pytest.fixture
+def update_level_set_deflation(psi_deflation, alpha, alpha_in, alpha_out):
+    def update_level_set_eval():
+        cashocs.interpolate_levelset_function_to_cells(psi_deflation, alpha_in, alpha_out, alpha)
+
+    return update_level_set_eval
+
+
+@pytest.fixture
 def levelset_function(CG1, geometry):
     psi_exp = Expression("x[0]-0.5", degree=1)
     psi = Function(CG1)
@@ -425,3 +441,54 @@ def test_projection_method_for_topology_optimization(
     top.projection.project()
     projection_volume = top.projection.evaluate(0.0, 0.0)
     assert abs(projection_volume - target) < top.projection.tol_bisect
+
+def test_deflation(
+    F,
+    bcs,
+    J_proj,
+    u,
+    v,
+    psi_deflation,
+    dJ_in_proj,
+    dJ_out_proj,
+    update_level_set_deflation,
+    config_top,
+    geometry,
+    DG0
+):
+    config_top.set("OptimizationRoutine", "soft_exit", "True")
+    config_top.set("OptimizationRoutine", "algorithm", "sphere_combination")
+
+    dir_path = pathlib.Path(__file__).parent
+    char_function_0 = cashocs.io.import_function(str(dir_path / "xdmf_state" / "deflation_0.xdmf"), DG0)
+    char_function_1 = cashocs.io.import_function(str(dir_path / "xdmf_state" / "deflation_1.xdmf"), DG0)
+
+    dtop = cashocs.DeflatedTopologyOptimizationProblem(
+        F,
+        bcs,
+        J_proj,
+        u,
+        v,
+        psi_deflation,
+        dJ_in_proj,
+        dJ_out_proj,
+        update_level_set_deflation,
+        config=config_top,
+        volume_restriction=[1.25, 1.5]
+    )
+    dtop.solve(1e-6, 1, 0.75, 10000., inner_rtol=0., inner_atol=0., angle_tol=5.0)
+
+    assert (
+        assemble(
+            inner(dtop.control_list_mapped_final[0] - char_function_0,
+                  dtop.control_list_mapped_final[0] - char_function_0
+            ) * geometry.dx
+        )
+    ) < 1e-3
+    assert (
+        assemble(
+            inner(dtop.control_list_mapped_final[1] - char_function_1,
+                  dtop.control_list_mapped_final[1] - char_function_1
+            ) * geometry.dx
+        )
+    ) < 1e-3

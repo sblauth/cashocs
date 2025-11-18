@@ -379,7 +379,8 @@ plt.tight_layout()
 # -
 
 # and the results should look like this
-# ![](/../../demos/documented/shape_optimization/inverse_tomography/img_inverse_tomography.png)
+# :::{image} /../../demos/documented/shape_optimization/inverse_tomography/img_inverse_tomography.png
+# :::
 #
 # and we observe that we are indeed able to identify the shape of the circle which
 # was used to create the measurements.

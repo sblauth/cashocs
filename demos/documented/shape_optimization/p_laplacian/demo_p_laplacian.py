@@ -151,4 +151,5 @@ plt.tight_layout()
 # -
 
 # and the results of the optimization look like this
-# ![](/../../demos/documented/shape_optimization/shape_poisson/img_shape_poisson.png)
+# :::{image} /../../demos/documented/shape_optimization/p_laplacian/img_p_laplacian.png
+# :::

@@ -20,13 +20,13 @@
 from __future__ import annotations
 
 import collections
+from collections.abc import Callable
 import functools
-from typing import Any, Callable, TYPE_CHECKING
+from typing import Any, Literal, TYPE_CHECKING
 
 import fenics
 from mpi4py import MPI
 import numpy as np
-from typing_extensions import Literal
 
 from cashocs import _exceptions
 from cashocs import log
@@ -150,7 +150,7 @@ def interval_mesh(
         )
 
     if partitions is not None:
-        if not all(x < y for x, y in zip(partitions, partitions[1:])):
+        if not all(x < y for x, y in zip(partitions[:-1], partitions[1:], strict=True)):
             raise _exceptions.InputError(
                 "cashocs.geometry.interval_mesh",
                 "partitions",

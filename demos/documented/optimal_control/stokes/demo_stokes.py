@@ -202,4 +202,5 @@ plt.tight_layout()
 # -
 
 # so that the results look like this
-# ![](/../../demos/documented/optimal_control/stokes/img_stokes.png)
+# :::{image} /../../demos/documented/optimal_control/stokes/img_stokes.png
+# :::

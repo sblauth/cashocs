@@ -179,5 +179,7 @@ plt.tight_layout()
 # -
 
 # and the result should look like this
-# ![](/../../demos/documented/misc/mpi_comm_self/img_rank_0.png)
-# ![](/../../demos/documented/misc/mpi_comm_self/img_rank_1.png)
+# :::{image} /../../demos/documented/misc/mpi_comm_self/img_rank_0.png
+# :::
+# :::{image} /../../demos/documented/misc/mpi_comm_self/img_rank_1.png
+# :::

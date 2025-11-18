@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<Xdmf Version="3.0">
+  <Domain>
+    <Grid GridType="Collection" CollectionType="Temporal" Name="deflation_0">
+      <Grid Name="deflation_0_0" GridType="Uniform">
+        <Topology NumberOfElements="2048" TopologyType="Triangle" NodesPerElement="3">
+          <DataItem Dimensions="2048 3" NumberType="UInt" Format="HDF">deflation_0.h5:deflation_0/deflation_0_0/mesh/topology</DataItem>
+        </Topology>
+        <Geometry GeometryType="XY">
+          <DataItem Dimensions="1073 2" Format="HDF">deflation_0.h5:deflation_0/deflation_0_0/mesh/geometry</DataItem>
+        </Geometry>
+        <Time Value="0.000000" />
+        <Attribute ItemType="FiniteElementFunction" ElementFamily="DG" ElementDegree="0" ElementCell="triangle" Name="deflation_0" Center="Other" AttributeType="Scalar">
+          <DataItem Dimensions="2048 1" NumberType="UInt" Format="HDF">deflation_0.h5:deflation_0/deflation_0_0/cell_dofs</DataItem>
+          <DataItem Dimensions="2048 1" NumberType="Float" Format="HDF">deflation_0.h5:deflation_0/deflation_0_0/vector</DataItem>
+          <DataItem Dimensions="2049 1" NumberType="UInt" Format="HDF">deflation_0.h5:deflation_0/deflation_0_0/x_cell_dofs</DataItem>
+          <DataItem Dimensions="2048 1" NumberType="UInt" Format="HDF">deflation_0.h5:deflation_0/deflation_0_0/cells</DataItem>
+        </Attribute>
+      </Grid>
+    </Grid>
+  </Domain>
+</Xdmf>

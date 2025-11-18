@@ -19,10 +19,11 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 import functools
 import gc
 import subprocess
-from typing import Callable, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import dolfin.function.argument
 import fenics

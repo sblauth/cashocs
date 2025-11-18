@@ -253,7 +253,7 @@ def setup_fieldsplit_preconditioner(
                     )
                     idx.append(idx_i)
                     name.append(f"{i:d}")
-                idx_tuples = zip(name, idx)
+                idx_tuples = zip(name, idx, strict=True)
 
                 pc.setFieldSplitIS(*idx_tuples)
             else:

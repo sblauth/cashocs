@@ -20,13 +20,13 @@
 from __future__ import annotations
 
 import abc
+from collections.abc import Callable
 import copy
 import pathlib
-from typing import Callable, TYPE_CHECKING
+from typing import Literal, TYPE_CHECKING
 
 import fenics
 import numpy as np
-from typing_extensions import Literal
 
 try:
     import ufl_legacy as ufl
@@ -34,16 +34,15 @@ except ImportError:
     import ufl
 
 from cashocs import _utils
+from cashocs import io
 from cashocs import log
 from cashocs._constraints import solvers
 from cashocs._database import database
 from cashocs._optimization import optimal_control
 from cashocs._optimization import shape_optimization
-from cashocs.io import output
 
 if TYPE_CHECKING:
     from cashocs import _typing
-    from cashocs import io
 
 
 class ConstrainedOptimizationProblem(abc.ABC):
@@ -194,7 +193,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
             self.preconditioner_forms,  # type: ignore
         )
 
-        self.output_manager = output.OutputManager(self.db)
+        self.output_manager = io.output.OutputManager(self.db)
 
     def solve(
         self,

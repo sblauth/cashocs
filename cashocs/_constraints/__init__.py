@@ -23,10 +23,14 @@ from cashocs._constraints.constrained_problems import (
 )
 from cashocs._constraints.constraints import EqualityConstraint
 from cashocs._constraints.constraints import InequalityConstraint
+from cashocs._constraints.deflated_problems import DeflatedOptimalControlProblem
+from cashocs._constraints.deflated_problems import DeflatedTopologyOptimizationProblem
 
 __all__ = [
     "ConstrainedOptimalControlProblem",
     "ConstrainedShapeOptimizationProblem",
     "EqualityConstraint",
     "InequalityConstraint",
+    "DeflatedTopologyOptimizationProblem",
+    "DeflatedOptimalControlProblem",
 ]

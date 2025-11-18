@@ -281,4 +281,5 @@ plt.tight_layout()
 # -
 
 # and the result is shown below
-# ![](/../../demos/documented/shape_optimization/pseudo_time_stepping/img_pseudo_time_stepping.png)
+# :::{image} /../../demos/documented/shape_optimization/pseudo_time_stepping/img_pseudo_time_stepping.png
+# :::

@@ -37,6 +37,8 @@ from cashocs._constraints.constrained_problems import (
 )
 from cashocs._constraints.constraints import EqualityConstraint
 from cashocs._constraints.constraints import InequalityConstraint
+from cashocs._constraints.deflated_problems import DeflatedOptimalControlProblem
+from cashocs._constraints.deflated_problems import DeflatedTopologyOptimizationProblem
 from cashocs._optimization.cost_functional import Functional
 from cashocs._optimization.cost_functional import IntegralFunctional
 from cashocs._optimization.cost_functional import MinMaxFunctional
@@ -66,7 +68,7 @@ from cashocs.nonlinear_solvers import picard_iteration
 from cashocs.nonlinear_solvers import snes_solve
 from cashocs.nonlinear_solvers import ts_pseudo_solve
 
-__version__ = "2.7.3"
+__version__ = "2.8.0-dev"
 
 __citation__ = """
 @Article{Blauth2021cashocs,
@@ -145,6 +147,8 @@ __all__ = [
     "ConstrainedShapeOptimizationProblem",
     "EqualityConstraint",
     "InequalityConstraint",
+    "DeflatedTopologyOptimizationProblem",
+    "DeflatedOptimalControlProblem",
     "Functional",
     "IntegralFunctional",
     "MinMaxFunctional",

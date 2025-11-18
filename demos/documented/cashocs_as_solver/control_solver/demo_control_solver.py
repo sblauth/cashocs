@@ -190,8 +190,9 @@ plt.tight_layout()
 # -
 
 # The results are, of course, identical to {ref}`demo_poisson` and look as follows
-# ![](/../../demos/documented/cashocs_as_solver/control_solver/img_control_solver.png)
-
+# :::{image} /../../demos/documented/cashocs_as_solver/control_solver/img_control_solver.png
+# :::
+#
 # :::{note}
 # In case we have multiple state equations as in {ref}`demo_multiple_variables`,
 # one has to supply ordered lists of adjoint equations and boundary conditions,

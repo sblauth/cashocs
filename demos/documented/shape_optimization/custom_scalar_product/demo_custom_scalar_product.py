@@ -143,4 +143,5 @@ plt.tight_layout()
 # -
 
 # The result of the optimization looks like this
-# ![](/../../demos/documented/shape_optimization/custom_scalar_product/img_custom_scalar_product.png)
+# :::{image} /../../demos/documented/shape_optimization/custom_scalar_product/img_custom_scalar_product.png
+# :::
