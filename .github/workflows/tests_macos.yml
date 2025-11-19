@@ -15,8 +15,8 @@ env:
 
 jobs:
   serial_tests:
-    name: Test (py=${{ matrix.python-version}}, macos-13)
-    runs-on: macos-13
+    name: Test (py=${{ matrix.python-version}}, macos-15)
+    runs-on: macos-15
     defaults:
       run:
         shell: bash -el {0}
