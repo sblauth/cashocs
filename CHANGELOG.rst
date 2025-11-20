@@ -10,6 +10,8 @@ of the maintenance releases, please take a look at
 2.8.0 (in development)
 ----------------------
 
+* Add the deflation approach from `Baeck, Blauth, Leithäuser, Pinnau and Sturm: A Novel Deflation Approach for Topology Optimization and Application for Optimization of Bipolar Plates of Electrolysis Cells <https://doi.org/10.1137/24M1670913>`_ into cashocs. Deflated problems can be created with :py:class:`cashocs.DeflatedTopologyOptimizationProblem` and :py:class:`cashocs.DeflatedOptimalControlProblem`. This approach is documented at `<https://cashocs.readthedocs.io/en/stable/user/demos/topology_optimization/demo_deflation/>`_.
+
 
 
 2.7.0 (September 24, 2025)

@@ -125,7 +125,7 @@ If you are using the space mapping methods for shape optimization, please cite t
 
 
 
-and if you are using the topology optimization methods implemented in cashocs, please cite the paper
+If you are using the topology optimization methods implemented in cashocs, please cite the paper
 
 .. tab-set::
 
@@ -157,3 +157,35 @@ and if you are using the topology optimization methods implemented in cashocs, p
               mrnumber = {4635978},
             }
 
+If you are using the deflation approach for computing multiple local minimizers with cashocs, please cite
+
+
+.. tab-set::
+
+    .. tab-item:: Plain Text
+
+        .. code-block:: text
+
+            A Novel Deflation Approach for Topology Optimization and Application for Optimization of Bipolar Plates of Electrolysis Cells
+            Leon Baeck, Sebastian Blauth, Christian Leithäuser, René Pinnau, and Kevin Sturm
+            SIAM Journal on Scientific Computing 47(6), 2025
+            https://doi.org/10.1137/24M1670913
+
+    .. tab-item:: BibTeX
+
+        .. code-block:: bibtex
+
+            @Article{Baeck2025Novel,
+              author   = {Baeck, Leon and Blauth, Sebastian and Leith\"auser, Christian and Pinnau, Ren\'e{} and Sturm, Kevin},
+              journal  = {SIAM J. Sci. Comput.},
+              title    = {A {N}ovel {D}eflation {A}pproach for {T}opology {O}ptimization and {A}pplication for {O}ptimization of {B}ipolar {P}lates of {E}lectrolysis {C}ells},
+              year     = {2025},
+              issn     = {1064-8275,1095-7197},
+              number   = {6},
+              pages    = {B1369--B1399},
+              volume   = {47},
+              doi      = {10.1137/24M1670913},
+              fjournal = {SIAM Journal on Scientific Computing},
+              mrclass  = {65K05 (49M41 74 90C26)},
+              mrnumber = {4982537},
+            }
