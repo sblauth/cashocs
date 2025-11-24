@@ -1,6 +1,6 @@
 numpy>=1.22.2
 matplotlib
-scipy==1.15.2
+scipy==1.15.3
 Sphinx==8.2.3
 sphinx-argparse==0.5.2
 sphinx-copybutton==0.5.2
