@@ -61,7 +61,7 @@ jobs:
         MINIMUM_ORANGE: 70
 
     - name: Store Pull Request comment to be posted
-      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+      uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
       if: steps.coverage_comment.outputs.COMMENT_FILE_WRITTEN == 'true'
       with:
         # If you use a different name, update COMMENT_ARTIFACT_NAME accordingly
