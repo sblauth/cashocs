@@ -20,19 +20,28 @@ jobs:
         shell: bash -el {0}
     
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
       - name: Setup conda
         uses: conda-incubator/setup-miniconda@835234971496cad1653abb28a638a281cf32541f # v3.2.0
         with:
+          environment-file: .github/conda/conda.yml
           miniforge-version: latest
-          auto-activate-base: true
+          python-version: 3.14
+          activate-environment: test
+          auto-activate-base: false
           auto-update-conda: true
           conda-remove-defaults: true
       
-      - name: Install cashocs
-        run: conda create -n cashocs cashocs python=3.14
-      
+      - name: Show conda info
+        run: conda info
+
+      - name: Show conda list
+        run: conda list
+
       - name: Test if package was installed properly
         run: |
-          conda run -n cashocs python -c "import cashocs; cashocs.regular_mesh(16)"
-          conda run -n cashocs mpirun -n 2 python -c "import cashocs; cashocs.regular_mesh(16)"
+          python -c "import cashocs; cashocs.regular_mesh(16)"
+          mpirun -n 2 python -c "import cashocs; cashocs.regular_mesh(16)"
         
