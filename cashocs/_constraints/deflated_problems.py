@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2025 Fraunhofer ITWM, Sebastian Blauth and
+# Copyright (C) 2020-2026 Fraunhofer ITWM, Sebastian Blauth and
 # Leon Baeck
 #
 # This file is part of cashocs.
