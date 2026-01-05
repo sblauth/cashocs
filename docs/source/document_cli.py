@@ -1,4 +1,4 @@
-# Copyright (C) 2020-2025 Fraunhofer ITWM and Sebastian Blauth
+# Copyright (C) 2020-2026 Fraunhofer ITWM and Sebastian Blauth
 #
 # This file is part of cashocs.
 #
@@ -56,7 +56,7 @@ def write_rst_file(file: str, func: str, output_dir: pathlib.Path):
     name = parser.prog
 
     fileconts = f"""{name}
-{"#"*len(name)}
+{"#" * len(name)}
 
 .. argparse::
    :module: {module}

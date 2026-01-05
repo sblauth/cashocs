@@ -25,7 +25,7 @@ document_cli.process()
 # -- Project information -----------------------------------------------------
 
 project = "cashocs"
-copyright = "2020-2025, Fraunhofer ITWM and Sebastian Blauth"
+copyright = "2020-2026, Fraunhofer ITWM and Sebastian Blauth"
 author = "Sebastian Blauth"
 
 # The full version, including alpha/beta/rc tags
