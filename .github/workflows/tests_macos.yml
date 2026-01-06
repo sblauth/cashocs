@@ -1,9 +1,6 @@
 name: Tests (macos, serial)
 
 on:
-  push:
-    branches:
-      - 'release/**'
   workflow_dispatch:
   schedule:
     - cron: '17 0 * * *'
