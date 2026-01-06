@@ -21,10 +21,10 @@
 | cashocs/\_database/parameter\_database.py                                          |       30 |        0 |    100% |           |
 | cashocs/\_exceptions.py                                                            |       54 |        4 |     93% |150-151, 193-194 |
 | cashocs/\_forms/\_\_init\_\_.py                                                    |        8 |        0 |    100% |           |
-| cashocs/\_forms/control\_form\_handler.py                                          |      142 |       11 |     92% |30, 112-130, 146-147, 203 |
+| cashocs/\_forms/control\_form\_handler.py                                          |      151 |       20 |     87% |30, 109-110, 128-129, 145-182, 230 |
 | cashocs/\_forms/form\_handler.py                                                   |       28 |        8 |     71% |     55-63 |
 | cashocs/\_forms/general\_form\_handler.py                                          |       82 |       10 |     88% |49-55, 193, 198, 209-210 |
-| cashocs/\_forms/shape\_form\_handler.py                                            |      270 |       24 |     91% |169, 207-208, 390, 412-418, 453, 570, 695-701, 711-724, 845-848 |
+| cashocs/\_forms/shape\_form\_handler.py                                            |      274 |       26 |     91% |169, 207-208, 390, 412-418, 452-453, 458, 581, 706-712, 722-735, 856-859 |
 | cashocs/\_forms/shape\_regularization.py                                           |      220 |       10 |     95% |202, 211, 297, 305, 399, 474, 482, 503, 631, 639 |
 | cashocs/\_optimization/\_\_init\_\_.py                                             |        0 |        0 |    100% |           |
 | cashocs/\_optimization/cost\_functional.py                                         |      160 |        7 |     96% |234, 247, 272, 432, 465-466, 521 |
@@ -93,7 +93,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      378 |       40 |     89% |172, 273, 356-361, 461, 548-549, 677-679, 686-688, 713-745, 930, 959-961, 971-973, 987-988 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      392 |       53 |     86% |174, 276, 351-352, 446, 523-524, 539-566, 687-688, 705-707, 713-715, 745-783, 955, 982-984, 994-996, 1010-1011 |
 | cashocs/verification.py                                                            |      131 |        3 |     98% |234-235, 267 |
-| **TOTAL**                                                                          | **7939** |  **684** | **91%** |           |
+| **TOTAL**                                                                          | **7952** |  **695** | **91%** |           |
 
 
 ## Setup coverage badge
