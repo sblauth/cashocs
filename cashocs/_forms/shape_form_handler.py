@@ -442,15 +442,26 @@ class ShapeFormHandler(form_handler.FormHandler):
             The assembler for the system.
 
         """
-        estimated_degree = np.maximum(
-            ufl_algorithms.estimate_total_polynomial_degree(modified_scalar_product),
-            ufl_algorithms.estimate_total_polynomial_degree(shape_derivative),
-        )
+        try:
+            estimated_degree = np.maximum(
+                ufl_algorithms.estimate_total_polynomial_degree(
+                    modified_scalar_product
+                ),
+                ufl_algorithms.estimate_total_polynomial_degree(shape_derivative),
+            )
+        except ufl.UFLException:
+            estimated_degree = np.inf
         fenics_quadrature_degree = fenics.parameters["form_compiler"][
             "quadrature_degree"
         ]
         if fenics_quadrature_degree is not None:
             estimated_degree = np.minimum(estimated_degree, fenics_quadrature_degree)
+        else:
+            if np.isinf(estimated_degree):
+                raise _exceptions.CashocsException(
+                    "Could not determine quadrature degree. "
+                    "Please provide this using fenics.parameters."
+                )
 
         assembler = fenics.SystemAssembler(
             modified_scalar_product,

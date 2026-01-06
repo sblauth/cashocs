@@ -93,9 +93,6 @@ class ControlFormHandler(form_handler.FormHandler):
             bcs: The boundary conditions for the projection.
 
         """
-        modified_scalar_product_forms = _utils.bilinear_boundary_form_modification(
-            scalar_product_forms
-        )
         self.modified_scalar_product = _utils.bilinear_boundary_form_modification(
             scalar_product_forms
         )
@@ -103,31 +100,16 @@ class ControlFormHandler(form_handler.FormHandler):
             self.assemblers.clear()
             for i in range(len(bcs)):
                 assembler = fenics.SystemAssembler(
-                    modified_scalar_product_forms[i],
+                    self.modified_scalar_product[i],
                     derivatives[i],
                     bcs[i],
                 )
                 assembler.keep_diagonal = True
                 self.assemblers.append(assembler)
         except (AssertionError, ValueError):
-            self.assemblers.clear()
-            for i in range(len(self.riesz_scalar_products)):
-                estimated_degree = np.maximum(
-                    ufl_algorithms.estimate_total_polynomial_degree(
-                        self.riesz_scalar_products[i]
-                    ),
-                    ufl_algorithms.estimate_total_polynomial_degree(
-                        self.gradient_forms_rhs[i]
-                    ),
-                )
-                assembler = fenics.SystemAssembler(
-                    modified_scalar_product_forms[i],
-                    derivatives[i],
-                    bcs[i],
-                    form_compiler_parameters={"quadrature_degree": estimated_degree},
-                )
-                assembler.keep_diagonal = True
-                self.assemblers.append(assembler)
+            self.assemblers = self._setup_assembler_failsafe(
+                self.modified_scalar_product, derivatives, bcs
+            )
 
         fenics_scalar_product_matrices = []
 
@@ -153,6 +135,51 @@ class ControlFormHandler(form_handler.FormHandler):
                             "riesz_scalar_products",
                             "Supplied scalar product form is not symmetric.",
                         )
+
+    def _setup_assembler_failsafe(
+        self,
+        modified_scalar_product: list[ufl.Form],
+        derivatives: list[ufl.Form],
+        bcs: list[list[fenics.DirichletBC]] | list[None],
+    ) -> list[fenics.SystemAssembler]:
+        assemblers = []
+        for i in range(len(self.riesz_scalar_products)):
+            try:
+                estimated_degree = np.maximum(
+                    ufl_algorithms.estimate_total_polynomial_degree(
+                        self.riesz_scalar_products[i]
+                    ),
+                    ufl_algorithms.estimate_total_polynomial_degree(
+                        self.gradient_forms_rhs[i]
+                    ),
+                )
+            except ufl.UFLException:
+                estimated_degree = np.inf
+
+            fenics_quadrature_degree = fenics.parameters["form_compiler"][
+                "quadrature_degree"
+            ]
+            if fenics_quadrature_degree is not None:
+                estimated_degree = np.minimum(
+                    estimated_degree, fenics_quadrature_degree
+                )
+            else:
+                if np.isinf(estimated_degree):
+                    raise _exceptions.CashocsException(
+                        "Could not determine quadrature degree. "
+                        "Please provide this using fenics.parameters."
+                    )
+
+            assembler = fenics.SystemAssembler(
+                modified_scalar_product[i],
+                derivatives[i],
+                bcs[i],
+                form_compiler_parameters={"quadrature_degree": estimated_degree},
+            )
+            assembler.keep_diagonal = True
+            assemblers.append(assembler)
+
+        return assemblers
 
     def scalar_product(
         self, a: list[fenics.Function], b: list[fenics.Function]
