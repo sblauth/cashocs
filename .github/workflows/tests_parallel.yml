@@ -1,9 +1,6 @@
 name: Tests (ubuntu, parallel)
 
 on:
-  push:
-    branches:
-      - 'release/**'
   workflow_dispatch:
   pull_request:
   schedule:

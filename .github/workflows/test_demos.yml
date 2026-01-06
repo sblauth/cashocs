@@ -1,9 +1,6 @@
 name: Test Demos
 
 on:
-  push:
-    branches:
-      - 'release/**'
   workflow_dispatch:
   schedule:
     - cron: '02 23 * * *'
