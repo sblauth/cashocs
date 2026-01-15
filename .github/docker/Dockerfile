@@ -1,15 +1,8 @@
-FROM mambaorg/micromamba:1-jammy AS test-env
+FROM condaforge/miniforge3
 
-USER root
+SHELL ["/bin/bash", "-lc"]
 
-RUN apt-get update --fix-missing && \
-    apt-get install -y libgl1-mesa-dev ffmpeg libsm6 libxext6 curl git gpg jq && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
-
-USER $MAMBA_USER
-
-RUN micromamba install -y -n base -c conda-forge \
+RUN conda create -y -n env \
       fenics=2019 \
       meshio">=5.3" \
       pytest \
@@ -18,16 +11,16 @@ RUN micromamba install -y -n base -c conda-forge \
       mpich \
       scipy \
       python=3.14 && \
-   micromamba clean --all --yes
+   conda clean --all --yes
 
-ARG MAMBA_DOCKERFILE_ACTIVATE=1
+ENV CONDA_DEFAULT_ENV=env
 
-FROM test-env AS cashocs
+RUN echo "conda activate env" >> ~/.bashrc
 
-COPY --chown=$MAMBA_USER:$MAMBA_USER . /home/mambauser/cashocs
+WORKDIR /opt/app
 
-RUN cd /home/mambauser/cashocs && \
-    pip install .[all]
+COPY . .
 
-RUN cd /home/mambauser/cashocs && \
-    python3 -m pytest -vv tests/
+RUN pip install .[all]
+
+RUN python3 -m pytest -vv tests/

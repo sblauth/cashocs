@@ -11,8 +11,8 @@ on:
 permissions: read-all
 
 jobs:
-  build_test_env:
-    name: Build sblauth/cashocs-test-env image
+  build_image:
+    name: Build sblauth/cashocs image
     runs-on: ubuntu-latest
     outputs:
       TAG_PREFIX: ${{ steps.tag_name.outputs.TAG_PREFIX }}
@@ -38,27 +38,4 @@ jobs:
           docker buildx build --push \
             --no-cache \
             --cache-to=type=inline,mode=max --file ./.github/docker/Dockerfile \
-            --target=test-env \
-            --tag sblauth/cashocs-test-env:${{ steps.tag_name.outputs.TAG_PREFIX }} .
-
-
-  build_user_image:
-    name: Build sblauth/cashocs image
-    needs: 
-      - build_test_env
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
-
-      - name: Log into the Dockerhub registry
-        run: echo ${{ secrets.DOCKERHUB_TOKEN }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
-
-      - name: Build the Docker image
-        run: |
-          docker buildx build --push \
-            --no-cache \
-            --cache-to=type=inline,mode=max --file ./.github/docker/Dockerfile \
-            --target=cashocs \
-            --tag sblauth/cashocs:${{ needs.build_test_env.outputs.TAG_PREFIX }} .
-
+            --tag sblauth/cashocs:${{ steps.tag_name.outputs.TAG_PREFIX }} .
