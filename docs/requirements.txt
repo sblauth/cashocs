@@ -13,3 +13,4 @@ myst-parser==4.0.1
 jupytext==1.18.1
 sphinx-favicon==1.0.1
 matplotlib
+python=3.14.2
