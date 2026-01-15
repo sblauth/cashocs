@@ -13,14 +13,13 @@ RUN conda create -y -n env \
       python=3.14 && \
    conda clean --all --yes
 
-ENV CONDA_DEFAULT_ENV=env
-
-RUN echo "conda activate env" >> ~/.bashrc
-
 WORKDIR /opt/app
 
 COPY . .
 
-RUN pip install .[all]
+RUN conda run --no-capture-output -n env pip install .[all]
 
-RUN python3 -m pytest -vv tests/
+RUN conda run --no-capture-output -n env python -m pytest -vv tests/
+
+ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "env"]
+CMD ["bash"]
