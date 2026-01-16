@@ -30,31 +30,26 @@ jobs:
 
     steps:
     - name: Delete current installation in docker image
-      shell: bash
       run: |
-        pip uninstall -y cashocs
+        conda run --no-capture-output -n env pip uninstall -y cashocs
         rm -rf /opt/app/{*,.*}
 
     - name: Checkout repository
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
     - name: Install cashocs
-      shell: bash
       run: |
-        pip install .[all]
+        conda run --no-capture-output -n env pip install .[all]
 
     - name: Show conda info
-      shell: bash
-      run: conda info
+      run: conda info -n env
 
     - name: Show list of all installed packages
-      shell: bash
-      run: conda list
+      run: conda list -n env
 
     - name: Run tests
-      shell: bash
       run: |
-        python3 -m pytest -vv --cov=cashocs --cov-report=xml tests/
+        conda run --no-capture-output -n env python3 -m pytest -vv --cov=cashocs --cov-report=xml tests/
 
     - name: Coverage comment
       id: coverage_comment
