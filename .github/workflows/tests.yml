@@ -42,7 +42,7 @@ jobs:
         conda run --no-capture-output -n env pip install .[all]
 
     - name: Show conda info
-      run: conda info -n env
+      run: conda info
 
     - name: Show list of all installed packages
       run: conda list -n env
