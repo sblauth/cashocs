@@ -415,10 +415,12 @@ class TSPseudoSolver:
         else:
             relative_residual = self.res_current / self.res_initial
 
+        dt = ts.getTimeStep()
+
         monitor_str = (
-            f"TS {i = }  {t = :.3e}  "
-            f"residual: {relative_residual:.3e} (rel)  "
-            f"{self.res_current:.3e} (abs)"
+            f"{i:d} TS dt {dt:g} time {t:g} "
+            f"relative resid {relative_residual:.6e} "
+            f"absolute resid {self.res_current:.6e}"
         )
         if self.comm.rank == 0 and self.has_monitor_output:
             print(monitor_str, flush=True)
