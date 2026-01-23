@@ -72,16 +72,23 @@ class ArmijoLineSearch(line_search.LineSearch):
         if solver.iteration >= solver.max_iter:
             return True
 
-        if self.stepsize * self.search_direction_inf <= 1e-8:
-            log.error("Stepsize too small.")
+        if self.stepsize * self.search_direction_inf <= 1e-9:
+            log.error(
+                "The stepsize is too small. "
+                "The changes in the geometry are too small for the current search "
+                "direction."
+            )
             solver.line_search_broken = True
             return True
         elif (
             not self.is_newton_like
             and not self.is_newton
-            and self.stepsize / self.armijo_stepsize_initial <= 1e-8
+            and self.stepsize / self.armijo_stepsize_initial <= 1e-9
         ):
-            log.error("Stepsize too small.")
+            log.error(
+                "The stepsize is too small. It is too small based on the initial"
+                "accepted stepsize."
+            )
             solver.line_search_broken = True
             return True
 
