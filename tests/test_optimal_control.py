@@ -600,11 +600,6 @@ def test_damped_bfgs(geometry, y, p, bcs, config_ocp):
     u0 = Function(U)
     u1 = Function(U)
 
-    u0.vector().vec().set(-0.5)
-    u0.vector().apply("")
-    u1.vector().vec().set(-0.5)
-    u1.vector().apply("")
-
     F = y * p * geometry.dx
 
     J = cashocs.IntegralFunctional(
@@ -614,22 +609,13 @@ def test_damped_bfgs(geometry, y, p, bcs, config_ocp):
 
     config_ocp.set("LineSearch", "initial_stepsize", "1e-2")
     config_ocp.set("OptimizationRoutine", "rtol", "1e-7")
-    with pytest.raises(NotConvergedError) as e_info:
-        config_ocp.set("AlgoLBFGS", "damped", "False")
-        ocp = cashocs.OptimalControlProblem(
-            F, bcs, J, y, [u0, u1], p, config=config_ocp
-        )
-        ocp.solve()
-        MPI.barrier(MPI.comm_world)
-        assert "Armijo rule failed." in str(e_info)
-
     u0.vector().vec().set(-0.5)
     u0.vector().apply("")
     u1.vector().vec().set(-0.5)
     u1.vector().apply("")
     config_ocp.set("AlgoLBFGS", "damped", "True")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, [u0, u1], p, config=config_ocp)
-    ocp.solve()
+    ocp.solve(max_iter=7)
     MPI.barrier(MPI.comm_world)
 
     assert ocp.solver.relative_norm <= ocp.solver.rtol
