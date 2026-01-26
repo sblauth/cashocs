@@ -29,9 +29,9 @@
 | cashocs/\_optimization/\_\_init\_\_.py                                             |        0 |        0 |    100% |           |
 | cashocs/\_optimization/cost\_functional.py                                         |      160 |        7 |     96% |234, 247, 272, 432, 465-466, 521 |
 | cashocs/\_optimization/line\_search/\_\_init\_\_.py                                |        4 |        0 |    100% |           |
-| cashocs/\_optimization/line\_search/armijo\_line\_search.py                        |       72 |        6 |     92% |216, 231-236 |
+| cashocs/\_optimization/line\_search/armijo\_line\_search.py                        |       72 |        6 |     92% |223, 238-243 |
 | cashocs/\_optimization/line\_search/line\_search.py                                |       71 |        2 |     97% |   68, 141 |
-| cashocs/\_optimization/line\_search/polynomial\_line\_search.py                    |       96 |       18 |     81% |82, 85-87, 93-95, 137, 140, 176-186, 211, 246, 248, 343-346 |
+| cashocs/\_optimization/line\_search/polynomial\_line\_search.py                    |       96 |       18 |     81% |82, 85-91, 97-102, 144, 147, 183-193, 218, 253, 255, 350-353 |
 | cashocs/\_optimization/optimal\_control/\_\_init\_\_.py                            |        3 |        0 |    100% |           |
 | cashocs/\_optimization/optimal\_control/box\_constraints.py                        |      112 |        0 |    100% |           |
 | cashocs/\_optimization/optimal\_control/control\_variable\_abstractions.py         |       64 |        0 |    100% |           |
