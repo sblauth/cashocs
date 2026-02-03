@@ -15,7 +15,7 @@ env:
 
 
 jobs:
-  container_image:
+  container_images:
     runs-on: ubuntu-latest
     permissions:
       contents: read
