@@ -82,6 +82,7 @@ autodoc_mock_imports = [
 ]
 autodoc_typehints = "both"
 autoclass_content = "both"
+maximum_signature_line_length = 3
 
 highlight_language = "python"
 
