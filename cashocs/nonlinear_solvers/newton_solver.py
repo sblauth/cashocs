@@ -217,6 +217,12 @@ class _NewtonSolver:
         else:
             log.debug(info_str + print_str)
 
+        equation_residuals = _utils.compute_equation_residuals(
+            self.residual.vec(), self.function_space
+        )
+        for i, res in enumerate(equation_residuals):
+            log.debug(f"Residual of equation {i:d}: {res:.3e}")
+
     @log.profile_execution_time("assembling the Jacobian for Newton's method")
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
