@@ -409,6 +409,9 @@ class TSPseudoSolver:
 
         """
         self.res_current = self.compute_nonlinear_residual(u)
+        equation_residuals = _utils.compute_equation_residuals(
+            self.residual_convergence.vec(), self.space
+        )
 
         if self.res_initial == 0:
             relative_residual = self.res_current
@@ -424,6 +427,9 @@ class TSPseudoSolver:
         )
         if self.comm.rank == 0 and self.has_monitor_output:
             print(monitor_str, flush=True)
+
+        for j, res in enumerate(equation_residuals):
+            log.debug(f"Residual of equation {j:d}: {res:.3e}")
 
         self.rtol = cast(float, self.rtol)
         self.atol = cast(float, self.atol)

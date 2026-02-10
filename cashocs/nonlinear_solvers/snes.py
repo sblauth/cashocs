@@ -159,6 +159,8 @@ class SNESSolver:
             )
             self.residual_shift = fenics.PETScVector(self.comm)
 
+        self.residual_convergence: PETSc.Vec | None = None
+
     @log.profile_execution_time("assembling the residual for SNES")
     def assemble_function(
         self,
@@ -186,6 +188,8 @@ class SNESSolver:
         ):
             self.assembler_shift.assemble(self.residual_shift, self.u.vector())
             f[:] -= self.residual_shift[:]
+
+        self.residual_convergence = f.vec().copy()
 
     @log.profile_execution_time("assembling the Jacobian for SNES")
     def assemble_jacobian(
@@ -219,6 +223,27 @@ class SNESSolver:
         else:
             self.is_preassembled = False
 
+    def monitor(  # pylint: disable=unused-argument
+        self,
+        snes: PETSc.SNES,
+        its: int,
+        norm: float,
+    ) -> None:
+        """The monitoring function for the SNES solver.
+
+        Args:
+            snes: The SNES solver.
+            its: The current iteration.
+            norm: The current residual norm.
+
+        """
+        if self.residual_convergence:
+            equation_residuals = _utils.compute_equation_residuals(
+                self.residual_convergence, self.u.function_space()
+            )
+            for i, res in enumerate(equation_residuals):
+                log.debug(f"Residual of equation {i:d}: {res:.3e}")
+
     def solve(self) -> fenics.Function:
         """Solves the nonlinear problem with PETSc's SNES."""
         log.begin("Solving the nonlinear PDE system with PETSc SNES.", level=log.DEBUG)
@@ -239,6 +264,8 @@ class SNESSolver:
 
         _utils.setup_petsc_options([snes], [self.petsc_options])
         snes.setTolerances(rtol=self.rtol, atol=self.atol, max_it=self.max_iter)
+
+        snes.setMonitor(self.monitor)
 
         x = fenics.Function(self.u.function_space())
         x.vector().vec().aypx(0.0, self.u.vector().vec())

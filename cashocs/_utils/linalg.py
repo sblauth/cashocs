@@ -529,6 +529,33 @@ class LinearSolver:
         function.vector().apply("")
 
 
+def compute_equation_residuals(
+    residual: PETSc.Vec, function_space: fenics.FunctionSpace
+) -> list[float]:
+    """Splits the residual to the individual equations and computes the norm.
+
+    Args:
+        residual: The PETSc vector containing the (nonlinear) residual.
+        function_space: The function space defining the equations.
+
+    Returns:
+        A list of residual norms for the individual equations.
+
+    """
+    num_equations = function_space.num_sub_spaces()
+    is_sets = [
+        PETSc.IS().createGeneral(function_space.sub(i).dofmap().dofs())
+        for i in range(num_equations)
+    ]
+
+    equation_residual_vectors = [residual.getSubVector(iset) for iset in is_sets]
+    equation_residual_norms = [
+        r.norm(PETSc.NormType.NORM_2) for r in equation_residual_vectors
+    ]
+
+    return equation_residual_norms
+
+
 class Interpolator:
     """Efficient interpolation between two function spaces.
 
