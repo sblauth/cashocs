@@ -542,16 +542,22 @@ def compute_equation_residuals(
         A list of residual norms for the individual equations.
 
     """
-    num_equations = function_space.num_sub_spaces()
-    is_sets = [
-        PETSc.IS().createGeneral(function_space.sub(i).dofmap().dofs())
-        for i in range(num_equations)
-    ]
+    if not isinstance(
+        function_space.ufl_element(), ufl.VectorElement | ufl.FiniteElement
+    ):
+        num_equations = function_space.num_sub_spaces()
+        is_sets = [
+            PETSc.IS().createGeneral(function_space.sub(i).dofmap().dofs())
+            for i in range(num_equations)
+        ]
 
-    equation_residual_vectors = [residual.getSubVector(iset) for iset in is_sets]
-    equation_residual_norms = [
-        r.norm(PETSc.NormType.NORM_2) for r in equation_residual_vectors
-    ]
+        equation_residual_vectors = [residual.getSubVector(iset) for iset in is_sets]
+        equation_residual_norms = [
+            r.norm(PETSc.NormType.NORM_2) for r in equation_residual_vectors
+        ]
+
+    else:
+        equation_residual_norms = []
 
     return equation_residual_norms
 
