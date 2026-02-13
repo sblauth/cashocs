@@ -217,11 +217,19 @@ class _NewtonSolver:
         else:
             log.debug(info_str + print_str)
 
-        equation_residuals = _utils.compute_equation_residuals(
-            self.residual.vec(), self.function_space
+        self.equation_residuals_current = np.array(
+            _utils.compute_equation_residuals(self.residual.vec(), self.function_space)
         )
-        for i, res in enumerate(equation_residuals):
-            log.debug(f"Residual of equation {i:d}: {res:.3e}")
+        for j, res in enumerate(self.equation_residuals_current):
+            res_init = self.equation_residuals_initial[j]
+            if res_init == 0:
+                res_rel = res
+            else:
+                res_rel = res / res_init
+
+            log.debug(
+                f"Equation {j:d} relative resid {res_rel:.3e} absolute resid {res:.3e}"
+            )
 
     @log.profile_execution_time("assembling the Jacobian for Newton's method")
     def _assemble_matrix(self) -> None:
@@ -282,6 +290,9 @@ class _NewtonSolver:
         self._compute_residual()
 
         self.res_0 = self.residual.norm(self.norm_type)
+        self.equation_residuals_initial = np.array(
+            _utils.compute_equation_residuals(self.residual.vec(), self.function_space)
+        )
         if self.res_0 == 0.0:  # pragma: no cover
             message = "Residual vanishes, input is already a solution."
             if self.verbose:
