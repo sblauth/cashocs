@@ -409,6 +409,11 @@ class TSPseudoSolver:
 
         """
         self.res_current = self.compute_nonlinear_residual(u)
+        self.equation_residuals_current = np.array(
+            _utils.compute_equation_residuals(
+                self.residual_convergence.vec(), self.space
+            )
+        )
 
         if self.res_initial == 0:
             relative_residual = self.res_current
@@ -424,6 +429,17 @@ class TSPseudoSolver:
         )
         if self.comm.rank == 0 and self.has_monitor_output:
             print(monitor_str, flush=True)
+
+        for j, res in enumerate(self.equation_residuals_current):
+            res_init = self.equation_residuals_initial[j]
+            if res_init == 0:
+                res_rel = res
+            else:
+                res_rel = res / res_init
+
+            log.debug(
+                f"Equation {j:d} relative resid {res_rel:.3e} absolute resid {res:.3e}"
+            )
 
         self.rtol = cast(float, self.rtol)
         self.atol = cast(float, self.atol)
@@ -496,6 +512,11 @@ class TSPseudoSolver:
             )
 
         self.res_initial = self.compute_nonlinear_residual(self.u.vector().vec())
+        self.equation_residuals_initial = np.array(
+            _utils.compute_equation_residuals(
+                self.residual_convergence.vec(), self.space
+            )
+        )
         ts.setTime(0.0)
 
         ts.setMonitor(self.monitor)
