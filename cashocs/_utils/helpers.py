@@ -144,11 +144,11 @@ def optimization_algorithm_configuration(
         internal_algorithm = "conjugate_gradient"
     elif algorithm.casefold() in ["lbfgs", "bfgs"]:
         internal_algorithm = "lbfgs"
-    elif algorithm.casefold() in ["newton"]:
+    elif algorithm.casefold() == "newton":
         internal_algorithm = "newton"
-    elif algorithm.casefold() in ["sphere_combination"]:
+    elif algorithm.casefold() == "sphere_combination":
         internal_algorithm = "sphere_combination"
-    elif algorithm.casefold() in ["convex_combination"]:
+    elif algorithm.casefold() == "convex_combination":
         internal_algorithm = "convex_combination"
     elif algorithm.casefold() == "none":
         internal_algorithm = "none"
