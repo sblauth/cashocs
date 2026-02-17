@@ -269,11 +269,11 @@ class SNESSolver:
         ksp = snes.getKSP()
         _utils.linalg.setup_fieldsplit_preconditioner(self.u, ksp, self.petsc_options)
 
+        self.assemble_function(snes, self.u.vector().vec(), self.residual_petsc)
         if fenics.PETScMatrix(self.A_petsc).empty():
             self.assemble_jacobian(
                 snes, self.u.vector().vec(), self.A_petsc, self.P_petsc
             )
-            self.assemble_function(snes, self.u.vector().vec(), self.residual_petsc)
             self.is_preassembled = True
 
         self.equation_residuals_initial = np.array(
