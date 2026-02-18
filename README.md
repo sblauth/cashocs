@@ -66,7 +66,7 @@
 | cashocs/\_utils/forms.py                                                           |       62 |        0 |    100% |           |
 | cashocs/\_utils/helpers.py                                                         |       72 |        1 |     99% |        70 |
 | cashocs/\_utils/interpolations.py                                                  |       44 |       18 |     59% |27, 275-449 |
-| cashocs/\_utils/linalg.py                                                          |      193 |       21 |     89% |78, 140, 158, 331-332, 389-392, 507-508, 671-675, 695-707 |
+| cashocs/\_utils/linalg.py                                                          |      195 |       21 |     89% |78, 140, 158, 333-334, 391-394, 509-510, 673-677, 697-709 |
 | cashocs/geometry/\_\_init\_\_.py                                                   |       18 |        0 |    100% |           |
 | cashocs/geometry/boundary\_distance.py                                             |       63 |        1 |     98% |       154 |
 | cashocs/geometry/deformations.py                                                   |       64 |        4 |     94% |130, 139, 144, 203 |
@@ -81,7 +81,7 @@
 | cashocs/io/managers.py                                                             |      252 |       17 |     93% |366, 381, 403, 633-639, 642-649, 674-678 |
 | cashocs/io/mesh.py                                                                 |      338 |       39 |     88% |93, 148-152, 300-324, 372-373, 405, 564-565, 569-571, 643, 674, 741, 745-746, 786, 797-803, 835 |
 | cashocs/io/output.py                                                               |       57 |        0 |    100% |           |
-| cashocs/log.py                                                                     |      142 |       15 |     89% |95, 117, 166, 286, 307-314, 323, 327, 331 |
+| cashocs/log.py                                                                     |      142 |       14 |     90% |95, 166, 286, 307-314, 323, 327, 331 |
 | cashocs/mpi.py                                                                     |        2 |        0 |    100% |           |
 | cashocs/nonlinear\_solvers/\_\_init\_\_.py                                         |       11 |        0 |    100% |           |
 | cashocs/nonlinear\_solvers/linear\_solver.py                                       |       35 |        7 |     80% |     88-96 |
@@ -93,7 +93,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      378 |       40 |     89% |172, 273, 356-361, 461, 548-549, 677-679, 686-688, 713-745, 930, 959-961, 971-973, 987-988 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      392 |       53 |     86% |174, 276, 351-352, 446, 523-524, 539-566, 687-688, 705-707, 713-715, 745-783, 955, 982-984, 994-996, 1010-1011 |
 | cashocs/verification.py                                                            |      131 |        3 |     98% |234-235, 267 |
-| **TOTAL**                                                                          | **7992** |  **701** | **91%** |           |
+| **TOTAL**                                                                          | **7994** |  **700** | **91%** |           |
 
 
 ## Setup coverage badge
