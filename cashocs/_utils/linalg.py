@@ -209,7 +209,9 @@ def setup_petsc_options(
     for i in range(len(objs)):
         opts.clear()
 
+        log.trace(f"Setting PETSc options for {objs[i]}")
         for key, value in ksp_options[i].items():
+            log.trace(f"{key}: {value}")
             opts.setValue(key, value)
 
         objs[i].setFromOptions()
