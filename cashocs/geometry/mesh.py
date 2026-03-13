@@ -344,9 +344,6 @@ def regular_box_mesh(
     """
     n = int(n)
 
-    dim = 2
-    sizes = [1.0, 1.0]
-
     if comm is None:
         comm = mpi.COMM_WORLD
 
