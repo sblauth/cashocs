@@ -255,93 +255,16 @@ def regular_mesh(
         and dS is a measure for the interior facets.
 
     """
-    if length_x <= 0.0:
-        raise _exceptions.InputError(
-            "cashocs.geometry.regular_mesh", "length_x", "length_x needs to be positive"
-        )
-    if length_y <= 0.0:
-        raise _exceptions.InputError(
-            "cashocs.geometry.regular_mesh", "length_y", "length_y needs to be positive"
-        )
-    if not (length_z is None or length_z > 0.0):
-        raise _exceptions.InputError(
-            "cashocs.geometry.regular_mesh",
-            "length_z",
-            "length_z needs to be positive or None (for 2D mesh)",
-        )
+    start_x = 0.0
+    start_y = 0.0
+    start_z = 0.0 if length_z is not None else None
+    end_x = length_x
+    end_y = length_y
+    end_z = length_z
 
-    n = int(n)
-
-    if comm is None:
-        comm = mpi.COMM_WORLD
-
-    if length_z is None:
-        sizes = [length_x, length_y]
-        dim = 2
-    else:
-        sizes = [length_x, length_y, length_z]
-        dim = 3
-
-    size_min = np.min(sizes)
-    num_points = [int(np.round(length / size_min * n)) for length in sizes]
-
-    if length_z is None:
-        mesh = fenics.RectangleMesh(
-            comm,
-            fenics.Point(0, 0),
-            fenics.Point(sizes),
-            num_points[0],
-            num_points[1],
-            diagonal=diagonal,
-        )
-    else:
-        mesh = fenics.BoxMesh(
-            comm,
-            fenics.Point(0, 0, 0),
-            fenics.Point(sizes),
-            num_points[0],
-            num_points[1],
-            num_points[2],
-        )
-
-    subdomains = fenics.MeshFunction("size_t", mesh, dim=dim)
-    boundaries = fenics.MeshFunction("size_t", mesh, dim=dim - 1)
-
-    x_min = fenics.CompiledSubDomain(
-        "on_boundary && near(x[0], 0, tol)", tol=fenics.DOLFIN_EPS
+    return regular_box_mesh(
+        n, start_x, start_y, start_z, end_x, end_y, end_z, diagonal, comm
     )
-    x_max = fenics.CompiledSubDomain(
-        "on_boundary && near(x[0], length, tol)", tol=fenics.DOLFIN_EPS, length=sizes[0]
-    )
-    x_min.mark(boundaries, 1)
-    x_max.mark(boundaries, 2)
-
-    y_min = fenics.CompiledSubDomain(
-        "on_boundary && near(x[1], 0, tol)", tol=fenics.DOLFIN_EPS
-    )
-    y_max = fenics.CompiledSubDomain(
-        "on_boundary && near(x[1], length, tol)", tol=fenics.DOLFIN_EPS, length=sizes[1]
-    )
-    y_min.mark(boundaries, 3)
-    y_max.mark(boundaries, 4)
-
-    if length_z is not None:
-        z_min = fenics.CompiledSubDomain(
-            "on_boundary && near(x[2], 0, tol)", tol=fenics.DOLFIN_EPS
-        )
-        z_max = fenics.CompiledSubDomain(
-            "on_boundary && near(x[2], length, tol)",
-            tol=fenics.DOLFIN_EPS,
-            length=sizes[2],
-        )
-        z_min.mark(boundaries, 5)
-        z_max.mark(boundaries, 6)
-
-    dx = measure.NamedMeasure("dx", mesh, subdomain_data=subdomains)
-    ds = measure.NamedMeasure("ds", mesh, subdomain_data=boundaries)
-    d_interior_facet = measure.NamedMeasure("dS", mesh)
-
-    return mesh, subdomains, boundaries, dx, ds, d_interior_facet
 
 
 @_get_mesh_stats("generate")
