@@ -350,32 +350,33 @@ def regular_box_mesh(
     if comm is None:
         comm = mpi.COMM_WORLD
 
+    lx = end_x - start_x
+    ly = end_y - start_y
+    sizes = [lx, ly]
+    dim = 2
     if start_z is None and end_z is None:
-        lx = end_x - start_x
-        ly = end_y - start_y
-        sizes = [lx, ly]
-        dim = 2
+        pass
+    elif start_z is not None and end_z is not None:
+        lz = end_z - start_z
+        sizes.append(lz)
+        dim = 3
     else:
-        if start_z is not None and end_z is not None:
-            if start_z < end_z:
-                lx = end_x - start_x
-                ly = end_y - start_y
-                lz = end_z - start_z
-                sizes = [lx, ly, lz]
-                dim = 3
-        else:
-            raise _exceptions.InputError(
-                "cashocs.geometry.regular_box_mesh",
-                "start_z",
-                "Incorrect input for the z-coordinate. "
-                "start_z has to be smaller than end_z, "
-                "or only one of them is specified.",
-            )
+        raise _exceptions.InputError(
+            "cashocs.geometry.regular_box_mesh",
+            "start_z",
+            "Incorrect input for the z-coordinate. "
+            "Both start_z and end_z need to be specified.",
+        )
 
     _check_sizes(sizes)
 
     size_min = np.min(sizes)
     num_points = [int(np.round(length / size_min * n)) for length in sizes]
+
+    physical_groups = {
+        "dx": {"all": 1},
+        "ds": {"left": 1, "right": 2, "bottom": 3, "top": 4},
+    }
 
     if start_z is None:
         mesh = fenics.RectangleMesh(
@@ -395,8 +396,12 @@ def regular_box_mesh(
             num_points[1],
             num_points[2],
         )
+        physical_groups["ds"].update({"front": 5, "back": 6})
+
+    mesh.physical_groups = physical_groups
 
     subdomains = fenics.MeshFunction("size_t", mesh, dim=dim)
+    subdomains.set_all(1)
     boundaries = fenics.MeshFunction("size_t", mesh, dim=dim - 1)
 
     x_min = fenics.CompiledSubDomain(
@@ -427,11 +432,17 @@ def regular_box_mesh(
         z_min.mark(boundaries, 5)
         z_max.mark(boundaries, 6)
 
-    dx = measure.NamedMeasure("dx", mesh, subdomain_data=subdomains)
-    ds = measure.NamedMeasure("ds", mesh, subdomain_data=boundaries)
-    d_interior_facet = measure.NamedMeasure("dS", mesh)
+    dx = measure.NamedMeasure(
+        "dx", mesh, subdomain_data=subdomains, physical_groups=physical_groups
+    )
+    ds = measure.NamedMeasure(
+        "ds", mesh, subdomain_data=boundaries, physical_groups=physical_groups
+    )
+    dS = measure.NamedMeasure(  # pylint: disable=invalid-name
+        "dS", mesh, subdomain_data=boundaries, physical_groups=physical_groups
+    )
 
-    return mesh, subdomains, boundaries, dx, ds, d_interior_facet
+    return mesh, subdomains, boundaries, dx, ds, dS
 
 
 def _check_sizes(sizes: list[float]) -> None:
