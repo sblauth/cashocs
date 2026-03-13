@@ -27,6 +27,7 @@ from typing import Any, cast, TYPE_CHECKING, TypeVar
 import fenics
 
 from cashocs import _exceptions
+from cashocs import log
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -231,29 +232,36 @@ def get_petsc_prefixes(petsc_options: _typing.KspOption) -> set[str]:
     return prefixes
 
 
-def tag_to_int(mesh: fenics.Mesh, tag: int | str, tag_type: str) -> int:
+def tag_to_int(
+    physical_groups: dict[str, dict[str, int]] | None, tag: int | str, tag_type: str
+) -> int | None:
     """Converts a given tag (for boundary objects) to the corresponding integer tag.
 
     Args:
-        mesh (fenics.Mesh): The (imported) finite element mesh.
+        physical_groups: The dictionary of physical groups of the mesh.
         tag (int | str): The tag. Can either be an integer or a string.
         tag_type (str): The type of tag. Must be "dx" for a subdomain or "ds" for a
             boundary (either internal or external).
 
     Returns:
-        The integer tag corresponding to the supplied tag.
+        The integer tag corresponding to the supplied tag or None if there is none.
 
     """
-    if isinstance(tag, int):
-        return tag
-    elif isinstance(tag, str):
-        physical_groups = mesh.physical_groups
-        if tag in physical_groups[tag_type].keys():
-            int_tag: int = physical_groups[tag_type][tag]
-            return int_tag
-        else:
-            raise _exceptions.InputError(
-                "tag_to_int",
-                "tag",
-                f"Tag {tag} is not associated with physical group of type {tag_type}.",
-            )
+    if physical_groups is None:
+        log.warning("Physical groups are not defined for the mesh.")
+        return None
+    else:
+        if isinstance(tag, int):
+            if tag in physical_groups[tag_type].values():
+                return tag
+            else:
+                log.warning(f"Tag {tag} does not belong to physical group {tag_type}.")
+                return None
+
+        elif isinstance(tag, str):
+            if tag in physical_groups[tag_type].keys():
+                int_tag: int = physical_groups[tag_type][tag]
+                return int_tag
+            else:
+                log.warning(f"Tag {tag} does not belong to physical group {tag_type}.")
+                return None

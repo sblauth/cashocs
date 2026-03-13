@@ -28,7 +28,7 @@ try:
 except ImportError:
     import ufl
 
-from cashocs import _exceptions
+from cashocs import _utils
 
 
 class _EmptyMeasure(ufl.Measure):
@@ -136,10 +136,7 @@ class NamedMeasure(ufl.Measure):
             metadata=metadata,
             subdomain_data=subdomain_data,
         )
-        if physical_groups is None:
-            self.physical_groups = {}
-        else:
-            self.physical_groups = physical_groups
+        self.physical_groups = physical_groups
 
     def __call__(
         self,
@@ -155,48 +152,34 @@ class NamedMeasure(ufl.Measure):
 
         This implementation also allows strings for subdomain id.
         """
-        if isinstance(subdomain_id, int):
-            return super().__call__(
-                subdomain_id=subdomain_id,
-                metadata=metadata,
-                domain=domain,
-                subdomain_data=subdomain_data,
-                degree=degree,
-                scheme=scheme,
-                rule=rule,
-            )
+        if self._integral_type == "cell":
+            tag_type = "dx"
+        elif self._integral_type in ("exterior_facet", "interior_facet"):
+            tag_type = "ds"
 
-        elif isinstance(subdomain_id, str):
-            if (
-                subdomain_id in self.physical_groups["dx"]
-                and self._integral_type == "cell"
-            ):
-                integer_id = self.physical_groups["dx"][subdomain_id]
-            elif subdomain_id in self.physical_groups[
-                "ds"
-            ].keys() and self._integral_type in [
-                "exterior_facet",
-                "interior_facet",
-            ]:
-                integer_id = self.physical_groups["ds"][subdomain_id]
+        if isinstance(subdomain_id, int | str):
+            tag_int = _utils.tag_to_int(self.physical_groups, subdomain_id, tag_type)
+
+            if tag_int is None:
+                return _EmptyMeasure(self)
             else:
-                raise _exceptions.InputError(
-                    "cashocs.geometry.measure.NamedMeasure", "subdomain_id"
+                return super().__call__(
+                    subdomain_id=tag_int,
+                    metadata=metadata,
+                    domain=domain,
+                    subdomain_data=subdomain_data,
+                    degree=degree,
+                    scheme=scheme,
+                    rule=rule,
                 )
 
-            return super().__call__(
-                subdomain_id=integer_id,
-                metadata=metadata,
-                domain=domain,
-                subdomain_data=subdomain_data,
-                degree=degree,
-                scheme=scheme,
-                rule=rule,
-            )
+        elif isinstance(subdomain_id, list | tuple):
+            tag_list: list[int | str] = []
+            for tag in subdomain_id:
+                tag_int = _utils.tag_to_int(self.physical_groups, tag, tag_type)
+                if tag_int is not None:
+                    tag_list.append(tag_int)
 
-        elif isinstance(subdomain_id, list) and all(
-            isinstance(x, int | str) for x in subdomain_id
-        ):
-            return generate_measure(subdomain_id, self)
+            return generate_measure(tag_list, self)
 
         return None

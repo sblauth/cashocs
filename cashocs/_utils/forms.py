@@ -258,10 +258,11 @@ def create_dirichlet_bcs(
 
     bcs_list = []
     for entry in idcs:
-        int_tag = _utils.tag_to_int(mesh, entry, "ds")
-        bcs_list.append(
-            fenics.DirichletBC(function_space, value, boundaries, int_tag, **kwargs)
-        )
+        int_tag = _utils.tag_to_int(mesh.physical_groups, entry, "ds")
+        if int_tag:
+            bcs_list.append(
+                fenics.DirichletBC(function_space, value, boundaries, int_tag, **kwargs)
+            )
 
     return bcs_list
 
