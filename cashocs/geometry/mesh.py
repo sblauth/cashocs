@@ -165,6 +165,8 @@ def interval_mesh(
 
     mesh = fenics.IntervalMesh(comm, n, start, end)
 
+    physical_groups = {"dx": {}, "ds": {"start": 1, "end": 2}}
+
     subdomains = fenics.MeshFunction("size_t", mesh, dim=dim)
     boundaries = fenics.MeshFunction("size_t", mesh, dim=dim - 1)
 
@@ -193,15 +195,26 @@ def interval_mesh(
                 eps=fenics.DOLFIN_EPS,
             )
             part.mark(subdomains, i + 1)
+            physical_groups["dx"].update({str(i + 1): i + 1})
+    else:
+        subdomains.set_all(1)
+        physical_groups["dx"].update({"all": 1})
 
-    dx = measure.NamedMeasure("dx", mesh, subdomain_data=subdomains)
-    ds = measure.NamedMeasure("ds", mesh, subdomain_data=boundaries)
-    d_interior_facet = measure.NamedMeasure("dS", mesh)
+    mesh.physical_groups = physical_groups
 
-    return mesh, subdomains, boundaries, dx, ds, d_interior_facet
+    dx = measure.NamedMeasure(
+        "dx", mesh, subdomain_data=subdomains, physical_groups=physical_groups
+    )
+    ds = measure.NamedMeasure(
+        "ds", mesh, subdomain_data=boundaries, physical_groups=physical_groups
+    )
+    dS = measure.NamedMeasure(  # pylint: disable=invalid-name
+        "dS", mesh, subdomain_data=boundaries, physical_groups=physical_groups
+    )
+
+    return mesh, subdomains, boundaries, dx, ds, dS
 
 
-@_get_mesh_stats("generate")
 def regular_mesh(
     n: int = 10,
     length_x: float = 1.0,
