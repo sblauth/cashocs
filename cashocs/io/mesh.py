@@ -166,6 +166,19 @@ def _get_mesh_paths(mesh_file: str) -> tuple[str, str, str]:
     return str(mesh_path), str(subdomains_path), str(boundaries_path)
 
 
+def _get_tags_from_mvc(mvc: fenics.MeshValueCollection, comm: MPI.Comm) -> dict:
+    tag_dict = {}
+    for val in set(mvc.values().values()):
+        tag_dict[str(val)] = val
+
+    gathered_dicts = comm.allgather(tag_dict)
+    merged_dict = {}
+    for d in gathered_dicts:
+        merged_dict.update(d)
+
+    return merged_dict
+
+
 @_get_mesh_stats("import")  # pylint:disable=protected-access
 def _import_xdmf_mesh(
     mesh_file: str, comm: MPI.Comm | None = None
@@ -243,14 +256,18 @@ def _import_xdmf_mesh(
         with fenics.XDMFFile(mesh.mpi_comm(), str(boundaries_path)) as xdmf_boundaries:
             xdmf_boundaries.read(boundaries_mvc, "boundaries")
 
-    physical_groups: dict[str, dict[str, int]] | None = None
     physical_groups_path = pathlib.Path(mesh_string)
     physical_groups_path = physical_groups_path.with_name(
         physical_groups_path.stem + "_physical_groups.json"
     )
     if physical_groups_path.is_file():
         with physical_groups_path.open("r", encoding="utf-8") as file:
-            physical_groups = json.load(file)
+            physical_groups: dict[str, dict[str, int]] = json.load(file)
+    else:
+        physical_groups = {
+            "dx": _get_tags_from_mvc(subdomains_mvc, comm),
+            "ds": _get_tags_from_mvc(boundaries_mvc, comm),
+        }
 
     subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
     boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
@@ -261,15 +278,13 @@ def _import_xdmf_mesh(
     ds = NamedMeasure(
         "ds", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
-    d_interior_facet = NamedMeasure(
+    dS = NamedMeasure(  # pylint: disable=invalid-name
         "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
 
-    # Add the physical groups to the mesh in case they are present
-    if physical_groups is not None:
-        mesh.physical_groups = physical_groups
+    mesh.physical_groups = physical_groups
 
-    return mesh, subdomains, boundaries, dx, ds, d_interior_facet
+    return mesh, subdomains, boundaries, dx, ds, dS
 
 
 def export_mesh(
