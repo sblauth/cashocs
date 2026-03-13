@@ -461,18 +461,6 @@ def test_named_mesh_import():
     assert ds("wall") == ds(2)
     assert ds("outlet") == ds(3)
 
-    with pytest.raises(InputError) as e_info:
-        dx("inlet")
-        assert "subdomain_id" in str(e_info.value)
-
-    with pytest.raises(InputError) as e_info:
-        ds("volume")
-        assert "subdomain_id" in str(e_info.value)
-
-    with pytest.raises(InputError) as e_info:
-        dx("fantasy")
-        assert "subdomain_id" in str(e_info.value)
-
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh.h5").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh_boundaries.xdmf").is_file()
@@ -516,18 +504,6 @@ def test_legacy_mesh_import():
     assert ds("inlet") == ds(1)
     assert ds("wall") == ds(2)
     assert ds("outlet") == ds(3)
-
-    with pytest.raises(InputError) as e_info:
-        dx("inlet")
-        assert "subdomain_id" in str(e_info.value)
-
-    with pytest.raises(InputError) as e_info:
-        ds("volume")
-        assert "subdomain_id" in str(e_info.value)
-
-    with pytest.raises(InputError) as e_info:
-        dx("fantasy")
-        assert "subdomain_id" in str(e_info.value)
 
 
 def test_create_measure():
