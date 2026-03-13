@@ -12,6 +12,8 @@ of the maintenance releases, please take a look at
 
 * The nonlinear residual for :py:func:`cashocs.ts_pseudo_solve`, :py:func:`cashocs.snes_solve`, and :py:func:`cashocs.newton_solve` is now evaluated individually for each equation in a system. This allows for better monitoring of the solution behavior.
 
+* Improved the handling of mesh tags. Now, when users try to access a boundary condition or sub-measure, it is rigorously checked, whether this exists in the mesh data. If it does not, a warning is issued and the corresponding boundary is ignored. This enables using different meshes (where, e.g., some parts are not present in one model, but in another), without changing the code. However, meshes have to be imported / created with cashocs for the functionality to work. Other meshes are not supported, unless they correctly define the attribute physical groups.
+
 
 2.8.0 (January 5, 2026)
 -----------------------
