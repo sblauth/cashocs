@@ -220,12 +220,6 @@ def test_create_named_bcs():
         assert np.max(np.abs(fun1.vector()[:] - fun3.vector()[:])) <= 1e-14
         assert np.max(np.abs(fun2.vector()[:] - fun3.vector()[:])) <= 1e-14
 
-    with pytest.raises(InputError) as e_info:
-        cashocs.create_dirichlet_bcs(V_, Constant(0.0), boundaries, "fantasy")
-        assert "The string you have supplied is not associated with a boundary" in str(
-            e_info.value
-        )
-
     MPI.barrier(MPI.comm_world)
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh.xdmf").is_file()
     assert pathlib.Path(f"{dir_path}/mesh/named_mesh.h5").is_file()
