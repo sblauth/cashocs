@@ -265,3 +265,5 @@ def tag_to_int(
             else:
                 log.warning(f"Tag {tag} does not belong to physical group {tag_type}.")
                 return None
+        else:
+            return None
