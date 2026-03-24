@@ -7,7 +7,7 @@ of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
 
-2.9.0 (in development)
+2.9.0 (March 24, 2026)
 ----------------------
 
 * The nonlinear residual for :py:func:`cashocs.ts_pseudo_solve`, :py:func:`cashocs.snes_solve`, and :py:func:`cashocs.newton_solve` is now evaluated individually for each equation in a system. This allows for better monitoring of the solution behavior.
