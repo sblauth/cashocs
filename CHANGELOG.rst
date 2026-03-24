@@ -6,6 +6,10 @@ here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
+2.10.0 (in development)
+-----------------------
+
+
 
 2.9.0 (March 24, 2026)
 ----------------------
