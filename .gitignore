@@ -33,3 +33,6 @@ cashocs.egg-info/
 
 ### Documentation
 docs/source/user/demos/*/*.md
+
+### vs code
+.vscode
