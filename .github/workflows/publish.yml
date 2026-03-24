@@ -21,9 +21,8 @@ jobs:
     - name: Delete current installation in docker image
       shell: bash
       run: |
-        source /usr/local/bin/_entrypoint.sh
-        pip uninstall -y cashocs
-        rm -R /home/mambauser/cashocs
+        conda run --no-capture-output -n env pip uninstall -y cashocs
+        rm -rf /opt/app/{*,.*}
 
     - name: Checkout repository
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -31,14 +30,12 @@ jobs:
     - name: Install cashocs
       shell: bash
       run: |
-        source /usr/local/bin/_entrypoint.sh
-        pip install .[all]
+        conda run --no-capture-output -n env pip install .[all]
 
     - name: Run tests
       shell: bash
       run: |
-        source /usr/local/bin/_entrypoint.sh
-        python3 -m pytest -vv tests/
+        conda run --no-capture-output -n env python3 -m pytest -vv tests/
 
 
   release:
