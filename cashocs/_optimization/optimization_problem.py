@@ -758,6 +758,14 @@ class OptimizationProblem(abc.ABC):
 
         """
         self.initialize_solve_parameters(algorithm, rtol, atol, max_iter)
+
+        log.begin(
+            "Using the following config for solving the optimization problem.",
+            level=log.TRACE,
+        )
+        log.trace(self.config.generate_string_representation())
+        log.end()
+
         self.config.validate_config()
         self._check_for_custom_forms()
 

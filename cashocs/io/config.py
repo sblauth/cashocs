@@ -783,6 +783,23 @@ restart = False
         if len(self.config_errors) > 0:
             raise _exceptions.ConfigError(self.config_errors)
 
+    def generate_string_representation(self) -> str:
+        """Generates a string representation of the config for logging.
+
+        Returns:
+            The string representation of the config.
+
+        """
+        string_list = []
+        for section in self.sections():
+            string_list.append(f"[{section}]")
+            for key in self[section]:
+                string_list.append(f"{key} = {self[section][key]}")
+
+            string_list.append("")
+
+        return "\n".join(string_list)
+
     def _check_sections(self) -> None:
         """Checks whether all sections are valid."""
         for section_name, section in self.items():
