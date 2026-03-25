@@ -30,7 +30,61 @@ from cashocs import mpi
 from cashocs.io import mesh as mesh_io
 
 if TYPE_CHECKING:
+    import os
+
     from mpi4py import MPI
+
+
+def export_to_xdmf(
+    filename: str | os.PathLike,
+    function: fenics.Function,
+    function_name: str | None = None,
+    iteration: int = 0,
+) -> None:
+    """Exports a function to an xdmf file.
+
+    This creates a new file, if iteration = 0. Else, it tries to append to an already
+    existing file.
+
+    Args:
+        filename: The path to the file to be written.
+        function: The fenics function that shall be exported.
+        function_name: The name of the function. If this is None, then its current
+            name is used. Defaults to None.
+        iteration: The iteration (of a time series). Defaults to 0.
+
+    """
+    filepath = pathlib.Path(filename)
+
+    if filepath.suffix != ".xdmf":
+        raise _exceptions.InputError(
+            "export_to_xdmf", "filename", "The filename has to end with .xdmf."
+        )
+
+    mesh = function.function_space().mesh()
+    comm = mesh.mpi_comm()
+
+    if iteration == 0:
+        append = False
+    else:
+        append = True
+
+    if function_name is None:
+        function_name = function.name()
+
+    function.rename(function_name, function_name)
+
+    with fenics.XDMFFile(comm, str(filepath)) as file:
+        file.parameters["flush_output"] = True
+        file.parameters["functions_share_mesh"] = False
+
+        file.write_checkpoint(
+            function,
+            function_name,
+            iteration,
+            fenics.XDMFFile.Encoding.HDF5,
+            append,
+        )
 
 
 def read_function_from_xdmf(

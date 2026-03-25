@@ -9,6 +9,7 @@ of the maintenance releases, please take a look at
 2.10.0 (in development)
 -----------------------
 
+* Add convenience function :py:func:`cashocs.io.export_to_xdmf` which wraps the fenics export to XDMF files.
 
 
 2.9.0 (March 24, 2026)
