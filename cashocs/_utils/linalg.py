@@ -713,6 +713,7 @@ def l2_projection(
     expr: ufl.core.expr.Expr,
     function_space: fenics.FunctionSpace,
     ksp_options: _typing.KspOption | None = None,
+    measure: ufl.Measure | None = None,
 ) -> fenics.Function:
     """Computes an L2 projection of an expression into the specified function space.
 
@@ -723,13 +724,17 @@ def l2_projection(
         ksp_options (_typing.KspOption | None, optional): The options for the solution
             of the linear problem. If this is None, a CG method with AMG is used.
             Defaults to None.
+        measure: The ufl.Measure where the L2 projection should take place.
 
     Returns:
         The result of the projection.
 
     """
-    mesh = function_space.mesh()
-    dx = ufl.Measure("dx", domain=mesh)
+    if measure is None:
+        mesh = function_space.mesh()
+        dx = ufl.Measure("dx", domain=mesh)
+    else:
+        dx = measure
 
     res = fenics.Function(function_space)
     u = fenics.TrialFunction(function_space)
