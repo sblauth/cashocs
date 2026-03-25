@@ -41,6 +41,7 @@ from cashocs import log
 from cashocs import mpi
 from cashocs.geometry.measure import NamedMeasure
 from cashocs.geometry.mesh import _get_mesh_stats
+from cashocs.geometry.mesh import CashocsMesh
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -235,7 +236,7 @@ def _import_xdmf_mesh(
     if comm is None:
         comm = mpi.COMM_WORLD
 
-    mesh = fenics.Mesh(comm)
+    mesh = CashocsMesh(comm)
     with fenics.XDMFFile(mesh.mpi_comm(), mesh_string) as xdmf_file:
         xdmf_file.read(mesh)
 
@@ -282,7 +283,7 @@ def _import_xdmf_mesh(
         "dS", domain=mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
 
-    mesh.physical_groups = physical_groups
+    mesh.setup_cashocs_data(subdomains, boundaries, dx, ds, dS, physical_groups)
 
     return mesh, subdomains, boundaries, dx, ds, dS
 

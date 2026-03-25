@@ -110,6 +110,45 @@ def _get_mesh_stats(
     return decorator_stats
 
 
+class CashocsMesh(fenics.Mesh):
+    """A finite element mesh for use with cashocs."""
+
+    subdomains: fenics.MeshFunction
+    boundaries: fenics.MeshFunction
+    dx: measure.NamedMeasure
+    ds: measure.NamedMeasure
+    dS: measure.NamedMeasure  # pylint: disable=invalid-name
+    physical_groups: dict
+
+    def setup_cashocs_data(
+        self,
+        subdomains: fenics.MeshFunction,
+        boundaries: fenics.MeshFunction,
+        dx: measure.NamedMeasure,
+        ds: measure.NamedMeasure,
+        dS: measure.NamedMeasure,  # pylint: disable=invalid-name
+        physical_groups: dict,
+    ) -> None:
+        """Sets up the data structures for use with cashocs.
+
+        Args:
+            subdomains: The mesh tags for the subdomains.
+            boundaries: The mesh tags for the boundaries.
+            dx: The volume / cell measure.
+            ds: The exterior surface / facet measure.
+            dS: The interior surface / facet measure.
+            physical_groups: The dictionary of physical groups mapping names to integer
+                tags.
+
+        """
+        self.subdomains = subdomains
+        self.boundaries = boundaries
+        self.dx = dx
+        self.ds = ds
+        self.dS = dS  # pylint: disable=invalid-name
+        self.physical_groups = physical_groups
+
+
 @_get_mesh_stats("generate")
 def interval_mesh(
     n: int = 10,
@@ -163,7 +202,7 @@ def interval_mesh(
     if comm is None:
         comm = mpi.COMM_WORLD
 
-    mesh = fenics.IntervalMesh(comm, n, start, end)
+    mesh: CashocsMesh = fenics.IntervalMesh(comm, n, start, end)
 
     physical_groups = {"dx": {}, "ds": {"start": 1, "end": 2}}
 
@@ -200,8 +239,6 @@ def interval_mesh(
         subdomains.set_all(1)
         physical_groups["dx"].update({"all": 1})
 
-    mesh.physical_groups = physical_groups
-
     dx = measure.NamedMeasure(
         "dx", mesh, subdomain_data=subdomains, physical_groups=physical_groups
     )
@@ -211,6 +248,13 @@ def interval_mesh(
     dS = measure.NamedMeasure(  # pylint: disable=invalid-name
         "dS", mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
+
+    mesh.subdomains = subdomains
+    mesh.boundaries = boundaries
+    mesh.dx = dx
+    mesh.ds = ds
+    mesh.dS = dS
+    mesh.physical_groups = physical_groups
 
     return mesh, subdomains, boundaries, dx, ds, dS
 
@@ -376,7 +420,7 @@ def regular_box_mesh(
     }
 
     if start_z is None:
-        mesh = fenics.RectangleMesh(
+        mesh: CashocsMesh = fenics.RectangleMesh(
             comm,
             fenics.Point(start_x, start_y),
             fenics.Point(end_x, end_y),
@@ -394,8 +438,6 @@ def regular_box_mesh(
             num_points[2],
         )
         physical_groups["ds"].update({"front": 5, "back": 6})
-
-    mesh.physical_groups = physical_groups
 
     subdomains = fenics.MeshFunction("size_t", mesh, dim=dim)
     subdomains.set_all(1)
@@ -438,6 +480,13 @@ def regular_box_mesh(
     dS = measure.NamedMeasure(  # pylint: disable=invalid-name
         "dS", mesh, subdomain_data=boundaries, physical_groups=physical_groups
     )
+
+    mesh.subdomains = subdomains
+    mesh.boundaries = boundaries
+    mesh.dx = dx
+    mesh.ds = ds
+    mesh.dS = dS
+    mesh.physical_groups = physical_groups
 
     return mesh, subdomains, boundaries, dx, ds, dS
 
