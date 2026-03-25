@@ -24,6 +24,7 @@ from cashocs.io import mesh
 from cashocs.io import output
 from cashocs.io.config import Config
 from cashocs.io.config import load_config
+from cashocs.io.function import export_to_xdmf
 from cashocs.io.function import import_function
 from cashocs.io.function import read_function_from_xdmf
 from cashocs.io.mesh import convert
@@ -44,6 +45,7 @@ __all__ = [
     "load_config",
     "import_function",
     "read_function_from_xdmf",
+    "export_to_xdmf",
     "convert",
     "export_mesh",
     "extract_mesh_from_xdmf",
