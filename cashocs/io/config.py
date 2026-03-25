@@ -312,6 +312,9 @@ class Config(ConfigParser):
                 "fixed_dimensions": {
                     "type": "list",
                 },
+                "shape_volume_fix": {
+                    "type": "list",
+                },
                 "use_pull_back": {
                     "type": "bool",
                 },
@@ -652,6 +655,7 @@ shape_bdry_fix = []
 shape_bdry_fix_x = []
 shape_bdry_fix_y = []
 shape_bdry_fix_z = []
+shape_volume_fix = []
 degree_estimation = True
 global_deformation = False
 test_for_intersections = True
