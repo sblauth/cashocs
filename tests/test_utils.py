@@ -275,3 +275,24 @@ def test_l2_projection():
     assert (
         np.max(np.abs(fenics_result.vector()[:] - cashocs_result.vector()[:])) < 1e-10
     )
+
+
+def test_create_material_parameter(dir_path):
+    mesh, _, _, dx, _, _ = cashocs.import_mesh(f"{dir_path}/mesh/square/square.xdmf")
+
+    material_dict = {
+        ("top_left", "top_right"): 1.0,
+        "bottom_left": 2.0,
+        "bottom_right": 3.4,
+    }
+
+    V = FunctionSpace(mesh, "DG", 0)
+
+    u_cashocs = project(cashocs.create_material_parameter(material_dict, mesh), V)
+
+    error = assemble((u_cashocs - 1.0) ** 2 * dx(["top_left", "top_right"]))
+    error += assemble((u_cashocs - 2.0) ** 2 * dx("bottom_left"))
+    error += assemble((u_cashocs - 3.4) ** 2 * dx("bottom_right"))
+    error = np.sqrt(error)
+
+    assert error == pytest.approx(0, rel=1e-15, abs=1e-15)
