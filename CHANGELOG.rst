@@ -13,6 +13,12 @@ of the maintenance releases, please take a look at
 
 * Add function :py:func:`cashocs._utils.create_material_parameter`, which can be used to create subdomain-wise different parameters, such as indicator functions or material parameters.
 
+* New configuration file parameters:
+
+  * Section ShapeGradient
+
+    * :ini:`shape_volume_fix` is a list of subdomain tags on which the mesh deformation should be fixed, i.e., which should not change during the shape optimization. If this list is not empty, the shape gradient is restricted appropriately. Users should make sure that, in addition to setting :ini:`shape_volume_fix`, also :ini:`shape_bdry_fix` is set appropriately.
+
 
 2.9.0 (March 24, 2026)
 ----------------------
