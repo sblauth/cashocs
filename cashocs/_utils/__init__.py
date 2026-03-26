@@ -24,6 +24,7 @@ to shorten the coding for often recurring actions.
 
 from cashocs._utils.forms import bilinear_boundary_form_modification
 from cashocs._utils.forms import create_dirichlet_bcs
+from cashocs._utils.forms import create_material_parameter
 from cashocs._utils.forms import max_
 from cashocs._utils.forms import min_
 from cashocs._utils.forms import moreau_yosida_regularization
@@ -78,4 +79,5 @@ __all__ = [
     "solve_linear_problem",
     "split_linear_forms",
     "compute_equation_residuals",
+    "create_material_parameter",
 ]

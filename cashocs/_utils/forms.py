@@ -22,6 +22,7 @@ from __future__ import annotations
 from typing import Any, TypeVar
 
 import fenics
+import numpy as np
 
 try:
     import ufl_legacy as ufl
@@ -31,6 +32,7 @@ except ImportError:
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import log
+from cashocs.geometry.mesh import CashocsMesh
 
 T = TypeVar("T")
 
@@ -282,3 +284,85 @@ def bilinear_boundary_form_modification(forms: list[ufl.Form]) -> list[ufl.Form]
         mod_forms.append(form + fenics.Constant(0.0) * ufl.dot(trial, test) * dx)
 
     return mod_forms
+
+
+def _get_subdomain_ids_from_tag(
+    tag: tuple[str | int] | str | int, physical_groups: dict
+) -> list[int]:
+    if isinstance(tag, tuple):
+        subdomain_idx = []
+
+        for t in tag:
+            tag_int = _utils.tag_to_int(physical_groups, t, "dx")
+            if tag_int is not None:
+                subdomain_idx.append(tag_int)
+    else:
+        tag_int = _utils.tag_to_int(physical_groups, tag, "dx")
+        subdomain_idx = []
+        if tag_int is not None:
+            subdomain_idx.append(tag_int)
+
+    return subdomain_idx
+
+
+def create_material_parameter(
+    material_dict: dict,
+    mesh: CashocsMesh,
+    dg0_space: fenics.FunctionSpace | None = None,
+) -> ufl.core.expr.Expr:
+    r"""Creates a material parameter that can vary for different subdomains.
+
+    Args:
+        material_dict: The dictionary that contains the material parameters.
+            The keys are the indices of the subdomains (as generated with Gmsh) and
+            the values are the values of the material parameter on the respective
+            subdomain. If multiple subdomains share the same value, they can also
+            be put inside a tuple and used as a single key for the dictionary.
+        mesh: The finite element mesh.
+        dg0_space: The space of DG0 elements on the mesh. If this is None, then the
+            space is created internally.
+
+    Returns:
+        A UFL expression that can be used as material parameter.
+
+    Examples:
+        Consider the following Poisson problem
+
+        .. math::
+            - \nabla \cdot (\mu \nabla u) = f \text{ in } \Omega \quad u = 0
+            \text{ on } \Gamma,
+
+        where the parameter :math:`\mu` varies between two subdomains, i.e.,
+        :math:`\mu = \mu_{in}` in :math:`\Omega_{in}` and :math:`\mu = \mu_{out}` in
+        :math:`\Omega_{out}`, where :math:`\Omega = \Omega_{in} \cup \Omega_{out}`.
+        The parameter :math:`\mu` can be created with the help of this function.
+        Assume that :math:`\Omega_{in}` has the index `1` and that
+        :math:`\Omega_{out}` has index `2`, then we can use the following code ::
+
+            mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(...)
+            mu_in = 1.0 # example
+            mu_out = 10.0 # example
+            material_dict = {1: mu_in, 2: mu_out}
+
+            mu = cashocs.create_material_parameter(material_dict)
+
+    """
+    indicator_dict = {}
+
+    if dg0_space is None:
+        dg0_space = fenics.FunctionSpace(mesh, "DG", 0)
+
+    for subdomain_tag in material_dict.keys():
+        indicator_function = fenics.Function(dg0_space)
+        subdomain_ids = _get_subdomain_ids_from_tag(subdomain_tag, mesh.physical_groups)
+        dg0_idx = np.flatnonzero(np.isin(mesh.subdomains.array(), subdomain_ids))
+
+        indicator_function.vector()[dg0_idx] = 1.0
+        indicator_function.vector().apply("")
+        indicator_dict[subdomain_tag] = indicator_function
+
+    material_parameter = _utils.summation(
+        [indicator_dict[key] * material_dict[key] for key in material_dict.keys()]
+    )
+
+    return material_parameter
