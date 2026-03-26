@@ -1108,3 +1108,33 @@ def test_reextension_normal():
     assert sop.solver.relative_norm <= sop.solver.rtol
 
     parameters["ghost_mode"] = "none"
+
+
+def test_shape_volume_fix():
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+        f"{dir_path}/mesh/square/square.xdmf"
+    )
+
+    V = FunctionSpace(mesh, "CG", 1)
+    bcs = cashocs.create_dirichlet_bcs(
+        V, Constant(0), boundaries, ["left", "right", "bottom", "top"]
+    )
+
+    u = Function(V)
+    p = Function(V)
+
+    F = inner(grad(u), grad(p)) * dx - Constant(1.0) * p * dx
+    J = cashocs.ScalarTrackingFunctional(Constant(1.0) * dx, 0.75)
+
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config.set("ShapeGradient", "shape_volume_fix", '["top_left", "bottom_right"]')
+    config.set("ShapeGradient", "shape_bdry_fix", '["interior"]')
+    config.set("ShapeGradient", "shape_bdry_def", "[]")
+
+    sop = cashocs.ShapeOptimizationProblem(F, bcs, J, u, p, boundaries, config=config)
+    sop.solve(algorithm="bfgs", rtol=1e-3, atol=0.0, max_iter=6)
+
+    assert assemble(Constant(1.0) * dx("top_left")) == pytest.approx(0.25)
+    assert assemble(Constant(1.0) * dx("bottom_right")) == pytest.approx(0.25)
+
+    assert sop.solver.relative_norm <= sop.solver.rtol
