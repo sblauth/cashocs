@@ -226,6 +226,8 @@ ShapeGradient
       - list of indices for boundaries with fixed z values
     * - :ini:`fixed_dimensions = []`
       - a list of coordinates which should be fixed during the shape optimization (x=0, y=1, etc.)
+    * - :ini:`shape_volume_fix = []`
+      - a list of subdomain tags (str or int) which should be fixed during the shape optimization
     * - :ini:`use_pull_back = True`
       - if :ini:`use_pull_back = False`, shape derivative might be wrong; no pull-back for the material derivative is performed;
         only use with caution
@@ -970,6 +972,13 @@ Furthermore, we have the parameter :ini:`fixed_dimensions`, which enables us to 
     fixed_dimensions = []
 
 In case :ini:`fixed_dimensions = []`, there is no restriction on the shape gradient. However, if :ini:`fixed_dimensions = [i]`, then the i-th component of the shape gradient is set to 0, so that we have no deformation in the i-th coordinate direction. For example, if :ini:`fixed_dimensions = [0, 2]`, we only have a deformation in the :math:`y`-component of the mesh. The default is :ini:`fixed_dimensions = []`.
+
+The parameter :ini:`shape_volume_fix` is used to define which subdomains (volumetric) should be fixed during the shape optimization. It is specified as list of subdomain tags (either integer or strings) with
+
+.. code-block:: ini
+
+    shape_volume_fix = []
+
 
 The next parameter is specified via
 
