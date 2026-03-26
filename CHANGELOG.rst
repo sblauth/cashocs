@@ -11,6 +11,8 @@ of the maintenance releases, please take a look at
 
 * Add convenience function :py:func:`cashocs.io.export_to_xdmf` which wraps the fenics export to XDMF files.
 
+* Add function :py:func:`cashocs._utils.create_material_parameter`, which can be used to create subdomain-wise different parameters, such as indicator functions or material parameters.
+
 
 2.9.0 (March 24, 2026)
 ----------------------
