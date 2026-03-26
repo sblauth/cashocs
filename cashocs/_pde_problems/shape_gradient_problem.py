@@ -161,6 +161,8 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 self.has_solution = True
 
             self.reextend_gradient_from_boundaries()
+            self.restrict_gradient_on_fixed_volumes()
+
             self.db.callback.call_post()
 
             self.gradient_norm_squared = self.form_handler.scalar_product(
@@ -295,6 +297,33 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         )
 
         return surface_deformation
+
+    def restrict_gradient_on_fixed_volumes(self) -> None:
+        shape_volume_fix = self.config.getlist("ShapeGradient", "shape_volume_fix")
+        if len(shape_volume_fix) > 0:
+            deformation_space = self.db.function_db.control_spaces[0]
+            shape_gradient = self.db.function_db.gradient[0]
+
+            mesh = deformation_space.mesh()
+            dx = mesh.dx
+
+            deformable_int_tags = list(mesh.physical_groups["dx"].values())
+            shape_volume_fix_int_tags = [
+                _utils.tag_to_int(mesh.physical_groups, t, "dx")
+                for t in shape_volume_fix
+            ]
+            for int_tag in shape_volume_fix_int_tags:
+                deformable_int_tags.remove(int_tag)
+
+            restricted_volume_measure = dx(deformable_int_tags)
+
+            restricted_shape_gradient = _utils.l2_projection(
+                shape_gradient, deformation_space, measure=restricted_volume_measure
+            )
+            shape_gradient.vector().vec().aypx(
+                0.0, restricted_shape_gradient.vector().vec()
+            )
+            shape_gradient.vector().apply("")
 
 
 class _PLaplaceProjector:
