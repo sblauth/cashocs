@@ -24,7 +24,7 @@ import collections
 from collections.abc import Callable
 import copy
 import pathlib
-from typing import Literal, TYPE_CHECKING
+from typing import cast, Literal, TYPE_CHECKING
 
 import fenics
 import numpy as np
@@ -381,7 +381,9 @@ class ParameterExtraction:
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
             newton_linearizations=self.newton_linearizations,
-            excluded_from_time_derivative=self.excluded_from_time_derivative,
+            excluded_from_time_derivative=cast(
+                list[list[int]], self.excluded_from_time_derivative
+            ),
         )
         if self.shape_optimization_problem is not None:
             self.shape_optimization_problem.inject_pre_post_callback(

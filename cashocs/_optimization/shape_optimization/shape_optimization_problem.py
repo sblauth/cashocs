@@ -23,7 +23,7 @@ from collections.abc import Callable
 import functools
 import gc
 import subprocess
-from typing import TYPE_CHECKING
+from typing import Any, overload, TYPE_CHECKING
 
 import dolfin.function.argument
 import fenics
@@ -76,8 +76,58 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
     on).
     """
 
-    @functools.singledispatchmethod  # type: ignore
+    @overload
     def __init__(
+        self,
+        state_forms: list[ufl.Form] | ufl.Form,
+        bcs_list: (
+            list[list[fenics.DirichletBC]]
+            | list[fenics.DirichletBC]
+            | fenics.DirichletBC
+        ),
+        cost_functional_form: list[_typing.CostFunctional] | _typing.CostFunctional,
+        states: list[fenics.Function] | fenics.Function,
+        adjoints: list[fenics.Function] | fenics.Function,
+        boundaries: fenics.MeshFunction,
+        config: io.Config | None = None,
+        shape_scalar_product: ufl.Form | None = None,
+        initial_guess: list[fenics.Function] | None = None,
+        ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        adjoint_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        gradient_ksp_options: _typing.KspOption | list[_typing.KspOption] | None = None,
+        desired_weights: list[float] | None = None,
+        temp_dict: dict | None = None,
+        initial_function_values: list[float] | None = None,
+        preconditioner_forms: list[ufl.Form] | ufl.Form | None = None,
+        pre_callback: Callable | None = None,
+        post_callback: Callable | None = None,
+        linear_solver: _utils.linalg.LinearSolver | None = None,
+        adjoint_linear_solver: _utils.linalg.LinearSolver | None = None,
+        newton_linearizations: ufl.Form | list[ufl.Form] | None = None,
+        excluded_from_time_derivative: list[int] | list[list[int]] | None = None,
+    ) -> None:
+        pass
+
+    @overload
+    def __init__(self, mesh_parametrization: Callable, mesh_name: str) -> None:
+        pass
+
+    @functools.singledispatchmethod  # type: ignore
+    def __init__(  # type: ignore # pylint: disable=super-init-not-called
+        self,
+        arg: Any,
+        *args,
+        **kwargs,
+    ) -> None:
+        raise _exceptions.InputError(
+            "ShapeOptimizationProblem",
+            "arg",
+            f"Parameter {arg} is not valid for initializing a "
+            "shape optimization problem.",
+        )
+
+    @__init__.register(list | ufl.Form)  # type: ignore
+    def _(
         self,
         state_forms: list[ufl.Form] | ufl.Form,
         bcs_list: (
@@ -320,7 +370,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 excluded_from_time_derivative=excluded_from_time_derivative,
             )
 
-    @__init__.register(CallableFunction)
+    @__init__.register(CallableFunction)  # type: ignore
     def _(self, mesh_parametrization: Callable, mesh_name: str) -> None:
         """Initializes self. Version for remeshing.
 
