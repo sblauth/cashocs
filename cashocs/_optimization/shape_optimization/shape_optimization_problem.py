@@ -23,7 +23,7 @@ from collections.abc import Callable
 import functools
 import gc
 import subprocess
-from typing import Any, overload, TYPE_CHECKING
+from typing import overload, TYPE_CHECKING
 
 import dolfin.function.argument
 import fenics
@@ -113,21 +113,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         pass
 
     @functools.singledispatchmethod  # type: ignore
-    def __init__(  # type: ignore # pylint: disable=super-init-not-called
-        self,
-        arg: Any,
-        *args,
-        **kwargs,
-    ) -> None:
-        raise _exceptions.InputError(
-            "ShapeOptimizationProblem",
-            "arg",
-            f"Parameter {arg} is not valid for initializing a "
-            "shape optimization problem.",
-        )
-
-    @__init__.register(list | ufl.Form)  # type: ignore
-    def _(
+    def __init__(
         self,
         state_forms: list[ufl.Form] | ufl.Form,
         bcs_list: (
