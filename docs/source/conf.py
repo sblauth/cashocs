@@ -85,6 +85,7 @@ autoclass_content = "both"
 maximum_signature_line_length = 3
 
 highlight_language = "python"
+toc_object_entries_show_parents = "hide"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
