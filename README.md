@@ -46,7 +46,7 @@
 | cashocs/\_optimization/optimization\_problem.py                                    |      190 |       12 |     94% |214, 249, 425, 487-490, 541-543, 700-701, 800-801 |
 | cashocs/\_optimization/optimization\_variable\_abstractions.py                     |       22 |        2 |     91% |   180-181 |
 | cashocs/\_optimization/shape\_optimization/\_\_init\_\_.py                         |        3 |        0 |    100% |           |
-| cashocs/\_optimization/shape\_optimization/shape\_optimization\_problem.py         |      143 |       17 |     88% |55, 277-285, 342-344, 387-388, 408, 479-482, 487-496 |
+| cashocs/\_optimization/shape\_optimization/shape\_optimization\_problem.py         |      149 |       19 |     87% |54, 105, 109, 322-330, 386-388, 431-432, 452, 523-526, 531-540 |
 | cashocs/\_optimization/shape\_optimization/shape\_variable\_abstractions.py        |       46 |        4 |     91% |127-129, 166 |
 | cashocs/\_optimization/topology\_optimization/\_\_init\_\_.py                      |        2 |        0 |    100% |           |
 | cashocs/\_optimization/topology\_optimization/bisection.py                         |       69 |        0 |    100% |           |
@@ -91,9 +91,9 @@
 | cashocs/nonlinear\_solvers/ts.py                                                   |      224 |       43 |     81% |132-135, 140-145, 175-179, 188-191, 197, 229, 231, 245, 279-280, 315-321, 374-376, 431, 434-440, 452-456, 465, 468, 471, 535, 555, 557-558 |
 | cashocs/space\_mapping/\_\_init\_\_.py                                             |        3 |        0 |    100% |           |
 | cashocs/space\_mapping/optimal\_control.py                                         |      378 |       40 |     89% |172, 273, 356-361, 461, 548-549, 677-679, 686-688, 713-745, 930, 959-961, 971-973, 987-988 |
-| cashocs/space\_mapping/shape\_optimization.py                                      |      392 |       53 |     86% |174, 276, 351-352, 446, 523-524, 539-566, 687-688, 705-707, 713-715, 745-783, 955, 982-984, 994-996, 1010-1011 |
+| cashocs/space\_mapping/shape\_optimization.py                                      |      392 |       53 |     86% |174, 276, 351-352, 448, 525-526, 541-568, 689-690, 707-709, 715-717, 747-785, 957, 984-986, 996-998, 1012-1013 |
 | cashocs/verification.py                                                            |      131 |        3 |     98% |234-235, 267 |
-| **TOTAL**                                                                          | **8082** |  **715** | **91%** |           |
+| **TOTAL**                                                                          | **8088** |  **717** | **91%** |           |
 
 
 ## Setup coverage badge
