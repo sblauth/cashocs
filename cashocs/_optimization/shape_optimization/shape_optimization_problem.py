@@ -20,10 +20,9 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-import functools
 import gc
 import subprocess
-from typing import overload, TYPE_CHECKING
+from typing import Any, overload, TYPE_CHECKING
 
 import dolfin.function.argument
 import fenics
@@ -58,9 +57,6 @@ except ImportError:
 
 if TYPE_CHECKING:
     from cashocs import _typing
-
-
-CallableFunction = type(lambda: ())
 
 
 class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
@@ -112,8 +108,21 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
     def __init__(self, mesh_parametrization: Callable, mesh_name: str) -> None:
         pass
 
-    @functools.singledispatchmethod  # type: ignore
-    def __init__(
+    def __init__(  # pylint: disable=super-init-not-called
+        self,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        if (
+            len(args) >= 1
+            and callable(args[0])
+            and not isinstance(args[0], (list, ufl.Form))
+        ):
+            self._init_remeshing(*args, **kwargs)
+        else:
+            self._init_default(*args, **kwargs)
+
+    def _init_default(
         self,
         state_forms: list[ufl.Form] | ufl.Form,
         bcs_list: (
@@ -356,8 +365,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
                 excluded_from_time_derivative=excluded_from_time_derivative,
             )
 
-    @__init__.register(CallableFunction)  # type: ignore
-    def _(self, mesh_parametrization: Callable, mesh_name: str) -> None:
+    def _init_remeshing(self, mesh_parametrization: Callable, mesh_name: str) -> None:
         """Initializes self. Version for remeshing.
 
         Args:
