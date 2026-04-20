@@ -30,7 +30,7 @@ jobs:
           miniforge-version: latest
           python-version: 3.14
           activate-environment: test
-          auto-activate-base: false
+          auto-activate: false
           auto-update-conda: true
           conda-remove-defaults: true
       

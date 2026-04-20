@@ -33,7 +33,7 @@ jobs:
         miniforge-version: latest
         python-version: 3.14
         activate-environment: test
-        auto-activate-base: false
+        auto-activate: false
         conda-remove-defaults: true
 
     - name: Show conda info
@@ -72,7 +72,7 @@ jobs:
         miniforge-version: latest
         python-version: 3.14
         activate-environment: test
-        auto-activate-base: false
+        auto-activate: false
         conda-remove-defaults: true
 
     - name: Show conda info
