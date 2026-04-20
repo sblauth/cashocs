@@ -286,7 +286,11 @@ def setup_fieldsplit_preconditioner(
                 dm.setUp()
 
                 ksp.setDM(dm)
-                ksp.setDMActive(False)
+                petsc_version = PETSc.Sys.getVersion()
+                if petsc_version[0] == 3 and petsc_version[1] >= 25:
+                    ksp.setDMActive(ksp.DMActive.ALL, False)
+                else:
+                    ksp.setDMActive(False)
 
 
 def define_ksp_options(
