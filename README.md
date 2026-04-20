@@ -66,7 +66,7 @@
 | cashocs/\_utils/forms.py                                                           |       90 |        0 |    100% |           |
 | cashocs/\_utils/helpers.py                                                         |       78 |        5 |     94% |71, 252, 259, 267-269 |
 | cashocs/\_utils/interpolations.py                                                  |       44 |       18 |     59% |27, 275-449 |
-| cashocs/\_utils/linalg.py                                                          |      200 |       22 |     89% |78, 140, 158, 291, 337-338, 395-398, 513-514, 677-681, 701-713 |
+| cashocs/\_utils/linalg.py                                                          |      200 |       22 |     89% |78, 140, 158, 293, 337-338, 395-398, 513-514, 677-681, 701-713 |
 | cashocs/geometry/\_\_init\_\_.py                                                   |       18 |        0 |    100% |           |
 | cashocs/geometry/boundary\_distance.py                                             |       63 |        1 |     98% |       154 |
 | cashocs/geometry/deformations.py                                                   |       64 |        4 |     94% |130, 139, 144, 203 |
