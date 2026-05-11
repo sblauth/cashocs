@@ -19,7 +19,7 @@ repos:
         files: cashocs/
 
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.20.2
+    rev: v2.0.0
     hooks:
       - id: mypy
         files: cashocs/
