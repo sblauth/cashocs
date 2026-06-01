@@ -11,16 +11,22 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import pathlib
+import shutil
 import sys
 
 sys.path.insert(0, os.path.abspath("../.."))
 sys.path.insert(0, os.path.abspath("."))
 
 import document_cli
-import jupytext_process
+import document_demos
 
-jupytext_process.process()
+generated_dir = pathlib.Path("./api/generated")
+shutil.rmtree(generated_dir, ignore_errors=True)
+generated_dir.mkdir(parents=True, exist_ok=True)
+
 document_cli.process()
+document_demos.process()
 
 # -- Project information -----------------------------------------------------
 
