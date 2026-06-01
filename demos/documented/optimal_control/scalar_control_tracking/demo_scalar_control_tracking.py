@@ -82,7 +82,7 @@ bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 # functional for the following kind of cost functionals
 #
 # $$
-# J(y,u) &= \frac{1}{2} \vert \int_{\Sigma} f(y,u) \text{ d}m - C_{des} \vert^2
+# J(y,u) = \frac{1}{2} \vert \int_{\Sigma} f(y,u) \text{ d}m - C_{des} \vert^2
 # $$
 #
 # where $\Sigma$ is some part of the domain $\Omega$, e.g. the $\Omega$ itself, a
