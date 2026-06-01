@@ -2,7 +2,7 @@ sphinx==9.1.0
 pydata-sphinx-theme==0.18.0
 sphinx-argparse==0.5.2
 sphinx-copybutton==0.5.2
-sphinx-design==0.6.1
+sphinx-design==0.7.0
 sphinx-favicon==1.1.0
 jupytext==1.19.3
 myst-parser==4.0.1
