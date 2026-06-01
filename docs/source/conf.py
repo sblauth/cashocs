@@ -79,6 +79,9 @@ autodoc_mock_imports = [
     "configparser",
     "h5py",
     "cashocs_extensions",
+    "numpy",
+    "scipy",
+    "matplotlib",
 ]
 autodoc_typehints = "both"
 autoclass_content = "both"
