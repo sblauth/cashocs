@@ -27,7 +27,7 @@
 # as follows
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 # &\min_{\Omega,u} J(\Omega, u) = \int_\mathrm{D} \mu \nabla u : \nabla u +
 # \alpha_\Omega u \cdot u \text{d}x + \frac{\lambda}{2}\left( \lvert \Omega \rvert - \text{vol}_\mathrm{des} \right)^2 \\
 # &\text{subject to} \qquad
@@ -37,7 +37,7 @@
 #     u &= u_D \quad &&\text{ on } \partial \mathrm{D},\\
 #     p &= 0 \quad &&\text{ at } x^*.
 # \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # Here, {math}`u` and {math}`p` denote the fluids velocity and pressure, respectively,

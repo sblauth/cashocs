@@ -24,7 +24,7 @@
 # Constrained Shape Optimization](https://doi.org/10.1515/cmam-2016-0009), which reads:
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min_\Omega J(u, \Omega) = \int_{\Omega^\text{flow}} Du : Du\ \text{ d}x \\
 #     &\text{subject to } \qquad
 #     \begin{alignedat}[t]{2}
@@ -34,7 +34,7 @@
 #         u &= 0 \quad &&\text{ on } \Gamma^\text{wall} \cup \Gamma^\text{obs}, \\
 #         \partial_n u - p n &= 0 \quad &&\text{ on } \Gamma^\text{out}.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # Here, we have an inflow boundary condition on the inlet $\Gamma^\text{in}$,
@@ -45,13 +45,13 @@
 # This problem is supplemented with the geometrical constraints
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     \text{vol}(\Omega) = \int_\Omega 1 \text{ d}x &= \int_{\Omega_0} 1 \text{ d}x
 #     = \text{vol}(\Omega_0), \\
 #     \text{bary}(\Omega) = \frac{1}{\text{vol}(\Omega)} \int_\Omega x \text{ d}x
 #     &= \frac{1}{\text{vol}(\Omega_0)} \int_{\Omega_0} x \text{ d}x
 #     = \text{bary}(\Omega_0),
-# \end{align}
+# \end{aligned}
 # $$
 #
 # where $\Omega_0$ denotes the initial geometry. This models that both the volume
@@ -63,7 +63,7 @@
 # the regularized problem reads
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     \min_\Omega J(u, \Omega) = &\int_{\Omega^\text{flow}} Du : Du\ \text{ d}x +
 #     \frac{\mu_\text{vol}}{2} \left( \int_\Omega 1 \text{ d}x -
 #     \text{vol}(\Omega_0) \right)^2 \\
@@ -77,7 +77,7 @@
 #         u &= 0 \quad &&\text{ on } \Gamma^\text{wall} \cup \Gamma^\text{obs}, \\
 #         \partial_n u - p n &= 0 \quad &&\text{ on } \Gamma^\text{out}.
 #     \end{alignedat}
-# \end{align}.
+# \end{aligned}.
 # $$
 #
 # where we have no additional geometrical constraints. However, the parameters

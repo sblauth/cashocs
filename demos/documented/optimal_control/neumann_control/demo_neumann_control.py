@@ -21,14 +21,14 @@
 # control. This problem reads
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{ d}x + \frac{\alpha}{2} \int_{\Gamma} u^2 \text{ d}s \\
 #     &\text{ subject to } \qquad
 #     \begin{alignedat}[t]{2}
 #         -\Delta y + y &= 0 \quad &&\text{ in } \Omega,\\
 #         n\cdot \nabla y &= u \quad &&\text{ on } \Gamma.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # (see, e.g., [Tröltzsch - Optimal Control of Partial Differential Equations](

@@ -49,7 +49,7 @@
 # Therefore, we can define our optimization problem as follows
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min_\Omega J(u_f, \Omega) = \frac{1}{2} \sum_{i=1}^{3} \left(
 #     q_\mathrm{out}^i(u_f) - q_\mathrm{des}  \right)^2 \\
 #     &\text{subject to} \qquad
@@ -62,7 +62,7 @@
 #         p_f &= 0 \quad &&\text{ on } \Gamma_\mathrm{out},\\
 #         u_f \times n &= 0 \quad &&\text{ on } \Gamma_\mathrm{out}.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # Here, we use the incompressible Navier-Stokes equations as PDE constraint. Note that
@@ -74,7 +74,7 @@
 # the coarse model optimization problem is given by
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min_\Omega J(u_c, \Omega) = \frac{1}{2} \sum_{i=1}^{3} \left(
 #     q_\mathrm{out}^i(u_c) - q_\mathrm{des}  \right)^2 \\
 #     &\text{subject to} \qquad
@@ -86,7 +86,7 @@
 #         p_c &= 0 \quad &&\text{ on } \Gamma_\mathrm{out},\\
 #         u_c \times n &= 0 \quad &&\text{ on } \Gamma_\mathrm{out}.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # :::{note}
@@ -103,7 +103,7 @@
 # the space mapping method reads
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min_\Omega J(u_p, \Omega) = \frac{1}{2} \sum_{i=1}^{3} \left(
 #     q_\mathrm{out}^i(u_p)
 #     - q_\mathrm{out}^i(u_f)  \right)^2 \\
@@ -116,7 +116,7 @@
 #         p_p &= 0 \quad &&\text{ on } \Gamma_\mathrm{out},\\
 #         u_p \times n &= 0 \quad &&\text{ on } \Gamma_\mathrm{out}.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 # :::
 #

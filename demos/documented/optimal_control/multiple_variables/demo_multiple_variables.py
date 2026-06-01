@@ -23,7 +23,7 @@
 # following problem
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min\; J((y,z), (u,v)) =
 #     \frac{1}{2} \int_\Omega \left( y - y_d \right)^2 \text{ d}x
 #     + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{ d}x
@@ -36,7 +36,7 @@
 #         -\Delta z - y &= v \quad &&\text{ in } \Omega, \\
 #         z &= 0 \quad &&\text{ on } \Gamma.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # For the sake of simplicity, we restrict this investigation to

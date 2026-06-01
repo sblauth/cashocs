@@ -24,7 +24,7 @@
 # problem reads
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min_{\Omega} J(u, \Omega) = \sum_{i=1}^{M} \frac{\nu_i}{2}
 #     \int_{\partial D} \left( u_i - m_i \right)^2 \text{ d}s \\
 #     &\text{subject to} \qquad
@@ -40,7 +40,7 @@
 #         \quad &&\text{ on } \Gamma, \\
 #         \int_{\partial D} u_i^\text{out} \text{ d}s &= 0.
 # \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # The setting is as follows.

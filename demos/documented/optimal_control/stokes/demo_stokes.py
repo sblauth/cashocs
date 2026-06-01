@@ -22,7 +22,7 @@
 # problem reads as follows
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min\; J(u, c) = \frac{1}{2} \int_\Omega \left\lvert u - u_d \right\rvert^2
 #     \text{ d}x +
 #     \frac{\alpha}{2} \int_\Omega \left\lvert c \right\rvert^2 \text{ d}x \\
@@ -34,7 +34,7 @@
 #         u &= 0 \quad &&\text{ on } \Gamma^\text{no slip},\\
 #         p &= 0 \quad &&\text{ at } x^\text{pres}.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # In contrast to the other demos, here we denote by $u$ the velocity of a fluid and by

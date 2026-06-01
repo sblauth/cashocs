@@ -22,14 +22,14 @@
 # briefly recall in the following. Our model problem for this example is given by
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{ d}x + \frac{\alpha}{2} \int_{\Gamma} u^2 \text{ d}s \\
 #     &\text{ subject to } \qquad
 #     \begin{alignedat}[t]{2}
 #         -\Delta y &= 0 \quad &&\text{ in } \Omega,\\
 #         y &= u \quad &&\text{ on } \Gamma.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # In contrast to our previous problems, the control now enters the problem via a

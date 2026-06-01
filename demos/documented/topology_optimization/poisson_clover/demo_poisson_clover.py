@@ -33,11 +33,11 @@
 # \colon \mathrm{D} \to \mathbb{R}` as follows:
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     \Psi(x) < 0 \quad &\Leftrightarrow \quad x \in \Omega,\\
 #     \Psi(x) > 0 \quad &\Leftrightarrow \quad x \in \mathcal{D} \setminus \bar{\Omega},\\
 #     \Psi(x) = 0 \quad &\Leftrightarrow \quad x \in \partial \Omega \setminus \partial \mathrm{D}.
-# \end{align}
+# \end{aligned}
 # $$
 #
 # Assuming that the topological derivative of the problem exists, which we denote by
@@ -80,14 +80,14 @@
 # In this demo, we consider the following model problem
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min_{\Omega,u} J(\Omega, u) = \frac{1}{2} \int_\mathrm{D} \left( u - u_\mathrm{des} \right)^2 \text{ d}x\\
 #     &\text{subject to} \qquad
 #     \begin{alignedat}[t]{2}
 #         - \Delta u + \alpha_\Omega u &= f_\Omega \quad &&\text{ in } \mathrm{D},\\
 #         u &= 0 \quad &&\text{ on } \partial \mathrm{D}.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # Here, {math}`\alpha_\Omega` and {math}`f_\Omega` have jumps between {math}`\Omega`

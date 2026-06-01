@@ -22,7 +22,7 @@
 # {ref}`demo_shape_poisson`,  but which has additional regularization terms, i.e.,
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     \min_\Omega J(u, \Omega) = &\int_\Omega u \text{ d}x +
 #     \alpha_\text{vol} \int_\Omega 1 \text{ d}x +
 #     \alpha_\text{surf} \int_\Gamma 1 \text{ d}s \\
@@ -37,7 +37,7 @@
 #         -\Delta u &= f \quad &&\text{ in } \Omega,\\
 #         u &= 0 \quad &&\text{ on } \Gamma.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # Here, $\kappa$ is the mean curvature. For the initial domain, we use the unit disc
