@@ -18,6 +18,7 @@
 import ast
 import importlib
 import pathlib
+import shutil
 import sys
 from unittest import mock
 
@@ -71,6 +72,7 @@ def process():
     cli_dir = pathlib.Path("../../cashocs/_cli")
 
     generated_dir = pathlib.Path("./cli/generated")
+    shutil.rmtree(generated_dir, ignore_errors=True)
     generated_dir.mkdir(parents=True, exist_ok=True)
 
     argparse_functions = []

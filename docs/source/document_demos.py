@@ -16,6 +16,7 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 import pathlib
+import shutil
 
 import jupytext
 
@@ -27,15 +28,20 @@ def process():
     # Directories to scan
     subdirs = [pathlib.Path("../../demos/documented")]
 
+    # Make demo doc directory
+    demo_dir = pathlib.Path("./user/demos")
+
+    # Delete non-.rst files
+    for child in demo_dir.rglob("*"):
+        if child.is_file() and child.suffix != ".rst":
+            child.unlink()
+
+    demo_dir.mkdir(parents=True, exist_ok=True)
+
     # Iterate over subdirectories containing demos
     for subdir in subdirs:
-        # Make demo doc directory
-        demo_dir = pathlib.Path("./user/demos")
-        demo_dir.mkdir(parents=True, exist_ok=True)
-
         # Process each demo using jupytext/myst
         for demo in subdir.glob("**/demo*.py"):
-            # for demo in subdir.glob("**/demo_space_mapping_semilinear_transmission.py"):
             python_demo = jupytext.read(demo)
             myst_text = jupytext.writes(python_demo, fmt="myst")
 
