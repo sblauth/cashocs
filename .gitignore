@@ -21,9 +21,11 @@ htmlcov
 /dist
 cashocs.egg-info/
 
-### sphinx
+### sphinx docs
 /docs/build
 /docs/source/api/generated
+/docs/source/cli/generated
+docs/source/user/demos/*/*.md
 
 ### cashocs
 *._cashocs_remesh_*
@@ -31,8 +33,6 @@ cashocs.egg-info/
 /tests/out
 *cashocs_remesh_*/
 
-### Documentation
-docs/source/user/demos/*/*.md
 
 ### vs code
 .vscode
