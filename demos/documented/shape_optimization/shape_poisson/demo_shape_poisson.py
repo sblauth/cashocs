@@ -23,14 +23,14 @@
 # on Restricted Mesh Deformations](https://doi.org/10.1137/19M1241465)
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min_\Omega J(u, \Omega) = \int_\Omega u \text{ d}x \\
 #     &\text{subject to} \qquad
 #     \begin{alignedat}[t]{2}
 #         -\Delta u &= f \quad &&\text{ in } \Omega,\\
 #         u &= 0 \quad &&\text{ on } \Gamma.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # For the initial domain, we use the unit disc

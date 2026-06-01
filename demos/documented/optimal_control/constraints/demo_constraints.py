@@ -22,7 +22,7 @@
 # constrained optimization, i.e.,
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2
 #     \text{ d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{ d}x \\
 #     &\text{ subject to } \qquad
@@ -34,7 +34,7 @@
 #         \int_{\Omega_{t,l}} y \text{ d}x &\geq c_{t,l},\\
 #         y &\leq c_{t,r} \quad &&\text{ in } \Omega_{t,r}.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # Here, we have four additional constraints, each for one quarter of the unit square

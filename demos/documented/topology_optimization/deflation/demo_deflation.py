@@ -27,7 +27,7 @@
 # as follows
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 # &\min_{\Omega,u} J(\Omega, u) = \int_\mathrm{D} \nabla u : \nabla u +
 # \alpha_\Omega u \cdot u \text{d}x \\
 # &\text{subject to} \qquad
@@ -37,7 +37,7 @@
 #     u &= u_D \quad &&\text{ on } \partial \mathrm{D},\\
 #     V_L &\leq |\Omega| \leq V_U.
 # \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 
 # Here, {math}`u` and {math}`p` denote the fluids velocity and pressure, respectively.
@@ -95,8 +95,8 @@ V = FunctionSpace(mesh, v_elem * p_elem)
 CG1 = FunctionSpace(mesh, "CG", 1)
 DG0 = FunctionSpace(mesh, "DG", 0)
 
-alpha_in = 2.5 / (100 ** 2)
-alpha_out = 2.5 / (0.01 ** 2)
+alpha_in = 2.5 / (100**2)
+alpha_out = 2.5 / (0.01**2)
 alpha = Function(DG0)
 
 psi = Function(CG1)
@@ -122,8 +122,8 @@ F = (
 # using the code
 
 # +
-v_1 = Expression(('-144*(x[1]-1.0/6)*(x[1]-2.0/6)', '0.0'), degree=2)
-v_2 = Expression(('-144*(x[1]-4.0/6)*(x[1]-5.0/6)', '0.0'), degree=2)
+v_1 = Expression(("-144*(x[1]-1.0/6)*(x[1]-2.0/6)", "0.0"), degree=2)
+v_2 = Expression(("-144*(x[1]-4.0/6)*(x[1]-5.0/6)", "0.0"), degree=2)
 bcs = cashocs.create_dirichlet_bcs(V.sub(0), Constant((0, 0)), boundaries, [1])
 bcs += cashocs.create_dirichlet_bcs(V.sub(0), v_1, boundaries, [3, 5])
 bcs += cashocs.create_dirichlet_bcs(V.sub(0), v_2, boundaries, [2, 4])
@@ -141,10 +141,7 @@ vol_des = 0.5
 # {ref}`demo_pipe_bend`
 
 # +
-J = cashocs.IntegralFunctional(
-    inner(grad(u), grad(u)) * dx
-    + alpha * dot(u, u) * dx
-)
+J = cashocs.IntegralFunctional(inner(grad(u), grad(u)) * dx + alpha * dot(u, u) * dx)
 dJ_in = Constant(alpha_in - alpha_out) * (dot(u, v) + dot(u, u))
 dJ_out = Constant(alpha_in - alpha_out) * (dot(u, v) + dot(u, u))
 # -
@@ -164,9 +161,12 @@ dJ_out = Constant(alpha_in - alpha_out) * (dot(u, v) + dot(u, u))
 # As in the previous demos, we have to specify the update routine of the level-set
 # function `update_level_set`, which we do as follows:
 
+
 # +
 def update_level_set():
     cashocs.interpolate_levelset_function_to_cells(psi, alpha_in, alpha_out, alpha)
+
+
 # -
 
 # That is, in the `update_level_set` function, the jumping coefficient is updated
@@ -186,8 +186,17 @@ def update_level_set():
 
 # +
 dtop = cashocs.DeflatedTopologyOptimizationProblem(
-    F, bcs, J, up, vq, psi, dJ_in, dJ_out, update_level_set, config=cfg,
-    volume_restriction=vol_des
+    F,
+    bcs,
+    J,
+    up,
+    vq,
+    psi,
+    dJ_in,
+    dJ_out,
+    update_level_set,
+    config=cfg,
+    volume_restriction=vol_des,
 )
 # -
 
@@ -205,9 +214,17 @@ dtop = cashocs.DeflatedTopologyOptimizationProblem(
 # Now, we can solve the topology optimization problem with the following lines
 
 # +
-delta = 1000000.
+delta = 1000000.0
 gamma = 0.7
-dtop.solve(tol=1e-6, it_deflation=4, gamma=gamma, delta=delta, inner_rtol=0., inner_atol=0., angle_tol=1.0)
+dtop.solve(
+    tol=1e-6,
+    it_deflation=4,
+    gamma=gamma,
+    delta=delta,
+    inner_rtol=0.0,
+    inner_atol=0.0,
+    angle_tol=1.0,
+)
 # -
 
 # Here, `it_deflation` denotes the number of iterations of the deflation procedure, and
@@ -244,14 +261,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 rgbvals = np.array([[0, 107, 164], [255, 128, 14]]) / 255.0
-cmap = colors.LinearSegmentedColormap.from_list(
-    "tab10_colorblind", rgbvals, N=256
-)
+cmap = colors.LinearSegmentedColormap.from_list("tab10_colorblind", rgbvals, N=256)
 
 for i in range(0, len(dtop.control_list_final)):
     plot(dtop.control_list_final[i], cmap=cmap, vmin=-1e-10, vmax=1e-10)
     plt.tight_layout()
-    plt.savefig("./deflation_shape_{i}.png".format(i=i), bbox_inches='tight')
+    plt.savefig("./deflation_shape_{i}.png".format(i=i), bbox_inches="tight")
     # plt.show()
 # -
 

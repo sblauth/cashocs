@@ -23,7 +23,7 @@
 # given by
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2
 #     \text{ d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{ d}x \\
 #     &\text{ subject to } \qquad
@@ -31,7 +31,7 @@
 #         -\Delta y &= u \quad &&\text{ in } \Omega,\\
 #         y &= 0 \quad &&\text{ on } \Gamma.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # (see, e.g., [Tröltzsch - Optimal Control of Partial Differential Equations](

@@ -23,7 +23,7 @@
 # Cattaneo Model](https://nbn-resolving.org/urn:nbn:de:hbz:386-kluedo-53727). It reads
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min\; J(y,u) = \frac{1}{2} \int_0^T \int_\Omega \left( y - y_d \right)^2
 #     \text{ d}x \text{ d}t
 #     + \frac{\alpha}{2} \int_0^T \int_\Omega u^2 \text{ d}x \text{ d}t \\
@@ -33,7 +33,7 @@
 #         y &= 0 \quad &&\text{ on } (0,T) \times \Gamma, \\
 #         y(0, \cdot) &= y^{(0)} \quad &&\text{ in } \Omega.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # Since FEniCS does not have any direct built-in support for time dependent problems,

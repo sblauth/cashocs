@@ -22,7 +22,7 @@
 # Recall, that the corresponding (regularized) shape optimization problem is given by
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     \min_\Omega J(u, \Omega) = &\int_{\Omega^\text{flow}} Du : Du\ \text{ d}x +
 #     \frac{\mu_\text{vol}}{2} \left( \int_\Omega 1 \text{ d}x
 #     - \text{vol}(\Omega_0) \right)^2 \\
@@ -36,7 +36,7 @@
 #         u &= 0 \quad &&\text{ on } \Gamma^\text{wall} \cup \Gamma^\text{obs}, \\
 #         \partial_n u - p n &= 0 \quad &&\text{ on } \Gamma^\text{out}.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # For a background on the stiffness of the shape gradient, we refer to

@@ -23,7 +23,7 @@
 # in {ref}`demo_cantilever`. We define the topology optimization problem as
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 # &\min_{\Omega,u} J(\Omega,u) = \int_\mathrm{D} \alpha_\Omega \sigma(u):e(u) \text{d}x \\
 # &\text{subject to} \qquad
 # \begin{alignedat}{2}
@@ -32,7 +32,7 @@
 #     \alpha_\Omega \sigma(u)n &= g \quad &&\text{ on } \Gamma_N,\\
 #     V_L &\leq |\Omega| \leq V_U.
 # \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # As before, {math}`u` is the deformation of a linear elastic material, {math}`\sigma(u)`

@@ -25,7 +25,7 @@
 # {ref}`demo_shape_poisson`, i.e.,
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min_\Omega J(u, \Omega) = \alpha \int_\Omega u \text{ d}x
 #     + \beta \int_\Omega 1 \text{ d}x \\
 #     &\text{subject to} \qquad
@@ -33,7 +33,7 @@
 #         -\Delta u &= f \quad &&\text{ in } \Omega,\\
 #         u &= 0 \quad &&\text{ on } \Gamma.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # For the initial domain, we use the unit disc

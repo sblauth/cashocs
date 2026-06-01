@@ -22,7 +22,7 @@
 # arise after integration. For this, we investigate the problem
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min\; J(y,u) = \frac{1}{2} \left( \int_{\Omega} y^2
 #     \text{ d}x - C_{des} \right)^2 \\
 #     &\text{ subject to } \qquad
@@ -30,7 +30,7 @@
 #         -\Delta y &= u \quad &&\text{ in } \Omega,\\
 #         y &= 0 \quad &&\text{ on } \Gamma.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # For this example, we do not consider control constraints,
@@ -82,10 +82,7 @@ bcs = cashocs.create_dirichlet_bcs(V, Constant(0), boundaries, [1, 2, 3, 4])
 # functional for the following kind of cost functionals
 #
 # $$
-# \begin{aligned}
-#     J(y,u) &= \frac{1}{2} \vert \int_{\Sigma} f(y,u) \text{ d}m
-#     - C_{des} \vert^2 \\
-# \end{aligned}
+# J(y,u) &= \frac{1}{2} \vert \int_{\Sigma} f(y,u) \text{ d}m - C_{des} \vert^2
 # $$
 #
 # where $\Sigma$ is some part of the domain $\Omega$, e.g. the $\Omega$ itself, a

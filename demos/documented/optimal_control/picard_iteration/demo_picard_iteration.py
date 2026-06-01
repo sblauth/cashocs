@@ -24,7 +24,7 @@
 # As model example, we consider the following problem
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min\; J((y,z),(u,v)) = \frac{1}{2} \int_\Omega \left( y - y_d \right)^2
 #     \text{ d}x + \frac{1}{2} \int_\Omega \left( z - z_d \right)^2 \text{ d}x
 #     + \frac{\alpha}{2} \int_\Omega u^2 \text{ d}x + \frac{\beta}{2} \int_\Omega v^2
@@ -36,7 +36,7 @@
 #         -\Delta z + y &= v \quad &&\text{ in } \Omega,\\
 #         z &= 0 \quad &&\text{ on } \Gamma.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # Again, the system is two-way coupled. To solve it, we now employ a Picard iteration.

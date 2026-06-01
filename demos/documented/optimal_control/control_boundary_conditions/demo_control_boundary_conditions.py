@@ -21,7 +21,7 @@
 # with additional boundary conditions for the control variables. Our problem is given by
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2
 #     \text{ d}x + \frac{\alpha}{2} \int_{\Omega} u^2 \text{ d}x \\
 #     &\text{ subject to } \qquad
@@ -30,7 +30,7 @@
 #         y &= 0 \quad &&\text{ on } \Gamma, \\
 #         u &= u_{\Gamma} \quad &&\text{ on } \Gamma,
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # Here, we consider the control variable $u$ in

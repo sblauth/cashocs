@@ -37,7 +37,7 @@
 # Let us now state the semi linear transmission which we want to solve. It is given by
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min_\Omega J(u_f, \Omega) = \int_D (u_f - u_\mathrm{des})^2 \text{ d}x \\
 #     &\text{subject to} \qquad
 #     \begin{alignedat}[t]{2}
@@ -46,7 +46,7 @@
 #         [\![ u_f ]\!]_{\Gamma} &= 0,\\
 #         [\![ \alpha \partial_n u_f ]\!]_{\Gamma} &= 0.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # Here, $\alpha$ is given by $\alpha(x) = \chi_\Omega(x) \alpha_1 + (1 - \chi_\Omega(x))
@@ -58,7 +58,7 @@
 # problem is given by
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min_\Omega J(u_c, \Omega) = \int_D (u_c - u_\mathrm{des})^2 \text{ d}x \\
 #     &\text{subject to} \qquad
 #     \begin{alignedat}[t]{2}
@@ -67,7 +67,7 @@
 #         [\![ u_c ]\!]_{\Gamma} &= 0,\\
 #         [\![ \alpha \partial_n u_c ]\!]_{\Gamma} &= 0.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # The difference between the fine and the coarse model optimization problems is now only
@@ -87,7 +87,7 @@
 # solved
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min_\Omega J(u_p, \Omega) = \int_D (u_p - u_f)^2 \text{ d}x \\
 #     &\text{subject to} \qquad
 #     \begin{alignedat}[t]{2}
@@ -96,7 +96,7 @@
 #         [\![ u_p ]\!]_{\Gamma} &= 0,\\
 #         [\![ \alpha \partial_n u_p ]\!]_{\Gamma} &= 0.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 # :::
 #

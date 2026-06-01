@@ -21,7 +21,7 @@
 # problems. As a model problem, we consider
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min\; J(y,u) = \frac{1}{2} \int_{\Omega} \left( y - y_d \right)^2 \text{ d}x
 #     + \frac{\alpha}{2} \int_{\Omega} u^2 \text{ d}x \\
 #     &\text{ subject to } \qquad
@@ -29,7 +29,7 @@
 #         -\Delta y + c y^3 &= u \quad &&\text{ in } \Omega,\\
 #         y &= 0 \quad &&\text{ on } \Gamma.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # As this problem has a nonlinear PDE as state constraint, we have to modify the config

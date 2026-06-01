@@ -22,7 +22,7 @@
 # {ref}`demo_shape_stokes`. The problem reads
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min_\Omega J(u, \Omega) = \int_{\Omega^\text{flow}} Du : Du\ \text{ d}x \\
 #     &\text{subject to } \qquad
 #     \begin{alignedat}[t]{2}
@@ -32,7 +32,7 @@
 #         u &= 0 \quad &&\text{ on } \Gamma^\text{wall} \cup \Gamma^\text{obs}, \\
 #         \partial_n u - p n &= 0 \quad &&\text{ on } \Gamma^\text{out}.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # The corresponding regularized version of the problem including the necessary

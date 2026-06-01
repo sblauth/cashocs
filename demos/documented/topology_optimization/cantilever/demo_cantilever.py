@@ -27,7 +27,7 @@
 # optimization problem
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 # &\min_{\Omega,u} J(\Omega,u) = \int_\mathrm{D} \alpha_\Omega \sigma(u):e(u) \text{d}x + \gamma \lvert \Omega \rvert \\
 # &\text{subject to} \qquad
 # \begin{alignedat}{2}
@@ -35,7 +35,7 @@
 #     u &= 0 \quad &&\text{ on } \Gamma_D,\\
 #     \alpha_\Omega \sigma(u)n &= g \quad &&\text{ on } \Gamma_N.
 # \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # Here, {math}`u` is the deformation of a linear elastic material, {math}`\sigma(u) =

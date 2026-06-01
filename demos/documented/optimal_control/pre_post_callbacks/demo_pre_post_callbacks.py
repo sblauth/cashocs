@@ -24,7 +24,7 @@
 # problem
 #
 # $$
-# \begin{align}
+# \begin{aligned}
 #     &\min\; J(u, c) = \frac{1}{2} \int_\Omega \left\lvert u - u_d \right\rvert^2
 #     \text{ d}x +
 #     \frac{\alpha}{2} \int_\Omega \left\lvert c \right\rvert^2 \text{ d}x \\
@@ -36,7 +36,7 @@
 #         u &= 0 \quad &&\text{ on } \Gamma^\text{no slip},\\
 #         p &= 0 \quad &&\text{ at } x^\text{pres}.
 #     \end{alignedat}
-# \end{align}
+# \end{aligned}
 # $$
 #
 # In particular, the setting for this demo is very similar to the one of
