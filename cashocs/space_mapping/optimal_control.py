@@ -179,8 +179,6 @@ class CoarseModel:
         self.control_bcs_list = control_bcs_list
         self.pre_callback = pre_callback
         self.post_callback = post_callback
-        self.linear_solver = linear_solver
-        self.adjoint_linear_solver = adjoint_linear_solver
         self.excluded_from_time_derivative = excluded_from_time_derivative
 
         self._pre_callback: Callable | None = None
@@ -209,8 +207,8 @@ class CoarseModel:
             preconditioner_forms=preconditioner_forms,
             pre_callback=self.pre_callback,
             post_callback=self.post_callback,
-            linear_solver=self.linear_solver,
-            adjoint_linear_solver=self.adjoint_linear_solver,
+            linear_solver=linear_solver,
+            adjoint_linear_solver=adjoint_linear_solver,
             newton_linearizations=newton_linearizations,
             excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
