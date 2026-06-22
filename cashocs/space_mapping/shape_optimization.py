@@ -319,9 +319,11 @@ class ParameterExtraction:
         self.preconditioner_forms = coarse_model.preconditioner_forms
         self.pre_callback = coarse_model.pre_callback
         self.post_callback = coarse_model.post_callback
-        self.linear_solver = coarse_model.shape_optimization_problem.linear_solver
+        self.linear_solver = (
+            coarse_model.shape_optimization_problem.state_problem.linear_solver
+        )
         self.adjoint_linear_solver = (
-            coarse_model.shape_optimization_problem.adjoint_linear_solver
+            coarse_model.shape_optimization_problem.adjoint_problem.linear_solver
         )
         self.newton_linearizations = (
             coarse_model.shape_optimization_problem.newton_linearizations

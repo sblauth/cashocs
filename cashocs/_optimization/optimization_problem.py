@@ -222,7 +222,7 @@ class OptimizationProblem(abc.ABC):
             adjoint_ksp_options,
             gradient_ksp_options,
             self.desired_weights,
-            self.preconditioner_forms,
+            preconditioner_forms,
             self.newton_linearizations,
             self.excluded_from_time_derivative,
         ) = self._parse_optional_inputs(
@@ -268,11 +268,8 @@ class OptimizationProblem(abc.ABC):
             self.cost_functional_list,
             self.state_forms,
             self.bcs_list,
-            self.preconditioner_forms,
+            preconditioner_forms,
         )
-
-        self.linear_solver = linear_solver
-        self.adjoint_linear_solver = adjoint_linear_solver
 
         self.db.callback.pre_callback = pre_callback
         self.db.callback.post_callback = post_callback
@@ -287,7 +284,7 @@ class OptimizationProblem(abc.ABC):
             self.db,
             self.general_form_handler.state_form_handler,
             self.initial_guess,
-            linear_solver=self.linear_solver,
+            linear_solver=linear_solver,
             newton_linearizations=self.newton_linearizations,
             excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
@@ -295,7 +292,7 @@ class OptimizationProblem(abc.ABC):
             self.db,
             self.general_form_handler.adjoint_form_handler,
             self.state_problem,
-            linear_solver=self.adjoint_linear_solver,
+            linear_solver=adjoint_linear_solver,
             adjoint_linearizations=self.adjoint_linearizations,
         )
         self.constraint_manager: mesh_quality_constraints.ConstraintManager | None = (
