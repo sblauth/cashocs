@@ -22,6 +22,10 @@ interesting for users, so they are part of the public API. Includes wrappers tha
 to shorten the coding for often recurring actions.
 """
 
+from cashocs._utils import forms
+from cashocs._utils import helpers
+from cashocs._utils import interpolations
+from cashocs._utils import linalg
 from cashocs._utils.forms import bilinear_boundary_form_modification
 from cashocs._utils.forms import create_dirichlet_bcs
 from cashocs._utils.forms import create_material_parameter
@@ -52,6 +56,10 @@ from cashocs._utils.linalg import solve_linear_problem
 from cashocs._utils.linalg import split_linear_forms
 
 __all__ = [
+    "forms",
+    "helpers",
+    "interpolations",
+    "linalg",
     "bilinear_boundary_form_modification",
     "create_dirichlet_bcs",
     "max_",
