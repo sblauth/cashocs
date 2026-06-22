@@ -147,16 +147,10 @@ class ConstrainedOptimizationProblem(abc.ABC):
         self.config.validate_config()
 
         self.initial_guess = initial_guess
-        self.ksp_options = ksp_options
-        self.adjoint_ksp_options = adjoint_ksp_options
-        self.gradient_ksp_options = gradient_ksp_options
-        self.preconditioner_forms = preconditioner_forms
         self.pre_callback = pre_callback
         self.post_callback = post_callback
         self.linear_solver = linear_solver
         self.adjoint_linear_solver = adjoint_linear_solver
-        self.newton_linearizations = newton_linearizations
-        self.excluded_from_time_derivative = excluded_from_time_derivative
 
         self.current_function_value = 0.0
 
@@ -184,15 +178,15 @@ class ConstrainedOptimizationProblem(abc.ABC):
             self.config,
             self.states,
             self.adjoints,
-            self.ksp_options,  # type: ignore
-            self.adjoint_ksp_options,  # type: ignore
-            self.gradient_ksp_options,  # type: ignore
+            ksp_options,  # type: ignore
+            adjoint_ksp_options,  # type: ignore
+            gradient_ksp_options,  # type: ignore
             self.cost_functional_form_initial,
             self.state_forms,
             self.bcs_list,
-            self.preconditioner_forms,  # type: ignore
-            self.newton_linearizations,  # type: ignore
-            self.excluded_from_time_derivative,  # type: ignore
+            preconditioner_forms,  # type: ignore
+            newton_linearizations,  # type: ignore
+            excluded_from_time_derivative,  # type: ignore
         )
 
         self.output_manager = io.output.OutputManager(self.db)
@@ -513,6 +507,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         output_path = pathlib.Path(self.config.get("Output", "result_dir"))
         config.set("Output", "result_dir", str(output_path / f"subproblem_{iteration}"))
 
+        eftd = self.db.parameter_db.excluded_from_time_derivative
         optimal_control_problem = optimal_control.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -524,17 +519,17 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             riesz_scalar_products=self.riesz_scalar_products,
             control_constraints=self.control_constraints,
             initial_guess=self.initial_guess,
-            ksp_options=self.ksp_options,
-            adjoint_ksp_options=self.adjoint_ksp_options,
-            gradient_ksp_options=self.gradient_ksp_options,
+            ksp_options=self.db.parameter_db.state_ksp_options,
+            adjoint_ksp_options=self.db.parameter_db.adjoint_ksp_options,
+            gradient_ksp_options=self.db.parameter_db.gradient_ksp_options,
             control_bcs_list=self.control_bcs_list,
-            preconditioner_forms=self.preconditioner_forms,
+            preconditioner_forms=self.db.form_db.preconditioner_forms,
             pre_callback=self.pre_callback,
             post_callback=self.post_callback,
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
-            newton_linearizations=self.newton_linearizations,
-            excluded_from_time_derivative=self.excluded_from_time_derivative,
+            newton_linearizations=self.db.form_db.newton_linearizations,
+            excluded_from_time_derivative=eftd,
         )
 
         optimal_control_problem.inject_pre_post_callback(
@@ -558,6 +553,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
         config.set("Output", "save_adjoint", "False")
         config.set("Output", "save_gradient", "False")
 
+        eftd = self.db.parameter_db.excluded_from_time_derivative
         temp_problem = optimal_control.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -569,16 +565,16 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             riesz_scalar_products=self.riesz_scalar_products,
             control_constraints=self.control_constraints,
             initial_guess=self.initial_guess,
-            ksp_options=self.ksp_options,
-            adjoint_ksp_options=self.adjoint_ksp_options,
-            gradient_ksp_options=self.gradient_ksp_options,
-            preconditioner_forms=self.preconditioner_forms,
+            ksp_options=self.db.parameter_db.state_ksp_options,
+            adjoint_ksp_options=self.db.parameter_db.adjoint_ksp_options,
+            gradient_ksp_options=self.db.parameter_db.gradient_ksp_options,
+            preconditioner_forms=self.db.form_db.preconditioner_forms,
             pre_callback=self.pre_callback,
             post_callback=self.post_callback,
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
-            newton_linearizations=self.newton_linearizations,
-            excluded_from_time_derivative=self.excluded_from_time_derivative,
+            newton_linearizations=self.db.form_db.newton_linearizations,
+            excluded_from_time_derivative=eftd,
         )
         temp_problem.state_problem.has_solution = True
         self.current_function_value = temp_problem.reduced_cost_functional.evaluate()
@@ -743,6 +739,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         output_path = pathlib.Path(self.config.get("Output", "result_dir"))
         config.set("Output", "result_dir", str(output_path / f"subproblem_{iteration}"))
 
+        eftd = self.db.parameter_db.excluded_from_time_derivative
         shape_optimization_problem = shape_optimization.ShapeOptimizationProblem(
             self.state_forms,
             self.bcs_list,
@@ -753,16 +750,16 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             config=config,
             shape_scalar_product=self.shape_scalar_product,
             initial_guess=self.initial_guess,
-            ksp_options=self.ksp_options,
-            adjoint_ksp_options=self.adjoint_ksp_options,
-            gradient_ksp_options=self.gradient_ksp_options,
-            preconditioner_forms=self.preconditioner_forms,
+            ksp_options=self.db.parameter_db.state_ksp_options,
+            adjoint_ksp_options=self.db.parameter_db.adjoint_ksp_options,
+            gradient_ksp_options=self.db.parameter_db.gradient_ksp_options,
+            preconditioner_forms=self.db.form_db.preconditioner_forms,
             pre_callback=self.pre_callback,
             post_callback=self.post_callback,
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
-            newton_linearizations=self.newton_linearizations,
-            excluded_from_time_derivative=self.excluded_from_time_derivative,
+            newton_linearizations=self.db.form_db.newton_linearizations,
+            excluded_from_time_derivative=eftd,  # type: ignore
         )
 
         shape_optimization_problem.inject_pre_post_callback(
@@ -786,6 +783,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
         config.set("Output", "save_adjoint", "False")
         config.set("Output", "save_gradient", "False")
 
+        eftd = self.db.parameter_db.excluded_from_time_derivative
         temp_problem = shape_optimization.ShapeOptimizationProblem(
             self.state_forms,
             self.bcs_list,
@@ -796,16 +794,16 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             config=config,
             shape_scalar_product=self.shape_scalar_product,
             initial_guess=self.initial_guess,
-            ksp_options=self.ksp_options,
-            adjoint_ksp_options=self.adjoint_ksp_options,
-            gradient_ksp_options=self.gradient_ksp_options,
-            preconditioner_forms=self.preconditioner_forms,
+            ksp_options=self.db.parameter_db.state_ksp_options,
+            adjoint_ksp_options=self.db.parameter_db.adjoint_ksp_options,
+            gradient_ksp_options=self.db.parameter_db.gradient_ksp_options,
+            preconditioner_forms=self.db.form_db.preconditioner_forms,
             pre_callback=self.pre_callback,
             post_callback=self.post_callback,
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
-            newton_linearizations=self.newton_linearizations,
-            excluded_from_time_derivative=self.excluded_from_time_derivative,
+            newton_linearizations=self.db.form_db.newton_linearizations,
+            excluded_from_time_derivative=eftd,  # type: ignore
         )
         temp_problem.state_problem.has_solution = True
         self.current_function_value = temp_problem.reduced_cost_functional.evaluate()
