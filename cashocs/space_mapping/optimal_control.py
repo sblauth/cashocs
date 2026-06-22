@@ -313,12 +313,14 @@ class ParameterExtraction:
             coarse_model.optimal_control_problem.box_constraints.control_constraints
         )
         self.initial_guess = coarse_model.optimal_control_problem.initial_guess
-        self.ksp_options = coarse_model.optimal_control_problem.ksp_options
+        self.ksp_options = (
+            coarse_model.optimal_control_problem.db.parameter_db.state_ksp_options
+        )
         self.adjoint_ksp_options = (
-            coarse_model.optimal_control_problem.adjoint_ksp_options
+            coarse_model.optimal_control_problem.db.parameter_db.adjoint_ksp_options
         )
         self.gradient_ksp_options = (
-            coarse_model.optimal_control_problem.gradient_ksp_options
+            coarse_model.optimal_control_problem.db.parameter_db.gradient_ksp_options
         )
         self.control_bcs_list = coarse_model.control_bcs_list
         self.preconditioner_forms = (
