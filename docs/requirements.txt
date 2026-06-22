@@ -4,6 +4,6 @@ sphinx-argparse==0.5.2
 sphinx-copybutton==0.5.2
 sphinx-design==0.7.0
 sphinx-favicon==1.1.0
-jupytext==1.19.3
+jupytext==1.19.4
 myst-parser==5.1.0
 typing_extensions
