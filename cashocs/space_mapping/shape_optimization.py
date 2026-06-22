@@ -179,7 +179,6 @@ class CoarseModel:
         self.desired_weights = desired_weights
         self.pre_callback = pre_callback
         self.post_callback = post_callback
-        self.excluded_from_time_derivative = excluded_from_time_derivative
 
         self._pre_callback: Callable | None = None
         self._post_callback: Callable | None = None
@@ -211,7 +210,7 @@ class CoarseModel:
             linear_solver=linear_solver,
             adjoint_linear_solver=adjoint_linear_solver,
             newton_linearizations=newton_linearizations,
-            excluded_from_time_derivative=self.excluded_from_time_derivative,
+            excluded_from_time_derivative=excluded_from_time_derivative,
         )
 
         self.coordinates_optimal = self.mesh.coordinates().copy()
@@ -305,6 +304,7 @@ class ParameterExtraction:
         self.ksp_options = pdb.state_ksp_options
         self.adjoint_ksp_options = pdb.adjoint_ksp_options
         self.gradient_ksp_options = pdb.gradient_ksp_options
+        self.excluded_from_time_derivative = pdb.excluded_from_time_derivative
 
         fdb = coarse_model.shape_optimization_problem.db.form_db
         self.preconditioner_forms = fdb.preconditioner_forms
@@ -318,8 +318,6 @@ class ParameterExtraction:
         self.adjoint_linear_solver = (
             coarse_model.shape_optimization_problem.adjoint_problem.linear_solver
         )
-        coarse_pdb = coarse_model.shape_optimization_problem.db.parameter_db
-        self.excluded_from_time_derivative = coarse_pdb.excluded_from_time_derivative
 
         self.coordinates_initial = coarse_model.coordinates_initial
 
@@ -457,6 +455,7 @@ class SpaceMappingProblem:
         ksp_options = pdb.state_ksp_options
         adjoint_ksp_options = pdb.adjoint_ksp_options
         gradient_ksp_options = pdb.gradient_ksp_options
+        excluded_from_time_derivative = pdb.excluded_from_time_derivative
 
         fdb = self.coarse_model.shape_optimization_problem.db.form_db
         preconditioner_forms = fdb.preconditioner_forms
@@ -474,7 +473,7 @@ class SpaceMappingProblem:
             _utils.check_and_enlist_bcs(self.coarse_model.bcs_list),
             preconditioner_forms,
             newton_linearizations,
-            self.coarse_model.excluded_from_time_derivative,  # type: ignore
+            excluded_from_time_derivative,
         )
 
         self.output_manager = io.output.OutputManager(self.db)
