@@ -182,6 +182,7 @@ class DeflatedProblem(abc.ABC):
             self.bcs_list,
             self.preconditioner_forms,  # type: ignore
             self.newton_linearizations,  # type: ignore
+            self.excluded_from_time_derivative,  # type: ignore
         )
 
         self.output_manager = output.OutputManager(self.db)

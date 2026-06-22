@@ -40,6 +40,7 @@ class ParameterDatabase:
         state_ksp_options: list[_typing.KspOption],
         adjoint_ksp_options: list[_typing.KspOption],
         gradient_ksp_options: list[_typing.KspOption] | None,
+        excluded_from_time_derivative: (list[int] | list[list[int]] | list[None]),
     ) -> None:
         """Initializes the database.
 
@@ -49,13 +50,17 @@ class ParameterDatabase:
             state_ksp_options: The list of ksp options for the state system.
             adjoint_ksp_options: The list of ksp options for the adjoint system.
             gradient_ksp_options: The list of ksp options for computing the gradient.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         self.config = config
         self.state_ksp_options = state_ksp_options
         self.adjoint_ksp_options = adjoint_ksp_options
-
         self.gradient_ksp_options = gradient_ksp_options
+        self.excluded_from_time_derivative = excluded_from_time_derivative
+
         self.temp_dict: dict = {}
 
         self._problem_type = ""
