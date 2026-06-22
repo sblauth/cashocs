@@ -224,7 +224,7 @@ class OptimizationProblem(abc.ABC):
             self.desired_weights,
             preconditioner_forms,
             newton_linearizations,
-            self.excluded_from_time_derivative,
+            excluded_from_time_derivative,
         ) = self._parse_optional_inputs(
             initial_guess,
             ksp_options,
@@ -270,6 +270,7 @@ class OptimizationProblem(abc.ABC):
             self.bcs_list,
             preconditioner_forms,
             newton_linearizations,
+            excluded_from_time_derivative,
         )
 
         self.db.callback.pre_callback = pre_callback
@@ -287,7 +288,7 @@ class OptimizationProblem(abc.ABC):
             self.initial_guess,
             linear_solver=linear_solver,
             newton_linearizations=newton_linearizations,
-            excluded_from_time_derivative=self.excluded_from_time_derivative,
+            excluded_from_time_derivative=excluded_from_time_derivative,
         )
         self.adjoint_problem = _pde_problems.AdjointProblem(
             self.db,

@@ -65,7 +65,7 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.state_problem = state_problem
 
         self.excluded_from_time_derivative = (
-            self.state_problem.excluded_from_time_derivative
+            self.db.parameter_db.excluded_from_time_derivative
         )
         if adjoint_linearizations is not None:
             self.adjoint_linearizations = adjoint_linearizations
@@ -154,7 +154,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                             preconditioner_form=self.db.form_db.preconditioner_forms[
                                 -1 - i
                             ],
-                            excluded_from_time_derivative=eftd,
+                            excluded_from_time_derivative=eftd,  # type: ignore
                         )
                     elif self.db.config.getboolean(
                         "StateSystem", "use_adjoint_linearizations"

@@ -55,6 +55,7 @@ class Database:
         bcs_list: list[list[fenics.DirichletBC]],
         preconditioner_forms: list[ufl.Form],
         newton_linearizations: list[ufl.Form],
+        excluded_from_time_derivative: (list[int] | list[list[int]] | list[None]),
     ) -> None:
         """Initialize the database.
 
@@ -75,6 +76,9 @@ class Database:
                 linearizations should be used for the (nonlinear) state equations when
                 solving them (with Newton's method). The default is `None`, so that the
                 Jacobian of the supplied state forms is used.
+            excluded_from_time_derivative: For each state equation, a list of indices
+                which are not part of the first order time derivative for pseudo time
+                stepping. Example: Pressure for incompressible flow. Default is None.
 
         """
         self.config = config
@@ -90,6 +94,7 @@ class Database:
                 state_ksp_options,
                 adjoint_ksp_options,
                 gradient_ksp_options,
+                excluded_from_time_derivative,
             )
         )
         self.geometry_db: geometry_database.GeometryDatabase = (

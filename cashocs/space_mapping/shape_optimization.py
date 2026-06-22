@@ -328,9 +328,8 @@ class ParameterExtraction:
         self.newton_linearizations = (
             coarse_model.shape_optimization_problem.db.form_db.newton_linearizations
         )
-        self.excluded_from_time_derivative = (
-            coarse_model.shape_optimization_problem.excluded_from_time_derivative
-        )
+        coarse_pdb = coarse_model.shape_optimization_problem.db.parameter_db
+        self.excluded_from_time_derivative = coarse_pdb.excluded_from_time_derivative
 
         self.coordinates_initial = coarse_model.coordinates_initial
 
@@ -476,6 +475,7 @@ class SpaceMappingProblem:
             _utils.check_and_enlist_bcs(self.coarse_model.bcs_list),
             self.coarse_model.preconditioner_forms,  # type: ignore
             self.coarse_model.newton_linearizations,  # type: ignore
+            self.coarse_model.excluded_from_time_derivative,  # type: ignore
         )
 
         self.output_manager = io.output.OutputManager(self.db)
