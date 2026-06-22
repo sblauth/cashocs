@@ -177,12 +177,10 @@ class CoarseModel:
         self.shape_scalar_product = shape_scalar_product
         self.initial_guess = initial_guess
         self.desired_weights = desired_weights
-        self.preconditioner_forms = preconditioner_forms
         self.pre_callback = pre_callback
         self.post_callback = post_callback
         self.linear_solver = linear_solver
         self.adjoint_linear_solver = adjoint_linear_solver
-        self.newton_linearizations = newton_linearizations
         self.excluded_from_time_derivative = excluded_from_time_derivative
 
         self._pre_callback: Callable | None = None
@@ -209,12 +207,12 @@ class CoarseModel:
             adjoint_ksp_options=adjoint_ksp_options,
             gradient_ksp_options=gradient_ksp_options,
             desired_weights=self.desired_weights,
-            preconditioner_forms=self.preconditioner_forms,
+            preconditioner_forms=preconditioner_forms,
             pre_callback=self.pre_callback,
             post_callback=self.post_callback,
             linear_solver=self.linear_solver,
             adjoint_linear_solver=self.adjoint_linear_solver,
-            newton_linearizations=self.newton_linearizations,
+            newton_linearizations=newton_linearizations,
             excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
 
@@ -309,7 +307,11 @@ class ParameterExtraction:
         self.ksp_options = pdb.state_ksp_options
         self.adjoint_ksp_options = pdb.adjoint_ksp_options
         self.gradient_ksp_options = pdb.gradient_ksp_options
-        self.preconditioner_forms = coarse_model.preconditioner_forms
+
+        fdb = coarse_model.shape_optimization_problem.db.form_db
+        self.preconditioner_forms = fdb.preconditioner_forms
+        self.newton_linearizations = fdb.newton_linearizations
+
         self.pre_callback = coarse_model.pre_callback
         self.post_callback = coarse_model.post_callback
         self.linear_solver = (
@@ -317,9 +319,6 @@ class ParameterExtraction:
         )
         self.adjoint_linear_solver = (
             coarse_model.shape_optimization_problem.adjoint_problem.linear_solver
-        )
-        self.newton_linearizations = (
-            coarse_model.shape_optimization_problem.db.form_db.newton_linearizations
         )
         coarse_pdb = coarse_model.shape_optimization_problem.db.parameter_db
         self.excluded_from_time_derivative = coarse_pdb.excluded_from_time_derivative
@@ -461,6 +460,10 @@ class SpaceMappingProblem:
         adjoint_ksp_options = pdb.adjoint_ksp_options
         gradient_ksp_options = pdb.gradient_ksp_options
 
+        fdb = self.coarse_model.shape_optimization_problem.db.form_db
+        preconditioner_forms = fdb.preconditioner_forms
+        newton_linearizations = fdb.newton_linearizations
+
         self.db = database.Database(
             config,
             _utils.enlist(self.coarse_model.states),
@@ -471,8 +474,8 @@ class SpaceMappingProblem:
             self.coarse_model.cost_functional_form,  # type: ignore
             _utils.enlist(self.coarse_model.state_forms),
             _utils.check_and_enlist_bcs(self.coarse_model.bcs_list),
-            self.coarse_model.preconditioner_forms,  # type: ignore
-            self.coarse_model.newton_linearizations,  # type: ignore
+            preconditioner_forms,
+            newton_linearizations,
             self.coarse_model.excluded_from_time_derivative,  # type: ignore
         )
 
