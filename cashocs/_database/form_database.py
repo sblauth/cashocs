@@ -43,6 +43,7 @@ class FormDatabase:
         state_forms: list[ufl.Form],
         bcs_list: list[list[fenics.DirichletBC]],
         preconditioner_forms: list[ufl.Form],
+        newton_linearizations: list[ufl.Form],
     ) -> None:
         """Initializes the form database.
 
@@ -53,12 +54,17 @@ class FormDatabase:
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
 
         """
         self.cost_functional_list = cost_functional_list
         self.state_forms = state_forms
         self.bcs_list = bcs_list
         self.preconditioner_forms = preconditioner_forms
+        self.newton_linearizations = newton_linearizations
 
         self.lagrangian = cost_functional.Lagrangian(
             self.cost_functional_list, self.state_forms
