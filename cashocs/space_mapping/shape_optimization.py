@@ -176,9 +176,6 @@ class CoarseModel:
 
         self.shape_scalar_product = shape_scalar_product
         self.initial_guess = initial_guess
-        self.ksp_options = ksp_options
-        self.adjoint_ksp_options = adjoint_ksp_options
-        self.gradient_ksp_options = gradient_ksp_options
         self.desired_weights = desired_weights
         self.preconditioner_forms = preconditioner_forms
         self.pre_callback = pre_callback
@@ -208,9 +205,9 @@ class CoarseModel:
             config=config,
             shape_scalar_product=self.shape_scalar_product,
             initial_guess=self.initial_guess,
-            ksp_options=self.ksp_options,
-            adjoint_ksp_options=self.adjoint_ksp_options,
-            gradient_ksp_options=self.gradient_ksp_options,
+            ksp_options=ksp_options,
+            adjoint_ksp_options=adjoint_ksp_options,
+            gradient_ksp_options=gradient_ksp_options,
             desired_weights=self.desired_weights,
             preconditioner_forms=self.preconditioner_forms,
             pre_callback=self.pre_callback,
@@ -307,15 +304,11 @@ class ParameterExtraction:
         )
         self.boundaries = coarse_model.shape_optimization_problem.boundaries
         self.initial_guess = coarse_model.shape_optimization_problem.initial_guess
-        self.ksp_options = (
-            coarse_model.shape_optimization_problem.db.parameter_db.state_ksp_options
-        )
-        self.adjoint_ksp_options = (
-            coarse_model.shape_optimization_problem.db.parameter_db.adjoint_ksp_options
-        )
-        self.gradient_ksp_options = (
-            coarse_model.shape_optimization_problem.db.parameter_db.gradient_ksp_options
-        )
+
+        pdb = coarse_model.shape_optimization_problem.db.parameter_db
+        self.ksp_options = pdb.state_ksp_options
+        self.adjoint_ksp_options = pdb.adjoint_ksp_options
+        self.gradient_ksp_options = pdb.gradient_ksp_options
         self.preconditioner_forms = coarse_model.preconditioner_forms
         self.pre_callback = coarse_model.pre_callback
         self.post_callback = coarse_model.post_callback
@@ -463,13 +456,18 @@ class SpaceMappingProblem:
         config.set("Output", "save_adjoint", "False")
         config.set("Output", "save_gradient", "False")
 
+        pdb = self.coarse_model.shape_optimization_problem.db.parameter_db
+        ksp_options = pdb.state_ksp_options
+        adjoint_ksp_options = pdb.adjoint_ksp_options
+        gradient_ksp_options = pdb.gradient_ksp_options
+
         self.db = database.Database(
             config,
             _utils.enlist(self.coarse_model.states),
             _utils.enlist(self.coarse_model.adjoints),
-            self.coarse_model.ksp_options,  # type: ignore
-            self.coarse_model.adjoint_ksp_options,  # type: ignore
-            self.coarse_model.gradient_ksp_options,  # type: ignore
+            ksp_options,
+            adjoint_ksp_options,
+            gradient_ksp_options,
             self.coarse_model.cost_functional_form,  # type: ignore
             _utils.enlist(self.coarse_model.state_forms),
             _utils.check_and_enlist_bcs(self.coarse_model.bcs_list),

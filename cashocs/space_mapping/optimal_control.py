@@ -175,9 +175,6 @@ class CoarseModel:
         self.riesz_scalar_products = riesz_scalar_products
         self.control_constraints = control_constraints
         self.initial_guess = initial_guess
-        self.ksp_options = ksp_options
-        self.adjoint_ksp_options = adjoint_ksp_options
-        self.gradient_ksp_options = gradient_ksp_options
         self.desired_weights = desired_weights
         self.control_bcs_list = control_bcs_list
         self.preconditioner_forms = preconditioner_forms
@@ -206,9 +203,9 @@ class CoarseModel:
             riesz_scalar_products=self.riesz_scalar_products,
             control_constraints=self.control_constraints,
             initial_guess=self.initial_guess,
-            ksp_options=self.ksp_options,
-            adjoint_ksp_options=self.adjoint_ksp_options,
-            gradient_ksp_options=self.gradient_ksp_options,
+            ksp_options=ksp_options,
+            adjoint_ksp_options=adjoint_ksp_options,
+            gradient_ksp_options=gradient_ksp_options,
             desired_weights=self.desired_weights,
             control_bcs_list=self.control_bcs_list,
             preconditioner_forms=self.preconditioner_forms,
@@ -313,15 +310,10 @@ class ParameterExtraction:
             coarse_model.optimal_control_problem.box_constraints.control_constraints
         )
         self.initial_guess = coarse_model.optimal_control_problem.initial_guess
-        self.ksp_options = (
-            coarse_model.optimal_control_problem.db.parameter_db.state_ksp_options
-        )
-        self.adjoint_ksp_options = (
-            coarse_model.optimal_control_problem.db.parameter_db.adjoint_ksp_options
-        )
-        self.gradient_ksp_options = (
-            coarse_model.optimal_control_problem.db.parameter_db.gradient_ksp_options
-        )
+        pdb = coarse_model.optimal_control_problem.db.parameter_db
+        self.ksp_options = pdb.state_ksp_options
+        self.adjoint_ksp_options = pdb.adjoint_ksp_options
+        self.gradient_ksp_options = pdb.gradient_ksp_options
         self.control_bcs_list = coarse_model.control_bcs_list
         self.preconditioner_forms = (
             coarse_model.optimal_control_problem.db.form_db.preconditioner_forms
@@ -477,13 +469,18 @@ class SpaceMappingProblem:
         config.set("Output", "save_adjoint", "False")
         config.set("Output", "save_gradient", "False")
 
+        pdb = self.coarse_model.optimal_control_problem.db.parameter_db
+        ksp_options = pdb.state_ksp_options
+        adjoint_ksp_options = pdb.adjoint_ksp_options
+        gradient_ksp_options = pdb.gradient_ksp_options
+
         self.db = database.Database(
             config,
             _utils.enlist(self.coarse_model.states),
             _utils.enlist(self.coarse_model.adjoints),
-            self.coarse_model.ksp_options,  # type: ignore
-            self.coarse_model.adjoint_ksp_options,  # type: ignore
-            self.coarse_model.gradient_ksp_options,  # type: ignore
+            ksp_options,
+            adjoint_ksp_options,
+            gradient_ksp_options,
             self.coarse_model.cost_functional_form,  # type: ignore
             _utils.enlist(self.coarse_model.state_forms),
             _utils.check_and_enlist_bcs(self.coarse_model.bcs_list),
