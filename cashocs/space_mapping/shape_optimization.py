@@ -307,12 +307,14 @@ class ParameterExtraction:
         )
         self.boundaries = coarse_model.shape_optimization_problem.boundaries
         self.initial_guess = coarse_model.shape_optimization_problem.initial_guess
-        self.ksp_options = coarse_model.shape_optimization_problem.ksp_options
+        self.ksp_options = (
+            coarse_model.shape_optimization_problem.db.parameter_db.state_ksp_options
+        )
         self.adjoint_ksp_options = (
-            coarse_model.shape_optimization_problem.adjoint_ksp_options
+            coarse_model.shape_optimization_problem.db.parameter_db.adjoint_ksp_options
         )
         self.gradient_ksp_options = (
-            coarse_model.shape_optimization_problem.gradient_ksp_options
+            coarse_model.shape_optimization_problem.db.parameter_db.gradient_ksp_options
         )
         self.preconditioner_forms = coarse_model.preconditioner_forms
         self.pre_callback = coarse_model.pre_callback
