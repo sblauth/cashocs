@@ -191,6 +191,7 @@ class ConstrainedOptimizationProblem(abc.ABC):
             self.state_forms,
             self.bcs_list,
             self.preconditioner_forms,  # type: ignore
+            self.newton_linearizations,  # type: ignore
         )
 
         self.output_manager = io.output.OutputManager(self.db)

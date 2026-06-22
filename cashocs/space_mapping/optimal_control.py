@@ -335,7 +335,7 @@ class ParameterExtraction:
             coarse_model.optimal_control_problem.adjoint_problem.linear_solver
         )
         self.newton_linearizations = (
-            coarse_model.optimal_control_problem.newton_linearizations
+            coarse_model.optimal_control_problem.db.form_db.newton_linearizations
         )
         self.excluded_from_time_derivative = (
             coarse_model.optimal_control_problem.excluded_from_time_derivative
@@ -489,6 +489,7 @@ class SpaceMappingProblem:
             _utils.enlist(self.coarse_model.state_forms),
             _utils.check_and_enlist_bcs(self.coarse_model.bcs_list),
             self.coarse_model.preconditioner_forms,  # type: ignore
+            self.coarse_model.newton_linearizations,  # type: ignore
         )
 
         self.output_manager = io.output.OutputManager(self.db)

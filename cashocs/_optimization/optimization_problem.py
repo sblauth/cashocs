@@ -223,7 +223,7 @@ class OptimizationProblem(abc.ABC):
             gradient_ksp_options,
             self.desired_weights,
             preconditioner_forms,
-            self.newton_linearizations,
+            newton_linearizations,
             self.excluded_from_time_derivative,
         ) = self._parse_optional_inputs(
             initial_guess,
@@ -238,7 +238,7 @@ class OptimizationProblem(abc.ABC):
 
         if self.config.getboolean("StateSystem", "use_adjoint_linearizations"):
             self.adjoint_linearizations: list | None = []
-            for derivative in self.newton_linearizations:
+            for derivative in newton_linearizations:
                 if derivative is not None:
                     args = derivative.arguments()
                     adjoint_linearization = ufl.replace(
@@ -269,6 +269,7 @@ class OptimizationProblem(abc.ABC):
             self.state_forms,
             self.bcs_list,
             preconditioner_forms,
+            newton_linearizations,
         )
 
         self.db.callback.pre_callback = pre_callback
@@ -285,7 +286,7 @@ class OptimizationProblem(abc.ABC):
             self.general_form_handler.state_form_handler,
             self.initial_guess,
             linear_solver=linear_solver,
-            newton_linearizations=self.newton_linearizations,
+            newton_linearizations=newton_linearizations,
             excluded_from_time_derivative=self.excluded_from_time_derivative,
         )
         self.adjoint_problem = _pde_problems.AdjointProblem(

@@ -181,6 +181,7 @@ class DeflatedProblem(abc.ABC):
             self.state_forms,
             self.bcs_list,
             self.preconditioner_forms,  # type: ignore
+            self.newton_linearizations,  # type: ignore
         )
 
         self.output_manager = output.OutputManager(self.db)

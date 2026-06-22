@@ -54,6 +54,7 @@ class Database:
         state_forms: list[ufl.Form],
         bcs_list: list[list[fenics.DirichletBC]],
         preconditioner_forms: list[ufl.Form],
+        newton_linearizations: list[ufl.Form],
     ) -> None:
         """Initialize the database.
 
@@ -70,6 +71,10 @@ class Database:
             preconditioner_forms: The list of forms for the preconditioner. The default
                 is `None`, so that the preconditioner matrix is the same as the system
                 matrix.
+            newton_linearizations: A (list of) UFL forms describing which (alternative)
+                linearizations should be used for the (nonlinear) state equations when
+                solving them (with Newton's method). The default is `None`, so that the
+                Jacobian of the supplied state forms is used.
 
         """
         self.config = config
@@ -91,5 +96,9 @@ class Database:
             geometry_database.GeometryDatabase(self.function_db, self.parameter_db)
         )
         self.form_db: form_database.FormDatabase = form_database.FormDatabase(
-            cost_functional_list, state_forms, bcs_list, preconditioner_forms
+            cost_functional_list,
+            state_forms,
+            bcs_list,
+            preconditioner_forms,
+            newton_linearizations,
         )
