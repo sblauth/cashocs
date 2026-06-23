@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_3e34f79d4b2e0e9d_control_gradient_problem_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.14.2">coverage.py v7.14.2</a>,
-            created at 2026-06-23 05:25 +0000
+            created at 2026-06-23 06:09 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -147,7 +147,7 @@
     <p class="run"><span class="n"><a id="t65" href="#t65">65</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">state_problem</span> <span class="op">=</span> <span class="nam">state_problem</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t66" href="#t66">66</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t67" href="#t67">67</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">excluded_from_time_derivative</span> <span class="op">=</span> <span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t68" href="#t68">68</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">state_problem</span><span class="op">.</span><span class="nam">excluded_from_time_derivative</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t68" href="#t68">68</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">db</span><span class="op">.</span><span class="nam">parameter_db</span><span class="op">.</span><span class="nam">excluded_from_time_derivative</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t69" href="#t69">69</a></span><span class="t">        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t70" href="#t70">70</a></span><span class="t">        <span class="key">if</span> <span class="nam">adjoint_linearizations</span> <span class="key">is</span> <span class="key">not</span> <span class="key">None</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t71" href="#t71">71</a></span><span class="t">            <span class="nam">self</span><span class="op">.</span><span class="nam">adjoint_linearizations</span> <span class="op">=</span> <span class="nam">adjoint_linearizations</span>&nbsp;</span><span class="r"></span></p>
@@ -236,7 +236,7 @@
     <p class="run run2"><span class="n"><a id="t154" href="#t154">154</a></span><span class="t">                            <span class="nam">preconditioner_form</span><span class="op">=</span><span class="nam">self</span><span class="op">.</span><span class="nam">db</span><span class="op">.</span><span class="nam">form_db</span><span class="op">.</span><span class="nam">preconditioner_forms</span><span class="op">[</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t155" href="#t155">155</a></span><span class="t">                                <span class="op">-</span><span class="num">1</span> <span class="op">-</span> <span class="nam">i</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t156" href="#t156">156</a></span><span class="t">                            <span class="op">]</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t157" href="#t157">157</a></span><span class="t">                            <span class="nam">excluded_from_time_derivative</span><span class="op">=</span><span class="nam">eftd</span><span class="op">,</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t157" href="#t157">157</a></span><span class="t">                            <span class="nam">excluded_from_time_derivative</span><span class="op">=</span><span class="nam">eftd</span><span class="op">,</span>  <span class="com"># type: ignore</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t158" href="#t158">158</a></span><span class="t">                        <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t159" href="#t159">159</a></span><span class="t">                    <span class="key">elif</span> <span class="nam">self</span><span class="op">.</span><span class="nam">db</span><span class="op">.</span><span class="nam">config</span><span class="op">.</span><span class="nam">getboolean</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
     <p class="run run2"><span class="n"><a id="t160" href="#t160">160</a></span><span class="t">                        <span class="str">"StateSystem"</span><span class="op">,</span> <span class="str">"use_adjoint_linearizations"</span>&nbsp;</span><span class="r"></span></p>
@@ -303,7 +303,7 @@
             <a class="nav" href="z_3e34f79d4b2e0e9d_control_gradient_problem_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.14.2">coverage.py v7.14.2</a>,
-            created at 2026-06-23 05:25 +0000
+            created at 2026-06-23 06:09 +0000
         </p>
     </div>
 </footer>
