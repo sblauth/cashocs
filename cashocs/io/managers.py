@@ -431,6 +431,7 @@ class XDMFFileManager(IOManager):
         self.save_state = self.config.getboolean("Output", "save_state")
         self.save_adjoint = self.config.getboolean("Output", "save_adjoint")
         self.save_gradient = self.config.getboolean("Output", "save_gradient")
+        self.single_file = self.config.getboolean("Output", "single_file")
 
         self.is_initialized = False
 
@@ -438,6 +439,7 @@ class XDMFFileManager(IOManager):
         self.control_xdmf_list: list[str | list[str]] = []
         self.adjoint_xdmf_list: list[str | list[str]] = []
         self.gradient_xdmf_list: list[str | list[str]] = []
+        self.single_file_initialized = False
 
     def _initialize_states_xdmf(self) -> None:
         """Initializes the list of xdmf files for the state variables."""
@@ -509,13 +511,19 @@ class XDMFFileManager(IOManager):
             A string containing the path to the xdmf files for visualization.
 
         """
+        file = f"{self.result_dir}/checkpoints/{name}.xdmf"
+        if self.single_file:
+            file = f"{self.result_dir}/checkpoints/result.xdmf"
+
         if space.num_sub_spaces() > 0 and space.ufl_element().family() == "Mixed":
             lst = []
             for j in range(space.num_sub_spaces()):
-                lst.append(f"{self.result_dir}/checkpoints/{name}_{j:d}.xdmf")
+                if self.single_file:
+                    lst.append(file)
+                else:
+                    lst.append(f"{self.result_dir}/checkpoints/{name}_{j:d}.xdmf")
             return lst
         else:
-            file = f"{self.result_dir}/checkpoints/{name}.xdmf"
             return file
 
     def _save_states(self, iteration: int) -> None:
@@ -619,7 +627,9 @@ class XDMFFileManager(IOManager):
             iteration: The current iteration counter.
 
         """
-        if iteration == 0:
+        if self.single_file:
+            append = self.single_file_initialized
+        elif iteration == 0:
             append = False
         else:
             append = True
@@ -652,7 +662,8 @@ class XDMFFileManager(IOManager):
 
         with fenics.XDMFFile(self.comm, filename) as file:
             file.parameters["flush_output"] = True
-            file.parameters["functions_share_mesh"] = False
+            file.parameters["functions_share_mesh"] = True
+            file.parameters["rewrite_function_mesh"] = True
             file.write_checkpoint(
                 function,
                 function_name,
@@ -660,6 +671,8 @@ class XDMFFileManager(IOManager):
                 fenics.XDMFFile.Encoding.HDF5,
                 append,
             )
+        if self.single_file:
+            self.single_file_initialized = True
 
     def output(self) -> None:
         """Saves the variables to xdmf files."""

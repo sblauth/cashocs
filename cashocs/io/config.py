@@ -576,6 +576,9 @@ class Config(ConfigParser):
                 "time_suffix": {
                     "type": "bool",
                 },
+                "single_file": {
+                    "type": "bool",
+                },
             },
             "Debug": {
                 "remeshing": {
@@ -730,6 +733,7 @@ save_mesh = False
 result_dir = ./results
 precision = 3
 time_suffix = False
+single_file = False
 
 [Debug]
 remeshing = False
