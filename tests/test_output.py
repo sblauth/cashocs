@@ -121,6 +121,41 @@ def test_save_xdmf_files_ocp(dir_path, F, bcs, J, y, u, p, config_ocp):
     MPI.barrier(MPI.comm_world)
 
 
+def test_save_xdmf_single_file_ocp(dir_path, F, bcs, J, y, u, p, config_ocp):
+    config_ocp.set("Output", "save_state", "True")
+    config_ocp.set("Output", "save_results", "True")
+    config_ocp.set("Output", "save_txt", "True")
+    config_ocp.set("Output", "save_adjoint", "True")
+    config_ocp.set("Output", "save_gradient", "True")
+    config_ocp.set("Output", "single_file", "True")
+    config_ocp.set("Output", "result_dir", dir_path + "/out")
+    u.vector().vec().set(0.0)
+    u.vector().apply("")
+    ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
+    ocp.solve(algorithm="bfgs", rtol=1e-1)
+    MPI.barrier(MPI.comm_world)
+    assert pathlib.Path(dir_path + "/out").is_dir()
+    assert pathlib.Path(dir_path + "/out/checkpoints").is_dir()
+    assert pathlib.Path(dir_path + "/out/history.txt").is_file()
+    assert pathlib.Path(dir_path + "/out/history.json").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/results.xdmf").is_file()
+    assert pathlib.Path(dir_path + "/out/checkpoints/results.h5").is_file()
+    assert not pathlib.Path(dir_path + "/out/checkpoints/state_0.xdmf").is_file()
+    assert not pathlib.Path(dir_path + "/out/checkpoints/state_0.h5").is_file()
+    assert not pathlib.Path(dir_path + "/out/checkpoints/control_0.xdmf").is_file()
+    assert not pathlib.Path(dir_path + "/out/checkpoints/control_0.h5").is_file()
+    assert not pathlib.Path(dir_path + "/out/checkpoints/adjoint_0.xdmf").is_file()
+    assert not pathlib.Path(dir_path + "/out/checkpoints/adjoint_0.h5").is_file()
+    assert not pathlib.Path(dir_path + "/out/checkpoints/gradient_0.xdmf").is_file()
+    assert not pathlib.Path(dir_path + "/out/checkpoints/gradient_0.h5").is_file()
+
+    MPI.barrier(MPI.comm_world)
+
+    if MPI.rank(MPI.comm_world) == 0:
+        subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
+    MPI.barrier(MPI.comm_world)
+
+
 def test_save_xdmf_files_mixed(dir_path, rng, config_ocp, geometry):
     config_ocp.set("Output", "save_state", "True")
     config_ocp.set("Output", "save_results", "True")
