@@ -381,7 +381,9 @@ Output
       - number of significant digits to be printed
     * - :ini:`time_suffix = False`
       - Boolean flag, which adds a suffix to :ini:`result_dir` based on the current time
-
+    * - :ini:`single_file = False`
+      - Boolean flag, which determines whether the output should be written to multiple 
+        files (if `False`) or a single file (if `True`).
 
 .. _config_shape_detailed:
 
@@ -1549,3 +1551,11 @@ Moreover, we have the parameter :ini:`time_suffix`, which adds a suffix to the r
 	time_suffix = False
 
 
+The parameter :ini:`single_file` is specified as
+
+.. code-block:: ini
+
+  single_file = False
+
+It determines, whether a single file should be used to write all output into (if `True`)
+or if multiple files should be used per variable (if `False`).
