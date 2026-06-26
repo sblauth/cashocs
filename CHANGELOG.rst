@@ -19,6 +19,12 @@ of the maintenance releases, please take a look at
 
     * :ini:`shape_volume_fix` is a list of subdomain tags on which the mesh deformation should be fixed, i.e., which should not change during the shape optimization. If this list is not empty, the shape gradient is restricted appropriately. Users should make sure that, in addition to setting :ini:`shape_volume_fix`, also :ini:`shape_bdry_fix` is set appropriately.
 
+  * Section Output
+
+    * :ini:`single_file` is a boolean flag which indicates whether all results should 
+      be written to a single XDMF file (if set to `True`) or not (if set to `False`). 
+      The default is the previous behavior, i.e., :ini:`single_file = False`.
+
 
 2.9.0 (March 24, 2026)
 ----------------------
