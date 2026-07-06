@@ -157,29 +157,37 @@ class TSPseudoSolver:
         self.assembler.keep_diagonal = True
 
         if A_tensor is not None:
-            self.A_petsc = A_tensor.mat()  # pylint: disable=invalid-name,
+            self.A_fenics = A_tensor  # pylint: disable=invalid-name
         else:
-            self.A_petsc = fenics.PETScMatrix(self.comm).mat()
+            self.A_fenics = fenics.PETScMatrix(  # pylint: disable=invalid-name
+                self.comm
+            )
+        self.A_petsc = self.A_fenics.mat()  # pylint: disable=invalid-name
 
         if b_tensor is not None:
-            self.residual_petsc = b_tensor.vec()
+            self.residual_fenics = b_tensor
         else:
-            self.residual_petsc = fenics.PETScVector(self.comm).vec()
+            self.residual_fenics = fenics.PETScVector(self.comm)
+        self.residual_petsc = self.residual_fenics.vec()
 
         self.residual_convergence = fenics.PETScVector(self.comm)
 
-        self.mass_matrix_petsc = fenics.PETScMatrix(self.comm).mat()
-        self.mass_application_petsc = fenics.Function(self.space).vector().vec()
+        self.mass_matrix_fenics = fenics.PETScMatrix(self.comm)
+        self.mass_matrix_petsc = self.mass_matrix_fenics.mat()
+        self.mass_application = fenics.Function(self.space)
+        self.mass_application_petsc = self.mass_application.vector().vec()
 
         if self.preconditioner_form is not None:
             self.assembler_pc = fenics.SystemAssembler(
                 self.preconditioner_form, self.nonlinear_form, self.bcs
             )
             self.assembler_pc.keep_diagonal = True
-            self.P_petsc = fenics.PETScMatrix(  # pylint: disable=invalid-name
+            self.P_fenics = fenics.PETScMatrix(  # pylint: disable=invalid-name
                 self.comm
-            ).mat()
+            )
+            self.P_petsc = self.P_fenics.mat()  # pylint: disable=invalid-name
         else:
+            self.P_fenics = None  # pylint: disable=invalid-name
             self.P_petsc = None
 
         self.assembler_shift: fenics.SystemAssembler | None = None
@@ -235,9 +243,10 @@ class TSPseudoSolver:
             form_list.append(mass_matrix_part)
 
         form = _utils.summation(form_list)
-        M = fenics.PETScMatrix(self.mass_matrix_petsc)  # pylint: disable=invalid-name,
         zero_form = ufl.inner(fenics.Constant(np.zeros(test.ufl_shape)), test) * dx
-        fenics.assemble_system(form, zero_form, self.bcs, A_tensor=M)
+        fenics.assemble_system(
+            form, zero_form, self.bcs, A_tensor=self.mass_matrix_fenics
+        )
 
         self.M_petsc = self.mass_matrix_petsc.copy()  # pylint: disable=invalid-name,
 
@@ -268,8 +277,7 @@ class TSPseudoSolver:
         self.u.vector().vec().aypx(0.0, u)
         self.u.vector().apply("")
 
-        f_fenics = fenics.PETScVector(f)
-        self.assembler.assemble(f_fenics, self.u.vector())
+        self.assembler.assemble(self.residual_fenics, self.u.vector())
 
         if (
             self.shift is not None
@@ -303,22 +311,17 @@ class TSPseudoSolver:
         self.u.vector().vec().aypx(0.0, u)
         self.u.vector().apply("")
 
-        J = fenics.PETScMatrix(J)  # pylint: disable=invalid-name
-        self.assembler.assemble(J)
-        J.ident_zeros()
-
-        J_petsc = fenics.as_backend_type(J).mat()  # pylint: disable=invalid-name,
-        J_petsc.scale(-1)
-        J_petsc.assemble()
+        self.assembler.assemble(self.A_fenics)
+        self.A_fenics.ident_zeros()
+        self.A_petsc.scale(-1)
+        self.A_petsc.assemble()
 
         if self.preconditioner_form is not None:
-            P = fenics.PETScMatrix(P)  # pylint: disable=invalid-name
-            self.assembler_pc.assemble(P)
-            P.ident_zeros()
+            self.assembler_pc.assemble(self.P_fenics)
+            self.P_fenics.ident_zeros()
 
-            P_petsc = fenics.as_backend_type(P).mat()  # pylint: disable=invalid-name,
-            P_petsc.scale(-1)
-            P_petsc.assemble()
+            self.P_petsc.scale(-1)
+            self.P_petsc.assemble()
 
     def assemble_i_function(
         self,
@@ -409,11 +412,12 @@ class TSPseudoSolver:
 
         """
         self.res_current = self.compute_nonlinear_residual(u)
-        self.equation_residuals_current = np.array(
-            _utils.compute_equation_residuals(
-                self.residual_convergence.vec(), self.space
+        if log.is_enabled_for(log.DEBUG):
+            self.equation_residuals_current = np.array(
+                _utils.compute_equation_residuals(
+                    self.residual_convergence.vec(), self.space
+                )
             )
-        )
 
         if self.res_initial == 0:
             relative_residual = self.res_current
@@ -430,16 +434,19 @@ class TSPseudoSolver:
         if self.comm.rank == 0 and self.has_monitor_output:
             print(monitor_str, flush=True)
 
-        for j, res in enumerate(self.equation_residuals_current):
-            res_init = self.equation_residuals_initial[j]
-            if res_init == 0:
-                res_rel = res
-            else:
-                res_rel = res / res_init
+        if log.is_enabled_for(log.DEBUG):
+            for j, res in enumerate(self.equation_residuals_current):
+                res_init = self.equation_residuals_initial[j]
+                if res_init == 0:
+                    res_rel = res
+                else:
+                    res_rel = res / res_init
 
-            log.debug(
-                f"Equation {j:d} relative resid {res_rel:.3e} absolute resid {res:.3e}"
-            )
+                log.debug(
+                    f"Equation {j:d} "
+                    f"relative resid {res_rel:.3e} "
+                    f"absolute resid {res:.3e}"
+                )
 
         self.rtol = cast(float, self.rtol)
         self.atol = cast(float, self.atol)
@@ -489,7 +496,7 @@ class TSPseudoSolver:
         ksp = ts.getSNES().getKSP()
         _utils.linalg.setup_fieldsplit_preconditioner(self.u, ksp, self.petsc_options)
 
-        if fenics.PETScMatrix(self.A_petsc).empty():
+        if self.A_fenics.empty():
             self.assemble_i_function(
                 ts,
                 0.0,
@@ -512,11 +519,14 @@ class TSPseudoSolver:
             )
 
         self.res_initial = self.compute_nonlinear_residual(self.u.vector().vec())
-        self.equation_residuals_initial = np.array(
-            _utils.compute_equation_residuals(
-                self.residual_convergence.vec(), self.space
+        if log.is_enabled_for(log.DEBUG):
+            self.equation_residuals_initial = np.array(
+                _utils.compute_equation_residuals(
+                    self.residual_convergence.vec(), self.space
+                )
             )
-        )
+        else:
+            self.equation_residuals_initial = np.array([])
         ts.setTime(0.0)
 
         ts.setMonitor(self.monitor)
