@@ -192,7 +192,7 @@ class SNESSolver:
             self.assembler_shift.assemble(self.residual_shift, self.u.vector())
             f[:] -= self.residual_shift[:]
 
-        self.residual_convergence = f
+        self.residual_convergence = f.vec()
 
     @log.profile_execution_time("assembling the Jacobian for SNES")
     def assemble_jacobian(
