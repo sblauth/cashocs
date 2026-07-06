@@ -217,6 +217,24 @@ def setup_petsc_options(
         objs[i].setFromOptions()
 
 
+def _set_fieldsplit_index_sets(
+    pc: PETSc.PC, function_space: fenics.FunctionSpace
+) -> None:
+    idx = []
+    name = []
+    for i in range(function_space.num_sub_spaces()):
+        idx_i = PETSc.IS().createGeneral(function_space.sub(i).dofmap().dofs())
+        idx.append(idx_i)
+        name.append(f"{i:d}")
+
+    idx_tuples = list(zip(name, idx, strict=True))
+    try:
+        pc.setFieldSplitIS(*idx_tuples)
+    finally:
+        for idx_i in idx:
+            idx_i.destroy()
+
+
 def setup_fieldsplit_preconditioner(
     fun: fenics.Function | None,
     ksp: PETSc.KSP,
@@ -247,17 +265,7 @@ def setup_fieldsplit_preconditioner(
             if not any(key.endswith("_fields") for key in options.keys()):
                 pc = ksp.getPC()
                 pc.setType(PETSc.PC.Type.FIELDSPLIT)
-                idx = []
-                name = []
-                for i in range(function_space.num_sub_spaces()):
-                    idx_i = PETSc.IS().createGeneral(
-                        function_space.sub(i).dofmap().dofs()
-                    )
-                    idx.append(idx_i)
-                    name.append(f"{i:d}")
-                idx_tuples = zip(name, idx, strict=True)
-
-                pc.setFieldSplitIS(*idx_tuples)
+                _set_fieldsplit_index_sets(pc, function_space)
             else:
                 dof_total = function_space.dofmap().dofs()
                 offset = np.min(dof_total)
@@ -291,6 +299,8 @@ def setup_fieldsplit_preconditioner(
                     ksp.setDMActive(ksp.DMActive.ALL, False)
                 else:
                     ksp.setDMActive(False)
+                dm.destroy()
+                section.destroy()
 
 
 def define_ksp_options(
@@ -557,10 +567,20 @@ def compute_equation_residuals(
             for i in range(num_equations)
         ]
 
-        equation_residual_vectors = [residual.getSubVector(iset) for iset in is_sets]
-        equation_residual_norms = [
-            r.norm(PETSc.NormType.NORM_2) for r in equation_residual_vectors
-        ]
+        equation_residual_vectors = []
+        try:
+            for iset in is_sets:
+                equation_residual_vectors.append(residual.getSubVector(iset))
+
+            equation_residual_norms = [
+                r.norm(PETSc.NormType.NORM_2) for r in equation_residual_vectors
+            ]
+        finally:
+            for iset, vector in zip(is_sets, equation_residual_vectors, strict=True):
+                residual.restoreSubVector(iset, vector)
+
+            for iset in is_sets:
+                iset.destroy()
 
     else:
         equation_residual_norms = []

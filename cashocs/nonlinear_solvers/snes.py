@@ -238,7 +238,7 @@ class SNESSolver:
             norm: The current residual norm.
 
         """
-        if self.residual_convergence:
+        if self.residual_convergence and log.is_enabled_for(log.DEBUG):
             self.equation_residuals_current = np.array(
                 _utils.compute_equation_residuals(
                     self.residual_convergence, self.u.function_space()
@@ -276,11 +276,14 @@ class SNESSolver:
             )
             self.is_preassembled = True
 
-        self.equation_residuals_initial = np.array(
-            _utils.compute_equation_residuals(
-                self.residual_convergence, self.u.function_space()
+        if log.is_enabled_for(log.DEBUG):
+            self.equation_residuals_initial = np.array(
+                _utils.compute_equation_residuals(
+                    self.residual_convergence, self.u.function_space()
+                )
             )
-        )
+        else:
+            self.equation_residuals_initial = np.array([])
 
         _utils.setup_petsc_options([snes], [self.petsc_options])
         snes.setTolerances(rtol=self.rtol, atol=self.atol, max_it=self.max_iter)
