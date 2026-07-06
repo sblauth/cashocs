@@ -171,10 +171,16 @@ class _NewtonSolver:
 
         self.comm = self.u.function_space().mesh().mpi_comm()
         # pylint: disable=invalid-name
-        self.A_fenics = self.A_tensor or fenics.PETScMatrix(self.comm)
-        self.residual = self.b_tensor or fenics.PETScVector(self.comm)
-        self.b = fenics.as_backend_type(self.residual).vec()
-        self.A_matrix = fenics.as_backend_type(self.A_fenics).mat()
+        if self.A_tensor is not None:
+            self.A_fenics = self.A_tensor
+        else:
+            self.A_fenics = fenics.PETScMatrix(self.comm)
+        if self.b_tensor is not None:
+            self.residual = self.b_tensor
+        else:
+            self.residual = fenics.PETScVector(self.comm)
+        self.b = self.residual.vec()
+        self.A_matrix = self.A_fenics.mat()
 
         self.P_fenics = fenics.PETScMatrix(self.comm)
 
@@ -195,6 +201,9 @@ class _NewtonSolver:
         self.res = 1.0
         self.res_0 = 1.0
         self.tol = 1.0
+        self.residual_computer = _utils.linalg.EquationResidualComputer(
+            self.function_space
+        )
 
     def _print_output(self) -> None:
         """Prints the output of the current iteration to the console."""
@@ -217,40 +226,31 @@ class _NewtonSolver:
         else:
             log.debug(info_str + print_str)
 
-        if log.is_enabled_for(log.DEBUG):
-            self.equation_residuals_current = np.array(
-                _utils.compute_equation_residuals(
-                    self.residual.vec(), self.function_space
-                )
-            )
-            for j, res in enumerate(self.equation_residuals_current):
-                res_init = self.equation_residuals_initial[j]
-                if res_init == 0:
-                    res_rel = res
-                else:
-                    res_rel = res / res_init
+        self.equation_residuals_current = self.residual_computer.compute(
+            self.residual.vec()
+        )
+        for j, res in enumerate(self.equation_residuals_current):
+            res_init = self.equation_residuals_initial[j]
+            if res_init == 0:
+                res_rel = res
+            else:
+                res_rel = res / res_init
 
-                log.debug(
-                    f"Equation {j:d} "
-                    f"relative resid {res_rel:.3e} "
-                    f"absolute resid {res:.3e}"
-                )
+            log.debug(
+                f"Equation {j:d} relative resid {res_rel:.3e} absolute resid {res:.3e}"
+            )
 
     @log.profile_execution_time("assembling the Jacobian for Newton's method")
     def _assemble_matrix(self) -> None:
         """Assembles the matrix for solving the linear problem."""
         self.assembler.assemble(self.A_fenics)
         self.A_fenics.ident_zeros()
-        self.A_matrix = fenics.as_backend_type(  # pylint: disable=invalid-name
-            self.A_fenics
-        ).mat()
+        self.A_matrix = self.A_fenics.mat()
 
         if self.preconditioner_form is not None:
             self.assembler_pc.assemble(self.P_fenics)
             self.P_fenics.ident_zeros()
-            self.P_matrix = fenics.as_backend_type(  # pylint: disable=invalid-name
-                self.P_fenics
-            ).mat()
+            self.P_matrix = self.P_fenics.mat()  # pylint: disable=invalid-name
         else:
             self.P_matrix = None
 
@@ -295,14 +295,9 @@ class _NewtonSolver:
         self._compute_residual()
 
         self.res_0 = self.residual.norm(self.norm_type)
-        if log.is_enabled_for(log.DEBUG):
-            self.equation_residuals_initial = np.array(
-                _utils.compute_equation_residuals(
-                    self.residual.vec(), self.function_space
-                )
-            )
-        else:
-            self.equation_residuals_initial = np.array([])
+        self.equation_residuals_initial = self.residual_computer.compute(
+            self.residual.vec()
+        )
         if self.res_0 == 0.0:  # pragma: no cover
             message = "Residual vanishes, input is already a solution."
             if self.verbose:
@@ -311,6 +306,7 @@ class _NewtonSolver:
                 self.comm.barrier()
             else:
                 log.debug(message)
+            self.residual_computer.destroy()
             return self.u
 
         self.res = self.res_0
@@ -358,6 +354,7 @@ class _NewtonSolver:
                 break
 
         log.end()
+        self.residual_computer.destroy()
         self._check_if_successful()
 
         return self.u
@@ -404,7 +401,6 @@ class _NewtonSolver:
     @log.profile_execution_time("assembling the residual for Newton's method")
     def _compute_residual(self) -> None:
         """Computes the residual of the nonlinear system."""
-        self.residual = fenics.PETScVector(self.comm)
         self.assembler.assemble(self.residual, self.u.vector())
         if (
             self.shift is not None
@@ -414,7 +410,7 @@ class _NewtonSolver:
             self.assembler_shift.assemble(self.residual_shift, self.u.vector())
             self.residual[:] -= self.residual_shift[:]
 
-        self.b = fenics.as_backend_type(self.residual).vec()
+        self.b = self.residual.vec()
 
     def _compute_convergence_tolerance(self) -> float:
         """Computes the tolerance for the Newton solver.

@@ -532,12 +532,13 @@ class LinearSolver:
 
         ksp.setTolerances(rtol=rtol, atol=atol)
 
-        ksp.solve(b, x)
-        converged_reason = ksp.getConvergedReason()
-
-        if hasattr(PETSc, "garbage_cleanup"):
+        try:
+            ksp.solve(b, x)
+            converged_reason = ksp.getConvergedReason()
+        finally:
             ksp.destroy()
-            PETSc.garbage_cleanup(comm=self.comm)
+            if hasattr(PETSc, "garbage_cleanup"):
+                PETSc.garbage_cleanup(comm=self.comm)
 
         if converged_reason < 0:
             raise _exceptions.PETScKSPError(converged_reason)
@@ -545,9 +546,61 @@ class LinearSolver:
         function.vector().apply("")
 
 
+class EquationResidualComputer:
+    """Computes equation-wise residual norms for a fixed function space."""
+
+    def __init__(self, function_space: fenics.FunctionSpace) -> None:
+        """Initializes the residual computer.
+
+        Args:
+            function_space: The function space defining the equations.
+
+        """
+        self.function_space = function_space
+        if isinstance(
+            function_space.ufl_element(), ufl.VectorElement | ufl.FiniteElement
+        ):
+            self.is_sets = []
+        else:
+            self.is_sets = [
+                PETSc.IS().createGeneral(function_space.sub(i).dofmap().dofs())
+                for i in range(function_space.num_sub_spaces())
+            ]
+
+    def compute(self, residual: PETSc.Vec) -> np.ndarray:
+        """Computes equation-wise residual norms.
+
+        Args:
+            residual: The PETSc vector containing the (nonlinear) residual.
+
+        Returns:
+            A list of residual norms for the individual equations.
+
+        """
+        equation_residual_vectors = []
+        try:
+            for iset in self.is_sets:
+                equation_residual_vectors.append(residual.getSubVector(iset))
+
+            return np.array(
+                [r.norm(PETSc.NormType.NORM_2) for r in equation_residual_vectors]
+            )
+        finally:
+            for iset, vector in zip(
+                self.is_sets, equation_residual_vectors, strict=False
+            ):
+                residual.restoreSubVector(iset, vector)
+
+    def destroy(self) -> None:
+        """Destroys the cached PETSc index sets."""
+        for iset in self.is_sets:
+            iset.destroy()
+        self.is_sets = []
+
+
 def compute_equation_residuals(
     residual: PETSc.Vec, function_space: fenics.FunctionSpace
-) -> list[float]:
+) -> np.ndarray:
     """Splits the residual to the individual equations and computes the norm.
 
     Args:
@@ -558,32 +611,11 @@ def compute_equation_residuals(
         A list of residual norms for the individual equations.
 
     """
-    if not isinstance(
-        function_space.ufl_element(), ufl.VectorElement | ufl.FiniteElement
-    ):
-        num_equations = function_space.num_sub_spaces()
-        is_sets = [
-            PETSc.IS().createGeneral(function_space.sub(i).dofmap().dofs())
-            for i in range(num_equations)
-        ]
-
-        equation_residual_vectors = []
-        try:
-            for iset in is_sets:
-                equation_residual_vectors.append(residual.getSubVector(iset))
-
-            equation_residual_norms = [
-                r.norm(PETSc.NormType.NORM_2) for r in equation_residual_vectors
-            ]
-        finally:
-            for iset, vector in zip(is_sets, equation_residual_vectors, strict=True):
-                residual.restoreSubVector(iset, vector)
-
-            for iset in is_sets:
-                iset.destroy()
-
-    else:
-        equation_residual_norms = []
+    residual_computer = EquationResidualComputer(function_space)
+    try:
+        equation_residual_norms = residual_computer.compute(residual)
+    finally:
+        residual_computer.destroy()
 
     return equation_residual_norms
 

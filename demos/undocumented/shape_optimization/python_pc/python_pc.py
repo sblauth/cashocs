@@ -84,16 +84,18 @@ class MyLinearSolver(cashocs._utils.linalg.LinearSolver):
         if atol is not None:
             ksp.atol = atol
 
-        ksp.solve(b, x)
+        try:
+            ksp.solve(b, x)
+            converged_reason = ksp.getConvergedReason()
+        finally:
+            ksp.destroy()
+            if hasattr(PETSc, "garbage_cleanup"):
+                PETSc.garbage_cleanup(comm=self.comm)
 
-        if ksp.getConvergedReason() < 0:
+        if converged_reason < 0:
             raise Exception(
                 f"PETSc KSP did not converge. Reason: {ksp.getConvergedReason()}"
             )
-
-        if hasattr(PETSc, "garbage_cleanup"):
-            ksp.destroy()
-            PETSc.garbage_cleanup(comm=self.comm)
 
         if fun is not None:
             fun.vector().apply("")

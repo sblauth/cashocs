@@ -23,7 +23,6 @@ import copy
 from typing import TYPE_CHECKING
 
 import fenics
-import numpy as np
 from petsc4py import PETSc
 
 try:
@@ -161,6 +160,9 @@ class SNESSolver:
             self.residual_shift = fenics.PETScVector(self.comm)
 
         self.residual_convergence: PETSc.Vec | None = None
+        self.residual_computer = _utils.linalg.EquationResidualComputer(
+            self.u.function_space()
+        )
 
     @log.profile_execution_time("assembling the residual for SNES")
     def assemble_function(
@@ -190,7 +192,7 @@ class SNESSolver:
             self.assembler_shift.assemble(self.residual_shift, self.u.vector())
             f[:] -= self.residual_shift[:]
 
-        self.residual_convergence = f.vec().copy()
+        self.residual_convergence = f
 
     @log.profile_execution_time("assembling the Jacobian for SNES")
     def assemble_jacobian(
@@ -238,11 +240,9 @@ class SNESSolver:
             norm: The current residual norm.
 
         """
-        if self.residual_convergence and log.is_enabled_for(log.DEBUG):
-            self.equation_residuals_current = np.array(
-                _utils.compute_equation_residuals(
-                    self.residual_convergence, self.u.function_space()
-                )
+        if self.residual_convergence:
+            self.equation_residuals_current = self.residual_computer.compute(
+                self.residual_convergence
             )
 
             for j, res in enumerate(self.equation_residuals_current):
@@ -276,14 +276,9 @@ class SNESSolver:
             )
             self.is_preassembled = True
 
-        if log.is_enabled_for(log.DEBUG):
-            self.equation_residuals_initial = np.array(
-                _utils.compute_equation_residuals(
-                    self.residual_convergence, self.u.function_space()
-                )
-            )
-        else:
-            self.equation_residuals_initial = np.array([])
+        self.equation_residuals_initial = self.residual_computer.compute(
+            self.residual_convergence
+        )
 
         _utils.setup_petsc_options([snes], [self.petsc_options])
         snes.setTolerances(rtol=self.rtol, atol=self.atol, max_it=self.max_iter)
@@ -294,12 +289,15 @@ class SNESSolver:
         x.vector().vec().aypx(0.0, self.u.vector().vec())
         x.vector().apply("")
 
-        snes.solve(None, x.vector().vec())
-        converged_reason = snes.getConvergedReason()
+        try:
+            snes.solve(None, x.vector().vec())
+            converged_reason = snes.getConvergedReason()
 
-        if hasattr(PETSc, "garbage_cleanup"):
+        finally:
             snes.destroy()
-            PETSc.garbage_cleanup(comm=self.comm)
+            self.residual_computer.destroy()
+            if hasattr(PETSc, "garbage_cleanup"):
+                PETSc.garbage_cleanup(comm=self.comm)
 
         self.u.vector().vec().setArray(x.vector().vec())
         self.u.vector().apply("")
