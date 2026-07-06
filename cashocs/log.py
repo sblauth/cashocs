@@ -107,31 +107,6 @@ class Logger:
             self._log.log(level, self._format(message))
         self.comm.barrier()
 
-    def is_enabled_for(self, level: int) -> bool:
-        """Checks whether any handler would emit a message at ``level``.
-
-        Args:
-            level: The log level that should be checked.
-
-        Returns:
-            Whether a message with this level can be emitted by the logger.
-
-        """
-        if not self._log.isEnabledFor(level):
-            return False
-
-        logger: logging.Logger | None = self._log
-        while logger is not None:
-            for handler in logger.handlers:
-                if level >= handler.level:
-                    return True
-
-            if not logger.propagate:
-                break
-            logger = logger.parent
-
-        return False
-
     def trace(self, message: str) -> None:
         """Issues a message at the trace level.
 
@@ -374,7 +349,6 @@ add_timestamps = cashocs_logger.add_timestamps
 remove_timestamps = cashocs_logger.remove_timestamps
 add_handler = cashocs_logger.add_handler
 set_comm = cashocs_logger.set_comm
-is_enabled_for = cashocs_logger.is_enabled_for
 
 fenics.set_log_level(fenics.LogLevel.WARNING)
 logging.getLogger("UFL").setLevel(logging.WARNING)

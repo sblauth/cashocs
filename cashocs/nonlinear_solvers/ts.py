@@ -127,6 +127,7 @@ class TSPseudoSolver:
         self.dtol = 1e4
         self.max_iter = max_iter
         self.res_current = -1.0
+        self.residual_computer = _utils.linalg.EquationResidualComputer(self.space)
 
         if petsc_options is None:
             self.petsc_options: _typing.KspOption = copy.deepcopy(
@@ -295,8 +296,8 @@ class TSPseudoSolver:
         ts: PETSc.TS,  # pylint: disable=unused-argument
         t: float,  # pylint: disable=unused-argument
         u: PETSc.Vec,
-        J: PETSc.Mat,  # pylint: disable=invalid-name,
-        P: PETSc.Mat,  # pylint: disable=invalid-name,
+        J: PETSc.Mat,  # pylint: disable=invalid-name,unused-argument
+        P: PETSc.Mat,  # pylint: disable=invalid-name,unused-argument
     ) -> None:
         """Interface for PETSc TSSetRHSJacobian.
 
@@ -412,12 +413,6 @@ class TSPseudoSolver:
 
         """
         self.res_current = self.compute_nonlinear_residual(u)
-        if log.is_enabled_for(log.DEBUG):
-            self.equation_residuals_current = np.array(
-                _utils.compute_equation_residuals(
-                    self.residual_convergence.vec(), self.space
-                )
-            )
 
         if self.res_initial == 0:
             relative_residual = self.res_current
@@ -434,19 +429,20 @@ class TSPseudoSolver:
         if self.comm.rank == 0 and self.has_monitor_output:
             print(monitor_str, flush=True)
 
-        if log.is_enabled_for(log.DEBUG):
-            for j, res in enumerate(self.equation_residuals_current):
-                res_init = self.equation_residuals_initial[j]
-                if res_init == 0:
-                    res_rel = res
-                else:
-                    res_rel = res / res_init
+        self.equation_residuals_current = self.residual_computer.compute(
+            self.residual_convergence.vec()
+        )
 
-                log.debug(
-                    f"Equation {j:d} "
-                    f"relative resid {res_rel:.3e} "
-                    f"absolute resid {res:.3e}"
-                )
+        for j, res in enumerate(self.equation_residuals_current):
+            res_init = self.equation_residuals_initial[j]
+            if res_init == 0:
+                res_rel = res
+            else:
+                res_rel = res / res_init
+
+            log.debug(
+                f"Equation {j:d} relative resid {res_rel:.3e} absolute resid {res:.3e}"
+            )
 
         self.rtol = cast(float, self.rtol)
         self.atol = cast(float, self.atol)
@@ -456,10 +452,6 @@ class TSPseudoSolver:
             max_time = ts.getMaxTime()
             ts.setTime(max_time)
         elif self.res_current > self.dtol * self.res_initial:
-            if hasattr(PETSc, "garbage_cleanup"):
-                self._destroy_petsc_objects()
-                ts.destroy()
-                PETSc.garbage_cleanup(comm=self.comm)
             raise _exceptions.PETScTSError(-5)
 
     def _destroy_petsc_objects(self) -> None:
@@ -476,6 +468,8 @@ class TSPseudoSolver:
 
         if self.MP_petsc is not None:
             self.MP_petsc.destroy()
+
+        self.residual_computer.destroy()
 
     def solve(self) -> fenics.Function:
         """Solves the (nonlinear) problem with pseudo time stepping.
@@ -519,14 +513,9 @@ class TSPseudoSolver:
             )
 
         self.res_initial = self.compute_nonlinear_residual(self.u.vector().vec())
-        if log.is_enabled_for(log.DEBUG):
-            self.equation_residuals_initial = np.array(
-                _utils.compute_equation_residuals(
-                    self.residual_convergence.vec(), self.space
-                )
-            )
-        else:
-            self.equation_residuals_initial = np.array([])
+        self.equation_residuals_initial = self.residual_computer.compute(
+            self.residual_convergence.vec()
+        )
         ts.setTime(0.0)
 
         ts.setMonitor(self.monitor)
@@ -548,18 +537,19 @@ class TSPseudoSolver:
         x.vector().vec().aypx(0.0, self.u.vector().vec())
         x.vector().apply("")
 
-        ts.solve(x.vector().vec())
-        converged_reason = ts.getConvergedReason()
+        try:
+            ts.solve(x.vector().vec())
+            converged_reason = ts.getConvergedReason()
+        finally:
+            self._destroy_petsc_objects()
+            ts.destroy()
+            if hasattr(PETSc, "garbage_cleanup"):
+                PETSc.garbage_cleanup(comm=self.comm)
 
         self.u.vector().vec().aypx(0.0, x.vector().vec())
         self.u.vector().apply("")
 
         log.end()
-
-        if hasattr(PETSc, "garbage_cleanup"):
-            self._destroy_petsc_objects()
-            ts.destroy()
-            PETSc.garbage_cleanup(comm=self.comm)
 
         if converged_reason < 0:
             raise _exceptions.PETScTSError(converged_reason)
