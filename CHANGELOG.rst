@@ -6,8 +6,8 @@ here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
-2.10.0 (in development)
------------------------
+2.10.0 (July 14, 2026)
+----------------------
 
 * Add convenience function :py:func:`cashocs.io.export_to_xdmf` which wraps the fenics export to XDMF files.
 
