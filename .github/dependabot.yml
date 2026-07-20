@@ -9,17 +9,40 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
+      day: "sunday"
       time: "03:00"
       timezone: Europe/Berlin
     assignees:
       - "sblauth"
+    groups:
+      core-workflow:
+        patterns:
+          - "actions/*"
+      conda:
+        patterns:
+          - "conda-incubator/*"
+      docker:
+        patterns:
+          - "docker/*"
+      security-scanning:
+        patterns:
+          - "github/codeql-action"
+          - "github/ossar-action"
+          - "ossf/*"
+      coverage:
+        patterns:
+          - "py-cov-action/*"
+      releases:
+        patterns:
+          - "nowsprinting/*"
+          - "softprops/*"
+          - "pypa/*"
 
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
+      day: "sunday"
       time: "03:00"
       timezone: Europe/Berlin
     allow:
