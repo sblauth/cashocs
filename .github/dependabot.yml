@@ -26,8 +26,8 @@ updates:
           - "docker/*"
       security-scanning:
         patterns:
-          - "github/codeql-action"
-          - "github/ossar-action"
+          - "github/codeql-action/*"
+          - "github/ossar-action/*"
           - "ossf/*"
       coverage:
         patterns:
