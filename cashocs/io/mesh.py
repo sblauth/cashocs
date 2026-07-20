@@ -34,6 +34,7 @@ import h5py
 import meshio
 from mpi4py import MPI
 import numpy as np
+from petsc4py import PETSc
 
 from cashocs import _exceptions
 from cashocs import _utils
@@ -180,6 +181,89 @@ def _get_tags_from_mvc(mvc: fenics.MeshValueCollection, comm: MPI.Comm) -> dict:
     return merged_dict
 
 
+def _update_ghost_subdomains(
+    mesh: fenics.Mesh, subdomains: fenics.MeshFunction
+) -> None:
+    dg_space = fenics.FunctionSpace(mesh, "DG", 0)
+    dofmap = dg_space.dofmap()
+    n_cells = mesh.num_cells()  # incl. ghosts
+    c2d = np.fromiter(
+        (dofmap.cell_dofs(i)[0] for i in range(n_cells)),
+        dtype=np.int64,
+        count=n_cells,
+    )
+
+    sub_func = fenics.Function(dg_space)
+    vec = fenics.as_backend_type(sub_func.vector()).vec()
+    n_owned = sub_func.vector().local_size()
+
+    sub_arr = subdomains.array()  # length = num_cells (incl. ghosts)
+
+    # 1) scatter owned-cell values into the owned dof slots (vectorized)
+    sub_func.vector().set_local(sub_arr[:n_owned])
+    sub_func.vector().apply("")
+
+    # 2) communicate owned -> ghost
+    vec.ghostUpdate(addv=PETSc.InsertMode.INSERT, mode=PETSc.ScatterMode.FORWARD)
+
+    # 3) write ghosted values back into the MeshFunction (vectorized, all cells)
+    with vec.localForm() as loc:
+        sub_arr[:] = loc.array_r[c2d]
+
+
+def _tag_internal_facets(
+    mesh: fenics.Mesh,
+    subdomains: fenics.MeshFunction,
+    boundaries: fenics.MeshFunction,
+    physical_groups: dict,
+) -> None:
+    tdim = mesh.topology().dim()
+    mesh.init(tdim - 1, tdim)
+    mesh.init(tdim, tdim - 1)
+
+    sub_arr = subdomains.array()
+
+    num_facets = mesh.num_entities(tdim - 1)
+    f2c = np.array(mesh.topology()(tdim - 1, tdim)())  # flat facet->cell
+    c2f = np.array(mesh.topology()(tdim, tdim - 1)())
+    counts = np.bincount(c2f, minlength=num_facets)  # 1=boundary, 2=interior
+
+    offsets = np.zeros(num_facets + 1, dtype=np.int64)
+    offsets[1:] = np.cumsum(counts)
+
+    interior = counts == 2
+    start = offsets[:-1][interior]
+    c0, c1 = f2c[start], f2c[start + 1]
+
+    cell_id_0 = sub_arr[c0]  # ghost-correct now
+    cell_id_1 = sub_arr[c1]
+    internal_mask = cell_id_0 == cell_id_1
+    boundary_tags_dx = np.copy(cell_id_0[internal_mask])
+    boundary_tags_ds = np.copy(cell_id_0[internal_mask])
+
+    dx_ids = np.array(list(physical_groups["dx"].values()))
+    ds_ids = np.array(list(physical_groups["ds"].values()))
+    max_id = np.maximum(dx_ids.max(), ds_ids.max())
+    internal_ids = np.unique(boundary_tags_dx)
+
+    inverse_physical_groups_dx = {
+        val: key for key, val in physical_groups["dx"].items()
+    }
+
+    internal_tags = {}
+    for i, integer_id in enumerate(internal_ids):
+        internal_tags[f"internal_{inverse_physical_groups_dx[integer_id]}"] = (
+            max_id + i + 1
+        )
+        boundary_tags_ds[boundary_tags_dx == integer_id] = max_id + i + 1
+
+    facet_ids = np.nonzero(interior)[0][internal_mask]
+
+    boundaries.array()[facet_ids] = boundary_tags_ds
+
+    physical_groups["ds"].update(internal_tags)
+
+
 @_get_mesh_stats("import")  # pylint:disable=protected-access
 def _import_xdmf_mesh(
     mesh_file: str, comm: MPI.Comm | None = None
@@ -272,6 +356,9 @@ def _import_xdmf_mesh(
 
     subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
     boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
+
+    _update_ghost_subdomains(mesh, subdomains)
+    _tag_internal_facets(mesh, subdomains, boundaries, physical_groups)
 
     dx = NamedMeasure(
         "dx", domain=mesh, subdomain_data=subdomains, physical_groups=physical_groups
