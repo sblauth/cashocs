@@ -9,7 +9,13 @@ of the maintenance releases, please take a look at
 2.11.0 (in development)
 -----------------------
 
+* Add :py:class:`BasicLineSearch`, which is a fixed stepsize line search. 
 
+* New configuration file parameters:
+
+  * Section LineSearch
+
+    * :ini:`method` now also supports the key :ini:`method = basic` for the BasicLineSearch
 
 2.10.0 (July 14, 2026)
 ----------------------
