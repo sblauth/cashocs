@@ -207,7 +207,7 @@ class Config(ConfigParser):
             "LineSearch": {
                 "method": {
                     "type": "str",
-                    "possible_options": ["armijo", "polynomial"],
+                    "possible_options": ["armijo", "polynomial", "basic"],
                 },
                 "initial_stepsize": {
                     "type": "float",

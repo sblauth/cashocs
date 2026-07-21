@@ -330,6 +330,8 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
             line_search: ls.LineSearch = ls.ArmijoLineSearch(self.db, self)
         elif line_search_type == "polynomial":
             line_search = ls.PolynomialLineSearch(self.db, self)
+        elif line_search_type == "basic":
+            line_search = ls.BasicLineSearch(self.db, self)
         else:
             raise _exceptions.CashocsException("This code cannot be reached.")
 

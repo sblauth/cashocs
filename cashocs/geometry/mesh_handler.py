@@ -492,6 +492,8 @@ class _MeshHandler:
             )
         elif line_search_type == "polynomial":
             line_search = ls.PolynomialLineSearch(self.db, solver.optimization_problem)
+        elif line_search_type == "basic":
+            line_search = ls.BasicLineSearch(self.db, solver.optimization_problem)
         else:
             raise _exceptions.CashocsException("This code cannot be reached.")
 
