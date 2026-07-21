@@ -430,6 +430,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             line_search: ls.LineSearch = ls.ArmijoLineSearch(self.db, self)
         elif line_search_type == "polynomial":
             line_search = ls.PolynomialLineSearch(self.db, self)
+        elif line_search_type == "basic":
+            line_search = ls.BasicLineSearch(self.db, self)
         else:
             raise _exceptions.CashocsException("This code cannot be reached.")
 
@@ -451,7 +453,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             )
         elif self.algorithm.casefold() == "none":
             raise _exceptions.InputError(
-                "cashocs.OptimalControlProblem.solve",
+                "cashocs.ShapeOptimizationProblem.solve",
                 "algorithm",
                 "You did not specify a solution algorithm in your config file. "
                 "You have to specify one in the solve "
