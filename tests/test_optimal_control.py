@@ -814,3 +814,15 @@ def test_adjoint_linearizations(geometry, config_ocp):
     )
     # ocp.compute_adjoint_variables()
     ocp.solve(rtol=1e-2, max_iter=50)
+
+
+@pytest.mark.parametrize(
+    "algorithm, step, iterations",
+    [("gd", 5e2, 71), ("ncg", 5e2, 76), ("bfgs", 0.1, 43)],
+)
+def test_basic_stepsize(ocp, algorithm, step, iterations):
+    ocp.config.set("LineSearch", "method", "basic")
+    ocp.config.set("LineSearch", "initial_stepsize", str(step))
+
+    ocp.solve(algorithm=algorithm, rtol=1e-2, atol=0.0, max_iter=iterations)
+    assert ocp.solver.relative_norm <= ocp.solver.rtol

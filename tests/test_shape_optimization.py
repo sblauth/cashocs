@@ -1138,3 +1138,20 @@ def test_shape_volume_fix():
     assert assemble(Constant(1.0) * dx("bottom_right")) == pytest.approx(0.25)
 
     assert sop.solver.relative_norm <= sop.solver.rtol
+
+
+@pytest.mark.parametrize(
+    "algorithm, step, iterations",
+    [("gd", 0.25, 45), ("ncg", 0.25, 12), ("bfgs", 0.1, 33)],
+)
+def test_basic_stepsize(algorithm, step, iterations):
+    config = cashocs.load_config(dir_path + "/config_sop.ini")
+
+    config.set("LineSearch", "method", "basic")
+    config.set("LineSearch", "initial_stepsize", str(step))
+
+    mesh.coordinates()[:, :] = initial_coordinates
+    mesh.bounding_box_tree().build(mesh)
+    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
+    sop.solve(algorithm=algorithm, rtol=1e-2, atol=0.0, max_iter=iterations)
+    assert sop.solver.relative_norm <= sop.solver.rtol
