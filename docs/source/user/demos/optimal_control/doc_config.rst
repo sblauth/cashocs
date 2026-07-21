@@ -109,7 +109,7 @@ LineSearch
     * - Parameter = Default value
       - Description and remarks
     * - :ini:`method = armio`
-      - :ini:`method = armijo` is a simple backtracking line search, whereas :ini:`method = polynomial` uses polynomial models to compute trial stepsizes.
+      - :ini:`method = armijo` is a simple backtracking line search, :ini:`method = polynomial` uses polynomial models, and :ini:`method = basic` uses a fixed step size.
     * - :ini:`initial_stepsize = 1.0`
       - initial stepsize for the first iteration in the Armijo rule
     * - :ini:`epsilon_armijo = 1e-4`
@@ -551,7 +551,7 @@ In this section, parameters regarding the line search can be specified. The type
 
     method = armijo
     
-Possible options are :ini:`method = armijo`, which performs a simple backtracking line search based on the armijo rule with fixed steps (think of halving the stepsize in each iteration), and :ini:`method = polynomial`, which uses polynomial models of the cost functional restricted to the line to generate "better" guesses for the stepsize. The default is :ini:`method = armijo`. 
+Possible options are :ini:`method = armijo`, which performs a simple backtracking line search based on the armijo rule with fixed steps (think of halving the stepsize in each iteration), and :ini:`method = polynomial`, which uses polynomial models of the cost functional restricted to the line to generate "better" guesses for the stepsize. A fixed step size line search can be used with :ini:`method = basic`. The default is :ini:`method = armijo`. 
 
 The next parameter, :ini:`polynomial_model`, specifies, which type of polynomials are used to generate new trial stepsizes. It is set via 
 
