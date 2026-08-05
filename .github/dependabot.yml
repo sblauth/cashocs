@@ -14,6 +14,7 @@ updates:
       timezone: Europe/Berlin
     assignees:
       - "sblauth"
+    rebase-strategy: "disabled"
     groups:
       core-workflow:
         patterns:
@@ -49,3 +50,4 @@ updates:
       - dependency-type: "all"
     assignees:
       - "sblauth"
+    rebase-strategy: "disabled"
