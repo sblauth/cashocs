@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Any, TypeVar
+from typing import Any, TYPE_CHECKING, TypeVar
 
 import fenics
 import numpy as np
@@ -32,7 +32,9 @@ except ImportError:
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import log
-from cashocs.geometry.mesh import CashocsMesh
+
+if TYPE_CHECKING:
+    from cashocs._utils.mesh import CashocsMesh
 
 T = TypeVar("T")
 
