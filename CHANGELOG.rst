@@ -11,6 +11,8 @@ of the maintenance releases, please take a look at
 
 * Add :py:class:`BasicLineSearch`, which is a fixed stepsize line search. 
 
+* Meshes that are imported or created with cashocs now also mark internal facets, which belong to subdomains, correctly and assign a marker and tag to them. These are prefixed with `internal_` to distinguish them from other tags.
+
 * New configuration file parameters:
 
   * Section LineSearch
