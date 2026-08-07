@@ -54,8 +54,8 @@
             </div>
         </aside>
         <h2>
-            <span class="text">89 statements &nbsp;</span>
-            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">89<span class="text"> run</span></button>
+            <span class="text">90 statements &nbsp;</span>
+            <button type="button" class="run button_toggle_run" value="run" data-shortcut="r" title="Toggle lines run">90<span class="text"> run</span></button>
             <button type="button" class="mis show_mis button_toggle_mis" value="mis" data-shortcut="m" title="Toggle lines missing">0<span class="text"> missing</span></button>
             <button type="button" class="exc show_exc button_toggle_exc" value="exc" data-shortcut="x" title="Toggle lines excluded">5<span class="text"> excluded</span></button>
         </h2>
@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_1d41f265c3366bfa_helpers_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.15.2">coverage.py v7.15.2</a>,
-            created at 2026-08-07 01:37 +0000
+            created at 2026-08-07 11:33 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -440,16 +440,17 @@
     <p class="run"><span class="n"><a id="t358" href="#t358">358</a></span><span class="t">        <span class="nam">indicator_function</span> <span class="op">=</span> <span class="nam">fenics</span><span class="op">.</span><span class="nam">Function</span><span class="op">(</span><span class="nam">dg0_space</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t359" href="#t359">359</a></span><span class="t">        <span class="nam">subdomain_ids</span> <span class="op">=</span> <span class="nam">_get_subdomain_ids_from_tag</span><span class="op">(</span><span class="nam">subdomain_tag</span><span class="op">,</span> <span class="nam">mesh</span><span class="op">.</span><span class="nam">physical_groups</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t360" href="#t360">360</a></span><span class="t">        <span class="nam">dg0_idx</span> <span class="op">=</span> <span class="nam">np</span><span class="op">.</span><span class="nam">flatnonzero</span><span class="op">(</span><span class="nam">np</span><span class="op">.</span><span class="nam">isin</span><span class="op">(</span><span class="nam">mesh</span><span class="op">.</span><span class="nam">subdomains</span><span class="op">.</span><span class="nam">array</span><span class="op">(</span><span class="op">)</span><span class="op">,</span> <span class="nam">subdomain_ids</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t361" href="#t361">361</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t362" href="#t362">362</a></span><span class="t">        <span class="nam">indicator_function</span><span class="op">.</span><span class="nam">vector</span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="nam">dg0_idx</span><span class="op">]</span> <span class="op">=</span> <span class="num">1.0</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t363" href="#t363">363</a></span><span class="t">        <span class="nam">indicator_function</span><span class="op">.</span><span class="nam">vector</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span><span class="str">""</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t364" href="#t364">364</a></span><span class="t">        <span class="nam">indicator_dict</span><span class="op">[</span><span class="nam">subdomain_tag</span><span class="op">]</span> <span class="op">=</span> <span class="nam">indicator_function</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t365" href="#t365">365</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t366" href="#t366">366</a></span><span class="t">    <span class="nam">material_parameter</span> <span class="op">=</span> <span class="nam">_utils</span><span class="op">.</span><span class="nam">summation</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t367" href="#t367">367</a></span><span class="t">        <span class="op">[</span><span class="nam">indicator_dict</span><span class="op">[</span><span class="nam">key</span><span class="op">]</span> <span class="op">*</span> <span class="nam">material_dict</span><span class="op">[</span><span class="nam">key</span><span class="op">]</span> <span class="key">for</span> <span class="nam">key</span> <span class="key">in</span> <span class="nam">material_dict</span><span class="op">.</span><span class="nam">keys</span><span class="op">(</span><span class="op">)</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run run2"><span class="n"><a id="t368" href="#t368">368</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
-    <p class="pln"><span class="n"><a id="t369" href="#t369">369</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t370" href="#t370">370</a></span><span class="t">    <span class="key">return</span> <span class="nam">material_parameter</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t361" href="#t361">361</a></span><span class="t">        <span class="nam">dg0_idx</span> <span class="op">=</span> <span class="nam">dg0_idx</span><span class="op">[</span><span class="nam">dg0_idx</span> <span class="op">&lt;</span> <span class="nam">indicator_function</span><span class="op">.</span><span class="nam">vector</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">local_size</span><span class="op">(</span><span class="op">)</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t362" href="#t362">362</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t363" href="#t363">363</a></span><span class="t">        <span class="nam">indicator_function</span><span class="op">.</span><span class="nam">vector</span><span class="op">(</span><span class="op">)</span><span class="op">[</span><span class="nam">dg0_idx</span><span class="op">]</span> <span class="op">=</span> <span class="num">1.0</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t364" href="#t364">364</a></span><span class="t">        <span class="nam">indicator_function</span><span class="op">.</span><span class="nam">vector</span><span class="op">(</span><span class="op">)</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span><span class="str">""</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t365" href="#t365">365</a></span><span class="t">        <span class="nam">indicator_dict</span><span class="op">[</span><span class="nam">subdomain_tag</span><span class="op">]</span> <span class="op">=</span> <span class="nam">indicator_function</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t366" href="#t366">366</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t367" href="#t367">367</a></span><span class="t">    <span class="nam">material_parameter</span> <span class="op">=</span> <span class="nam">_utils</span><span class="op">.</span><span class="nam">summation</span><span class="op">(</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t368" href="#t368">368</a></span><span class="t">        <span class="op">[</span><span class="nam">indicator_dict</span><span class="op">[</span><span class="nam">key</span><span class="op">]</span> <span class="op">*</span> <span class="nam">material_dict</span><span class="op">[</span><span class="nam">key</span><span class="op">]</span> <span class="key">for</span> <span class="nam">key</span> <span class="key">in</span> <span class="nam">material_dict</span><span class="op">.</span><span class="nam">keys</span><span class="op">(</span><span class="op">)</span><span class="op">]</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run run2"><span class="n"><a id="t369" href="#t369">369</a></span><span class="t">    <span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="pln"><span class="n"><a id="t370" href="#t370">370</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t371" href="#t371">371</a></span><span class="t">    <span class="key">return</span> <span class="nam">material_parameter</span>&nbsp;</span><span class="r"></span></p>
 </main>
 <footer>
     <div class="content">
@@ -459,7 +460,7 @@
             <a class="nav" href="z_1d41f265c3366bfa_helpers_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.15.2">coverage.py v7.15.2</a>,
-            created at 2026-08-07 01:37 +0000
+            created at 2026-08-07 11:33 +0000
         </p>
     </div>
 </footer>

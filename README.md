@@ -64,7 +64,7 @@
 | cashocs/\_pde\_problems/state\_problem.py                                          |       88 |        8 |     91% |77, 82, 124, 161, 268-274 |
 | cashocs/\_typing.py                                                                |       21 |       21 |      0% |     20-64 |
 | cashocs/\_utils/\_\_init\_\_.py                                                    |       33 |        0 |    100% |           |
-| cashocs/\_utils/forms.py                                                           |       89 |        0 |    100% |           |
+| cashocs/\_utils/forms.py                                                           |       90 |        0 |    100% |           |
 | cashocs/\_utils/helpers.py                                                         |       78 |        5 |     94% |71, 252, 259, 267-269 |
 | cashocs/\_utils/interpolations.py                                                  |       44 |       18 |     59% |27, 275-449 |
 | cashocs/\_utils/linalg.py                                                          |      224 |       27 |     88% |78, 140, 158, 301, 347-348, 405-408, 523-524, 614-620, 729-733, 753-765 |
@@ -95,7 +95,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      380 |       40 |     89% |172, 265, 345-350, 450, 549-550, 678-680, 687-689, 714-746, 931, 960-962, 972-974, 988-989 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      394 |       53 |     87% |174, 268, 342-343, 439, 528-529, 544-571, 692-693, 710-712, 718-720, 750-788, 960, 987-989, 999-1001, 1015-1016 |
 | cashocs/verification.py                                                            |      131 |        3 |     98% |234-235, 267 |
-| **TOTAL**                                                                          | **8246** |  **733** | **91%** |           |
+| **TOTAL**                                                                          | **8247** |  **733** | **91%** |           |
 
 
 ## Setup coverage badge
