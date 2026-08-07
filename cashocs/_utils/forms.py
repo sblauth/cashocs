@@ -358,6 +358,7 @@ def create_material_parameter(
         indicator_function = fenics.Function(dg0_space)
         subdomain_ids = _get_subdomain_ids_from_tag(subdomain_tag, mesh.physical_groups)
         dg0_idx = np.flatnonzero(np.isin(mesh.subdomains.array(), subdomain_ids))
+        dg0_idx = dg0_idx[dg0_idx < indicator_function.vector().local_size()]
 
         indicator_function.vector()[dg0_idx] = 1.0
         indicator_function.vector().apply("")
