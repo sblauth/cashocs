@@ -22,13 +22,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 import fenics
+import numpy as np
 
 from cashocs import _exceptions
 from cashocs import log
 from cashocs._optimization.line_search import line_search
 
 if TYPE_CHECKING:
-    import numpy as np
     from scipy import sparse
 
     from cashocs import _typing
@@ -54,6 +54,42 @@ class BasicLineSearch(line_search.LineSearch):
         super().__init__(db, optimization_problem)
 
         self.constant_stepsize = self.stepsize
+
+    def _check_for_nonconvergence(
+        self, solver: optimization_algorithms.OptimizationAlgorithm
+    ) -> bool:
+        """Checks, whether the line search failed to converge.
+
+        Returns True (i.e. requests termination of the line search) when either
+        criterion is satisfied:
+
+        * The optimization algorithm reached its iteration limit
+          (``solver.iteration >= solver.max_iter``).
+        * The step size became too small for the optimization variables to change
+          meaningfully (``stepsize * search_direction_inf <= 1e-9``). In this case
+          the line search is flagged as broken via
+          ``solver.line_search_broken = True``.
+
+        Args:
+            solver: The optimization algorithm, which uses the line search.
+
+        Returns:
+            True if a termination criterion is satisfied, False otherwise.
+
+        """
+        if solver.iteration >= solver.max_iter:
+            return True
+
+        if self.stepsize * self.search_direction_inf <= 1e-9:
+            log.error(
+                "The stepsize is too small. "
+                "The changes in the optimization variables are too small for the "
+                "current search direction."
+            )
+            solver.line_search_broken = True
+            return True
+
+        return False
 
     def search(
         self,
@@ -86,10 +122,18 @@ class BasicLineSearch(line_search.LineSearch):
 
         """
         self.stepsize = self.constant_stepsize
+        self.search_direction_inf = np.max(
+            [
+                search_direction[i].vector().norm("linf")
+                for i in range(len(search_direction))
+            ]
+        )
         is_remeshed = False
 
         log.begin("Basic line search.", level=log.DEBUG)
         while True:
+            if self._check_for_nonconvergence(solver):
+                return (None, False)
             self.stepsize = (
                 self.optimization_variable_abstractions.update_optimization_variables(
                     search_direction,

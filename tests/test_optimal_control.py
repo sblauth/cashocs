@@ -826,3 +826,22 @@ def test_basic_stepsize(ocp, algorithm, step, iterations):
 
     ocp.solve(algorithm=algorithm, rtol=1e-2, atol=0.0, max_iter=iterations)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
+
+
+def test_basic_line_search_terminates_on_failure(monkeypatch, ocp):
+    """BasicLineSearch must terminate when trial steps persistently fail.
+
+    Regression test: without a termination guard, a persistently failing
+    objective (e.g. a diverged state solve with ``fail_if_not_converged = False``)
+    drove the stepsize to zero and looped forever. The search must instead give
+    up gracefully, like the Armijo and polynomial searches.
+    """
+    from cashocs._optimization.line_search.basic_line_search import BasicLineSearch
+
+    ocp.config.set("LineSearch", "method", "basic")
+    monkeypatch.setattr(
+        BasicLineSearch, "_compute_objective_at_new_iterate", lambda self: None
+    )
+
+    with pytest.raises(NotConvergedError):
+        ocp.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=1)
