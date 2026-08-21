@@ -165,7 +165,7 @@ def test_ts_pseudo_solver_residual_cache():
         assert assembler.calls == 1
         assert assembler_shift.calls == 1
 
-        assert residual_norm == pytest.approx(np.linalg.norm(cached_residual))
+        assert residual_norm == pytest.approx(solver.residual_convergence.norm("l2"))
         solver.assemble_residual(None, 0.0, u.vector().vec(), f)
         assert np.allclose(f.getArray(), -cached_residual)
         assert assembler.calls == 1
