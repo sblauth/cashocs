@@ -171,8 +171,9 @@ class TSPseudoSolver:
             self.residual_fenics = fenics.PETScVector(self.comm)
         self.residual_petsc = self.residual_fenics.vec()
 
-        self.residual_convergence = fenics.PETScVector(self.comm)
-        self.residual_convergence.init(self.u.vector().size())
+        self.residual_convergence = fenics.PETScVector(
+            self.u.vector().vec().duplicate()
+        )
         self._residual_cache_state = self.u.vector().vec().duplicate()
         self._residual_cache_valid = False
 
@@ -282,7 +283,8 @@ class TSPseudoSolver:
         try:
             f.getSize()
         except PETSc.Error:
-            fenics.PETScVector(f).init(self.u.vector().size())
+            f.setSizes(self.u.vector().vec().getSizes())
+            f.setUp()
         f.aypx(0.0, residual.vec())
         f.scale(-1)
 
