@@ -172,6 +172,9 @@ class TSPseudoSolver:
         self.residual_petsc = self.residual_fenics.vec()
 
         self.residual_convergence = fenics.PETScVector(self.comm)
+        self.residual_convergence.init(self.u.vector().size())
+        self._residual_cache_state = self.u.vector().vec().duplicate()
+        self._residual_cache_valid = False
 
         self.mass_matrix_fenics = fenics.PETScMatrix(self.comm)
         self.mass_matrix_petsc = self.mass_matrix_fenics.mat()
@@ -275,20 +278,40 @@ class TSPseudoSolver:
             f (PETSc.Vec): The vector in which the residual is stored.
 
         """
-        self.u.vector().vec().aypx(0.0, u)
-        self.u.vector().apply("")
-
-        self.assembler.assemble(self.residual_fenics, self.u.vector())
-
-        if (
-            self.shift is not None
-            and self.assembler_shift is not None
-            and self.residual_shift is not None
-        ):
-            self.assembler_shift.assemble(self.residual_shift, self.u.vector())
-            f[:] -= self.residual_shift[:]
-
+        residual = self._get_nonlinear_residual(u)
+        try:
+            f.getSize()
+        except PETSc.Error:
+            fenics.PETScVector(f).init(self.u.vector().size())
+        f.aypx(0.0, residual.vec())
         f.scale(-1)
+
+    def _get_nonlinear_residual(self, u: PETSc.Vec) -> fenics.PETScVector:
+        """Returns the cached shifted nonlinear residual for an iterate."""
+        diff = u.duplicate()
+        diff.waxpy(-1.0, self._residual_cache_state, u)
+        residual_evaluation_diff = diff.norm(PETSc.NormType.NORM_INFINITY)
+        diff.destroy()
+        if (
+            not self._residual_cache_valid
+            or residual_evaluation_diff > fenics.DOLFIN_EPS
+        ):
+            self.u.vector().vec().aypx(0.0, u)
+            self.u.vector().apply("")
+            self.assembler.assemble(self.residual_convergence, self.u.vector())
+
+            if (
+                self.shift is not None
+                and self.assembler_shift is not None
+                and self.residual_shift is not None
+            ):
+                self.assembler_shift.assemble(self.residual_shift, self.u.vector())
+                self.residual_convergence[:] -= self.residual_shift[:]
+
+            self._residual_cache_state.aypx(0.0, u)
+            self._residual_cache_valid = True
+
+        return self.residual_convergence
 
     @log.profile_execution_time("assembling the Jacobian for pseudo time stepping")
     def assemble_jacobian(
@@ -312,17 +335,19 @@ class TSPseudoSolver:
         self.u.vector().vec().aypx(0.0, u)
         self.u.vector().apply("")
 
-        self.assembler.assemble(self.A_fenics)
-        self.A_fenics.ident_zeros()
-        self.A_petsc.scale(-1)
-        self.A_petsc.assemble()
+        J_fenics = fenics.PETScMatrix(J)  # pylint: disable=invalid-name
+        self.assembler.assemble(J_fenics)
+        J_fenics.ident_zeros()
+        J.scale(-1)
+        J.assemble()
 
-        if self.preconditioner_form is not None:
-            self.assembler_pc.assemble(self.P_fenics)
-            self.P_fenics.ident_zeros()
+        if self.preconditioner_form is not None and self.assembler_pc is not None:
+            P_fenics = fenics.PETScMatrix(P)  # pylint: disable=invalid-name
+            self.assembler_pc.assemble(P_fenics)
+            P_fenics.ident_zeros()
 
-            self.P_petsc.scale(-1)
-            self.P_petsc.assemble()
+            P.scale(-1)
+            P.assemble()
 
     def assemble_i_function(
         self,
@@ -389,11 +414,7 @@ class TSPseudoSolver:
             float: The norm of the nonlinear residual.
 
         """
-        self.u.vector().vec().aypx(0.0, u)
-        self.u.vector().apply("")
-        self.assembler.assemble(self.residual_convergence, self.u.vector())
-
-        residual_norm: float = self.residual_convergence.norm("l2")
+        residual_norm: float = self._get_nonlinear_residual(u).norm("l2")
         return residual_norm
 
     def monitor(
@@ -456,6 +477,8 @@ class TSPseudoSolver:
 
     def _destroy_petsc_objects(self) -> None:
         self.residual_convergence.vec().destroy()
+        self._residual_cache_state.destroy()
+        self._residual_cache_valid = False
 
         self.M_petsc.destroy()
         self.mass_matrix_petsc.destroy()
@@ -464,7 +487,7 @@ class TSPseudoSolver:
             self.P_petsc.destroy()
 
         if self.residual_shift is not None:
-            self.residual_shift.destroy()
+            self.residual_shift.vec().destroy()
 
         if self.MP_petsc is not None:
             self.MP_petsc.destroy()
@@ -482,10 +505,10 @@ class TSPseudoSolver:
         ts = PETSc.TS().create(self.comm)
         ts.setProblemType(ts.ProblemType.NONLINEAR)
 
-        ts.setIFunction(self.assemble_i_function, self.mass_application_petsc)
-        ts.setIJacobian(self.assemble_mass_matrix, self.M_petsc, self.MP_petsc)
-        ts.setRHSFunction(self.assemble_residual, self.residual_petsc)
-        ts.setRHSJacobian(self.assemble_jacobian, self.A_petsc, self.P_petsc)
+        ts.setIFunction(self.assemble_i_function, f=self.mass_application_petsc)
+        ts.setIJacobian(self.assemble_mass_matrix, J=self.M_petsc, P=self.MP_petsc)
+        ts.setRHSFunction(self.assemble_residual, f=self.residual_petsc)
+        ts.setRHSJacobian(self.assemble_jacobian, J=self.A_petsc, P=self.P_petsc)
 
         ksp = ts.getSNES().getKSP()
         _utils.linalg.setup_fieldsplit_preconditioner(self.u, ksp, self.petsc_options)
