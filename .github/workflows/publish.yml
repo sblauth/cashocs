@@ -25,7 +25,7 @@ jobs:
         rm -rf /opt/app/{*,.*}
 
     - name: Checkout repository
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Install cashocs
       shell: bash
@@ -48,7 +48,7 @@ jobs:
     steps:
     
     - name: Checkout repository
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
 
     - name: Get tag name
@@ -59,14 +59,14 @@ jobs:
 
     - name: Check if release is a pre-release
       id: check_version
-      uses: nowsprinting/check-version-format-action@485fbf1df432e42859933ebaf16f27f7cdb7bde7 # v5.0.2
+      uses: nowsprinting/check-version-format-action@2946b47fb3590f88fc80b3579e72cd15c0fa90cb # v5.0.4
       with:
         prefix: 'v'
 
 
     - name: Create Github release
       id: create_release
-      uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
+      uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
       with:
         name: cashocs ${{ steps.tag_name.outputs.TAG_PREFIX }}
         generate_release_notes: ${{ steps.check_version.outputs.is_stable == 'true' }}
@@ -83,10 +83,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Set up Python 3.14
-      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
         python-version: 3.14
 
@@ -97,4 +97,4 @@ jobs:
       run: python -m build --sdist --wheel --outdir dist/ .
 
     - name: Publish distribution to PyPI
-      uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # release/v1
+      uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # release/v1

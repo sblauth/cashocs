@@ -6,6 +6,19 @@ here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
+2.11.0 (in development)
+-----------------------
+
+* Add :py:class:`BasicLineSearch`, which is a fixed stepsize line search. 
+
+* Meshes that are imported or created with cashocs now also mark internal facets, which belong to subdomains, correctly and assign a marker and tag to them. These are prefixed with `internal_` to distinguish them from other tags.
+
+* New configuration file parameters:
+
+  * Section LineSearch
+
+    * :ini:`method` now also supports the key :ini:`method = basic` for the BasicLineSearch
+
 2.10.0 (July 14, 2026)
 ----------------------
 

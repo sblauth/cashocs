@@ -39,9 +39,11 @@ from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import log
 from cashocs import mpi
+from cashocs._utils.mesh import _get_mesh_stats
+from cashocs._utils.mesh import _tag_internal_facets
+from cashocs._utils.mesh import _update_ghost_subdomains
+from cashocs._utils.mesh import CashocsMesh
 from cashocs.geometry.measure import NamedMeasure
-from cashocs.geometry.mesh import _get_mesh_stats
-from cashocs.geometry.mesh import CashocsMesh
 
 if TYPE_CHECKING:
     from cashocs import _typing
@@ -272,6 +274,9 @@ def _import_xdmf_mesh(
 
     subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
     boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
+
+    _update_ghost_subdomains(mesh, subdomains)
+    _tag_internal_facets(mesh, subdomains, boundaries, physical_groups)
 
     dx = NamedMeasure(
         "dx", domain=mesh, subdomain_data=subdomains, physical_groups=physical_groups

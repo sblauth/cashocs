@@ -20,136 +20,22 @@
 from __future__ import annotations
 
 import collections
-from collections.abc import Callable
-import functools
-from typing import Any, Literal, TYPE_CHECKING
+from typing import Literal, TYPE_CHECKING
 
 import fenics
 from mpi4py import MPI
 import numpy as np
 
 from cashocs import _exceptions
-from cashocs import log
 from cashocs import mpi
+import cashocs._utils.mesh as mesh_utils
 from cashocs.geometry import measure
 
 if TYPE_CHECKING:
     from cashocs import _typing
 
 
-def _get_mesh_stats(
-    mode: Literal["import", "generate"],
-) -> Callable[..., Callable[..., _typing.MeshTuple]]:
-    """A decorator for mesh importing / generating function which logs stats.
-
-    Args:
-        mode: A string indicating whether the mesh is being generated or imported.
-
-    Returns:
-        The decorated function.
-
-    """
-
-    def decorator_stats(
-        func: Callable[..., _typing.MeshTuple],
-    ) -> Callable[..., _typing.MeshTuple]:
-        """A decorator for a mesh generating function.
-
-        Args:
-            func: The function to be decorated.
-
-        Returns:
-            The decorated function
-
-        """
-
-        @functools.wraps(func)
-        def wrapper_stats(*args: Any, **kwargs: Any) -> _typing.MeshTuple:
-            """Wrapper function for mesh generating functions.
-
-            Args:
-                *args: The arguments for the function.
-                **kwargs: The keyword arguments for the function.
-
-            Returns:
-                The wrapped function.
-
-            """
-            comm = None
-            if "comm" in kwargs.keys():  # pylint: disable=consider-iterating-dictionary
-                comm = kwargs["comm"]
-            else:
-                for arg in args:
-                    if isinstance(arg, MPI.Comm):
-                        comm = arg
-
-            if comm is None:
-                comm = mpi.COMM_WORLD
-
-            word = "importing" if mode.casefold() == "import" else "generating"
-            worded = "imported" if mode.casefold() == "import" else "generated"
-            mpi_size = comm.size
-            log.begin(f"{word.capitalize()} mesh.", level=log.INFO)
-
-            value = func(*args, **kwargs)
-            dim = value[0].geometry().dim()
-
-            log.info(
-                f"Successfully {worded} {dim}-dimensional mesh on {mpi_size} CPU(s)."
-            )
-            log.info(
-                f"Mesh contains {value[0].num_entities_global(0):,} vertices and "
-                f"{value[0].num_entities_global(dim):,} cells of type "
-                f"{value[0].ufl_cell().cellname()}."
-            )
-            log.end()
-            return value
-
-        return wrapper_stats
-
-    return decorator_stats
-
-
-class CashocsMesh(fenics.Mesh):
-    """A finite element mesh for use with cashocs."""
-
-    subdomains: fenics.MeshFunction
-    boundaries: fenics.MeshFunction
-    dx: measure.NamedMeasure
-    ds: measure.NamedMeasure
-    dS: measure.NamedMeasure  # pylint: disable=invalid-name
-    physical_groups: dict
-
-    def setup_cashocs_data(
-        self,
-        subdomains: fenics.MeshFunction,
-        boundaries: fenics.MeshFunction,
-        dx: measure.NamedMeasure,
-        ds: measure.NamedMeasure,
-        dS: measure.NamedMeasure,  # pylint: disable=invalid-name
-        physical_groups: dict,
-    ) -> None:
-        """Sets up the data structures for use with cashocs.
-
-        Args:
-            subdomains: The mesh tags for the subdomains.
-            boundaries: The mesh tags for the boundaries.
-            dx: The volume / cell measure.
-            ds: The exterior surface / facet measure.
-            dS: The interior surface / facet measure.
-            physical_groups: The dictionary of physical groups mapping names to integer
-                tags.
-
-        """
-        self.subdomains = subdomains
-        self.boundaries = boundaries
-        self.dx = dx
-        self.ds = ds
-        self.dS = dS  # pylint: disable=invalid-name
-        self.physical_groups = physical_groups
-
-
-@_get_mesh_stats("generate")
+@mesh_utils._get_mesh_stats("generate")  # pylint: disable=protected-access
 def interval_mesh(
     n: int = 10,
     start: float = 0.0,
@@ -202,7 +88,7 @@ def interval_mesh(
     if comm is None:
         comm = mpi.COMM_WORLD
 
-    mesh: CashocsMesh = fenics.IntervalMesh(comm, n, start, end)
+    mesh: mesh_utils.CashocsMesh = fenics.IntervalMesh(comm, n, start, end)
 
     physical_groups = {"dx": {}, "ds": {"start": 1, "end": 2}}
 
@@ -238,6 +124,13 @@ def interval_mesh(
     else:
         subdomains.set_all(1)
         physical_groups["dx"].update({"all": 1})
+
+    mesh_utils._update_ghost_subdomains(  # pylint: disable=protected-access
+        mesh, subdomains
+    )
+    mesh_utils._tag_internal_facets(  # pylint: disable=protected-access
+        mesh, subdomains, boundaries, physical_groups
+    )
 
     dx = measure.NamedMeasure(
         "dx", mesh, subdomain_data=subdomains, physical_groups=physical_groups
@@ -324,7 +217,7 @@ def regular_mesh(
     )
 
 
-@_get_mesh_stats("generate")
+@mesh_utils._get_mesh_stats("generate")  # pylint: disable=protected-access
 def regular_box_mesh(
     n: int = 10,
     start_x: float = 0.0,
@@ -420,7 +313,7 @@ def regular_box_mesh(
     }
 
     if start_z is None:
-        mesh: CashocsMesh = fenics.RectangleMesh(
+        mesh: mesh_utils.CashocsMesh = fenics.RectangleMesh(
             comm,
             fenics.Point(start_x, start_y),
             fenics.Point(end_x, end_y),
@@ -470,6 +363,13 @@ def regular_box_mesh(
         )
         z_min.mark(boundaries, 5)
         z_max.mark(boundaries, 6)
+
+    mesh_utils._update_ghost_subdomains(  # pylint: disable=protected-access
+        mesh, subdomains
+    )
+    mesh_utils._tag_internal_facets(  # pylint: disable=protected-access
+        mesh, subdomains, boundaries, physical_groups
+    )
 
     dx = measure.NamedMeasure(
         "dx", mesh, subdomain_data=subdomains, physical_groups=physical_groups

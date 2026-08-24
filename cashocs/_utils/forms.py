@@ -19,7 +19,7 @@
 
 from __future__ import annotations
 
-from typing import Any, TypeVar
+from typing import Any, TYPE_CHECKING, TypeVar
 
 import fenics
 import numpy as np
@@ -32,7 +32,9 @@ except ImportError:
 from cashocs import _exceptions
 from cashocs import _utils
 from cashocs import log
-from cashocs.geometry.mesh import CashocsMesh
+
+if TYPE_CHECKING:
+    from cashocs._utils.mesh import CashocsMesh
 
 T = TypeVar("T")
 
@@ -356,6 +358,7 @@ def create_material_parameter(
         indicator_function = fenics.Function(dg0_space)
         subdomain_ids = _get_subdomain_ids_from_tag(subdomain_tag, mesh.physical_groups)
         dg0_idx = np.flatnonzero(np.isin(mesh.subdomains.array(), subdomain_ids))
+        dg0_idx = dg0_idx[dg0_idx < indicator_function.vector().local_size()]
 
         indicator_function.vector()[dg0_idx] = 1.0
         indicator_function.vector().apply("")

@@ -30,6 +30,7 @@ from cashocs._optimization import optimal_control
 from cashocs._optimization import optimization_algorithms
 from cashocs._optimization import shape_optimization
 from cashocs._optimization import topology_optimization
+from cashocs._utils import mesh as mesh_utils
 
 OptimizationProblem = (
     shape_optimization.ShapeOptimizationProblem
@@ -41,7 +42,7 @@ GradientProblem = (
 )
 FormHandler = _forms.FormHandler
 MeshTuple = tuple[
-    geometry.mesh.CashocsMesh,
+    mesh_utils.CashocsMesh,
     fenics.MeshFunction,
     fenics.MeshFunction,
     geometry.measure.NamedMeasure,
