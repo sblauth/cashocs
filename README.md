@@ -66,7 +66,7 @@
 | cashocs/\_utils/\_\_init\_\_.py                                                    |       33 |        0 |    100% |           |
 | cashocs/\_utils/forms.py                                                           |       90 |        0 |    100% |           |
 | cashocs/\_utils/helpers.py                                                         |       78 |        5 |     94% |71, 252, 259, 267-269 |
-| cashocs/\_utils/interpolations.py                                                  |       44 |       18 |     59% |27, 275-449 |
+| cashocs/\_utils/interpolations.py                                                  |       44 |       18 |     59% |27, 275-430 |
 | cashocs/\_utils/linalg.py                                                          |      224 |       27 |     88% |78, 140, 158, 301, 347-348, 405-408, 523-524, 614-620, 729-733, 753-765 |
 | cashocs/\_utils/mesh.py                                                            |       94 |        2 |     98% |  118, 122 |
 | cashocs/geometry/\_\_init\_\_.py                                                   |       18 |        0 |    100% |           |
@@ -76,7 +76,7 @@
 | cashocs/geometry/mesh.py                                                           |      113 |        0 |    100% |           |
 | cashocs/geometry/mesh\_handler.py                                                  |      267 |       28 |     90% |66, 214, 225, 229, 408, 410, 429, 438, 446, 454, 462, 470, 478, 493-496, 561, 654-674 |
 | cashocs/geometry/mesh\_testing.py                                                  |       71 |        4 |     94% |179, 183-187, 245 |
-| cashocs/geometry/quality.py                                                        |      104 |        7 |     93% |325, 363, 398, 459, 489, 513, 542 |
+| cashocs/geometry/quality.py                                                        |      104 |        7 |     93% |342, 380, 415, 476, 506, 530, 559 |
 | cashocs/io/\_\_init\_\_.py                                                         |       18 |        0 |    100% |           |
 | cashocs/io/config.py                                                               |      145 |        4 |     97% |32, 71, 746-747 |
 | cashocs/io/function.py                                                             |       47 |       24 |     49% |57-81, 116-131 |
