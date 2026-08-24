@@ -392,24 +392,20 @@ interpolate(std::shared_ptr<dolfin::Function> u, std::shared_ptr<dolfin::Functio
     {
         const double val = dg0[i];
         std::size_t num_entities;
-        std::array<std::size_t, 4> update_order;
         if (cell->dim() == 2)
         {
             angles_triangle(*cell, angs, ents);
             num_entities = 3;
-            update_order = {0, 1, 2, 0};
         }
         else if (cell->dim() == 3)
         {
             angles_tetrahedron(*cell, angs, ents);
             num_entities = 4;
-            update_order = {3, 0, 1, 2};
         }
 
         for (std::size_t j = 0; j < num_entities; ++j) {
-            const std::size_t entity = update_order[j];
-            cg1[ents[entity]] += val * angs[entity];
-            angles[ents[entity]] += angs[entity];
+            cg1[ents[j]] += val * angs[j];
+            angles[ents[j]] += angs[j];
         }
         i += 1;
     }
