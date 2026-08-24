@@ -31,18 +31,18 @@ except ImportError:
 
 cpp_code = """
 #include <pybind11/pybind11.h>
-#include <pybind11/eigen.h>
 namespace py = pybind11;
 
+#include <algorithm>
+#include <array>
+#include <cmath>
+#include <memory>
+#include <vector>
+
 #include <dolfin/function/Function.h>
-#include <dolfin/mesh/Mesh.h>
-#include <dolfin/mesh/MeshGeometry.h>
-#include <dolfin/mesh/Vertex.h>
-#include <dolfin/mesh/MeshFunction.h>
-#include <dolfin/mesh/Cell.h>
-#include <dolfin/la/Vector.h>
-#include <dolfin/la/GenericVector.h>
 #include <dolfin/function/FunctionSpace.h>
+#include <dolfin/mesh/Mesh.h>
+#include <dolfin/la/GenericVector.h>
 
 using namespace dolfin;
 
@@ -122,10 +122,10 @@ double interpolate_levelset_to_elements(
     std::shared_ptr<Function> ratio
 ){
     double s = 0.0;
-    std::shared_ptr<const Mesh> mesh = levelset_function->function_space()->mesh();
+    const std::shared_ptr<const Mesh> mesh =
+        levelset_function->function_space()->mesh();
     std::vector<double> ratio_vector;
     std::vector<double> vertex_values;
-    std::vector<double> vals;
     double psi0;
     double psi1;
     double psi2;
@@ -134,13 +134,13 @@ double interpolate_levelset_to_elements(
     levelset_function->compute_vertex_values(vertex_values);
     ratio->vector()->get_local(ratio_vector);
 
-    std::vector<unsigned int> cells = mesh->cells();
-    int meshdim = mesh->geometry().dim();
-    auto ghost_offset = mesh->topology().ghost_offset(meshdim);
+    const std::vector<unsigned int> cells = mesh->cells();
+    const std::size_t meshdim = mesh->geometry().dim();
+    const std::size_t ghost_offset = mesh->topology().ghost_offset(meshdim);
 
     if (meshdim == 2){
-        int index = 0;
-        for (int i=0; i<ghost_offset*3; i+=3){
+        std::size_t index = 0;
+        for (std::size_t i=0; i<ghost_offset*3; i+=3){
             psi0 = vertex_values[cells[i]];
             psi1 = vertex_values[cells[i+1]];
             psi2 = vertex_values[cells[i+2]];
@@ -159,8 +159,8 @@ double interpolate_levelset_to_elements(
         }
     }
     else if (meshdim == 3){
-        int index = 0;
-        for (int i=0; i<ghost_offset*4; i+=4){
+        std::size_t index = 0;
+        for (std::size_t i=0; i<ghost_offset*4; i+=4){
             psi0 = vertex_values[cells[i]];
             psi1 = vertex_values[cells[i+1]];
             psi2 = vertex_values[cells[i+2]];
@@ -291,149 +291,134 @@ def interpolate_by_angle(
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
 #include <pybind11/stl.h>
-#include <pybind11/eigen.h>
 namespace py = pybind11;
 
 #define _USE_MATH_DEFINES
+#include <array>
 #include <cmath>
+#include <cstddef>
+#include <memory>
+#include <tuple>
+#include <vector>
 
-#include <dolfin/mesh/Mesh.h>
-#include <dolfin/mesh/Vertex.h>
-#include <dolfin/mesh/MeshFunction.h>
-#include <dolfin/mesh/Cell.h>
-#include <dolfin/mesh/Vertex.h>
 #include <dolfin/function/Function.h>
 #include <dolfin/function/FunctionSpace.h>
-#include <dolfin/la/Vector.h>
+#include <dolfin/la/GenericVector.h>
+#include <dolfin/mesh/Cell.h>
+#include <dolfin/mesh/Mesh.h>
+#include <dolfin/mesh/Vertex.h>
 
 using namespace dolfin;
 
 
 void angles_triangle(const Cell& cell,
-    std::vector<double>& angs,
-    std::vector<double>& ents) {
-  const Mesh& mesh = cell.mesh();
-  angs.resize(3);
-  ents.resize(3);
-  ents[0] = cell.entities(0)[0];
-  ents[1] = cell.entities(0)[1];
-  ents[2] = cell.entities(0)[2];
-  const std::size_t i0 = cell.entities(0)[0];
-  const std::size_t i1 = cell.entities(0)[1];
-  const std::size_t i2 = cell.entities(0)[2];
+    std::array<double, 4>& angs,
+    std::array<std::size_t, 4>& ents) {
+    const Mesh& mesh = cell.mesh();
+    for (std::size_t i = 0; i < 3; ++i) {
+        ents[i] = cell.entities(0)[i];
+    }
 
-  const Point p0 = Vertex(mesh, i0).point();
-  const Point p1 = Vertex(mesh, i1).point();
-  const Point p2 = Vertex(mesh, i2).point();
-  Point e0 = p1 - p0;
-  Point e1 = p2 - p0;
-  Point e2 = p2 - p1;
+    const Point p0 = Vertex(mesh, ents[0]).point();
+    const Point p1 = Vertex(mesh, ents[1]).point();
+    const Point p2 = Vertex(mesh, ents[2]).point();
+    std::array<Point, 3> edges = {p1 - p0, p2 - p0, p2 - p1};
 
-  e0 /= e0.norm();
-  e1 /= e1.norm();
-  e2 /= e2.norm();
+    for (Point& edge : edges) {
+        edge /= edge.norm();
+    }
 
-  angs[0] = acos(e0.dot(e1));
-  angs[1] = acos(-e0.dot(e2));
-  angs[2] = acos(e1.dot(e2));
+    angs[0] = acos(edges[0].dot(edges[1]));
+    angs[1] = acos(-edges[0].dot(edges[2]));
+    angs[2] = acos(edges[1].dot(edges[2]));
 }
 
 void angles_tetrahedron(const Cell& cell,
-    std::vector<double>& angs,
-    std::vector<double>& ents) {
-  const Mesh& mesh = cell.mesh();
-  std::vector<double> dihedral_angs(6, 0.0);
-  angs.resize(4);
-  ents.resize(4);
-  ents[0] = cell.entities(0)[0];
-  ents[1] = cell.entities(0)[1];
-  ents[2] = cell.entities(0)[2];
-  ents[3] = cell.entities(0)[3];
+    std::array<double, 4>& angs,
+    std::array<std::size_t, 4>& ents) {
+    const Mesh& mesh = cell.mesh();
+    std::array<double, 6> dihedral_angs;
+    for (std::size_t i = 0; i < 4; ++i) {
+        ents[i] = cell.entities(0)[i];
+    }
 
-  const std::size_t i0 = cell.entities(0)[0];
-  const std::size_t i1 = cell.entities(0)[1];
-  const std::size_t i2 = cell.entities(0)[2];
-  const std::size_t i3 = cell.entities(0)[3];
+    const Point p0 = Vertex(mesh, ents[0]).point();
+    const Point p1 = Vertex(mesh, ents[1]).point();
+    const Point p2 = Vertex(mesh, ents[2]).point();
+    const Point p3 = Vertex(mesh, ents[3]).point();
 
-  const Point p0 = Vertex(mesh, i0).point();
-  const Point p1 = Vertex(mesh, i1).point();
-  const Point p2 = Vertex(mesh, i2).point();
-  const Point p3 = Vertex(mesh, i3).point();
+    const Point e0 = p1 - p0;
+    const Point e1 = p2 - p0;
+    const Point e2 = p3 - p0;
+    const Point e3 = p2 - p1;
+    const Point e4 = p3 - p1;
 
-  const Point e0 = p1 - p0;
-  const Point e1 = p2 - p0;
-  const Point e2 = p3 - p0;
-  const Point e3 = p2 - p1;
-  const Point e4 = p3 - p1;
+    std::array<Point, 4> normals = {
+        e0.cross(e1), e0.cross(e2), e1.cross(e2), e3.cross(e4)};
 
-  Point n0 = e0.cross(e1);
-  Point n1 = e0.cross(e2);
-  Point n2 = e1.cross(e2);
-  Point n3 = e3.cross(e4);
+    for (Point& normal : normals) {
+        normal /= normal.norm();
+    }
 
-  n0 /= n0.norm();
-  n1 /= n1.norm();
-  n2 /= n2.norm();
-  n3 /= n3.norm();
+    dihedral_angs[0] = acos(normals[0].dot(normals[1]));
+    dihedral_angs[1] = acos(-normals[0].dot(normals[2]));
+    dihedral_angs[2] = acos(normals[1].dot(normals[2]));
+    dihedral_angs[3] = acos(normals[0].dot(normals[3]));
+    dihedral_angs[4] = acos(normals[1].dot(-normals[3]));
+    dihedral_angs[5] = acos(normals[2].dot(normals[3]));
 
-  dihedral_angs[0] = acos(n0.dot(n1));
-  dihedral_angs[1] = acos(-n0.dot(n2));
-  dihedral_angs[2] = acos(n1.dot(n2));
-  dihedral_angs[3] = acos(n0.dot(n3));
-  dihedral_angs[4] = acos(n1.dot(-n3));
-  dihedral_angs[5] = acos(n2.dot(n3));
-
-  angs[0] = dihedral_angs[0] + dihedral_angs[1] + dihedral_angs[2] - M_PI;
-  angs[1] = dihedral_angs[0] + dihedral_angs[3] + dihedral_angs[4] - M_PI;
-  angs[2] = dihedral_angs[1] + dihedral_angs[3] + dihedral_angs[5] - M_PI;
-  angs[3] = dihedral_angs[2] + dihedral_angs[4] + dihedral_angs[5] - M_PI;
+    angs[0] = dihedral_angs[0] + dihedral_angs[1] + dihedral_angs[2] - M_PI;
+    angs[1] = dihedral_angs[0] + dihedral_angs[3] + dihedral_angs[4] - M_PI;
+    angs[2] = dihedral_angs[1] + dihedral_angs[3] + dihedral_angs[5] - M_PI;
+    angs[3] = dihedral_angs[2] + dihedral_angs[4] + dihedral_angs[5] - M_PI;
 }
 
 std::tuple<std::vector<double>, std::vector<double>>
 interpolate(std::shared_ptr<dolfin::Function> u, std::shared_ptr<dolfin::Function> v)
 {
-  auto mesh = u->function_space()->mesh();
-  std::vector<double> angs;
-  std::vector<double> ents;
-  std::vector<double> dg0;
-  std::vector<double> cg1;
-  std::vector<double> angles;
+    const std::shared_ptr<const Mesh> mesh = u->function_space()->mesh();
+    std::array<double, 4> angs;
+    std::array<std::size_t, 4> ents;
+    std::vector<double> dg0;
+    std::vector<double> cg1;
+    std::vector<double> angles;
 
-  int i = 0;
-  double val;
-  u->vector()->get_local(dg0);
-  v->vector()->get_local(cg1);
-  v->vector()->get_local(angles);
+    std::size_t i = 0;
+    u->vector()->get_local(dg0);
+    v->vector()->get_local(cg1);
+    v->vector()->get_local(angles);
 
-  for (CellIterator cell(*mesh); !cell.end(); ++cell)
-  {
-    val = dg0[i];
-    if (cell->dim() == 2)
+    for (CellIterator cell(*mesh); !cell.end(); ++cell)
     {
-      angles_triangle(*cell, angs, ents);
-    }
-    else if (cell->dim() == 3)
-    {
-      angles_tetrahedron(*cell, angs, ents);
-      cg1[ents[3]] += val*angs[3];
-      angles[ents[3]] += angs[3];
-    }
+        const double val = dg0[i];
+        std::size_t num_entities;
+        std::array<std::size_t, 4> update_order;
+        if (cell->dim() == 2)
+        {
+            angles_triangle(*cell, angs, ents);
+            num_entities = 3;
+            update_order = {0, 1, 2, 0};
+        }
+        else if (cell->dim() == 3)
+        {
+            angles_tetrahedron(*cell, angs, ents);
+            num_entities = 4;
+            update_order = {3, 0, 1, 2};
+        }
 
-    cg1[ents[0]] += val * angs[0];
-    cg1[ents[1]] += val * angs[1];
-    cg1[ents[2]] += val * angs[2];
-
-    angles[ents[0]] += angs[0];
-    angles[ents[1]] += angs[1];
-    angles[ents[2]] += angs[2];
-    i += 1;
-  }
-  return std::make_tuple(cg1, angles);
+        for (std::size_t j = 0; j < num_entities; ++j) {
+            const std::size_t entity = update_order[j];
+            cg1[ents[entity]] += val * angs[entity];
+            angles[ents[entity]] += angs[entity];
+        }
+        i += 1;
+    }
+    return std::make_tuple(cg1, angles);
 }
 
 PYBIND11_MODULE(SIGNATURE, m)
 {
-  m.def("interpolate", &interpolate);
+        m.def("interpolate", &interpolate);
 }
 
 """
