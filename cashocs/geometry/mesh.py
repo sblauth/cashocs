@@ -92,8 +92,11 @@ def interval_mesh(
 
     physical_groups = {"dx": {}, "ds": {"start": 1, "end": 2}}
 
-    subdomains = fenics.MeshFunction("size_t", mesh, dim=dim)
-    boundaries = fenics.MeshFunction("size_t", mesh, dim=dim - 1)
+    subdomains_mvc = fenics.MeshValueCollection("size_t", mesh, dim)
+    subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
+
+    boundaries_mvc = fenics.MeshValueCollection("size_t", mesh, dim - 1)
+    boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
 
     x_min = fenics.CompiledSubDomain(
         "on_boundary && near(x[0], start, tol)", tol=fenics.DOLFIN_EPS, start=start
@@ -332,9 +335,12 @@ def regular_box_mesh(
         )
         physical_groups["ds"].update({"front": 5, "back": 6})
 
-    subdomains = fenics.MeshFunction("size_t", mesh, dim=dim)
+    subdomains_mvc = fenics.MeshValueCollection("size_t", mesh, dim)
+    subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
     subdomains.set_all(1)
-    boundaries = fenics.MeshFunction("size_t", mesh, dim=dim - 1)
+
+    boundaries_mvc = fenics.MeshValueCollection("size_t", mesh, dim - 1)
+    boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
 
     x_min = fenics.CompiledSubDomain(
         "on_boundary && near(x[0], sx, tol)", tol=fenics.DOLFIN_EPS, sx=start_x
