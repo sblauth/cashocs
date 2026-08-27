@@ -63,6 +63,7 @@ class SNESSolver:
         A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
         b_tensor: fenics.PETScVector | None = None,
         preconditioner_form: ufl.Form | None = None,
+        variable_bounds: tuple[fenics.Function, fenics.Function] | None = None,
     ) -> None:
         """Initialize the SNES solver.
 
@@ -90,6 +91,8 @@ class SNESSolver:
             b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
                 sub-problem.
             preconditioner_form: A UFL form which defines the preconditioner matrix.
+            variable_bounds: A tuple containing the lower and upper variable bounds
+                for the variational inequality.
 
         """
         self.nonlinear_form = nonlinear_form
@@ -119,6 +122,8 @@ class SNESSolver:
                 self.preconditioner_form = preconditioner_form
         else:
             self.preconditioner_form = None
+
+        self.variable_bounds = variable_bounds
 
         temp_derivative = derivative or fenics.derivative(self.nonlinear_form, self.u)
         self.derivative = _utils.bilinear_boundary_form_modification([temp_derivative])[
@@ -283,6 +288,12 @@ class SNESSolver:
         _utils.setup_petsc_options([snes], [self.petsc_options])
         snes.setTolerances(rtol=self.rtol, atol=self.atol, max_it=self.max_iter)
 
+        if self.variable_bounds is not None:
+            snes.setVariableBounds(
+                self.variable_bounds[0].vector().vec(),
+                self.variable_bounds[1].vector().vec(),
+            )
+
         snes.setMonitor(self.monitor)
 
         x = fenics.Function(self.u.function_space())
@@ -323,6 +334,7 @@ def snes_solve(
     A_tensor: fenics.PETScMatrix | None = None,  # pylint: disable=invalid-name
     b_tensor: fenics.PETScVector | None = None,
     preconditioner_form: ufl.Form | None = None,
+    variable_bounds: tuple[fenics.Function, fenics.Function] | None = None,
 ) -> fenics.Function:
     """Solve a nonlinear PDE problem with PETSc SNES.
 
@@ -351,6 +363,8 @@ def snes_solve(
         b_tensor: A fenics.PETScVector for storing the right-hand side of the linear
             sub-problem.
         preconditioner_form: A UFL form which defines the preconditioner matrix.
+        variable_bounds: A tuple containing the lower and upper variable bounds for the
+            variational inequality.
 
     Returns:
         The solution in form of a FEniCS Function.
@@ -369,6 +383,7 @@ def snes_solve(
         A_tensor=A_tensor,
         b_tensor=b_tensor,
         preconditioner_form=preconditioner_form,
+        variable_bounds=variable_bounds,
     )
 
     solution = solver.solve()
