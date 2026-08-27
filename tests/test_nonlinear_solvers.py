@@ -97,6 +97,45 @@ def test_snes_solver():
     assert np.allclose(u.vector()[:], u_fen.vector()[:])
 
 
+@pytest.mark.parametrize("solver_type", ["vinewtonrsls", "vinewtonssls"])
+def test_snes_solver_variable_bounds(solver_type):
+    mesh, _, boundaries, dx, _, _ = cashocs.regular_mesh(5)
+    V = FunctionSpace(mesh, "CG", 1)
+
+    u = Function(V)
+    v = TestFunction(V)
+    F = inner(grad(u), grad(v)) * dx - Constant(1.0) * v * dx
+    bcs = cashocs.create_dirichlet_bcs(V, Constant(0.0), boundaries, [1, 2, 3, 4])
+
+    lower_bound = Function(V)
+    lower_bound.vector().vec().set(0.0)
+    lower_bound.vector().apply("")
+    upper_bound = Function(V)
+    upper_bound.vector().vec().set(1e-2)
+    upper_bound.vector().apply("")
+
+    petsc_options = {
+        "snes_type": solver_type,
+        "snes_atol": 1e-10,
+        "snes_rtol": 1e-9,
+        "ksp_type": "cg",
+        "ksp_rtol": 1e-8,
+        "ksp_atol": 1e-12,
+        "pc_type": "hypre",
+    }
+
+    cashocs.snes_solve(
+        F,
+        u,
+        bcs,
+        petsc_options=petsc_options,
+        variable_bounds=(lower_bound, upper_bound),
+    )
+
+    assert np.all(u.vector()[:] >= -1e-10)
+    assert np.all(u.vector()[:] <= 1e-2 + 1e-10)
+
+
 def test_ts_pseudo_solver():
     mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
     V = FunctionSpace(mesh, "CG", 1)
