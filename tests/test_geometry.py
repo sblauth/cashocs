@@ -29,6 +29,7 @@ import pytest
 import cashocs
 import cashocs._cli
 from cashocs._exceptions import InputError
+from cashocs._utils.mesh import update_mesh_tags
 from cashocs.geometry import MeshQuality
 from cashocs.io.mesh import gather_coordinates
 
@@ -97,6 +98,29 @@ def test_mesh_import(dir_path):
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
         subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
     MPI.COMM_WORLD.barrier()
+
+
+def test_update_mesh_tags_generated():
+    mesh, subdomains, boundaries, _, _, _ = cashocs.regular_mesh(2)
+    sentinel = np.iinfo(boundaries.array().dtype).max
+
+    assert mesh.physical_groups["ds"]["internal_all"] == 5
+    assert np.count_nonzero(boundaries.array() == 5) > 0
+    assert not np.any(subdomains.array() == sentinel)
+    assert not np.any(boundaries.array() == sentinel)
+
+
+def test_update_mesh_tags_imported():
+    dir_path = str(pathlib.Path(__file__).parent)
+    mesh, subdomains, boundaries, _, _, _ = cashocs.import_mesh(
+        f"{dir_path}/mesh/physical_names_legacy/named_mesh.xdmf"
+    )
+    sentinel = np.iinfo(boundaries.array().dtype).max
+
+    assert mesh.physical_groups["ds"]["internal_volume"] == 4
+    assert np.count_nonzero(boundaries.array() == 4) > 0
+    assert not np.any(boundaries.array() == sentinel)
+    assert not np.any(subdomains.array() == sentinel)
 
 
 def test_regular_mesh(rng, unit_square_mesh, regular_mesh):
