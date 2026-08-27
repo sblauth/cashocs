@@ -184,11 +184,17 @@ def _tag_internal_facets(
     boundaries: fenics.MeshFunction,
     physical_groups: dict,
 ) -> None:
+    comm = mesh.mpi_comm()
     tdim = mesh.topology().dim()
     mesh.init(tdim - 1, tdim)
     mesh.init(tdim, tdim - 1)
 
     sub_arr = subdomains.array()
+    boundary_arr = boundaries.array()
+    if np.issubdtype(boundary_arr.dtype, np.unsignedinteger):
+        uninitialized_boundary = np.iinfo(boundary_arr.dtype).max
+    else:
+        uninitialized_boundary = -1
 
     num_facets = mesh.num_entities(tdim - 1)
     f2c = np.array(mesh.topology()(tdim - 1, tdim)())  # flat facet->cell
@@ -204,9 +210,58 @@ def _tag_internal_facets(
 
     cell_id_0 = sub_arr[c0]  # ghost-correct now
     cell_id_1 = sub_arr[c1]
+    interior_ids = np.nonzero(interior)[0]
     internal_mask = cell_id_0 == cell_id_1
-    boundary_tags_dx = np.copy(cell_id_0[internal_mask])
-    boundary_tags_ds = np.copy(cell_id_0[internal_mask])
+    uninitialized_mask = boundary_arr[interior_ids] == uninitialized_boundary
+    facet_ids = interior_ids[internal_mask & uninitialized_mask]
+    boundary_tags_ds = np.copy(cell_id_0[internal_mask & uninitialized_mask])
+
+    shared_facets = np.fromiter(
+        mesh.topology().shared_entities(tdim - 1).keys(),
+        dtype=np.int64,
+    )
+    partition_facets = shared_facets[counts[shared_facets] == 1]
+    partition_facets = partition_facets[
+        boundary_arr[partition_facets] == uninitialized_boundary
+    ]
+    global_facet_ids = mesh.topology().global_indices(tdim - 1)
+    local_shared_tags: dict[int, int] = {}
+    if partition_facets.size > 0:
+        local_shared_tags = {
+            int(global_facet_ids[facet]): int(sub_arr[f2c[offsets[facet]]])
+            for facet in partition_facets
+        }
+
+    shared_tags: dict[int, list[int]] = {}
+    for rank_tags in comm.allgather(local_shared_tags):
+        for global_facet_id, cell_tag in rank_tags.items():
+            shared_tags.setdefault(global_facet_id, []).append(cell_tag)
+
+    partition_ids = []
+    partition_tags = []
+    if partition_facets.size > 0:
+        for facet in partition_facets:
+            tags = shared_tags[int(global_facet_ids[facet])]
+            if len(tags) > 1 and len(set(tags)) == 1:
+                partition_ids.append(facet)
+                partition_tags.append(tags[0])
+
+    if partition_ids:
+        facet_ids = np.concatenate((facet_ids, np.asarray(partition_ids)))
+        boundary_tags_ds = np.concatenate(
+            (boundary_tags_ds, np.asarray(partition_tags, dtype=boundary_tags_ds.dtype))
+        )
+
+    local_internal_ids = np.unique(boundary_tags_ds)
+    gathered_internal_ids = comm.allgather(local_internal_ids.tolist())
+    internal_ids = np.unique(
+        np.concatenate(
+            [
+                np.asarray(ids, dtype=local_internal_ids.dtype)
+                for ids in gathered_internal_ids
+            ]
+        )
+    )
 
     dx_ids = np.array(list(physical_groups["dx"].values()))
     ds_ids = np.array(list(physical_groups["ds"].values()))
@@ -214,20 +269,23 @@ def _tag_internal_facets(
         dx_ids.max(initial=0),  # pylint: disable=unexpected-keyword-arg
         ds_ids.max(initial=0),  # pylint: disable=unexpected-keyword-arg
     )
-    internal_ids = np.unique(boundary_tags_dx)
-
     inverse_physical_groups_dx = {
         val: key for key, val in physical_groups["dx"].items()
     }
 
     internal_tags = {}
+    internal_tag_values = {}
     for i, integer_id in enumerate(internal_ids):
+        internal_tag = max_id + i + 1
         internal_tags[f"internal_{inverse_physical_groups_dx[integer_id]}"] = (
-            max_id + i + 1
+            internal_tag
         )
-        boundary_tags_ds[boundary_tags_dx == integer_id] = max_id + i + 1
+        internal_tag_values[int(integer_id)] = internal_tag
 
-    facet_ids = np.nonzero(interior)[0][internal_mask]
+    boundary_tags_ds = np.asarray(
+        [internal_tag_values[int(integer_id)] for integer_id in boundary_tags_ds],
+        dtype=boundaries.array().dtype,
+    )
 
     boundaries.array()[facet_ids] = boundary_tags_ds
 
@@ -238,8 +296,12 @@ def _update_ghost_boundaries(
     mesh: fenics.Mesh, boundaries: fenics.MeshFunction
 ) -> None:
     facet_dim = mesh.topology().dim() - 1
-    dgt_space = fenics.FunctionSpace(mesh, "DGT", 0)
-    dofmap = dgt_space.dofmap()
+    if facet_dim == 0:
+        facet_space = fenics.FunctionSpace(mesh, "CG", 1)
+    else:
+        facet_space = fenics.FunctionSpace(mesh, "DGT", 0)
+
+    dofmap = facet_space.dofmap()
     n_facets = mesh.num_entities(facet_dim)
     facet_to_dof = np.fromiter(
         (dofmap.entity_dofs(mesh, facet_dim, [facet])[0] for facet in range(n_facets)),
@@ -247,18 +309,43 @@ def _update_ghost_boundaries(
         count=n_facets,
     )
 
-    boundary_func = fenics.Function(dgt_space)
+    boundary_func = fenics.Function(facet_space)
     vec = fenics.as_backend_type(boundary_func.vector()).vec()
     n_owned = boundary_func.vector().local_size()
     boundary_array = boundaries.array()
+    shared_facets = np.fromiter(
+        mesh.topology().shared_entities(facet_dim).keys(),
+        dtype=np.int64,
+    )
+    if shared_facets.size == 0:
+        return
 
-    boundary_func.vector().set_local(boundary_array[:n_owned])
+    owned_facets = facet_to_dof < n_owned
+    owned_dofs = facet_to_dof[owned_facets]
+    owned_boundary_values = boundary_array[owned_facets]
+    is_unsigned = np.issubdtype(boundary_array.dtype, np.unsignedinteger)
+    if is_unsigned:
+        unmarked_value = np.iinfo(boundary_array.dtype).max
+        owned_values = np.full(n_owned, -1.0, dtype=float)
+        marked = owned_boundary_values != unmarked_value
+        owned_values[owned_dofs[marked]] = owned_boundary_values[marked]
+    else:
+        owned_values = np.zeros(n_owned, dtype=float)
+        owned_values[owned_dofs] = owned_boundary_values
+
+    boundary_func.vector().set_local(owned_values)
     boundary_func.vector().apply("")
 
     vec.ghostUpdate(addv=PETSc.InsertMode.INSERT, mode=PETSc.ScatterMode.FORWARD)
 
     with vec.localForm() as local:
-        boundary_array[:] = np.asarray(local.array_r[facet_to_dof])
+        synced_values = local.array_r[facet_to_dof[shared_facets]]
+        if is_unsigned:
+            marked = synced_values >= 0.0
+            boundary_array[shared_facets[marked]] = synced_values[marked]
+            boundary_array[shared_facets[~marked]] = unmarked_value
+        else:
+            boundary_array[shared_facets] = synced_values
 
 
 def update_mesh_tags(
