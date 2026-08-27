@@ -11,6 +11,8 @@ of the maintenance releases, please take a look at
 
 * Add :py:class:`BasicLineSearch`, which is a fixed stepsize line search. 
 
+* Meshes that are imported or created with cashocs in parallel now synchronize the values of mesh tags (in mesh functions) for ghosted cells and facets. For a process owning the cell / facet, nothing changes. For a process where a cell / facet is ghosted, the corresponding mesh tag is inferred from the owning process.
+
 * Meshes that are imported or created with cashocs now also mark internal facets, which belong to subdomains, correctly and assign a marker and tag to them. These are prefixed with `internal_` to distinguish them from other tags.
 
 * New configuration file parameters:
@@ -18,6 +20,7 @@ of the maintenance releases, please take a look at
   * Section LineSearch
 
     * :ini:`method` now also supports the key :ini:`method = basic` for the BasicLineSearch
+
 
 2.10.0 (July 14, 2026)
 ----------------------
