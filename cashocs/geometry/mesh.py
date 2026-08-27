@@ -128,12 +128,7 @@ def interval_mesh(
         subdomains.set_all(1)
         physical_groups["dx"].update({"all": 1})
 
-    mesh_utils._update_ghost_subdomains(  # pylint: disable=protected-access
-        mesh, subdomains
-    )
-    mesh_utils._tag_internal_facets(  # pylint: disable=protected-access
-        mesh, subdomains, boundaries, physical_groups
-    )
+    mesh_utils.update_mesh_tags(mesh, subdomains, boundaries, physical_groups)
 
     dx = measure.NamedMeasure(
         "dx", mesh, subdomain_data=subdomains, physical_groups=physical_groups
@@ -370,12 +365,7 @@ def regular_box_mesh(
         z_min.mark(boundaries, 5)
         z_max.mark(boundaries, 6)
 
-    mesh_utils._update_ghost_subdomains(  # pylint: disable=protected-access
-        mesh, subdomains
-    )
-    mesh_utils._tag_internal_facets(  # pylint: disable=protected-access
-        mesh, subdomains, boundaries, physical_groups
-    )
+    mesh_utils.update_mesh_tags(mesh, subdomains, boundaries, physical_groups)
 
     dx = measure.NamedMeasure(
         "dx", mesh, subdomain_data=subdomains, physical_groups=physical_groups

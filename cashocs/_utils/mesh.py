@@ -232,3 +232,59 @@ def _tag_internal_facets(
     boundaries.array()[facet_ids] = boundary_tags_ds
 
     physical_groups["ds"].update(internal_tags)
+
+
+def _update_ghost_boundaries(
+    mesh: fenics.Mesh, boundaries: fenics.MeshFunction
+) -> None:
+    facet_dim = mesh.topology().dim() - 1
+    dgt_space = fenics.FunctionSpace(mesh, "DGT", 0)
+    dofmap = dgt_space.dofmap()
+    n_facets = mesh.num_entities(facet_dim)
+    facet_to_dof = np.fromiter(
+        (dofmap.entity_dofs(mesh, facet_dim, [facet])[0] for facet in range(n_facets)),
+        dtype=np.int64,
+        count=n_facets,
+    )
+
+    boundary_func = fenics.Function(dgt_space)
+    vec = fenics.as_backend_type(boundary_func.vector()).vec()
+    n_owned = boundary_func.vector().local_size()
+    boundary_array = boundaries.array()
+
+    boundary_func.vector().set_local(boundary_array[:n_owned])
+    boundary_func.vector().apply("")
+
+    vec.ghostUpdate(addv=PETSc.InsertMode.INSERT, mode=PETSc.ScatterMode.FORWARD)
+
+    with vec.localForm() as local:
+        boundary_array[:] = np.asarray(local.array_r[facet_to_dof])
+
+
+def update_mesh_tags(
+    mesh: fenics.Mesh,
+    subdomains: fenics.MeshFunction,
+    boundaries: fenics.MeshFunction,
+    physical_groups: dict,
+) -> None:
+    """Updates the mesh for ghost values and internal facets.
+
+    This function is always called when cashocs creates or reads in a mesh. It does the
+    following:
+
+    - Updates the mesh tags for ghosted subdomains and boundaries
+    - Tags internal facets with a new integer tag and string `internal_NAME`, where
+      `NAME` is the name of the corresponding subdomain.
+
+    This way, all cell and facet entities are tagged and synchronized.
+
+    Args:
+        mesh: The computational mesh.
+        subdomains: The mesh function with the cell indices.
+        boundaries: The mesh function with the facet indices.
+        physical_groups: The dictionary of physical groups (strings to integer).
+
+    """
+    _update_ghost_subdomains(mesh, subdomains)
+    _tag_internal_facets(mesh, subdomains, boundaries, physical_groups)
+    _update_ghost_boundaries(mesh, boundaries)

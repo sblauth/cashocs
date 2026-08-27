@@ -40,9 +40,8 @@ from cashocs import _utils
 from cashocs import log
 from cashocs import mpi
 from cashocs._utils.mesh import _get_mesh_stats
-from cashocs._utils.mesh import _tag_internal_facets
-from cashocs._utils.mesh import _update_ghost_subdomains
 from cashocs._utils.mesh import CashocsMesh
+from cashocs._utils.mesh import update_mesh_tags
 from cashocs.geometry.measure import NamedMeasure
 
 if TYPE_CHECKING:
@@ -275,8 +274,7 @@ def _import_xdmf_mesh(
     subdomains = fenics.MeshFunction("size_t", mesh, subdomains_mvc)
     boundaries = fenics.MeshFunction("size_t", mesh, boundaries_mvc)
 
-    _update_ghost_subdomains(mesh, subdomains)
-    _tag_internal_facets(mesh, subdomains, boundaries, physical_groups)
+    update_mesh_tags(mesh, subdomains, boundaries, physical_groups)
 
     dx = NamedMeasure(
         "dx", domain=mesh, subdomain_data=subdomains, physical_groups=physical_groups
