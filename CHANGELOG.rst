@@ -15,7 +15,7 @@ of the maintenance releases, please take a look at
 
 * Meshes that are imported or created with cashocs now also mark internal facets, which belong to subdomains, correctly and assign a marker and tag to them. These are prefixed with `internal_` to distinguish them from other tags.
 
-* Add keyword argument :py:`variable_bounds` to :py:func:`cashocs.snes_solve` for solving variational inqualities with SNES. If a variables on the lower bound are inactive, use :py:`PETSc.NINFINITY` (for negative infinity) and :py:`PETSc.INFINITY` (for positive infinity) for variables that are inactive at the upper bound.
+* Add keyword argument `variable_bounds` to :py:func:`cashocs.snes_solve` for solving variational inqualities with SNES. If a variables on the lower bound are inactive, use `PETSc.NINFINITY` (for negative infinity) and `PETSc.INFINITY` (for positive infinity) for variables that are inactive at the upper bound.
 
 * New configuration file parameters:
 
