@@ -43,6 +43,7 @@ cashocs is a finite element software for the automated solution of shape optimiz
       +++ 
 
       .. button-ref:: about/nutshell
+         :ref-type: doc
          :expand:
          :color: secondary
          :click-parent:
@@ -57,6 +58,7 @@ cashocs is a finite element software for the automated solution of shape optimiz
       +++
 
       .. button-ref:: user/index
+         :ref-type: doc
          :expand:
          :color: secondary
          :click-parent:
@@ -71,6 +73,7 @@ cashocs is a finite element software for the automated solution of shape optimiz
       +++
 
       .. button-ref:: api/index
+         :ref-type: doc
          :expand:
          :color: secondary
          :click-parent:
@@ -85,6 +88,7 @@ cashocs is a finite element software for the automated solution of shape optimiz
       +++
 
       .. button-ref:: development/index
+         :ref-type: doc
          :expand:
          :color: secondary
          :click-parent:
