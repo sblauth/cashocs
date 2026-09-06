@@ -59,14 +59,14 @@ jobs:
 
     - name: Check if release is a pre-release
       id: check_version
-      uses: nowsprinting/check-version-format-action@2946b47fb3590f88fc80b3579e72cd15c0fa90cb # v5.0.4
+      uses: nowsprinting/check-version-format-action@cb3beb7706ccf9e542ff67c752b61b21cfff5068 # v5.0.5
       with:
         prefix: 'v'
 
 
     - name: Create Github release
       id: create_release
-      uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
+      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
       with:
         name: cashocs ${{ steps.tag_name.outputs.TAG_PREFIX }}
         generate_release_notes: ${{ steps.check_version.outputs.is_stable == 'true' }}
