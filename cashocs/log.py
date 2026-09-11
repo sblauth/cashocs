@@ -72,7 +72,7 @@ class Logger:
         self._log.addHandler(h)
         self._log.setLevel(TRACE)
 
-        self._logfiles: dict[str, logging.FileHandler] = {}
+        self._logfiles: dict[str, logging.Handler] = {}
         self._indent_level = 0
         self._use_timestamp = True
 
@@ -290,8 +290,12 @@ class Logger:
 
     def add_logfile(
         self, filename: str, mode: str = "a", level: int = logging.DEBUG
-    ) -> logging.FileHandler:
+    ) -> logging.Handler:
         """Adds a file handler to the logger.
+
+        In an MPI run, only rank zero of the logger's communicator opens the file.
+        Other ranks receive a no-op handler so that they do not truncate or modify
+        the shared logfile.
 
         Args:
             filename (str): The path to the file which is used for logging.
@@ -301,13 +305,16 @@ class Logger:
                 Defaults to logging.DEBUG.
 
         Returns:
-            The file handler for the log file.
+            The file handler on rank zero, or a no-op handler on other ranks.
 
         """
         if filename in self._logfiles:
             self.warning(f"Adding logfile {filename} multiple times.")
             return self._logfiles[filename]
-        h = logging.FileHandler(filename, mode)
+        if self.comm.rank == 0:
+            h: logging.Handler = logging.FileHandler(filename, mode)
+        else:
+            h = logging.NullHandler()
         h.setLevel(level)
         self._log.addHandler(h)
         self._logfiles[filename] = h
