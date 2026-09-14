@@ -17,6 +17,8 @@ of the maintenance releases, please take a look at
 
 * Add keyword argument `variable_bounds` to :py:func:`cashocs.snes_solve` for solving variational inqualities with SNES. If a variables on the lower bound are inactive, use `PETSc.NINFINITY` (for negative infinity) and `PETSc.INFINITY` (for positive infinity) for variables that are inactive at the upper bound.
 
+* Use typer for the CLI of cashocs. This comes with an additional dependency, but easier to use and maintain CLI functionality
+
 * New configuration file parameters:
 
   * Section LineSearch
