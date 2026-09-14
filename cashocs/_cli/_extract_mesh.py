@@ -21,79 +21,48 @@
 
 from __future__ import annotations
 
-import argparse
+import typer
 
 from cashocs.io import mesh as iomesh
 
+app = typer.Typer(add_completion=False)
 
-def _generate_parser() -> argparse.ArgumentParser:
-    """Returns a parser for command line arguments."""
-    parser = argparse.ArgumentParser(
-        prog="cashocs-extract_mesh",
-        description="Extract a Gmsh file from an XDMF file.",
-    )
-    parser.add_argument(
-        "xdmffile", type=str, help="The XDMF file which holds the mesh."
-    )
-    parser.add_argument(
+
+@app.command()
+def extract_mesh(
+    xdmffile: str = typer.Argument(..., help="The XDMF file which holds the mesh."),
+    iteration: int = typer.Option(
+        0,
         "-i",
         "--iteration",
-        type=int,
         help="Iteration of interest in the XDMF file.",
-        default=0,
-        metavar="iteration",
-    )
-    parser.add_argument(
+    ),
+    outfile: str | None = typer.Option(
+        None,
         "-o",
         "--outfile",
-        type=str,
         help="Path to the output Gmsh file. If this is not specified, the file is "
         "written to the same directory as the XDMF file.",
-        default=None,
-        metavar="outfile",
-    )
-    parser.add_argument(
+    ),
+    gmsh_file_original: str | None = typer.Option(
+        None,
         "-g",
         "--gmsh_file_original",
-        type=str,
         help="Path to the original Gmsh file used to define the mesh.",
-        default=None,
-        metavar="gmsh_file_original",
-    )
-    parser.add_argument(
-        "-q",
-        "--quiet",
-        action="store_true",
-        help="Setting this disables verbose output.",
-    )
-
-    return parser
-
-
-def extract_mesh(argv: list[str] | None = None) -> None:
-    """Wrapper for calling :py:func:`cashocs.io.extract_mesh` from command line.
-
-    Args:
-        argv: The command line arguments.
-
-    """
-    parser = _generate_parser()
-    args = parser.parse_args(argv)
-
-    xdmffile = args.xdmffile
-    iteration = args.iteration
-    outputfile = args.outfile
-    gmsh_file_original = args.gmsh_file_original
-    quiet = args.quiet
-
+    ),
+    quiet: bool = typer.Option(
+        False, "-q", "--quiet", help="Setting this disables verbose output."
+    ),
+) -> None:
+    """Extract a Gmsh file from an XDMF file."""
     iomesh.extract_mesh_from_xdmf(
         xdmffile,
         iteration=iteration,
-        outputfile=outputfile,
+        outputfile=outfile,
         original_gmsh_file=gmsh_file_original,
         quiet=quiet,
     )
 
 
 if __name__ == "__main__":
-    extract_mesh()
+    app()

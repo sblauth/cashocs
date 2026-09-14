@@ -49,6 +49,7 @@ dependencies = [
     "scipy >= 1.10.0",
     "typing_extensions",
     "matplotlib",
+    "typer",
 ]
 
 [project.urls]
@@ -58,8 +59,8 @@ Tutorial = "https://cashocs.readthedocs.io/en/stable/user"
 Tracker = "https://github.com/sblauth/cashocs/issues"
 
 [project.scripts]
-cashocs-convert = "cashocs._cli:convert"
-cashocs-extract_mesh = "cashocs._cli:extract_mesh"
+cashocs-convert = "cashocs._cli._convert:app"
+cashocs-extract_mesh = "cashocs._cli._extract_mesh:app"
 
 [project.optional-dependencies]
 tests = [
@@ -73,7 +74,7 @@ tests = [
 docs = [
 	"sphinx",
 	"pydata-sphinx-theme",
-	"sphinx-argparse",
+    "sphinxcontrib-typer",
 	"sphinx-copybutton",
 	"sphinx-design",
     "jupytext",
@@ -135,6 +136,7 @@ module = [
     "matplotlib.*",
     "scipy.*",
     "cashocs_extensions.*",
+    "typer.*",
 ]
 ignore_missing_imports = true
 

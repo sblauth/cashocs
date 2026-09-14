@@ -15,79 +15,82 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-import ast
+from collections.abc import Iterator
 import importlib
 import pathlib
-import shutil
-import sys
-from unittest import mock
+import tomllib
+
+import typer
 
 
-def import_from_path(module_name, file_path):
-    with mock.patch("sys.modules"):
-        spec = importlib.util.spec_from_file_location(module_name, file_path)
-        module = importlib.util.module_from_spec(spec)
-        sys.modules[module_name] = module
-        spec.loader.exec_module(module)
-    return module
+def _entry_point_names(project_root: pathlib.Path) -> dict[str, str]:
+    """Return packaged command names keyed by their entry point targets."""
+    project_file = project_root / "pyproject.toml"
+    project = tomllib.loads(project_file.read_text())
+    scripts = project.get("project", {}).get("scripts", {})
+
+    return {
+        target: command_name
+        for command_name, target in scripts.items()
+        if target.startswith("cashocs._cli:")
+    }
 
 
-def list_functions_with_return_types(file_path):
-    with open(file_path, "r") as file:
-        node = ast.parse(file.read(), filename=file_path)
+def discover_cli_apps(
+    cli_dir: pathlib.Path, project_root: pathlib.Path
+) -> Iterator[tuple[str, str, str]]:
+    """Yield Typer apps discovered in modules below ``cli_dir``."""
+    entry_point_names = _entry_point_names(project_root)
+    package_root = project_root / "cashocs"
 
-    functions = []
-    for item in node.body:
-        if isinstance(item, ast.FunctionDef):
-            return_type = ast.unparse(item.returns) if item.returns else None
-            functions.append((item.name, return_type))
+    for cli_file in sorted(cli_dir.rglob("*.py")):
+        if cli_file.name == "__init__.py":
+            continue
 
-    return functions
+        module_name = ".".join(
+            ("cashocs", *cli_file.relative_to(package_root).with_suffix("").parts)
+        )
+        module = importlib.import_module(module_name)
+        app = getattr(module, "app", None)
+        if not isinstance(app, typer.Typer):
+            continue
+
+        command_target = f"cashocs._cli:{cli_file.stem.removeprefix('_')}"
+        command_name = entry_point_names.get(command_target, cli_file.stem)
+        yield module_name, "app", command_name
 
 
-def write_rst_file(file: str, func: str, output_dir: pathlib.Path):
-    rst_path = output_dir / (
-        file.lstrip("../").replace("/", ".").removesuffix(".py") + ".rst"
-    )
-    module = file.lstrip("../").replace("/", ".").removesuffix(".py")
-    mod = import_from_path("test", file)
-    parser_function = getattr(mod, func)
-    parser = parser_function()
+def write_rst_file(
+    module: str, app_name: str, command_name: str, output_dir: pathlib.Path
+) -> None:
+    """Write the generated Sphinx page for one CLI app."""
+    rst_path = output_dir / f"{module}.rst"
+    file_contents = f"""{command_name}
+{"#" * len(command_name)}
 
-    name = parser.prog
+.. typer:: {module}:{app_name}
+   :prog: {command_name}
+   :width: 70
+   :preferred: svg
+   :make-sections:
+   :show-nested:
 
-    fileconts = f"""{name}
-{"#" * len(name)}
-
-.. argparse::
-   :module: {module}
-   :func: {func}
-   :prog: {name}
 """
-    with open(rst_path, "w") as file:
-        file.write(fileconts)
+    rst_path.write_text(file_contents)
 
 
-def process():
-    cli_dir = pathlib.Path("../../cashocs/_cli")
-
-    generated_dir = pathlib.Path("./cli/generated")
-    shutil.rmtree(generated_dir, ignore_errors=True)
+def process() -> None:
+    """Discover CLI apps and regenerate their Sphinx pages."""
+    docs_source = pathlib.Path(__file__).resolve().parent
+    project_root = docs_source.parents[1]
+    cli_dir = project_root / "cashocs" / "_cli"
+    generated_dir = docs_source / "cli" / "generated"
     generated_dir.mkdir(parents=True, exist_ok=True)
+    for generated_file in generated_dir.glob("*.rst"):
+        generated_file.unlink()
 
-    argparse_functions = []
-    for pyfile in cli_dir.glob("**/*.py"):
-        functions = list_functions_with_return_types(pyfile)
-
-        for fun in functions:
-            if fun[1] == "argparse.ArgumentParser":
-                argparse_functions.append((str(pyfile), fun[0]))
-
-    for fun in argparse_functions:
-        file = fun[0]
-        function = fun[1]
-        write_rst_file(file, function, generated_dir)
-        pass
+    for module, app_name, command_name in discover_cli_apps(cli_dir, project_root):
+        write_rst_file(module, app_name, command_name, generated_dir)
 
 
 if __name__ == "__main__":

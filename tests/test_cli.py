@@ -24,7 +24,6 @@ import numpy as np
 import pytest
 
 import cashocs
-import cashocs._cli
 from cashocs.io.mesh import gather_coordinates
 
 
@@ -213,19 +212,33 @@ def test_convert3D(dir_path):
 
 def test_wrong_formats(dir_path):
     if MPI.COMM_WORLD.rank == 0:
-        with pytest.raises(Exception) as e_info:
-            cashocs._cli.convert(
-                [f"{dir_path}/mesh/mesh.mesh", "-o", f"{dir_path}/mesh/mesh.xdmf"]
-            )
-        assert "due to wrong format." in str(e_info.value)
+        result = subprocess.run(
+            [
+                "cashocs-convert",
+                f"{dir_path}/mesh/mesh.mesh",
+                "-o",
+                f"{dir_path}/mesh/mesh.xdmf",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode != 0
+        assert "due to wrong format." in result.stderr
     MPI.COMM_WORLD.barrier()
 
     if MPI.COMM_WORLD.rank == 0:
-        with pytest.raises(Exception) as e_info:
-            cashocs._cli.convert(
-                [f"{dir_path}/mesh/mesh.msh", "-o", f"{dir_path}/mesh/mesh.test"]
-            )
-        assert "due to wrong format." in str(e_info.value)
+        result = subprocess.run(
+            [
+                "cashocs-convert",
+                f"{dir_path}/mesh/mesh.msh",
+                "-o",
+                f"{dir_path}/mesh/mesh.test",
+            ],
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode != 0
+        assert "due to wrong format." in result.stderr
     MPI.COMM_WORLD.barrier()
 
 
