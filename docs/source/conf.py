@@ -47,7 +47,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
-    "sphinxarg.ext",
+    "sphinxcontrib.typer",
     "sphinx_copybutton",
     "sphinx.ext.viewcode",
     "sphinx_design",
