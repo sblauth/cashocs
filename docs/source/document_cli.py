@@ -32,7 +32,7 @@ def _entry_point_names(project_root: pathlib.Path) -> dict[str, str]:
     return {
         target: command_name
         for command_name, target in scripts.items()
-        if target.startswith("cashocs._cli:")
+        if target.startswith("cashocs._cli.")
     }
 
 
@@ -55,8 +55,7 @@ def discover_cli_apps(
         if not isinstance(app, typer.Typer):
             continue
 
-        command_target = f"cashocs._cli:{cli_file.stem.removeprefix('_')}"
-        command_name = entry_point_names.get(command_target, cli_file.stem)
+        command_name = entry_point_names.get(f"{module_name}:app", cli_file.stem)
         yield module_name, "app", command_name
 
 
