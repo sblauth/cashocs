@@ -10,6 +10,7 @@ RUN conda create -y -n env \
       coverage \
       mpich \
       scipy \
+      typer \
       python=3.14 && \
    conda clean --all --yes
 
