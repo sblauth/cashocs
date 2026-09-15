@@ -15,12 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+"""Generate Sphinx pages for the package's Typer command line applications."""
+
+import ast
 from collections.abc import Iterator
-import importlib
 import pathlib
 import tomllib
-
-import typer
 
 
 def _entry_point_names(project_root: pathlib.Path) -> dict[str, str]:
@@ -34,6 +34,25 @@ def _entry_point_names(project_root: pathlib.Path) -> dict[str, str]:
         for command_name, target in scripts.items()
         if target.startswith("cashocs._cli.")
     }
+
+
+def _typer_app_names(cli_file: pathlib.Path) -> Iterator[str]:
+    """Yield Typer app variable names without importing the CLI module."""
+    tree = ast.parse(cli_file.read_text(), filename=str(cli_file))
+    for node in tree.body:
+        if not isinstance(node, ast.Assign):
+            continue
+        if not any(
+            isinstance(target, ast.Name) and target.id == "app"
+            for target in node.targets
+        ):
+            continue
+        if (
+            isinstance(node.value, ast.Call)
+            and isinstance(node.value.func, ast.Attribute)
+            and node.value.func.attr == "Typer"
+        ):
+            yield "app"
 
 
 def discover_cli_apps(
@@ -50,13 +69,9 @@ def discover_cli_apps(
         module_name = ".".join(
             ("cashocs", *cli_file.relative_to(package_root).with_suffix("").parts)
         )
-        module = importlib.import_module(module_name)
-        app = getattr(module, "app", None)
-        if not isinstance(app, typer.Typer):
-            continue
-
         command_name = entry_point_names.get(f"{module_name}:app", cli_file.stem)
-        yield module_name, "app", command_name
+        for app_name in _typer_app_names(cli_file):
+            yield module_name, app_name, command_name
 
 
 def write_rst_file(

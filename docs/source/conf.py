@@ -21,9 +21,13 @@ sys.path.insert(0, os.path.abspath("."))
 import document_cli
 import document_demos
 
-generated_dir = pathlib.Path("./api/generated")
-shutil.rmtree(generated_dir, ignore_errors=True)
-generated_dir.mkdir(parents=True, exist_ok=True)
+generated_api_dir = pathlib.Path("./api/generated")
+shutil.rmtree(generated_api_dir, ignore_errors=True)
+generated_api_dir.mkdir(parents=True, exist_ok=True)
+
+generated_cli_dir = pathlib.Path("./cli/generated")
+shutil.rmtree(generated_cli_dir, ignore_errors=True)
+generated_cli_dir.mkdir(parents=True, exist_ok=True)
 
 document_cli.process()
 document_demos.process()

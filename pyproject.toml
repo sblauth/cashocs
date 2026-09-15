@@ -60,7 +60,7 @@ Tracker = "https://github.com/sblauth/cashocs/issues"
 
 [project.scripts]
 cashocs-convert = "cashocs._cli._convert:app"
-cashocs-extract_mesh = "cashocs._cli._extract_mesh:app"
+cashocs-extract-mesh = "cashocs._cli._extract_mesh:app"
 
 [project.optional-dependencies]
 tests = [
