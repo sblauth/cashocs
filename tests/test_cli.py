@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+import os
 import pathlib
 import subprocess
 
@@ -211,6 +212,12 @@ def test_convert3D(dir_path):
 
 
 def test_wrong_formats(dir_path):
+    subprocess_env = {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith(("OMPI_", "PMI_", "PMIX_", "MPI_"))
+    }
+    result = None
     if MPI.COMM_WORLD.rank == 0:
         result = subprocess.run(
             [
@@ -221,11 +228,14 @@ def test_wrong_formats(dir_path):
             ],
             capture_output=True,
             text=True,
+            env=subprocess_env,
         )
+    MPI.COMM_WORLD.barrier()
+    if MPI.COMM_WORLD.rank == 0:
         assert result.returncode != 0
         assert "due to wrong format." in result.stderr
-    MPI.COMM_WORLD.barrier()
 
+    result = None
     if MPI.COMM_WORLD.rank == 0:
         result = subprocess.run(
             [
@@ -236,10 +246,12 @@ def test_wrong_formats(dir_path):
             ],
             capture_output=True,
             text=True,
+            env=subprocess_env,
         )
+    MPI.COMM_WORLD.barrier()
+    if MPI.COMM_WORLD.rank == 0:
         assert result.returncode != 0
         assert "due to wrong format." in result.stderr
-    MPI.COMM_WORLD.barrier()
 
 
 @pytest.mark.skipif(
@@ -252,7 +264,7 @@ def test_extract_mesh_cli(dir_path):
 
     subprocess.run(
         [
-            "cashocs-extract_mesh",
+            "cashocs-extract-mesh",
             f"{dir_path}/xdmf_state/state_0.xdmf",
             "-i",
             "3",
