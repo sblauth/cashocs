@@ -75,8 +75,8 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.adjoints = self.db.function_db.adjoints
         self.bcs_list_ad = self.adjoint_form_handler.bcs_list_ad
 
-        self.picard_rtol: float = self.config.getfloat("StateSystem", "picard_rtol")
-        self.picard_atol: float = self.config.getfloat("StateSystem", "picard_atol")
+        self.picard_rtol: float = self.config["StateSystem"]["picard_rtol"]
+        self.picard_atol: float = self.config["StateSystem"]["picard_atol"]
         self.picard_max_iter: int = self.config["StateSystem"]["picard_iter"]
         self.picard_verbose: bool = self.config["StateSystem"]["picard_verbose"]
 

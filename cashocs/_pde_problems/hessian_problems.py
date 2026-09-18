@@ -72,8 +72,8 @@ class HessianProblem:
 
         self.inner_newton = self.config.get("AlgoTNM", "inner_newton")
         self.max_it_inner_newton = self.config["AlgoTNM"]["max_it_inner_newton"]
-        self.inner_newton_rtol = self.config.getfloat("AlgoTNM", "inner_newton_rtol")
-        self.inner_newton_atol = self.config.getfloat("AlgoTNM", "inner_newton_atol")
+        self.inner_newton_rtol = self.config["AlgoTNM"]["inner_newton_rtol"]
+        self.inner_newton_atol = self.config["AlgoTNM"]["inner_newton_atol"]
 
         self.test_directions = self.form_handler.hessian_form_handler.test_directions
 
@@ -122,8 +122,8 @@ class HessianProblem:
 
         self.state_dim = self.db.parameter_db.state_dim
 
-        self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
-        self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
+        self.picard_rtol = self.config["StateSystem"]["picard_rtol"]
+        self.picard_atol = self.config["StateSystem"]["picard_atol"]
         self.picard_max_iter = self.config["StateSystem"]["picard_iter"]
         self.picard_verbose = self.config["StateSystem"]["picard_verbose"]
 

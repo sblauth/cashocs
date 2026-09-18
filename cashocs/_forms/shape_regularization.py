@@ -140,8 +140,8 @@ class VolumeRegularization(ShapeRegularizationTerm):
         """
         super().__init__(db)
 
-        self.mu = self.config.getfloat("Regularization", "factor_volume")
-        self.target_volume = self.config.getfloat("Regularization", "target_volume")
+        self.mu = self.config["Regularization"]["factor_volume"]
+        self.target_volume = self.config["Regularization"]["target_volume"]
         if self.config["Regularization"]["use_initial_volume"]:
             self.target_volume = self._compute_volume()
 
@@ -234,8 +234,8 @@ class SurfaceRegularization(ShapeRegularizationTerm):
         super().__init__(db)
 
         self.ds = ufl.Measure("ds", self.mesh)
-        self.mu = self.config.getfloat("Regularization", "factor_surface")
-        self.target_surface = self.config.getfloat("Regularization", "target_surface")
+        self.mu = self.config["Regularization"]["factor_surface"]
+        self.target_surface = self.config["Regularization"]["target_surface"]
         if self.config["Regularization"]["use_initial_surface"]:
             self.target_surface = self._compute_surface()
 
@@ -330,7 +330,7 @@ class BarycenterRegularization(ShapeRegularizationTerm):
         self.geometric_dimension = db.geometry_db.mesh.geometric_dimension()
         self.spatial_coordinate = fenics.SpatialCoordinate(self.mesh)
 
-        self.mu = self.config.getfloat("Regularization", "factor_barycenter")
+        self.mu = self.config["Regularization"]["factor_barycenter"]
         self.target_barycenter_list = self.config.getlist(
             "Regularization", "target_barycenter"
         )
@@ -528,7 +528,7 @@ class CurvatureRegularization(ShapeRegularizationTerm):
         self.a_curvature_matrix = fenics.PETScMatrix(self.db.geometry_db.mpi_comm)
         self.b_curvature = fenics.PETScVector(self.db.geometry_db.mpi_comm)
 
-        self.mu = self.config.getfloat("Regularization", "factor_curvature")
+        self.mu = self.config["Regularization"]["factor_curvature"]
         self.kappa_curvature = fenics.Function(self.db.function_db.control_spaces[0])
         n = fenics.FacetNormal(self.mesh)
         x = fenics.SpatialCoordinate(self.mesh)

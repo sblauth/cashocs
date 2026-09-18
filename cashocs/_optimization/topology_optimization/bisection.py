@@ -101,9 +101,7 @@ class LevelSetVolumeProjector:
             self.max_iter_bisect = db.config["TopologyOptimization"][
                 "max_iter_bisection"
             ]
-            self.tol_bisect = db.config.getfloat(
-                "TopologyOptimization", "tol_bisection"
-            )
+            self.tol_bisect = db.config["TopologyOptimization"]["tol_bisection"]
 
     def evaluate(self, iterate: float, target: float) -> float:
         """Computes the volume of a shape that is given by the level-set function.
