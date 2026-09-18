@@ -55,15 +55,15 @@ def test_verification_remeshing():
 
     def mesh_parametrization(mesh_file):
         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-        config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
-        config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
+        config["Mesh"]["gmsh_file"] = dir_path + "/mesh/remesh/mesh.msh"
+        config["Mesh"]["geo_file"] = dir_path + "/mesh/remesh/mesh.geo"
 
-        config.set("Output", "save_results", "False")
-        config.set("Output", "save_txt", "False")
-        config.set("Output", "save_state", "False")
-        config.set("Output", "save_adjoint", "False")
-        config.set("Output", "save_gradient", "False")
-        config.set("Output", "save_mesh", "False")
+        config["Output"]["save_results"] = False
+        config["Output"]["save_txt"] = False
+        config["Output"]["save_state"] = False
+        config["Output"]["save_adjoint"] = False
+        config["Output"]["save_gradient"] = False
+        config["Output"]["save_mesh"] = False
 
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
 
@@ -110,10 +110,10 @@ def test_remeshing():
 
     def mesh_parametrization(mesh_file):
         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-        config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
-        config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
-        config.set("Output", "result_dir", dir_path + "/temp/")
-        config.set("Debug", "remeshing", "True")
+        config["Mesh"]["gmsh_file"] = dir_path + "/mesh/remesh/mesh.msh"
+        config["Mesh"]["geo_file"] = dir_path + "/mesh/remesh/mesh.geo"
+        config["Output"]["result_dir"] = dir_path + "/temp/"
+        config["Debug"]["remeshing"] = True
 
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
 
@@ -174,14 +174,14 @@ def test_remeshing_with_quantile_quality():
 
     def mesh_parametrization(mesh_file):
         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-        config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
-        config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
-        config.set("Output", "result_dir", dir_path + "/temp/")
-        config.set("MeshQuality", "type", "quantile")
-        config.set("MeshQuality", "quantile", "0.05")
-        config.set("MeshQuality", "tol_lower", "0.4")
-        config.set("MeshQuality", "tol_upper", "0.45")
-        config.set("Debug", "remeshing", "True")
+        config["Mesh"]["gmsh_file"] = dir_path + "/mesh/remesh/mesh.msh"
+        config["Mesh"]["geo_file"] = dir_path + "/mesh/remesh/mesh.geo"
+        config["Output"]["result_dir"] = dir_path + "/temp/"
+        config["MeshQuality"]["type"] = "quantile"
+        config["MeshQuality"]["quantile"] = 0.05
+        config["MeshQuality"]["tol_lower"] = 0.4
+        config["MeshQuality"]["tol_upper"] = 0.45
+        config["Debug"]["remeshing"] = True
 
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
 
@@ -242,9 +242,9 @@ def test_remesh_scaling():
         config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
 
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
-        config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
-        config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
-        config.set("Output", "result_dir", dir_path + "/temp/")
+        config["Mesh"]["gmsh_file"] = dir_path + "/mesh/remesh/mesh.msh"
+        config["Mesh"]["geo_file"] = dir_path + "/mesh/remesh/mesh.geo"
+        config["Output"]["result_dir"] = dir_path + "/temp/"
 
         V = FunctionSpace(mesh, "CG", 1)
         u = Function(V)
@@ -281,16 +281,16 @@ def test_remeshing_disabled():
     mesh_file = f"{dir_path}/mesh/remesh/mesh.xdmf"
 
     config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-    config.set("Mesh", "gmsh_file", dir_path + "/mesh/remesh/mesh.msh")
-    config.set("Mesh", "geo_file", dir_path + "/mesh/remesh/mesh.geo")
-    config.set("Mesh", "remesh", "False")
-    config.set("Output", "save_state", "False")
-    config.set("Output", "save_adjoint", "False")
-    config.set("Output", "save_gradient", "False")
-    config.set("Output", "save_mesh", "False")
-    config.set("Output", "save_results", "False")
-    config.set("Output", "save_txt", "False")
-    config.set("OptimizationRoutine", "soft_exit", "False")
+    config["Mesh"]["gmsh_file"] = dir_path + "/mesh/remesh/mesh.msh"
+    config["Mesh"]["geo_file"] = dir_path + "/mesh/remesh/mesh.geo"
+    config["Mesh"]["remesh"] = False
+    config["Output"]["save_state"] = False
+    config["Output"]["save_adjoint"] = False
+    config["Output"]["save_gradient"] = False
+    config["Output"]["save_mesh"] = False
+    config["Output"]["save_results"] = False
+    config["Output"]["save_txt"] = False
+    config["OptimizationRoutine"]["soft_exit"] = False
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
 

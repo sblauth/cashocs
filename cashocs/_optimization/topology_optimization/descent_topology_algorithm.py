@@ -65,15 +65,15 @@ class DescentTopologyAlgorithm(
         self.algorithm = algorithm
 
         self.iteration = 0
-        self._cashocs_problem.config.set("Output", "verbose", "False")
-        self._cashocs_problem.config.set("Output", "save_txt", "False")
-        self._cashocs_problem.config.set("Output", "save_results", "False")
-        self._cashocs_problem.config.set("Output", "save_state", "False")
-        self._cashocs_problem.config.set("Output", "save_adjoint", "False")
-        self._cashocs_problem.config.set("Output", "save_gradient", "False")
-        self._cashocs_problem.config.set("OptimizationRoutine", "soft_exit", "True")
-        self._cashocs_problem.config.set("OptimizationRoutine", "rtol", "0.0")
-        self._cashocs_problem.config.set("OptimizationRoutine", "atol", "0.0")
+        self._cashocs_problem.config["Output"]["verbose"] = False
+        self._cashocs_problem.config["Output"]["save_txt"] = False
+        self._cashocs_problem.config["Output"]["save_results"] = False
+        self._cashocs_problem.config["Output"]["save_state"] = False
+        self._cashocs_problem.config["Output"]["save_adjoint"] = False
+        self._cashocs_problem.config["Output"]["save_gradient"] = False
+        self._cashocs_problem.config["OptimizationRoutine"]["soft_exit"] = True
+        self._cashocs_problem.config["OptimizationRoutine"]["rtol"] = 0.0
+        self._cashocs_problem.config["OptimizationRoutine"]["atol"] = 0.0
 
         self._cashocs_problem._silent = True
         self._cashocs_problem.output_manager._silent = True

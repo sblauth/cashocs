@@ -152,8 +152,8 @@ def test_control_gd(ocp):
 @pytest.fixture
 def set_cg_tolerances(config_ocp):
     cg_method = config_ocp.get("AlgoCG", "cg_method")
-    iterations = {"FR": "20", "PR": "25", "HS": "27", "DY": "9", "HZ": "27"}
-    config_ocp.set("OptimizationRoutine", "max_iter", iterations[cg_method])
+    iterations = {"FR": 20, "PR": 25, "HS": 27, "DY": 9, "HZ": 27}
+    config_ocp["OptimizationRoutine"]["max_iter"] = iterations[cg_method]
 
 
 def test_conjugate_gradient_solver(setup_cg_method, set_cg_tolerances, ocp):
@@ -164,17 +164,17 @@ def test_conjugate_gradient_solver(setup_cg_method, set_cg_tolerances, ocp):
 
 
 def test_control_cg_restart_periodic(ocp):
-    ocp.config.set("AlgoCG", "cg_method", "DY")
-    ocp.config.set("AlgoCG", "cg_periodic_restart", "True")
-    ocp.config.set("AlgoCG", "cg_periodic_its", "5")
+    ocp.config["AlgoCG"]["cg_method"] = "DY"
+    ocp.config["AlgoCG"]["cg_periodic_restart"] = True
+    ocp.config["AlgoCG"]["cg_periodic_its"] = 5
     ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=10)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
 def test_control_cg_restart_relative(ocp):
-    ocp.config.set("AlgoCG", "cg_method", "DY")
-    ocp.config.set("AlgoCG", "cg_relative_restart", "True")
-    ocp.config.set("AlgoCG", "cg_restart_tol", "1.0")
+    ocp.config["AlgoCG"]["cg_method"] = "DY"
+    ocp.config["AlgoCG"]["cg_relative_restart"] = True
+    ocp.config["AlgoCG"]["cg_restart_tol"] = 1.0
     ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=24)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
@@ -185,7 +185,7 @@ def test_control_bfgs(ocp):
 
 
 def test_control_bfgs_restarted(ocp):
-    ocp.config.set("AlgoLBFGS", "bfgs_periodic_restart", "2")
+    ocp.config["AlgoLBFGS"]["bfgs_periodic_restart"] = 2
     ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=17)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
@@ -205,8 +205,8 @@ def test_control_gd_cc(ocp_cc, cc):
 @pytest.fixture
 def set_cg_tolerances_constrained(config_ocp):
     cg_method = config_ocp.get("AlgoCG", "cg_method")
-    iterations = {"FR": "47", "PR": "24", "HS": "30", "DY": "9", "HZ": "37"}
-    config_ocp.set("OptimizationRoutine", "max_iter", iterations[cg_method])
+    iterations = {"FR": 47, "PR": 24, "HS": 30, "DY": 9, "HZ": 37}
+    config_ocp["OptimizationRoutine"]["max_iter"] = iterations[cg_method]
 
 
 def test_conjugate_gradient_solver_constrained(
@@ -248,8 +248,8 @@ def test_custom_supply_control(CG1, geometry, y, u, p, y_d, rng, bcs, ocp):
 
 
 def test_scalar_norm_optimization(rng, config_ocp, y, geometry, F, bcs, u, p):
-    config_ocp.set("OptimizationRoutine", "algorithm", "bfgs")
-    config_ocp.set("OptimizationRoutine", "rtol", "1e-3")
+    config_ocp["OptimizationRoutine"]["algorithm"] = "bfgs"
+    config_ocp["OptimizationRoutine"]["rtol"] = 1e-3
 
     u.vector().vec().set(1e-3)
     u.vector().apply("")
@@ -257,7 +257,7 @@ def test_scalar_norm_optimization(rng, config_ocp, y, geometry, F, bcs, u, p):
     norm_y = y * y * geometry.dx
     tracking_goal = rng.uniform(0.25, 0.75)
     J = cashocs.ScalarTrackingFunctional(norm_y, tracking_goal)
-    config_ocp.set("LineSearch", "initial_stepsize", "4e3")
+    config_ocp["LineSearch"]["initial_stepsize"] = 4e3
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     ocp.solve(algorithm="bfgs", rtol=1e-3)
 
@@ -274,7 +274,7 @@ def test_scalar_tracking_weight(rng, geometry, config_ocp, F, bcs, y, u, p):
     tracking_goal = rng.uniform(0.25, 0.75)
     weight = rng.uniform(0.1, 1e1)
     J = cashocs.ScalarTrackingFunctional(norm_y, tracking_goal, weight=1.0)
-    config_ocp.set("LineSearch", "initial_stepsize", "4e3")
+    config_ocp["LineSearch"]["initial_stepsize"] = 4e3
 
     test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     test_ocp.compute_state_variables()
@@ -292,9 +292,9 @@ def test_scalar_tracking_weight(rng, geometry, config_ocp, F, bcs, y, u, p):
 
 
 def test_scalar_multiple_norms(rng, config_ocp, geometry, F, bcs, y, u, p):
-    config_ocp.set("OptimizationRoutine", "algorithm", "bfgs")
-    config_ocp.set("OptimizationRoutine", "rtol", "1e-6")
-    config_ocp.set("OptimizationRoutine", "max_iter", "500")
+    config_ocp["OptimizationRoutine"]["algorithm"] = "bfgs"
+    config_ocp["OptimizationRoutine"]["rtol"] = 1e-6
+    config_ocp["OptimizationRoutine"]["max_iter"] = 500
 
     u.vector().vec().set(40.0)
     u.vector().apply("")
@@ -305,7 +305,7 @@ def test_scalar_multiple_norms(rng, config_ocp, geometry, F, bcs, y, u, p):
     J_y = cashocs.ScalarTrackingFunctional(norm_y, tracking_goals[0])
     J_u = cashocs.ScalarTrackingFunctional(norm_u, tracking_goals[1])
     J = [J_y, J_u]
-    config_ocp.set("LineSearch", "initial_stepsize", "1e-4")
+    config_ocp["LineSearch"]["initial_stepsize"] = 1e-4
 
     test_ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     test_ocp.solve(algorithm="bfgs", rtol=1e-6, max_iter=500)
@@ -317,7 +317,7 @@ def test_scalar_multiple_norms(rng, config_ocp, geometry, F, bcs, y, u, p):
 
 
 def test_different_spaces(config_ocp):
-    config_ocp.set("OptimizationRoutine", "algorithm", "bfgs")
+    config_ocp["OptimizationRoutine"]["algorithm"] = "bfgs"
 
     parameters["ghost_mode"] = "shared_vertex"
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(10)
@@ -368,7 +368,7 @@ def test_nonlinear_state_eq(rng, CG1, geometry, y, u, p, config_ocp, bcs, J):
         + pow(y, 3) * p * geometry.dx
         - u * p * geometry.dx
     )
-    config_ocp.set("StateSystem", "is_linear", "False")
+    config_ocp["StateSystem"]["is_linear"] = False
     ocp = cashocs.OptimalControlProblem(
         F, bcs, J, y, u, p, config=config_ocp, initial_guess=[initial_guess]
     )
@@ -553,14 +553,14 @@ def test_scaling_all(rng, F, bcs, y, u, p, y_d, config_ocp, geometry):
 
 
 def test_iterative_gradient(rng, ocp):
-    ocp.config.set("OptimizationRoutine", "gradient_method", "iterative")
+    ocp.config["OptimizationRoutine"]["gradient_method"] = "iterative"
     assert ocp.gradient_test(rng=rng) > 1.9
     assert ocp.gradient_test(rng=rng) > 1.9
     assert ocp.gradient_test(rng=rng) > 1.9
 
 
 def test_small_stepsize1(ocp):
-    ocp.config.set("LineSearch", "initial_stepsize", "1e-8")
+    ocp.config["LineSearch"]["initial_stepsize"] = 1e-8
     with pytest.raises(NotConvergedError) as e_info:
         ocp.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=2)
     assert "Armijo rule failed." in str(e_info.value)
@@ -580,7 +580,7 @@ def test_control_bcs(rng, geometry, CG1, F, bcs, J, y, u, p, config_ocp):
 
 
 def test_safeguard_gd(ocp):
-    ocp.config.set("LineSearch", "safeguard_stepsize", "True")
+    ocp.config["LineSearch"]["safeguard_stepsize"] = True
     ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=50)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
@@ -589,8 +589,8 @@ def test_safeguard_gd(ocp):
     "polynomial_model, iterations", [("cubic", 42), ("quadratic", 44)]
 )
 def test_polynomial_stepsize(ocp, polynomial_model, iterations):
-    ocp.config.set("LineSearch", "method", "polynomial")
-    ocp.config.set("LineSearch", "polynomial_model", polynomial_model)
+    ocp.config["LineSearch"]["method"] = "polynomial"
+    ocp.config["LineSearch"]["polynomial_model"] = polynomial_model
     ocp.solve(algorithm="gd", rtol=1e-2, atol=0.0, max_iter=iterations)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
@@ -607,13 +607,13 @@ def test_damped_bfgs(geometry, y, p, bcs, config_ocp):
         * geometry.dx
     )
 
-    config_ocp.set("LineSearch", "initial_stepsize", "1e-2")
-    config_ocp.set("OptimizationRoutine", "rtol", "1e-7")
+    config_ocp["LineSearch"]["initial_stepsize"] = 1e-2
+    config_ocp["OptimizationRoutine"]["rtol"] = 1e-7
     u0.vector().vec().set(-0.5)
     u0.vector().apply("")
     u1.vector().vec().set(-0.5)
     u1.vector().apply("")
-    config_ocp.set("AlgoLBFGS", "damped", "True")
+    config_ocp["AlgoLBFGS"]["damped"] = True
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, [u0, u1], p, config=config_ocp)
     ocp.solve(max_iter=7)
     MPI.barrier(MPI.comm_world)
@@ -694,8 +694,8 @@ def test_optimal_control_with_custom_preconditioner(geometry, config_ocp):
 
 
 def test_snes(F, bcs, J, y, u, p, config_ocp):
-    config_ocp.set("StateSystem", "is_linear", "False")
-    config_ocp.set("StateSystem", "backend", "petsc")
+    config_ocp["StateSystem"]["is_linear"] = False
+    config_ocp["StateSystem"]["backend"] = "petsc"
 
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     ocp.solve(algorithm="bfgs", rtol=1e-2, atol=0.0, max_iter=17)
@@ -703,8 +703,8 @@ def test_snes(F, bcs, J, y, u, p, config_ocp):
 
 
 def test_pseudo_time_stepping(F, bcs, J, y, u, p, config_ocp):
-    config_ocp.set("StateSystem", "is_linear", "False")
-    config_ocp.set("StateSystem", "backend", "petsc")
+    config_ocp["StateSystem"]["is_linear"] = False
+    config_ocp["StateSystem"]["backend"] = "petsc"
 
     ksp_options = {
         "ts_type": "beuler",
@@ -797,9 +797,9 @@ def test_adjoint_linearizations(geometry, config_ocp):
         "fieldsplit_1_pc_hypre_type": "boomeramg",
     }
 
-    config_ocp.set("StateSystem", "backend", "petsc")
-    config_ocp.set("StateSystem", "is_linear", "False")
-    config_ocp.set("StateSystem", "use_adjoint_linearizations", "True")
+    config_ocp["StateSystem"]["backend"] = "petsc"
+    config_ocp["StateSystem"]["is_linear"] = False
+    config_ocp["StateSystem"]["use_adjoint_linearizations"] = True
 
     ocp = cashocs.OptimalControlProblem(
         F,
@@ -821,8 +821,8 @@ def test_adjoint_linearizations(geometry, config_ocp):
     [("gd", 5e2, 71), ("ncg", 5e2, 76), ("bfgs", 0.1, 43)],
 )
 def test_basic_stepsize(ocp, algorithm, step, iterations):
-    ocp.config.set("LineSearch", "method", "basic")
-    ocp.config.set("LineSearch", "initial_stepsize", str(step))
+    ocp.config["LineSearch"]["method"] = "basic"
+    ocp.config["LineSearch"]["initial_stepsize"] = step
 
     ocp.solve(algorithm=algorithm, rtol=1e-2, atol=0.0, max_iter=iterations)
     assert ocp.solver.relative_norm <= ocp.solver.rtol

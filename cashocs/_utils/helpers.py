@@ -170,7 +170,7 @@ def optimization_algorithm_configuration(
         )
 
     if overwrite:
-        config.set("OptimizationRoutine", "algorithm", internal_algorithm)
+        config["OptimizationRoutine"]["algorithm"] = internal_algorithm
 
     return internal_algorithm
 

@@ -160,7 +160,7 @@ def test_control_gd_multiple(ocp):
 def test_control_cg_fr_multiple(
     state_forms, bcs_list, J, states, controls, adjoints, config_ocp
 ):
-    config_ocp.set("AlgoCG", "cg_method", "FR")
+    config_ocp["AlgoCG"]["cg_method"] = "FR"
     ocp = cashocs.OptimalControlProblem(
         state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
@@ -171,7 +171,7 @@ def test_control_cg_fr_multiple(
 def test_control_cg_pr_multiple(
     state_forms, bcs_list, J, states, controls, adjoints, config_ocp
 ):
-    config_ocp.set("AlgoCG", "cg_method", "PR")
+    config_ocp["AlgoCG"]["cg_method"] = "PR"
     ocp = cashocs.OptimalControlProblem(
         state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
@@ -182,7 +182,7 @@ def test_control_cg_pr_multiple(
 def test_control_cg_hs_multiple(
     state_forms, bcs_list, J, states, controls, adjoints, config_ocp
 ):
-    config_ocp.set("AlgoCG", "cg_method", "HS")
+    config_ocp["AlgoCG"]["cg_method"] = "HS"
     ocp = cashocs.OptimalControlProblem(
         state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
@@ -193,7 +193,7 @@ def test_control_cg_hs_multiple(
 def test_control_cg_dy_multiple(
     state_forms, bcs_list, J, states, controls, adjoints, config_ocp
 ):
-    config_ocp.set("AlgoCG", "cg_method", "DY")
+    config_ocp["AlgoCG"]["cg_method"] = "DY"
     ocp = cashocs.OptimalControlProblem(
         state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
@@ -204,7 +204,7 @@ def test_control_cg_dy_multiple(
 def test_control_cg_hz_multiple(
     state_forms, bcs_list, J, states, controls, adjoints, config_ocp
 ):
-    config_ocp.set("AlgoCG", "cg_method", "HZ")
+    config_ocp["AlgoCG"]["cg_method"] = "HZ"
     ocp = cashocs.OptimalControlProblem(
         state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
@@ -220,7 +220,7 @@ def test_control_bfgs_multiple(ocp):
 def test_control_newton_cg_multiple(
     state_forms, bcs_list, J, states, controls, adjoints, config_ocp
 ):
-    config_ocp.set("AlgoTNM", "inner_newton", "cg")
+    config_ocp["AlgoTNM"]["inner_newton"] = "cg"
     ocp = cashocs.OptimalControlProblem(
         state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
@@ -231,7 +231,7 @@ def test_control_newton_cg_multiple(
 def test_control_newton_cr_multiple(
     state_forms, bcs_list, J, states, controls, adjoints, config_ocp
 ):
-    config_ocp.set("AlgoTNM", "inner_newton", "cr")
+    config_ocp["AlgoTNM"]["inner_newton"] = "cr"
     ocp = cashocs.OptimalControlProblem(
         state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )

@@ -384,7 +384,7 @@ def test_topology_optimization_algorithms_for_cantilever_projection(
     algorithm,
     vol,
 ):
-    config_top.set("OptimizationRoutine", "soft_exit", "True")
+    config_top["OptimizationRoutine"]["soft_exit"] = True
 
     top = cashocs.TopologyOptimizationProblem(
         F,
@@ -459,8 +459,8 @@ def test_deflation(
     geometry,
     DG0,
 ):
-    config_top.set("OptimizationRoutine", "soft_exit", "True")
-    config_top.set("OptimizationRoutine", "algorithm", "sphere_combination")
+    config_top["OptimizationRoutine"]["soft_exit"] = True
+    config_top["OptimizationRoutine"]["algorithm"] = "sphere_combination"
 
     dir_path = pathlib.Path(__file__).parent
     char_function_0 = cashocs.io.import_function(

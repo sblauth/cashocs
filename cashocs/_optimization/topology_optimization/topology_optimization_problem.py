@@ -224,15 +224,15 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
         self.dg0_space = fenics.FunctionSpace(self.mesh, "DG", 0)
 
         ocp_config = copy.deepcopy(self.config)
-        ocp_config.set("Output", "verbose", "False")
-        ocp_config.set("Output", "save_txt", "False")
-        ocp_config.set("Output", "save_results", "False")
-        ocp_config.set("Output", "save_state", "False")
-        ocp_config.set("Output", "save_adjoint", "False")
-        ocp_config.set("Output", "save_gradient", "False")
-        ocp_config.set("OptimizationRoutine", "soft_exit", "True")
-        ocp_config.set("OptimizationRoutine", "rtol", "0.0")
-        ocp_config.set("OptimizationRoutine", "atol", "0.0")
+        ocp_config["Output"]["verbose"] = False
+        ocp_config["Output"]["save_txt"] = False
+        ocp_config["Output"]["save_results"] = False
+        ocp_config["Output"]["save_state"] = False
+        ocp_config["Output"]["save_adjoint"] = False
+        ocp_config["Output"]["save_gradient"] = False
+        ocp_config["OptimizationRoutine"]["soft_exit"] = True
+        ocp_config["OptimizationRoutine"]["rtol"] = 0.0
+        ocp_config["OptimizationRoutine"]["atol"] = 0.0
         self._base_ocp = optimal_control_problem.OptimalControlProblem(
             self.state_forms,
             self.bcs_list,
@@ -336,7 +336,7 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
             raise _exceptions.CashocsException("This code cannot be reached.")
 
         if angle_tol is not None:
-            self.config.set("TopologyOptimization", "angle_tol", str(angle_tol))
+            self.config["TopologyOptimization"]["angle_tol"] = angle_tol
 
         if self.algorithm == "sphere_combination":
             self.solver = topology_optimization_algorithm.SphereCombinationAlgorithm(

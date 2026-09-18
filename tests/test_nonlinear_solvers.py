@@ -231,8 +231,8 @@ def test_ts_pseudo_solver_residual_cache():
 
 
 def test_newton_linearization(config_sop):
-    config_sop.set("StateSystem", "is_linear", "False")
-    config_sop.set("StateSystem", "newton_verbose", "True")
+    config_sop["StateSystem"]["is_linear"] = False
+    config_sop["StateSystem"]["newton_verbose"] = True
 
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.regular_mesh(16)
     v_elem = VectorElement("CG", mesh.ufl_cell(), 2)
