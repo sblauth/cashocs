@@ -80,7 +80,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
 
         gradient_tol = self.config["OptimizationRoutine"]["gradient_tol"]
 
-        gradient_method = self.config.get("OptimizationRoutine", "gradient_method")
+        gradient_method = self.config["OptimizationRoutine"]["gradient_method"]
 
         if db.parameter_db.gradient_ksp_options is not None:
             self.ksp_options = db.parameter_db.gradient_ksp_options[0]
@@ -183,7 +183,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         if self.config["ShapeGradient"]["reextend_from_boundary"]:
             log.debug("Re-extending the gradient deformation from the boundary.")
 
-            if self.config.get("ShapeGradient", "reextension_mode") == "normal":
+            if self.config["ShapeGradient"]["reextension_mode"] == "normal":
                 normal_deformation = self._compute_normal_deformation()
                 self.db.function_db.gradient[0].vector().vec().aypx(
                     0.0, normal_deformation.vector().vec()
@@ -385,8 +385,8 @@ class _PLaplaceProjector:
                 * dx
             )
 
-            gradient_method = config.get("OptimizationRoutine", "gradient_method")
-            gradient_tol = config.get("OptimizationRoutine", "gradient_tol")
+            gradient_method = config["OptimizationRoutine"]["gradient_method"]
+            gradient_tol = config["OptimizationRoutine"]["gradient_tol"]
 
             if db.parameter_db.gradient_ksp_options is not None:
                 self.ksp_options = db.parameter_db.gradient_ksp_options[0]

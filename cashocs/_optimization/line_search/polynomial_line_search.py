@@ -59,9 +59,7 @@ class PolynomialLineSearch(line_search.LineSearch):
 
         self.factor_low = self.config["LineSearch"]["factor_low"]
         self.factor_high = self.config["LineSearch"]["factor_high"]
-        self.polynomial_model = self.config.get(
-            "LineSearch", "polynomial_model"
-        ).casefold()
+        self.polynomial_model = self.config["LineSearch"]["polynomial_model"].casefold()
         self.f_vals: collections.deque[float] = collections.deque()
         self.alpha_vals: collections.deque[float] = collections.deque()
 

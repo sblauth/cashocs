@@ -184,7 +184,7 @@ class CoarseModel:
         self._post_callback: Callable | None = None
 
         config = copy.deepcopy(self.config)
-        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        output_path = pathlib.Path(self.config["Output"]["result_dir"])
         config.set("Output", "result_dir", str(output_path / "coarse_model"))
 
         self.optimal_control_problem = ocp.OptimalControlProblem(
@@ -354,7 +354,7 @@ class ParameterExtraction:
             )
 
         config = copy.deepcopy(self.config)
-        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        output_path = pathlib.Path(self.config["Output"]["result_dir"])
         config.set(
             "Output",
             "result_dir",

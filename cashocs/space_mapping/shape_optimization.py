@@ -187,7 +187,7 @@ class CoarseModel:
         self.coordinates_initial = self.mesh.coordinates().copy()
 
         config = copy.deepcopy(self.config)
-        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        output_path = pathlib.Path(self.config["Output"]["result_dir"])
         config.set("Output", "result_dir", str(output_path / "coarse_model"))
 
         self.shape_optimization_problem = sop.ShapeOptimizationProblem(
@@ -345,7 +345,7 @@ class ParameterExtraction:
             )
 
         config = copy.deepcopy(self.config)
-        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        output_path = pathlib.Path(self.config["Output"]["result_dir"])
         config.set(
             "Output",
             "result_dir",

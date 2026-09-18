@@ -131,9 +131,9 @@ class _MeshHandler:
                 "one (tol_upper). This may slow down the optimization considerably."
             )
 
-        self.mesh_quality_measure = self.config.get("MeshQuality", "measure")
+        self.mesh_quality_measure = self.config["MeshQuality"]["measure"]
 
-        self.mesh_quality_type = self.config.get("MeshQuality", "type")
+        self.mesh_quality_type = self.config["MeshQuality"]["type"]
         self.quality_quantile = self.config["MeshQuality"]["quantile"]
 
         self.current_mesh_quality: float = quality.compute_mesh_quality(
@@ -187,7 +187,7 @@ class _MeshHandler:
 
         if self.do_remesh or self.save_optimized_mesh:
             self.mesh_directory = (
-                pathlib.Path(self.config.get("Mesh", "gmsh_file")).resolve().parent
+                pathlib.Path(self.config["Mesh"]["gmsh_file"]).resolve().parent
             )
 
         self._setup_remesh()
@@ -222,7 +222,7 @@ class _MeshHandler:
             self.remesh_geo_file = f"{self.db.parameter_db.remesh_directory}/remesh.geo"
 
         elif self.save_optimized_mesh:
-            self.gmsh_file = self.config.get("Mesh", "gmsh_file")
+            self.gmsh_file = self.config["Mesh"]["gmsh_file"]
 
         # create a copy of the initial mesh file
         if self.do_remesh and self.remesh_counter == 0:
@@ -481,7 +481,7 @@ class _MeshHandler:
         )
         solver.optimization_problem.initialize_solve_parameters()
 
-        line_search_type = self.config.get("LineSearch", "method").casefold()
+        line_search_type = self.config["LineSearch"]["method"].casefold()
         if line_search_type == "armijo":
             line_search: ls.LineSearch = ls.ArmijoLineSearch(
                 self.db, solver.optimization_problem
@@ -621,8 +621,8 @@ class _MeshHandler:
                 "optimization considerably."
             )
 
-        mesh_quality_measure = self.db.config.get("MeshQuality", "measure")
-        mesh_quality_type = self.db.config.get("MeshQuality", "type")
+        mesh_quality_measure = self.db.config["MeshQuality"]["measure"]
+        mesh_quality_type = self.db.config["MeshQuality"]["type"]
         quality_quantile = self.db.config["MeshQuality"]["quantile"]
 
         mesh = solver.optimization_problem.states[0].function_space().mesh()
