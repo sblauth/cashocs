@@ -41,7 +41,7 @@ class OutputManager:
         """
         self.db = db
         self.config = self.db.config
-        self.result_dir = self.config.get("Output", "result_dir")
+        self.result_dir = self.config["Output"]["result_dir"]
         self.result_dir = self.result_dir.rstrip("/")
 
         self._silent = False

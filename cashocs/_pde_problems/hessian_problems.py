@@ -70,7 +70,7 @@ class HessianProblem:
 
         self.config = self.db.config
 
-        self.inner_newton = self.config.get("AlgoTNM", "inner_newton")
+        self.inner_newton = self.config["AlgoTNM"]["inner_newton"]
         self.max_it_inner_newton = self.config["AlgoTNM"]["max_it_inner_newton"]
         self.inner_newton_rtol = self.config["AlgoTNM"]["inner_newton_rtol"]
         self.inner_newton_atol = self.config["AlgoTNM"]["inner_newton_atol"]

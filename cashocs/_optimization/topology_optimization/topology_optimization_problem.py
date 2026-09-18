@@ -216,9 +216,9 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
         self.normalize_topological_derivative = self.config["TopologyOptimization"][
             "normalize_topological_derivative"
         ]
-        self.interpolation_scheme = self.config.get(
-            "TopologyOptimization", "interpolation_scheme"
-        )
+        self.interpolation_scheme = self.config["TopologyOptimization"][
+            "interpolation_scheme"
+        ]
 
         self.mesh = self.levelset_function.function_space().mesh()
         self.dg0_space = fenics.FunctionSpace(self.mesh, "DG", 0)
@@ -325,7 +325,7 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
             topology_variable_abstractions.TopologyVariableAbstractions(self, self.db)
         )
 
-        line_search_type = self.config.get("LineSearch", "method").casefold()
+        line_search_type = self.config["LineSearch"]["method"].casefold()
         if line_search_type == "armijo":
             line_search: ls.LineSearch = ls.ArmijoLineSearch(self.db, self)
         elif line_search_type == "polynomial":

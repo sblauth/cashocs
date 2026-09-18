@@ -95,7 +95,7 @@ class StateProblem(pde_problem.PDEProblem):
         self.newton_inexact = self.config["StateSystem"]["newton_inexact"]
         self.newton_verbose = self.config["StateSystem"]["newton_verbose"]
         self.newton_iter = self.config["StateSystem"]["newton_iter"]
-        self.backend = self.config.get("StateSystem", "backend")
+        self.backend = self.config["StateSystem"]["backend"]
 
         # pylint: disable=invalid-name
         self.A_tensors = [

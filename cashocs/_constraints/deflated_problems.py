@@ -700,7 +700,7 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
         )
 
         config = copy.deepcopy(self.config)
-        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        output_path = pathlib.Path(self.config["Output"]["result_dir"])
         if restart:
             config.set(
                 "Output",
@@ -981,7 +981,7 @@ class DeflatedOptimalControlProblem(DeflatedProblem):
         )
 
         config = copy.deepcopy(self.config)
-        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        output_path = pathlib.Path(self.config["Output"]["result_dir"])
         if restart:
             config.set(
                 "Output",

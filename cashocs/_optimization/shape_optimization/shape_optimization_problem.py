@@ -404,8 +404,8 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             if not self.db.parameter_db.is_remeshed:
                 self.db.parameter_db.temp_dict.update(
                     {
-                        "gmsh_file": self.config.get("Mesh", "gmsh_file"),
-                        "geo_file": self.config.get("Mesh", "geo_file"),
+                        "gmsh_file": self.config["Mesh"]["gmsh_file"],
+                        "geo_file": self.config["Mesh"]["geo_file"],
                         "OptimizationRoutine": {
                             "iteration_counter": 0,
                             "gradient_norm_initial": 0.0,
@@ -426,7 +426,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         self.gradient_problem.has_solution = False
 
     def _setup_solver(self) -> optimization_algorithms.OptimizationAlgorithm:
-        line_search_type = self.config.get("LineSearch", "method").casefold()
+        line_search_type = self.config["LineSearch"]["method"].casefold()
         if line_search_type == "armijo":
             line_search: ls.LineSearch = ls.ArmijoLineSearch(self.db, self)
         elif line_search_type == "polynomial":

@@ -216,7 +216,7 @@ class Stiffness:
                     self.mesh,
                     self.boundaries,
                     self.bdry_idcs,
-                    method=self.config.get("ShapeGradient", "distance_method"),
+                    method=self.config["ShapeGradient"]["distance_method"],
                 )
                 .vector()
                 .vec(),

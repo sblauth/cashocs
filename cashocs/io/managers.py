@@ -378,7 +378,7 @@ class MeshManager(IOManager):
         iteration = int(self.db.parameter_db.optimization_state["iteration"])
 
         if not self.db.parameter_db.gmsh_file_path:
-            gmsh_file = self.config.get("Mesh", "gmsh_file")
+            gmsh_file = self.config["Mesh"]["gmsh_file"]
         else:
             gmsh_file = self.db.parameter_db.gmsh_file_path
 
@@ -400,7 +400,7 @@ class MeshManager(IOManager):
     def post_process(self) -> None:
         """Saves a copy of the optimized mesh in Gmsh format."""
         if not self.db.parameter_db.gmsh_file_path:
-            gmsh_file = self.config.get("Mesh", "gmsh_file")
+            gmsh_file = self.config["Mesh"]["gmsh_file"]
         else:
             gmsh_file = self.db.parameter_db.gmsh_file_path
 
