@@ -971,31 +971,31 @@ def test_fixed_dimensions(rng):
 def test_check_config_list():
     cfg = cashocs.load_config(f"{dir_path}/config_sop.ini")
     cfg.set("ShapeGradient", "shape_bdry_def", "[1,2,3]")
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, cfg)
+    cfg.validate_config()
 
     from cashocs._exceptions import ConfigError
 
     with pytest.raises(ConfigError) as e_info:
-        cfg.set("ShapeGradient", "shape_bdry_def", "malicious code")
-        sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, cfg)
+        cfg["ShapeGradient"]["shape_bdry_def"] = "malicious code"
+        cfg.validate_config()
         assert (
-            "Key shape_bdry_def in section ShapeGradient has the wrong type. Required type is list."
+            "Option shape_bdry_def in section ShapeGradient has the wrong type. Required type is list."
             in str(e_info.value)
         )
 
     with pytest.raises(ConfigError) as e_info:
-        cfg.set("ShapeGradient", "shape_bdry_def", "1,2,3")
-        sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, cfg)
+        cfg["ShapeGradient"]["shape_bdry_def"] = "1,2,3"
+        cfg.validate_config()
         assert (
-            "Key shape_bdry_def in section ShapeGradient has the wrong type. Required type is list."
+            "Option shape_bdry_def in section ShapeGradient has the wrong type. Required type is list."
             in str(e_info.value)
         )
 
     with pytest.raises(ConfigError) as e_info:
-        cfg.set("ShapeGradient", "shape_bdry_def", "[1,2,3")
-        sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, cfg)
+        cfg["ShapeGradient"]["shape_bdry_def"] = "[1,2,3"
+        cfg.validate_config()
         assert (
-            "Key shape_bdry_def in section ShapeGradient has the wrong type. Required type is list."
+            "Option shape_bdry_def in section ShapeGradient has the wrong type. Required type is list."
             in str(e_info.value)
         )
 

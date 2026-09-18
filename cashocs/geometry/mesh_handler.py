@@ -115,8 +115,8 @@ class _MeshHandler:
         self._current_mesh_quality = 1.0
         self._gmsh_file = ""
         # setup from config
-        self.volume_change = float(self.config.get("MeshQuality", "volume_change"))
-        self.angle_change = float(self.config.get("MeshQuality", "angle_change"))
+        self.volume_change = self.config.getfloat("MeshQuality", "volume_change")
+        self.angle_change = self.config.getfloat("MeshQuality", "angle_change")
 
         self.test_for_intersections = self.config.getboolean(
             "ShapeGradient", "test_for_intersections"
