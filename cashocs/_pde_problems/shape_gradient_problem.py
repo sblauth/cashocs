@@ -23,7 +23,6 @@ shape gradient with a Riesz projection.
 
 from __future__ import annotations
 
-import configparser
 import copy
 from typing import TYPE_CHECKING
 
@@ -48,6 +47,7 @@ if TYPE_CHECKING:
     from cashocs._database import database
     from cashocs._pde_problems import adjoint_problem as ap
     from cashocs._pde_problems import state_problem as sp
+    from cashocs.io import Config
 
 
 class ShapeGradientProblem(pde_problem.PDEProblem):
@@ -336,7 +336,7 @@ class _PLaplaceProjector:
         gradient: list[fenics.Function],
         shape_derivative: ufl.Form,
         bcs_shape: list[fenics.DirichletBC],
-        config: configparser.ConfigParser,
+        config: Config,
     ) -> None:
         """Initializes self.
 

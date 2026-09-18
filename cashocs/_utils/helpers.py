@@ -20,7 +20,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-import configparser
 import inspect
 from typing import Any, cast, TYPE_CHECKING, TypeVar
 
@@ -31,6 +30,7 @@ from cashocs import log
 
 if TYPE_CHECKING:
     from cashocs import _typing
+    from cashocs.io import Config
 
 T = TypeVar("T")
 
@@ -118,7 +118,7 @@ def check_and_enlist_control_constraints(
 
 
 def optimization_algorithm_configuration(
-    config: configparser.ConfigParser, algorithm: str | None = None
+    config: Config, algorithm: str | None = None
 ) -> str:
     """Returns the internal name of the optimization algorithm and updates config.
 
