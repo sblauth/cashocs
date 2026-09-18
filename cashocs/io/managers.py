@@ -256,7 +256,7 @@ class ConsoleManager(IOManager):
         """
         super().__init__(db, result_dir)
         self.verbose = verbose
-        self.precision = self.config.getint("Output", "precision")
+        self.precision = self.config["Output"]["precision"]
 
     def output(self) -> None:
         """Prints the output string to the console."""
@@ -300,7 +300,7 @@ class FileManager(IOManager):
 
         """
         super().__init__(db, result_dir)
-        self.precision = self.config.getint("Output", "precision")
+        self.precision = self.config["Output"]["precision"]
 
     def output(self) -> None:
         """Saves the output string in a file."""

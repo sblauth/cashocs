@@ -98,9 +98,9 @@ class LevelSetVolumeProjector:
             self.volume_restriction = None
 
         if db is not None:
-            self.max_iter_bisect = db.config.getint(
-                "TopologyOptimization", "max_iter_bisection"
-            )
+            self.max_iter_bisect = db.config["TopologyOptimization"][
+                "max_iter_bisection"
+            ]
             self.tol_bisect = db.config.getfloat(
                 "TopologyOptimization", "tol_bisection"
             )

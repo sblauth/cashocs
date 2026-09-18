@@ -77,7 +77,7 @@ class AdjointProblem(pde_problem.PDEProblem):
 
         self.picard_rtol: float = self.config.getfloat("StateSystem", "picard_rtol")
         self.picard_atol: float = self.config.getfloat("StateSystem", "picard_atol")
-        self.picard_max_iter: int = self.config.getint("StateSystem", "picard_iter")
+        self.picard_max_iter: int = self.config["StateSystem"]["picard_iter"]
         self.picard_verbose: bool = self.config["StateSystem"]["picard_verbose"]
 
         # pylint: disable=invalid-name

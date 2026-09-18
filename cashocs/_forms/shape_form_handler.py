@@ -781,7 +781,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
         """
         if self.config["ShapeGradient"]["use_p_laplacian"]:
-            p = self.config.getint("ShapeGradient", "p_laplacian_power")
+            p = self.config["ShapeGradient"]["p_laplacian_power"]
             delta = self.config.getfloat("ShapeGradient", "damping_factor")
             eps = self.config.getfloat("ShapeGradient", "p_laplacian_stabilization")
             kappa = pow(
