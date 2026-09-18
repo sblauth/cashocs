@@ -25,6 +25,7 @@ from configparser import ConfigParser
 import copy
 import json
 import pathlib
+import tomllib
 from typing import Any, cast
 
 from cashocs import _exceptions
@@ -751,12 +752,27 @@ def _convert_value(
     raise ValueError(f"Unknown configuration type: {type_name}")
 
 
-def parse_config(config_file: pathlib.Path | str) -> dict:
+def _parse_config(config_file: pathlib.Path | str) -> dict:
+    config_file = pathlib.Path(config_file)
+
+    suffix = config_file.suffix
+    if suffix in (".ini", ".cfg"):
+        return _parse_ini_config(config_file)
+    elif suffix == ".toml":
+        return _parse_toml_config(config_file)
+    else:
+        raise _exceptions.InputError(
+            "_parse_config",
+            "config_file",
+            f"{str(config_file)} does not have a valid format. "
+            "Only .ini, .cfg, or .toml files are supported.",
+        )
+
+
+def _parse_ini_config(config_file: pathlib.Path | str) -> dict:
     """Parse a .ini configuration file into a nested dictionary."""
-    file = pathlib.Path(config_file)
     parser = ConfigParser()
-    if file.is_file():
-        parser.read(config_file)
+    parser.read(config_file)
 
     config: dict[str, dict[str, Any]] = {}
     for section in parser.sections():
@@ -774,16 +790,25 @@ def parse_config(config_file: pathlib.Path | str) -> dict:
     return config
 
 
+def _parse_toml_config(config_file: pathlib.Path | str) -> dict:
+    file = pathlib.Path(config_file)
+
+    with open(file, "rb") as f:
+        config = tomllib.load(f)
+
+    return config
+
+
 def load_config(path: str) -> Config:
     """Loads a config object from a config file.
 
-    Loads the config from a .ini file via the configparser package.
+    Loads the config from a .ini, .cfg, or .toml file.
 
     Args:
-        path: The path to the .ini file storing the configuration.
+        path: The path to the configuration file.
 
     Returns:
-        The output config file, which includes the path to the .ini file.
+        The output config file.
 
     """
     return Config(path)
@@ -833,7 +858,7 @@ class Config(dict):
         if config_file is not None:
             file = pathlib.Path(config_file)
             if file.is_file():
-                user_config = parse_config(config_file)
+                user_config = _parse_config(config_file)
                 update_dict_recursively(self, user_config)
             else:
                 raise _exceptions.InputError(
