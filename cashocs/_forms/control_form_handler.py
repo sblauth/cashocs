@@ -301,7 +301,7 @@ class HessianFormHandler:
             )
             for i in range(self.db.parameter_db.state_dim)
         ]
-        if self.config.getboolean("StateSystem", "picard_iteration"):
+        if self.config["StateSystem"]["picard_iteration"]:
             self.sensitivity_eqs_picard = [
                 fenics.derivative(
                     self.sensitivity_eqs_temp[i],
@@ -355,7 +355,7 @@ class HessianFormHandler:
             ]
 
         # Add the right-hand-side for the picard iteration
-        if self.config.getboolean("StateSystem", "picard_iteration"):
+        if self.config["StateSystem"]["picard_iteration"]:
             for i in range(self.db.parameter_db.state_dim):
                 self.sensitivity_eqs_picard[i] -= self.sensitivity_eqs_rhs[i]
 
@@ -454,7 +454,7 @@ class HessianFormHandler:
             )
             for i in range(self.db.parameter_db.state_dim)
         ]
-        if self.config.getboolean("StateSystem", "picard_iteration"):
+        if self.config["StateSystem"]["picard_iteration"]:
             self.adjoint_sensitivity_eqs_picard = [
                 fenics.derivative(
                     adjoint_sensitivity_eqs_all_temp[i],
@@ -482,7 +482,7 @@ class HessianFormHandler:
             pass
 
         # Add right-hand-side for picard iteration
-        if self.config.getboolean("StateSystem", "picard_iteration"):
+        if self.config["StateSystem"]["picard_iteration"]:
             for i in range(self.db.parameter_db.state_dim):
                 self.adjoint_sensitivity_eqs_picard[i] -= self.w_1[i]
 

@@ -467,7 +467,7 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                     self.stepsize *= 0.5
 
                 if self.stepsize <= 1e-10:
-                    if self.config.getboolean("OptimizationRoutine", "soft_exit"):
+                    if self.config["OptimizationRoutine"]["soft_exit"]:
                         failed = True
                         break
                     else:

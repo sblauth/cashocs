@@ -91,7 +91,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             self.ksp_options["ksp_rtol"] = gradient_tol
 
         if (
-            self.config.getboolean("ShapeGradient", "use_p_laplacian")
+            self.config["ShapeGradient"]["use_p_laplacian"]
             and self.form_handler.use_fixed_dimensions
         ):
             log.warning(
@@ -101,7 +101,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             )
 
         if (
-            self.config.getboolean("ShapeGradient", "use_p_laplacian")
+            self.config["ShapeGradient"]["use_p_laplacian"]
             and not self.form_handler.uses_custom_scalar_product
             and not self.form_handler.use_fixed_dimensions
         ):
@@ -131,7 +131,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             self.form_handler.shape_regularization.update_geometric_quantities()
 
             if (
-                self.config.getboolean("ShapeGradient", "use_p_laplacian")
+                self.config["ShapeGradient"]["use_p_laplacian"]
                 and not self.form_handler.uses_custom_scalar_product
                 and not self.form_handler.use_fixed_dimensions
             ):
@@ -180,7 +180,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             over-written.
 
         """
-        if self.config.getboolean("ShapeGradient", "reextend_from_boundary"):
+        if self.config["ShapeGradient"]["reextend_from_boundary"]:
             log.debug("Re-extending the gradient deformation from the boundary.")
 
             if self.config.get("ShapeGradient", "reextension_mode") == "normal":

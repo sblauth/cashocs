@@ -118,9 +118,9 @@ class _MeshHandler:
         self.volume_change = self.config.getfloat("MeshQuality", "volume_change")
         self.angle_change = self.config.getfloat("MeshQuality", "angle_change")
 
-        self.test_for_intersections = self.config.getboolean(
-            "ShapeGradient", "test_for_intersections"
-        )
+        self.test_for_intersections = self.config["ShapeGradient"][
+            "test_for_intersections"
+        ]
 
         self.mesh_quality_tol_lower: float = self.config.getfloat(
             "MeshQuality", "tol_lower"
@@ -186,8 +186,8 @@ class _MeshHandler:
         self.l_prior = None
 
         # Remeshing initializations
-        self.do_remesh: bool = self.config.getboolean("Mesh", "remesh")
-        self.save_optimized_mesh: bool = self.config.getboolean("Output", "save_mesh")
+        self.do_remesh: bool = self.config["Mesh"]["remesh"]
+        self.save_optimized_mesh: bool = self.config["Output"]["save_mesh"]
 
         if self.do_remesh or self.save_optimized_mesh:
             self.mesh_directory = (
@@ -557,7 +557,7 @@ class _MeshHandler:
                 new_gmsh_file,
             ]
             if self.comm.rank == 0:
-                if not self.config.getboolean("Mesh", "show_gmsh_output"):
+                if not self.config["Mesh"]["show_gmsh_output"]:
                     subprocess.run(  # noqa: S603
                         gmsh_cmd_list,
                         check=True,
@@ -650,7 +650,7 @@ class _MeshHandler:
             solver: The optimization algorithm.
 
         """
-        if self.config.getboolean("ShapeGradient", "global_deformation"):
+        if self.config["ShapeGradient"]["global_deformation"]:
             pre_log_level = (
                 log.cashocs_logger._handler.level  # pylint: disable=protected-access
             )

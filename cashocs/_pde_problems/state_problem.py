@@ -88,12 +88,12 @@ class StateProblem(pde_problem.PDEProblem):
         self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
         self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
         self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
-        self.picard_verbose = self.config.getboolean("StateSystem", "picard_verbose")
+        self.picard_verbose = self.config["StateSystem"]["picard_verbose"]
         self.newton_rtol = self.config.getfloat("StateSystem", "newton_rtol")
         self.newton_atol = self.config.getfloat("StateSystem", "newton_atol")
-        self.newton_damped = self.config.getboolean("StateSystem", "newton_damped")
-        self.newton_inexact = self.config.getboolean("StateSystem", "newton_inexact")
-        self.newton_verbose = self.config.getboolean("StateSystem", "newton_verbose")
+        self.newton_damped = self.config["StateSystem"]["newton_damped"]
+        self.newton_inexact = self.config["StateSystem"]["newton_inexact"]
+        self.newton_verbose = self.config["StateSystem"]["newton_verbose"]
         self.newton_iter = self.config.getint("StateSystem", "newton_iter")
         self.backend = self.config.get("StateSystem", "backend")
 
@@ -152,10 +152,10 @@ class StateProblem(pde_problem.PDEProblem):
             self.db.callback.call_pre()
             self._generate_checkpoint()
             if (
-                not self.config.getboolean("StateSystem", "picard_iteration")
+                not self.config["StateSystem"]["picard_iteration"]
                 or self.db.parameter_db.state_dim == 1
             ):
-                if self.config.getboolean("StateSystem", "is_linear"):
+                if self.config["StateSystem"]["is_linear"]:
                     for i in range(self.db.parameter_db.state_dim):
                         if self.initial_guess is not None:
                             fenics.assign(self.states[i], self.initial_guess[i])

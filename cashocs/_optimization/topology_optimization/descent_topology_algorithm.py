@@ -129,7 +129,7 @@ class DescentTopologyAlgorithm(
                 self._cashocs_problem.db.function_db.gradient[0].vector().apply("")
 
                 exit_message = "Maximum number of iterations reached."
-                if self.config.getboolean("OptimizationRoutine", "soft_exit"):
+                if self.config["OptimizationRoutine"]["soft_exit"]:
                     log.error(exit_message)
                 else:
                     raise _exceptions.NotConvergedError(
