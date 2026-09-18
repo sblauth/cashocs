@@ -92,18 +92,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
 
         if (
             self.config["ShapeGradient"]["use_p_laplacian"]
-            and self.form_handler.use_fixed_dimensions
-        ):
-            log.warning(
-                "Incompatible config settings: "
-                "use_p_laplacian and fixed_dimensions are incompatible. "
-                "Falling back to use_p_laplacian=False."
-            )
-
-        if (
-            self.config["ShapeGradient"]["use_p_laplacian"]
             and not self.form_handler.uses_custom_scalar_product
-            and not self.form_handler.use_fixed_dimensions
         ):
             self.p_laplace_projector = _PLaplaceProjector(
                 self.db,
@@ -133,7 +122,6 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             if (
                 self.config["ShapeGradient"]["use_p_laplacian"]
                 and not self.form_handler.uses_custom_scalar_product
-                and not self.form_handler.use_fixed_dimensions
             ):
                 self.p_laplace_projector.solve()
                 self.has_solution = True
@@ -142,12 +130,6 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
                 self.form_handler.assembler.assemble(
                     self.form_handler.fe_shape_derivative_vector
                 )
-                if self.form_handler.use_fixed_dimensions:
-                    self.form_handler.fe_shape_derivative_vector.vec().setValues(
-                        self.form_handler.fixed_indices,
-                        np.array([0.0] * len(self.form_handler.fixed_indices)),
-                    )
-                    self.form_handler.fe_shape_derivative_vector.apply("")
                 self.db.function_db.gradient[0].vector().vec().set(0.0)
                 self.db.function_db.gradient[0].vector().apply("")
                 self.linear_solver.solve(

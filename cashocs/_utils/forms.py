@@ -271,6 +271,30 @@ def create_dirichlet_bcs(
     return bcs_list
 
 
+def create_fixed_volumetric_bcs(
+    function_space: fenics.FunctionSpace,
+    value: fenics.Constant | fenics.Expression | fenics.Function | float | tuple[float],
+    **kwargs: Any,
+) -> list[fenics.DirichletBC]:
+    """Create a Dirichlet boundary which globally prescribes a value.
+
+    Args:
+        function_space: The function space onto which the BCs should be imposed on.
+        value: The value of the boundary condition. Has to be compatible with the
+            function_space, so that it could also be used as
+            ``fenics.DirichletBC(function_space, value, ...)``.
+        **kwargs: Keyword arguments for fenics.DirichletBC
+
+    Returns:
+        A list of DirichletBC objects that represent the boundary conditions.
+
+    """
+    all_points = fenics.CompiledSubDomain("true")
+    bcs_list = [fenics.DirichletBC(function_space, value, all_points, **kwargs)]
+
+    return bcs_list
+
+
 def bilinear_boundary_form_modification(forms: list[ufl.Form]) -> list[ufl.Form]:
     """Modifies a bilinear form for the case it is given on the boundary only.
 

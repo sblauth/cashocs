@@ -577,6 +577,15 @@ class ShapeFormHandler(form_handler.FormHandler):
                 self.shape_bdry_fix_z,
             )
 
+        fixed_dimensions = self.config.getlist("ShapeGradient", "fixed_dimensions")
+        self.use_fixed_dimensions = False
+        if len(fixed_dimensions) > 0:
+            self.use_fixed_dimensions = True
+            for i in fixed_dimensions:
+                bcs_shape += _utils.create_fixed_volumetric_bcs(
+                    self.db.function_db.control_spaces[0].sub(i), fenics.Constant(0.0)
+                )
+
         return bcs_shape
 
     def _setup_bcs_extension(self) -> list[fenics.DirichletBC]:
@@ -735,8 +744,6 @@ class ShapeFormHandler(form_handler.FormHandler):
             self.fe_reextension_matrix.ident_zeros()
             self.reextension_matrix = self.fe_reextension_matrix.mat()
 
-        self._project_scalar_product()
-
     def scalar_product(
         self, a: list[fenics.Function], b: list[fenics.Function]
     ) -> float:
@@ -824,12 +831,6 @@ class ShapeFormHandler(form_handler.FormHandler):
         """
         for bc in self.bcs_shape:
             bc.apply(function.vector())
-            function.vector().apply("")
-
-        if self.use_fixed_dimensions:
-            function.vector().vec()[self.fixed_indices] = np.array(
-                [0.0] * len(self.fixed_indices)
-            )
             function.vector().apply("")
 
     def apply_reextension_bcs(self, function: fenics.Function) -> None:

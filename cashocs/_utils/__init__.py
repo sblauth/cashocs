@@ -28,6 +28,7 @@ from cashocs._utils import interpolations
 from cashocs._utils import linalg
 from cashocs._utils.forms import bilinear_boundary_form_modification
 from cashocs._utils.forms import create_dirichlet_bcs
+from cashocs._utils.forms import create_fixed_volumetric_bcs
 from cashocs._utils.forms import create_material_parameter
 from cashocs._utils.forms import max_
 from cashocs._utils.forms import min_
@@ -62,6 +63,7 @@ __all__ = [
     "linalg",
     "bilinear_boundary_form_modification",
     "create_dirichlet_bcs",
+    "create_fixed_volumetric_bcs",
     "max_",
     "min_",
     "moreau_yosida_regularization",
