@@ -205,7 +205,7 @@ class ResultManager(IOManager):
         """
         super().__init__(db, result_dir)
 
-        self.save_results = self.config.getboolean("Output", "save_results")
+        self.save_results = self.config["Output"]["save_results"]
 
         self.output_dict = {}
         if self.db.parameter_db.temp_dict:
@@ -256,7 +256,7 @@ class ConsoleManager(IOManager):
         """
         super().__init__(db, result_dir)
         self.verbose = verbose
-        self.precision = self.config.getint("Output", "precision")
+        self.precision = self.config["Output"]["precision"]
 
     def output(self) -> None:
         """Prints the output string to the console."""
@@ -300,7 +300,7 @@ class FileManager(IOManager):
 
         """
         super().__init__(db, result_dir)
-        self.precision = self.config.getint("Output", "precision")
+        self.precision = self.config["Output"]["precision"]
 
     def output(self) -> None:
         """Saves the output string in a file."""
@@ -358,8 +358,8 @@ class TempFileManager(IOManager):
         """Deletes temporary files."""
         if self.db.parameter_db.problem_type == "shape":
             if (
-                self.config.getboolean("Mesh", "remesh")
-                and not self.config.getboolean("Debug", "remeshing")
+                self.config["Mesh"]["remesh"]
+                and not self.config["Debug"]["remeshing"]
                 and self.db.parameter_db.temp_dict
                 and self.comm.rank == 0
             ):
@@ -378,7 +378,7 @@ class MeshManager(IOManager):
         iteration = int(self.db.parameter_db.optimization_state["iteration"])
 
         if not self.db.parameter_db.gmsh_file_path:
-            gmsh_file = self.config.get("Mesh", "gmsh_file")
+            gmsh_file = self.config["Mesh"]["gmsh_file"]
         else:
             gmsh_file = self.db.parameter_db.gmsh_file_path
 
@@ -400,7 +400,7 @@ class MeshManager(IOManager):
     def post_process(self) -> None:
         """Saves a copy of the optimized mesh in Gmsh format."""
         if not self.db.parameter_db.gmsh_file_path:
-            gmsh_file = self.config.get("Mesh", "gmsh_file")
+            gmsh_file = self.config["Mesh"]["gmsh_file"]
         else:
             gmsh_file = self.db.parameter_db.gmsh_file_path
 
@@ -428,10 +428,10 @@ class XDMFFileManager(IOManager):
         """
         super().__init__(db, result_dir)
 
-        self.save_state = self.config.getboolean("Output", "save_state")
-        self.save_adjoint = self.config.getboolean("Output", "save_adjoint")
-        self.save_gradient = self.config.getboolean("Output", "save_gradient")
-        self.single_file = self.config.getboolean("Output", "single_file")
+        self.save_state = self.config["Output"]["save_state"]
+        self.save_adjoint = self.config["Output"]["save_adjoint"]
+        self.save_gradient = self.config["Output"]["save_gradient"]
+        self.single_file = self.config["Output"]["single_file"]
 
         self.is_initialized = False
 

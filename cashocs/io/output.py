@@ -41,12 +41,12 @@ class OutputManager:
         """
         self.db = db
         self.config = self.db.config
-        self.result_dir = self.config.get("Output", "result_dir")
+        self.result_dir = self.config["Output"]["result_dir"]
         self.result_dir = self.result_dir.rstrip("/")
 
         self._silent = False
 
-        self.time_suffix = self.config.getboolean("Output", "time_suffix")
+        self.time_suffix = self.config["Output"]["time_suffix"]
         if self.time_suffix:
             dt_current_time = dt.now()
             self.suffix = (
@@ -58,13 +58,13 @@ class OutputManager:
 
         self.result_path = pathlib.Path(self.result_dir)
 
-        verbose = self.config.getboolean("Output", "verbose")
-        save_txt = self.config.getboolean("Output", "save_txt")
-        save_results = self.config.getboolean("Output", "save_results")
-        save_state = self.config.getboolean("Output", "save_state")
-        save_adjoint = self.config.getboolean("Output", "save_adjoint")
-        save_gradient = self.config.getboolean("Output", "save_gradient")
-        save_mesh = self.config.getboolean("Output", "save_mesh")
+        verbose = self.config["Output"]["verbose"]
+        save_txt = self.config["Output"]["save_txt"]
+        save_results = self.config["Output"]["save_results"]
+        save_state = self.config["Output"]["save_state"]
+        save_adjoint = self.config["Output"]["save_adjoint"]
+        save_gradient = self.config["Output"]["save_gradient"]
+        save_mesh = self.config["Output"]["save_mesh"]
         save_checkpoints = save_state or save_gradient or save_adjoint or save_mesh
         has_output = save_txt or save_results or save_checkpoints
 

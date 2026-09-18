@@ -115,19 +115,15 @@ class _MeshHandler:
         self._current_mesh_quality = 1.0
         self._gmsh_file = ""
         # setup from config
-        self.volume_change = float(self.config.get("MeshQuality", "volume_change"))
-        self.angle_change = float(self.config.get("MeshQuality", "angle_change"))
+        self.volume_change = self.config["MeshQuality"]["volume_change"]
+        self.angle_change = self.config["MeshQuality"]["angle_change"]
 
-        self.test_for_intersections = self.config.getboolean(
-            "ShapeGradient", "test_for_intersections"
-        )
+        self.test_for_intersections = self.config["ShapeGradient"][
+            "test_for_intersections"
+        ]
 
-        self.mesh_quality_tol_lower: float = self.config.getfloat(
-            "MeshQuality", "tol_lower"
-        )
-        self.mesh_quality_tol_upper: float = self.config.getfloat(
-            "MeshQuality", "tol_upper"
-        )
+        self.mesh_quality_tol_lower: float = self.config["MeshQuality"]["tol_lower"]
+        self.mesh_quality_tol_upper: float = self.config["MeshQuality"]["tol_upper"]
 
         if self.mesh_quality_tol_lower > 0.9 * self.mesh_quality_tol_upper:
             log.warning(
@@ -135,10 +131,10 @@ class _MeshHandler:
                 "one (tol_upper). This may slow down the optimization considerably."
             )
 
-        self.mesh_quality_measure = self.config.get("MeshQuality", "measure")
+        self.mesh_quality_measure = self.config["MeshQuality"]["measure"]
 
-        self.mesh_quality_type = self.config.get("MeshQuality", "type")
-        self.quality_quantile = self.config.getfloat("MeshQuality", "quantile")
+        self.mesh_quality_type = self.config["MeshQuality"]["type"]
+        self.quality_quantile = self.config["MeshQuality"]["quantile"]
 
         self.current_mesh_quality: float = quality.compute_mesh_quality(
             self.mesh,
@@ -186,12 +182,12 @@ class _MeshHandler:
         self.l_prior = None
 
         # Remeshing initializations
-        self.do_remesh: bool = self.config.getboolean("Mesh", "remesh")
-        self.save_optimized_mesh: bool = self.config.getboolean("Output", "save_mesh")
+        self.do_remesh: bool = self.config["Mesh"]["remesh"]
+        self.save_optimized_mesh: bool = self.config["Output"]["save_mesh"]
 
         if self.do_remesh or self.save_optimized_mesh:
             self.mesh_directory = (
-                pathlib.Path(self.config.get("Mesh", "gmsh_file")).resolve().parent
+                pathlib.Path(self.config["Mesh"]["gmsh_file"]).resolve().parent
             )
 
         self._setup_remesh()
@@ -226,7 +222,7 @@ class _MeshHandler:
             self.remesh_geo_file = f"{self.db.parameter_db.remesh_directory}/remesh.geo"
 
         elif self.save_optimized_mesh:
-            self.gmsh_file = self.config.get("Mesh", "gmsh_file")
+            self.gmsh_file = self.config["Mesh"]["gmsh_file"]
 
         # create a copy of the initial mesh file
         if self.do_remesh and self.remesh_counter == 0:
@@ -364,7 +360,7 @@ class _MeshHandler:
             )
 
             frobenius_norm = self.norm_function.vector().vec().max()[1]
-            beta_armijo = self.config.getfloat("LineSearch", "beta_armijo")
+            beta_armijo = self.config["LineSearch"]["beta_armijo"]
 
             return int(
                 np.maximum(
@@ -485,7 +481,7 @@ class _MeshHandler:
         )
         solver.optimization_problem.initialize_solve_parameters()
 
-        line_search_type = self.config.get("LineSearch", "method").casefold()
+        line_search_type = self.config["LineSearch"]["method"].casefold()
         if line_search_type == "armijo":
             line_search: ls.LineSearch = ls.ArmijoLineSearch(
                 self.db, solver.optimization_problem
@@ -532,14 +528,14 @@ class _MeshHandler:
             for key, value in solver.output_manager.output_dict.items():
                 self.db.parameter_db.temp_dict["output_dict"][key] = value
 
-            self.db.parameter_db.temp_dict["OptimizationRoutine"]["rtol"] = (
-                self.config.getfloat("OptimizationRoutine", "rtol")
-            )
-            self.db.parameter_db.temp_dict["OptimizationRoutine"]["atol"] = (
-                self.config.getfloat("OptimizationRoutine", "atol")
-            )
+            self.db.parameter_db.temp_dict["OptimizationRoutine"]["rtol"] = self.config[
+                "OptimizationRoutine"
+            ]["rtol"]
+            self.db.parameter_db.temp_dict["OptimizationRoutine"]["atol"] = self.config[
+                "OptimizationRoutine"
+            ]["atol"]
             self.db.parameter_db.temp_dict["OptimizationRoutine"]["max_iter"] = (
-                self.config.getint("OptimizationRoutine", "max_iter")
+                self.config["OptimizationRoutine"]["max_iter"]
             )
 
             dim = self.mesh.geometric_dimension()
@@ -557,7 +553,7 @@ class _MeshHandler:
                 new_gmsh_file,
             ]
             if self.comm.rank == 0:
-                if not self.config.getboolean("Mesh", "show_gmsh_output"):
+                if not self.config["Mesh"]["show_gmsh_output"]:
                     subprocess.run(  # noqa: S603
                         gmsh_cmd_list,
                         check=True,
@@ -615,8 +611,8 @@ class _MeshHandler:
             solver: The solver instance carrying the new mesh
 
         """
-        mesh_quality_tol_lower = self.db.config.getfloat("MeshQuality", "tol_lower")
-        mesh_quality_tol_upper = self.db.config.getfloat("MeshQuality", "tol_upper")
+        mesh_quality_tol_lower = self.db.config["MeshQuality"]["tol_lower"]
+        mesh_quality_tol_upper = self.db.config["MeshQuality"]["tol_upper"]
 
         if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
             log.warning(
@@ -625,9 +621,9 @@ class _MeshHandler:
                 "optimization considerably."
             )
 
-        mesh_quality_measure = self.db.config.get("MeshQuality", "measure")
-        mesh_quality_type = self.db.config.get("MeshQuality", "type")
-        quality_quantile = self.db.config.getfloat("MeshQuality", "quantile")
+        mesh_quality_measure = self.db.config["MeshQuality"]["measure"]
+        mesh_quality_type = self.db.config["MeshQuality"]["type"]
+        quality_quantile = self.db.config["MeshQuality"]["quantile"]
 
         mesh = solver.optimization_problem.states[0].function_space().mesh()
 
@@ -650,7 +646,7 @@ class _MeshHandler:
             solver: The optimization algorithm.
 
         """
-        if self.config.getboolean("ShapeGradient", "global_deformation"):
+        if self.config["ShapeGradient"]["global_deformation"]:
             pre_log_level = (
                 log.cashocs_logger._handler.level  # pylint: disable=protected-access
             )

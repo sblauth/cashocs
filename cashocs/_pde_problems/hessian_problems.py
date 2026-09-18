@@ -70,10 +70,10 @@ class HessianProblem:
 
         self.config = self.db.config
 
-        self.inner_newton = self.config.get("AlgoTNM", "inner_newton")
-        self.max_it_inner_newton = self.config.getint("AlgoTNM", "max_it_inner_newton")
-        self.inner_newton_rtol = self.config.getfloat("AlgoTNM", "inner_newton_rtol")
-        self.inner_newton_atol = self.config.getfloat("AlgoTNM", "inner_newton_atol")
+        self.inner_newton = self.config["AlgoTNM"]["inner_newton"]
+        self.max_it_inner_newton = self.config["AlgoTNM"]["max_it_inner_newton"]
+        self.inner_newton_rtol = self.config["AlgoTNM"]["inner_newton_rtol"]
+        self.inner_newton_atol = self.config["AlgoTNM"]["inner_newton_atol"]
 
         self.test_directions = self.form_handler.hessian_form_handler.test_directions
 
@@ -122,10 +122,10 @@ class HessianProblem:
 
         self.state_dim = self.db.parameter_db.state_dim
 
-        self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
-        self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
-        self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
-        self.picard_verbose = self.config.getboolean("StateSystem", "picard_verbose")
+        self.picard_rtol = self.config["StateSystem"]["picard_rtol"]
+        self.picard_atol = self.config["StateSystem"]["picard_atol"]
+        self.picard_max_iter = self.config["StateSystem"]["picard_iter"]
+        self.picard_verbose = self.config["StateSystem"]["picard_verbose"]
 
         self.no_sensitivity_solves = 0
 
@@ -168,10 +168,7 @@ class HessianProblem:
 
         self.bcs_list_ad = self.adjoint_form_handler.bcs_list_ad
 
-        if (
-            not self.config.getboolean("StateSystem", "picard_iteration")
-            or self.state_dim == 1
-        ):
+        if not self.config["StateSystem"]["picard_iteration"] or self.state_dim == 1:
             for i in range(self.state_dim):
                 _utils.assemble_and_solve_linear(
                     self.form_handler.hessian_form_handler.sensitivity_eqs_lhs[i],

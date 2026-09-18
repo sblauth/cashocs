@@ -23,7 +23,6 @@ shape gradient with a Riesz projection.
 
 from __future__ import annotations
 
-import configparser
 import copy
 from typing import TYPE_CHECKING
 
@@ -48,6 +47,7 @@ if TYPE_CHECKING:
     from cashocs._database import database
     from cashocs._pde_problems import adjoint_problem as ap
     from cashocs._pde_problems import state_problem as sp
+    from cashocs.io import Config
 
 
 class ShapeGradientProblem(pde_problem.PDEProblem):
@@ -78,9 +78,9 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
 
         self.gradient_norm_squared = 1.0
 
-        gradient_tol = self.config.getfloat("OptimizationRoutine", "gradient_tol")
+        gradient_tol = self.config["OptimizationRoutine"]["gradient_tol"]
 
-        gradient_method = self.config.get("OptimizationRoutine", "gradient_method")
+        gradient_method = self.config["OptimizationRoutine"]["gradient_method"]
 
         if db.parameter_db.gradient_ksp_options is not None:
             self.ksp_options = db.parameter_db.gradient_ksp_options[0]
@@ -91,7 +91,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             self.ksp_options["ksp_rtol"] = gradient_tol
 
         if (
-            self.config.getboolean("ShapeGradient", "use_p_laplacian")
+            self.config["ShapeGradient"]["use_p_laplacian"]
             and self.form_handler.use_fixed_dimensions
         ):
             log.warning(
@@ -101,7 +101,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             )
 
         if (
-            self.config.getboolean("ShapeGradient", "use_p_laplacian")
+            self.config["ShapeGradient"]["use_p_laplacian"]
             and not self.form_handler.uses_custom_scalar_product
             and not self.form_handler.use_fixed_dimensions
         ):
@@ -131,7 +131,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             self.form_handler.shape_regularization.update_geometric_quantities()
 
             if (
-                self.config.getboolean("ShapeGradient", "use_p_laplacian")
+                self.config["ShapeGradient"]["use_p_laplacian"]
                 and not self.form_handler.uses_custom_scalar_product
                 and not self.form_handler.use_fixed_dimensions
             ):
@@ -180,10 +180,10 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             over-written.
 
         """
-        if self.config.getboolean("ShapeGradient", "reextend_from_boundary"):
+        if self.config["ShapeGradient"]["reextend_from_boundary"]:
             log.debug("Re-extending the gradient deformation from the boundary.")
 
-            if self.config.get("ShapeGradient", "reextension_mode") == "normal":
+            if self.config["ShapeGradient"]["reextension_mode"] == "normal":
                 normal_deformation = self._compute_normal_deformation()
                 self.db.function_db.gradient[0].vector().vec().aypx(
                     0.0, normal_deformation.vector().vec()
@@ -299,7 +299,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         return surface_deformation
 
     def restrict_gradient_on_fixed_volumes(self) -> None:
-        shape_volume_fix = self.config.getlist("ShapeGradient", "shape_volume_fix")
+        shape_volume_fix = self.config["ShapeGradient"]["shape_volume_fix"]
         if len(shape_volume_fix) > 0:
             deformation_space = self.db.function_db.control_spaces[0]
             shape_gradient = self.db.function_db.gradient[0]
@@ -336,7 +336,7 @@ class _PLaplaceProjector:
         gradient: list[fenics.Function],
         shape_derivative: ufl.Form,
         bcs_shape: list[fenics.DirichletBC],
-        config: configparser.ConfigParser,
+        config: Config,
     ) -> None:
         """Initializes self.
 
@@ -350,9 +350,9 @@ class _PLaplaceProjector:
 
         """
         self.db = db
-        self.p_target = config.getint("ShapeGradient", "p_laplacian_power")
-        delta = config.getfloat("ShapeGradient", "damping_factor")
-        eps = config.getfloat("ShapeGradient", "p_laplacian_stabilization")
+        self.p_target = config["ShapeGradient"]["p_laplacian_power"]
+        delta = config["ShapeGradient"]["damping_factor"]
+        eps = config["ShapeGradient"]["p_laplacian_stabilization"]
         self.p_list = np.arange(2, self.p_target + 1, 1)
         self.solution = gradient[0]
         self.shape_derivative = shape_derivative
@@ -385,8 +385,8 @@ class _PLaplaceProjector:
                 * dx
             )
 
-            gradient_method = config.get("OptimizationRoutine", "gradient_method")
-            gradient_tol = config.get("OptimizationRoutine", "gradient_tol")
+            gradient_method = config["OptimizationRoutine"]["gradient_method"]
+            gradient_tol = config["OptimizationRoutine"]["gradient_tol"]
 
             if db.parameter_db.gradient_ksp_options is not None:
                 self.ksp_options = db.parameter_db.gradient_ksp_options[0]

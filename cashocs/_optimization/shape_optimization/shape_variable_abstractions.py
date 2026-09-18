@@ -162,10 +162,10 @@ class ShapeVariableAbstractions(
         )
 
         iteration = self.db.parameter_db.optimization_state["iteration"]
-        if self.db.config.getint("MeshQuality", "remesh_iter") > 0:
+        if self.db.config["MeshQuality"]["remesh_iter"] > 0:
             iteration_criterion = bool(
                 iteration > 0
-                and iteration % self.db.config.getint("MeshQuality", "remesh_iter") == 0
+                and iteration % self.db.config["MeshQuality"]["remesh_iter"] == 0
             )
         else:
             iteration_criterion = False

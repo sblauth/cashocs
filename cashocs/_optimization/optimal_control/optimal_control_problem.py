@@ -311,7 +311,7 @@ class OptimalControlProblem(optimization_problem.OptimizationProblem):
                     bc.apply(self.db.function_db.controls[i].vector())
 
     def _setup_solver(self) -> optimization_algorithms.OptimizationAlgorithm:
-        line_search_type = self.config.get("LineSearch", "method").casefold()
+        line_search_type = self.config["LineSearch"]["method"].casefold()
         if line_search_type == "armijo":
             line_search: ls.LineSearch = ls.ArmijoLineSearch(self.db, self)
         elif line_search_type == "polynomial":

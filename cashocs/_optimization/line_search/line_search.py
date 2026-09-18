@@ -74,15 +74,13 @@ class LineSearch(abc.ABC):
                 )
             self.global_deformation_vector = self.deformation_function.vector().vec()
 
-        self.stepsize = self.config.getfloat("LineSearch", "initial_stepsize")
-        self.safeguard_stepsize = self.config.getboolean(
-            "LineSearch", "safeguard_stepsize"
+        self.stepsize: float = cast(
+            float, self.config["LineSearch"]["initial_stepsize"]
         )
+        self.safeguard_stepsize = self.config["LineSearch"]["safeguard_stepsize"]
 
-        self.beta_armijo: float = self.config.getfloat("LineSearch", "beta_armijo")
-        self.epsilon_armijo: float = self.config.getfloat(
-            "LineSearch", "epsilon_armijo"
-        )
+        self.beta_armijo: float = self.config["LineSearch"]["beta_armijo"]
+        self.epsilon_armijo: float = self.config["LineSearch"]["epsilon_armijo"]
         self.search_direction_inf = 1.0
 
         algorithm = _utils.optimization_algorithm_configuration(self.config)
@@ -130,8 +128,9 @@ class LineSearch(abc.ABC):
             constraint_gradient,
             dropped_idx,
         )
-        if deformation is not None and self.config.getboolean(
-            "ShapeGradient", "global_deformation"
+        if (
+            deformation is not None
+            and self.config["ShapeGradient"]["global_deformation"]
         ):
             x = fenics.as_backend_type(deformation.vector()).vec()
 
@@ -185,7 +184,7 @@ class LineSearch(abc.ABC):
                 "Solver has been restarted. "
                 "Using initial_stepsize from config as trial stepsize."
             )
-            self.stepsize = self.config.getfloat("LineSearch", "initial_stepsize")
+            self.stepsize = self.config["LineSearch"]["initial_stepsize"]
 
         num_decreases = (
             self.optimization_variable_abstractions.compute_a_priori_decreases(

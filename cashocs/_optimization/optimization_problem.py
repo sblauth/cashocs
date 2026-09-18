@@ -236,7 +236,7 @@ class OptimizationProblem(abc.ABC):
             excluded_from_time_derivative,
         )
 
-        if self.config.getboolean("StateSystem", "use_adjoint_linearizations"):
+        if self.config["StateSystem"]["use_adjoint_linearizations"]:
             self.adjoint_linearizations: list | None = []
             for derivative in newton_linearizations:
                 if derivative is not None:
@@ -693,17 +693,17 @@ class OptimizationProblem(abc.ABC):
         )
 
         if (rtol is not None) and (atol is None):
-            self.config.set("OptimizationRoutine", "rtol", str(rtol))
-            self.config.set("OptimizationRoutine", "atol", str(0.0))
+            self.config["OptimizationRoutine"]["rtol"] = rtol
+            self.config["OptimizationRoutine"]["atol"] = 0.0
         elif (atol is not None) and (rtol is None):
-            self.config.set("OptimizationRoutine", "rtol", str(0.0))
-            self.config.set("OptimizationRoutine", "atol", str(atol))
+            self.config["OptimizationRoutine"]["rtol"] = 0.0
+            self.config["OptimizationRoutine"]["atol"] = atol
         elif (atol is not None) and (rtol is not None):
-            self.config.set("OptimizationRoutine", "rtol", str(rtol))
-            self.config.set("OptimizationRoutine", "atol", str(atol))
+            self.config["OptimizationRoutine"]["rtol"] = rtol
+            self.config["OptimizationRoutine"]["atol"] = atol
 
         if max_iter is not None:
-            self.config.set("OptimizationRoutine", "max_iter", str(max_iter))
+            self.config["OptimizationRoutine"]["max_iter"] = max_iter
 
     @abc.abstractmethod
     def solve(

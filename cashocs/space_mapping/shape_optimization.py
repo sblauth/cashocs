@@ -187,8 +187,8 @@ class CoarseModel:
         self.coordinates_initial = self.mesh.coordinates().copy()
 
         config = copy.deepcopy(self.config)
-        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
-        config.set("Output", "result_dir", str(output_path / "coarse_model"))
+        output_path = pathlib.Path(self.config["Output"]["result_dir"])
+        config["Output"]["result_dir"] = str(output_path / "coarse_model")
 
         self.shape_optimization_problem = sop.ShapeOptimizationProblem(
             self.state_forms,
@@ -345,11 +345,9 @@ class ParameterExtraction:
             )
 
         config = copy.deepcopy(self.config)
-        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
-        config.set(
-            "Output",
-            "result_dir",
-            str(output_path / f"parameter_extraction_{iteration}"),
+        output_path = pathlib.Path(self.config["Output"]["result_dir"])
+        config["Output"]["result_dir"] = str(
+            output_path / f"parameter_extraction_{iteration}"
         )
 
         self.shape_optimization_problem = sop.ShapeOptimizationProblem(
@@ -447,9 +445,9 @@ class SpaceMappingProblem:
         self.save_history = save_history
 
         config = copy.deepcopy(self.coarse_model.config)
-        config.set("Output", "save_state", "False")
-        config.set("Output", "save_adjoint", "False")
-        config.set("Output", "save_gradient", "False")
+        config["Output"]["save_state"] = False
+        config["Output"]["save_adjoint"] = False
+        config["Output"]["save_gradient"] = False
 
         pdb = self.coarse_model.shape_optimization_problem.db.parameter_db
         ksp_options = pdb.state_ksp_options

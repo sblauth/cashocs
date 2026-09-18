@@ -700,16 +700,14 @@ class DeflatedTopologyOptimizationProblem(DeflatedProblem):
         )
 
         config = copy.deepcopy(self.config)
-        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        output_path = pathlib.Path(self.config["Output"]["result_dir"])
         if restart:
-            config.set(
-                "Output",
-                "result_dir",
-                str(output_path / f"subproblem_{iteration}_restart"),
+            config["Output"]["result_dir"] = str(
+                output_path / f"subproblem_{iteration}_restart"
             )
         else:
-            config.set(
-                "Output", "result_dir", str(output_path / f"subproblem_{iteration}")
+            config["Output"]["result_dir"] = str(
+                output_path / f"subproblem_{iteration}"
             )
 
         eftd = self.db.parameter_db.excluded_from_time_derivative
@@ -981,16 +979,14 @@ class DeflatedOptimalControlProblem(DeflatedProblem):
         )
 
         config = copy.deepcopy(self.config)
-        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
+        output_path = pathlib.Path(self.config["Output"]["result_dir"])
         if restart:
-            config.set(
-                "Output",
-                "result_dir",
-                str(output_path / f"subproblem_{iteration}_restart"),
+            config["Output"]["result_dir"] = str(
+                output_path / f"subproblem_{iteration}_restart"
             )
         else:
-            config.set(
-                "Output", "result_dir", str(output_path / f"subproblem_{iteration}")
+            config["Output"]["result_dir"] = str(
+                output_path / f"subproblem_{iteration}"
             )
 
         eftd = self.db.parameter_db.excluded_from_time_derivative

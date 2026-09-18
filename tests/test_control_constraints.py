@@ -207,7 +207,7 @@ def test_int_eq_constraints_only(dir_path, u, y, geometry, F, bcs, J, p):
     u.vector().apply("")
     constraint = cashocs.EqualityConstraint(y * y * geometry.dx, 1.0)
     cfg = cashocs.load_config(dir_path + "/config_ocp.ini")
-    cfg.set("Output", "verbose", "False")
+    cfg["Output"]["verbose"] = False
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=cfg
     )
@@ -227,7 +227,7 @@ def test_pw_eq_constraints_only(geometry, F, bcs, J, y, u, p, config_ocp):
     u.vector().vec().set(1.0)
     u.vector().apply("")
     constraint = cashocs.EqualityConstraint(y + u, 0.0, geometry.dx)
-    config_ocp.set("Output", "verbose", "False")
+    config_ocp["Output"]["verbose"] = False
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=config_ocp
     )
@@ -248,7 +248,7 @@ def test_int_ineq_constraints_only(dir_path, config_ocp, geometry, F, bcs, y, u,
     u.vector().apply("")
     J = cashocs.IntegralFunctional(pow(y - Constant(1.0), 2) * geometry.dx)
     constraint = cashocs.InequalityConstraint(y * y * geometry.dx, upper_bound=0.5)
-    config_ocp.set("OptimizationRoutine", "max_iter", "200")
+    config_ocp["OptimizationRoutine"]["max_iter"] = 200
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=config_ocp
     )
@@ -284,7 +284,7 @@ def test_pw_ineq_constraints_only(config_ocp, geometry, F, bcs, y, u, p):
     u.vector().vec().set(0.0)
     u.vector().apply("")
     J = cashocs.IntegralFunctional(pow(y - Constant(1.0), 2) * geometry.dx)
-    config_ocp.set("OptimizationRoutine", "max_iter", "500")
+    config_ocp["OptimizationRoutine"]["max_iter"] = 500
     constraint = cashocs.InequalityConstraint(y, upper_bound=0.5, measure=geometry.dx)
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=config_ocp
@@ -303,7 +303,7 @@ def test_pw_ineq_constraints_only(config_ocp, geometry, F, bcs, y, u, p):
     u.vector().vec().set(0.0)
     u.vector().apply("")
     J = cashocs.IntegralFunctional(pow(y - Constant(-1), 2) * geometry.dx)
-    config_ocp.set("OptimizationRoutine", "max_iter", "500")
+    config_ocp["OptimizationRoutine"]["max_iter"] = 500
     constraint = cashocs.InequalityConstraint(y, lower_bound=-0.5, measure=geometry.dx)
     problem = cashocs.ConstrainedOptimalControlProblem(
         F, bcs, J, y, u, p, constraint, config=config_ocp
@@ -323,7 +323,7 @@ def test_pw_ineq_constraints_only(config_ocp, geometry, F, bcs, y, u, p):
     u.vector().vec().set(0.0)
     u.vector().apply("")
     J = cashocs.IntegralFunctional(pow(y - lin_expr, 2) * geometry.dx)
-    config_ocp.set("OptimizationRoutine", "max_iter", "500")
+    config_ocp["OptimizationRoutine"]["max_iter"] = 500
     constraint = cashocs.InequalityConstraint(
         y, lower_bound=-0.5, upper_bound=0.5, measure=geometry.dx
     )

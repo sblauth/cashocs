@@ -56,15 +56,11 @@ class NonlinearCGMethod(optimization_algorithm.OptimizationAlgorithm):
             self.db.function_db.control_spaces
         )
 
-        self.cg_method = self.config.get("AlgoCG", "cg_method")
-        self.cg_periodic_restart = self.config.getboolean(
-            "AlgoCG", "cg_periodic_restart"
-        )
-        self.cg_periodic_its = self.config.getint("AlgoCG", "cg_periodic_its")
-        self.cg_relative_restart = self.config.getboolean(
-            "AlgoCG", "cg_relative_restart"
-        )
-        self.cg_restart_tol = self.config.getfloat("AlgoCG", "cg_restart_tol")
+        self.cg_method = self.config["AlgoCG"]["cg_method"]
+        self.cg_periodic_restart = self.config["AlgoCG"]["cg_periodic_restart"]
+        self.cg_periodic_its = self.config["AlgoCG"]["cg_periodic_its"]
+        self.cg_relative_restart = self.config["AlgoCG"]["cg_relative_restart"]
+        self.cg_restart_tol = self.config["AlgoCG"]["cg_restart_tol"]
 
         self.memory = 0
         self.beta = 0.0

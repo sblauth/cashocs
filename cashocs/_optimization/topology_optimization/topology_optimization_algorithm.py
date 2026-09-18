@@ -411,7 +411,7 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
         self._cashocs_problem.state_problem.has_solution = False
 
         failed = False
-        for k in range(self.config.getint("OptimizationRoutine", "max_iter")):
+        for k in range(self.config["OptimizationRoutine"]["max_iter"]):
             if failed:
                 break
 
@@ -467,7 +467,7 @@ class LevelSetTopologyAlgorithm(TopologyOptimizationAlgorithm):
                     self.stepsize *= 0.5
 
                 if self.stepsize <= 1e-10:
-                    if self.config.getboolean("OptimizationRoutine", "soft_exit"):
+                    if self.config["OptimizationRoutine"]["soft_exit"]:
                         failed = True
                         break
                     else:

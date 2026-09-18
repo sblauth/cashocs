@@ -184,8 +184,8 @@ class CoarseModel:
         self._post_callback: Callable | None = None
 
         config = copy.deepcopy(self.config)
-        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
-        config.set("Output", "result_dir", str(output_path / "coarse_model"))
+        output_path = pathlib.Path(self.config["Output"]["result_dir"])
+        config["Output"]["result_dir"] = str(output_path / "coarse_model")
 
         self.optimal_control_problem = ocp.OptimalControlProblem(
             self.state_forms,
@@ -354,11 +354,9 @@ class ParameterExtraction:
             )
 
         config = copy.deepcopy(self.config)
-        output_path = pathlib.Path(self.config.get("Output", "result_dir"))
-        config.set(
-            "Output",
-            "result_dir",
-            str(output_path / f"parameter_extraction_{iteration}"),
+        output_path = pathlib.Path(self.config["Output"]["result_dir"])
+        config["Output"]["result_dir"] = str(
+            output_path / f"parameter_extraction_{iteration}"
         )
 
         self.optimal_control_problem = ocp.OptimalControlProblem(
@@ -459,9 +457,9 @@ class SpaceMappingProblem:
         self.save_history = save_history
 
         config = copy.deepcopy(self.coarse_model.config)
-        config.set("Output", "save_state", "False")
-        config.set("Output", "save_adjoint", "False")
-        config.set("Output", "save_gradient", "False")
+        config["Output"]["save_state"] = False
+        config["Output"]["save_adjoint"] = False
+        config["Output"]["save_gradient"] = False
 
         pdb = self.coarse_model.optimal_control_problem.db.parameter_db
         ksp_options = pdb.state_ksp_options

@@ -71,7 +71,7 @@ result_dir = f"./results_rank_{rank}"
 # directory for all processes with
 
 config = cashocs.load_config("./config.ini")
-config.set("Output", "result_dir", result_dir)
+config["Output"]["result_dir"] = result_dir
 
 # :::{important}
 # It is necessary to define different result directories for each group of MPI processes

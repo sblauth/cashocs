@@ -57,13 +57,11 @@ class LBFGSMethod(optimization_algorithm.OptimizationAlgorithm):
         """
         super().__init__(db, optimization_problem, line_search)
 
-        self.bfgs_memory_size = self.config.getint("AlgoLBFGS", "bfgs_memory_size")
-        self.use_bfgs_scaling = self.config.getboolean("AlgoLBFGS", "use_bfgs_scaling")
-        self.bfgs_periodic_restart = self.config.getint(
-            "AlgoLBFGS", "bfgs_periodic_restart"
-        )
+        self.bfgs_memory_size = self.config["AlgoLBFGS"]["bfgs_memory_size"]
+        self.use_bfgs_scaling = self.config["AlgoLBFGS"]["use_bfgs_scaling"]
+        self.bfgs_periodic_restart = self.config["AlgoLBFGS"]["bfgs_periodic_restart"]
         self.periodic_its = 0
-        self.damped = self.config.getboolean("AlgoLBFGS", "damped")
+        self.damped = self.config["AlgoLBFGS"]["damped"]
 
         self._init_helpers()
 

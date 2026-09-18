@@ -145,7 +145,7 @@ class BasicLineSearch(line_search.LineSearch):
         try:
             objective_step = self.cost_functional.evaluate()
         except (_exceptions.PETScError, _exceptions.NotConvergedError) as error:
-            if self.config.getboolean("LineSearch", "fail_if_not_converged"):
+            if self.config["LineSearch"]["fail_if_not_converged"]:
                 raise error
             else:
                 objective_step = None
