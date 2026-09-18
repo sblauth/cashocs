@@ -350,7 +350,7 @@ class _PLaplaceProjector:
 
         """
         self.db = db
-        self.p_target = config.getint("ShapeGradient", "p_laplacian_power")
+        self.p_target = config["ShapeGradient"]["p_laplacian_power"]
         delta = config.getfloat("ShapeGradient", "damping_factor")
         eps = config.getfloat("ShapeGradient", "p_laplacian_stabilization")
         self.p_list = np.arange(2, self.p_target + 1, 1)

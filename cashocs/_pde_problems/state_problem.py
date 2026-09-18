@@ -87,14 +87,14 @@ class StateProblem(pde_problem.PDEProblem):
 
         self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
         self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
-        self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
+        self.picard_max_iter = self.config["StateSystem"]["picard_iter"]
         self.picard_verbose = self.config["StateSystem"]["picard_verbose"]
         self.newton_rtol = self.config.getfloat("StateSystem", "newton_rtol")
         self.newton_atol = self.config.getfloat("StateSystem", "newton_atol")
         self.newton_damped = self.config["StateSystem"]["newton_damped"]
         self.newton_inexact = self.config["StateSystem"]["newton_inexact"]
         self.newton_verbose = self.config["StateSystem"]["newton_verbose"]
-        self.newton_iter = self.config.getint("StateSystem", "newton_iter")
+        self.newton_iter = self.config["StateSystem"]["newton_iter"]
         self.backend = self.config.get("StateSystem", "backend")
 
         # pylint: disable=invalid-name

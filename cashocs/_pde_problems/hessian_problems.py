@@ -71,7 +71,7 @@ class HessianProblem:
         self.config = self.db.config
 
         self.inner_newton = self.config.get("AlgoTNM", "inner_newton")
-        self.max_it_inner_newton = self.config.getint("AlgoTNM", "max_it_inner_newton")
+        self.max_it_inner_newton = self.config["AlgoTNM"]["max_it_inner_newton"]
         self.inner_newton_rtol = self.config.getfloat("AlgoTNM", "inner_newton_rtol")
         self.inner_newton_atol = self.config.getfloat("AlgoTNM", "inner_newton_atol")
 
@@ -124,7 +124,7 @@ class HessianProblem:
 
         self.picard_rtol = self.config.getfloat("StateSystem", "picard_rtol")
         self.picard_atol = self.config.getfloat("StateSystem", "picard_atol")
-        self.picard_max_iter = self.config.getint("StateSystem", "picard_iter")
+        self.picard_max_iter = self.config["StateSystem"]["picard_iter"]
         self.picard_verbose = self.config["StateSystem"]["picard_verbose"]
 
         self.no_sensitivity_solves = 0

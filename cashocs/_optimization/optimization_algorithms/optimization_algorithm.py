@@ -115,7 +115,7 @@ class OptimizationAlgorithm(abc.ABC):
         else:
             self.rtol = self.config.getfloat("OptimizationRoutine", "rtol")
             self.atol = self.config.getfloat("OptimizationRoutine", "atol")
-            self.max_iter = self.config.getint("OptimizationRoutine", "max_iter")
+            self.max_iter = self.config["OptimizationRoutine"]["max_iter"]
         self.soft_exit = self.config["OptimizationRoutine"]["soft_exit"]
 
         self.output_manager = optimization_problem.output_manager
