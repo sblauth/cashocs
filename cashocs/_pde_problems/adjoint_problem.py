@@ -78,9 +78,7 @@ class AdjointProblem(pde_problem.PDEProblem):
         self.picard_rtol: float = self.config.getfloat("StateSystem", "picard_rtol")
         self.picard_atol: float = self.config.getfloat("StateSystem", "picard_atol")
         self.picard_max_iter: int = self.config.getint("StateSystem", "picard_iter")
-        self.picard_verbose: bool = self.config.getboolean(
-            "StateSystem", "picard_verbose"
-        )
+        self.picard_verbose: bool = self.config["StateSystem"]["picard_verbose"]
 
         # pylint: disable=invalid-name
         self.A_tensors = [
@@ -133,7 +131,7 @@ class AdjointProblem(pde_problem.PDEProblem):
         if not self.has_solution:
             log.begin("Solving the adjoint system.", level=log.DEBUG)
             if (
-                not self.config.getboolean("StateSystem", "picard_iteration")
+                not self.config["StateSystem"]["picard_iteration"]
                 or self.db.parameter_db.state_dim == 1
             ):
                 for i in range(self.db.parameter_db.state_dim):
@@ -156,9 +154,7 @@ class AdjointProblem(pde_problem.PDEProblem):
                             ],
                             excluded_from_time_derivative=eftd,  # type: ignore
                         )
-                    elif self.db.config.getboolean(
-                        "StateSystem", "use_adjoint_linearizations"
-                    ):
+                    elif self.db.config["StateSystem"]["use_adjoint_linearizations"]:
                         nonlinear_solvers.snes_solve(
                             self.adjoint_form_handler.adjoint_eq_forms[-1 - i],
                             self.adjoints[-1 - i],

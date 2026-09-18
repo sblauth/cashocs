@@ -207,15 +207,15 @@ class TopologyOptimizationProblem(optimization_problem.OptimizationProblem):
         self.is_topology_problem = True
         self.update_levelset()
 
-        self.topological_derivative_is_identical = self.config.getboolean(
-            "TopologyOptimization", "topological_derivative_is_identical"
-        )
-        self.re_normalize_levelset: bool = self.config.getboolean(
-            "TopologyOptimization", "re_normalize_levelset"
-        )
-        self.normalize_topological_derivative = self.config.getboolean(
-            "TopologyOptimization", "normalize_topological_derivative"
-        )
+        self.topological_derivative_is_identical = self.config["TopologyOptimization"][
+            "topological_derivative_is_identical"
+        ]
+        self.re_normalize_levelset: bool = self.config["TopologyOptimization"][
+            "re_normalize_levelset"
+        ]
+        self.normalize_topological_derivative = self.config["TopologyOptimization"][
+            "normalize_topological_derivative"
+        ]
         self.interpolation_scheme = self.config.get(
             "TopologyOptimization", "interpolation_scheme"
         )

@@ -114,7 +114,7 @@ class StateFormHandler:
         state_eq_forms_lhs: list[ufl.Form] = []
         state_eq_forms_rhs: list[ufl.Form] = []
 
-        if self.config.getboolean("StateSystem", "is_linear"):
+        if self.config["StateSystem"]["is_linear"]:
             linear_state_eq_forms = [
                 ufl.replace(
                     state_eq_forms[i],

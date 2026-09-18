@@ -236,7 +236,7 @@ class OptimizationProblem(abc.ABC):
             excluded_from_time_derivative,
         )
 
-        if self.config.getboolean("StateSystem", "use_adjoint_linearizations"):
+        if self.config["StateSystem"]["use_adjoint_linearizations"]:
             self.adjoint_linearizations: list | None = []
             for derivative in newton_linearizations:
                 if derivative is not None:

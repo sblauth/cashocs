@@ -89,9 +89,9 @@ class ShapeRegularizationTerm(abc.ABC):
         self.config = self.db.config
         self.mesh = db.geometry_db.mesh
         self.dx = ufl.Measure("dx", self.mesh)
-        self.use_relative_scaling = self.config.getboolean(
-            "Regularization", "use_relative_scaling"
-        )
+        self.use_relative_scaling = self.config["Regularization"][
+            "use_relative_scaling"
+        ]
         self.is_active = False
         self.test_vector_field = fenics.TestFunction(
             self.db.function_db.control_spaces[0]
@@ -142,7 +142,7 @@ class VolumeRegularization(ShapeRegularizationTerm):
 
         self.mu = self.config.getfloat("Regularization", "factor_volume")
         self.target_volume = self.config.getfloat("Regularization", "target_volume")
-        if self.config.getboolean("Regularization", "use_initial_volume"):
+        if self.config["Regularization"]["use_initial_volume"]:
             self.target_volume = self._compute_volume()
 
         if self.mu > 0.0:
@@ -236,7 +236,7 @@ class SurfaceRegularization(ShapeRegularizationTerm):
         self.ds = ufl.Measure("ds", self.mesh)
         self.mu = self.config.getfloat("Regularization", "factor_surface")
         self.target_surface = self.config.getfloat("Regularization", "target_surface")
-        if self.config.getboolean("Regularization", "use_initial_surface"):
+        if self.config["Regularization"]["use_initial_surface"]:
             self.target_surface = self._compute_surface()
 
         if self.mu > 0.0:
@@ -337,7 +337,7 @@ class BarycenterRegularization(ShapeRegularizationTerm):
         if self.geometric_dimension == 2 and len(self.target_barycenter_list) == 2:
             self.target_barycenter_list.append(0.0)
 
-        if self.config.getboolean("Regularization", "use_initial_barycenter"):
+        if self.config["Regularization"]["use_initial_barycenter"]:
             self.target_barycenter_list = self._compute_barycenter_list()
 
         if self.mu > 0.0:

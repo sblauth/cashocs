@@ -75,9 +75,7 @@ class LineSearch(abc.ABC):
             self.global_deformation_vector = self.deformation_function.vector().vec()
 
         self.stepsize = self.config.getfloat("LineSearch", "initial_stepsize")
-        self.safeguard_stepsize = self.config.getboolean(
-            "LineSearch", "safeguard_stepsize"
-        )
+        self.safeguard_stepsize = self.config["LineSearch"]["safeguard_stepsize"]
 
         self.beta_armijo: float = self.config.getfloat("LineSearch", "beta_armijo")
         self.epsilon_armijo: float = self.config.getfloat(
@@ -130,8 +128,9 @@ class LineSearch(abc.ABC):
             constraint_gradient,
             dropped_idx,
         )
-        if deformation is not None and self.config.getboolean(
-            "ShapeGradient", "global_deformation"
+        if (
+            deformation is not None
+            and self.config["ShapeGradient"]["global_deformation"]
         ):
             x = fenics.as_backend_type(deformation.vector()).vec()
 

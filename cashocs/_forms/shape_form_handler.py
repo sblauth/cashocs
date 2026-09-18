@@ -89,9 +89,7 @@ class Stiffness:
 
         self.dx = ufl.Measure("dx", self.mesh)
 
-        self.use_distance_mu = self.config.getboolean(
-            "ShapeGradient", "use_distance_mu"
-        )
+        self.use_distance_mu = self.config["ShapeGradient"]["use_distance_mu"]
         self.cg_function_space = self.mu_lame.function_space()
         self.distance = fenics.Function(self.cg_function_space)
 
@@ -149,7 +147,7 @@ class Stiffness:
 
                 self.bdry_idcs = self.config.getlist("ShapeGradient", "boundaries_dist")
 
-                smooth_mu = self.config.getboolean("ShapeGradient", "smooth_mu")
+                smooth_mu = self.config["ShapeGradient"]["smooth_mu"]
 
                 if not smooth_mu:
                     self.mu_expression = fenics.Expression(
@@ -203,7 +201,7 @@ class Stiffness:
                     ksp_options=self.options_mu,
                 )
 
-                if self.config.getboolean("ShapeGradient", "use_sqrt_mu"):
+                if self.config["ShapeGradient"]["use_sqrt_mu"]:
                     self.mu_lame.sqrtabs()
                     self.mu_lame.vector().apply("")
 
@@ -275,13 +273,9 @@ class ShapeFormHandler(form_handler.FormHandler):
             optimization_problem.uses_custom_scalar_product
         )
 
-        self.degree_estimation = self.config.getboolean(
-            "ShapeGradient", "degree_estimation"
-        )
-        self.use_pull_back = self.config.getboolean("ShapeGradient", "use_pull_back")
-        self.update_inhomogeneous = self.config.getboolean(
-            "ShapeGradient", "update_inhomogeneous"
-        )
+        self.degree_estimation = self.config["ShapeGradient"]["degree_estimation"]
+        self.use_pull_back = self.config["ShapeGradient"]["use_pull_back"]
+        self.update_inhomogeneous = self.config["ShapeGradient"]["update_inhomogeneous"]
 
         self.shape_bdry_def = self.config.getlist("ShapeGradient", "shape_bdry_def")
         self.shape_bdry_fix = self.config.getlist("ShapeGradient", "shape_bdry_fix")
@@ -341,7 +335,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             self.db.geometry_db.mpi_comm
         )
 
-        if self.config.getboolean("ShapeGradient", "reextend_from_boundary"):
+        if self.config["ShapeGradient"]["reextend_from_boundary"]:
             self.bcs_extension = self._setup_bcs_extension()
             zero_source = (
                 ufl.dot(
@@ -626,7 +620,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             lambda_lame = self.config.getfloat("ShapeGradient", "lambda_lame")
             damping_factor = self.config.getfloat("ShapeGradient", "damping_factor")
 
-            if self.config.getboolean("ShapeGradient", "inhomogeneous"):
+            if self.config["ShapeGradient"]["inhomogeneous"]:
                 self.volumes.vector().vec().aypx(
                     0.0,
                     _utils.l2_projection(
@@ -702,7 +696,7 @@ class ShapeFormHandler(form_handler.FormHandler):
 
             self.fe_scalar_product_matrix.mat().aypx(0.0, copy_mat.mat())
 
-            if self.config.getboolean("ShapeGradient", "reextend_from_boundary"):
+            if self.config["ShapeGradient"]["reextend_from_boundary"]:
                 copy_mat = self.fe_reextension_matrix.copy()
                 copy_mat.ident(self.fixed_indices)
                 copy_mat.mat().transpose()
@@ -738,7 +732,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.fe_scalar_product_matrix.ident_zeros()
         self.scalar_product_matrix = self.fe_scalar_product_matrix.mat()
 
-        if self.config.getboolean("ShapeGradient", "reextend_from_boundary"):
+        if self.config["ShapeGradient"]["reextend_from_boundary"]:
             self.assembler_extension.assemble(self.fe_reextension_matrix)
             self.fe_reextension_matrix.ident_zeros()
             self.reextension_matrix = self.fe_reextension_matrix.mat()
@@ -760,7 +754,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         """
         result: float
         if (
-            self.config.getboolean("ShapeGradient", "use_p_laplacian")
+            self.config["ShapeGradient"]["use_p_laplacian"]
             and not self.uses_custom_scalar_product
         ):
             form = ufl.replace(
@@ -786,7 +780,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             The weak form of the p-Laplace equations
 
         """
-        if self.config.getboolean("ShapeGradient", "use_p_laplacian"):
+        if self.config["ShapeGradient"]["use_p_laplacian"]:
             p = self.config.getint("ShapeGradient", "p_laplacian_power")
             delta = self.config.getfloat("ShapeGradient", "damping_factor")
             eps = self.config.getfloat("ShapeGradient", "p_laplacian_stabilization")

@@ -259,11 +259,11 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
             fenics.Function(self.db.function_db.control_spaces[0])
         ]
         self.db.parameter_db.problem_type = "shape"
-        if self.config.getboolean("ShapeGradient", "global_deformation"):
+        if self.config["ShapeGradient"]["global_deformation"]:
             self.db.geometry_db.init_transfer_matrix()
 
         # Initialize the remeshing behavior, and a temp file
-        self.do_remesh = self.config.getboolean("Mesh", "remesh")
+        self.do_remesh = self.config["Mesh"]["remesh"]
 
         self._remesh_init()
 
@@ -274,8 +274,9 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         if self.shape_scalar_product is not None:
             self.uses_custom_scalar_product = True
 
-        if self.uses_custom_scalar_product and self.config.getboolean(
-            "ShapeGradient", "use_p_laplacian"
+        if (
+            self.uses_custom_scalar_product
+            and self.config["ShapeGradient"]["use_p_laplacian"]
         ):
             raise _exceptions.InputError(
                 "cashocs.ShapeOptimizationProblem",
@@ -435,7 +436,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
         else:
             raise _exceptions.CashocsException("This code cannot be reached.")
 
-        if self.config.getboolean("ShapeGradient", "global_deformation"):
+        if self.config["ShapeGradient"]["global_deformation"]:
             self.global_deformation_vector = line_search.global_deformation_vector
             self.global_deformation_function = line_search.deformation_function
 
@@ -532,7 +533,7 @@ class ShapeOptimizationProblem(optimization_problem.OptimizationProblem):
     def _clear_remesh_directory(self) -> None:
         log.debug("An exception was raised, deleting the created temporary files.")
         if (
-            not self.config.getboolean("Debug", "remeshing")
+            not self.config["Debug"]["remeshing"]
             and self.db.geometry_db.mpi_comm.rank == 0
         ):
             subprocess.run(  # noqa: S603
