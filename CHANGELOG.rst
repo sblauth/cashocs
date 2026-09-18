@@ -19,6 +19,8 @@ of the maintenance releases, please take a look at
 
 * Use typer for the CLI of cashocs. This comes with an additional dependency, but easier to use and maintain CLI functionality. As a result, the CLI scripts are renamed to cashocs-convert and cashocs-extract-mesh (i.e. they use hyphens instead of underscores)
 
+* Toml Configuration files can now also be used by cashocs. The structure is, at the moment, identical to the .ini files. In the future, there will likely be a newer v2 configuration file format only supported by toml files, but at the moment both file types are supported.
+
 * New configuration file parameters:
 
   * Section LineSearch
