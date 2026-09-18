@@ -366,11 +366,11 @@ def test_picard_solver_for_optimization(ocp, ocp_mixed, u, v, CG1):
 def test_picard_nonlinear(
     e_nonlinear, bcs, J, states, controls, adjoints, config_picard, rng
 ):
-    config_picard.set("StateSystem", "is_linear", "False")
-    config_picard.set("OptimizationRoutine", "algorithm", "newton")
-    config_picard.set("OptimizationRoutine", "rtol", "1e-6")
-    config_picard.set("OptimizationRoutine", "atol", "0.0")
-    config_picard.set("OptimizationRoutine", "max_iter", "10")
+    config_picard["StateSystem"]["is_linear"] = False
+    config_picard["OptimizationRoutine"]["algorithm"] = "newton"
+    config_picard["OptimizationRoutine"]["rtol"] = 1e-6
+    config_picard["OptimizationRoutine"]["atol"] = 0.0
+    config_picard["OptimizationRoutine"]["max_iter"] = 10
 
     ocp_nonlinear = cashocs.OptimalControlProblem(
         e_nonlinear, bcs, J, states, controls, adjoints, config=config_picard

@@ -68,7 +68,7 @@ comm.Set_name("COMM_CUSTOM")
 
 result_dir = f"./results_group_{color}"
 config = cashocs.load_config("./config.ini")
-config.set("Output", "result_dir", result_dir)
+config["Output"]["result_dir"] = result_dir
 
 # :::{important}
 # As discussed in {ref}`demo_mpi_comm_self` it is necessary that each group of MPI

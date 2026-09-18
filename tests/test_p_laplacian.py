@@ -86,19 +86,19 @@ def test_2_laplacian(config_sop, geometry, e, bcs, J, u, p, initial_coordinates)
         + dot(TrialFunction(space), TestFunction(space)) * geometry.dx
     )
 
-    config_sop.set("ShapeGradient", "mu_def", "1.0")
-    config_sop.set("ShapeGradient", "mu_fix", "1.0")
-    config_sop.set("ShapeGradient", "damping_factor", "1.0")
-    config_sop.set("ShapeGradient", "use_p_laplacian", "True")
-    config_sop.set("ShapeGradient", "p_laplacian_power", "2")
-    config_sop.set("ShapeGradient", "p_laplacian_stabilization", "0.0")
+    config_sop["ShapeGradient"]["mu_def"] = 1.0
+    config_sop["ShapeGradient"]["mu_fix"] = 1.0
+    config_sop["ShapeGradient"]["damping_factor"] = 1.0
+    config_sop["ShapeGradient"]["use_p_laplacian"] = True
+    config_sop["ShapeGradient"]["p_laplacian_power"] = 2
+    config_sop["ShapeGradient"]["p_laplacian_stabilization"] = 0.0
 
     sop1 = cashocs.ShapeOptimizationProblem(
         e, bcs, J, u, p, geometry.boundaries, config=config_sop
     )
     sop1.solve(algorithm="gd", rtol=1e-2, max_iter=22)
 
-    config_sop.set("ShapeGradient", "use_p_laplacian", "False")
+    config_sop["ShapeGradient"]["use_p_laplacian"] = False
     geometry.mesh.coordinates()[:, :] = initial_coordinates
     geometry.mesh.bounding_box_tree().build(geometry.mesh)
     sop2 = cashocs.ShapeOptimizationProblem(
@@ -126,12 +126,12 @@ def test_2_laplacian(config_sop, geometry, e, bcs, J, u, p, initial_coordinates)
 
 
 def test_p_laplacian(config_sop, geometry, e, bcs, J, u, p):
-    config_sop.set("ShapeGradient", "mu_def", "1.0")
-    config_sop.set("ShapeGradient", "mu_fix", "1.0")
-    config_sop.set("ShapeGradient", "damping_factor", "1.0")
-    config_sop.set("ShapeGradient", "use_p_laplacian", "True")
-    config_sop.set("ShapeGradient", "p_laplacian_power", "10")
-    config_sop.set("ShapeGradient", "p_laplacian_stabilization", "0.0")
+    config_sop["ShapeGradient"]["mu_def"] = 1.0
+    config_sop["ShapeGradient"]["mu_fix"] = 1.0
+    config_sop["ShapeGradient"]["damping_factor"] = 1.0
+    config_sop["ShapeGradient"]["use_p_laplacian"] = True
+    config_sop["ShapeGradient"]["p_laplacian_power"] = 10
+    config_sop["ShapeGradient"]["p_laplacian_stabilization"] = 0.0
 
     sop = cashocs.ShapeOptimizationProblem(
         e, bcs, J, u, p, geometry.boundaries, config=config_sop
@@ -142,12 +142,12 @@ def test_p_laplacian(config_sop, geometry, e, bcs, J, u, p):
 
 
 def test_p_laplacian_iterative(rng, config_sop, e, bcs, J, u, p, geometry):
-    config_sop.set("ShapeGradient", "mu_def", "1.0")
-    config_sop.set("ShapeGradient", "mu_fix", "1.0")
-    config_sop.set("ShapeGradient", "damping_factor", "1.0")
-    config_sop.set("ShapeGradient", "use_p_laplacian", "True")
-    config_sop.set("ShapeGradient", "p_laplacian_power", "10")
-    config_sop.set("ShapeGradient", "p_laplacian_stabilization", "0.0")
+    config_sop["ShapeGradient"]["mu_def"] = 1.0
+    config_sop["ShapeGradient"]["mu_fix"] = 1.0
+    config_sop["ShapeGradient"]["damping_factor"] = 1.0
+    config_sop["ShapeGradient"]["use_p_laplacian"] = True
+    config_sop["ShapeGradient"]["p_laplacian_power"] = 10
+    config_sop["ShapeGradient"]["p_laplacian_stabilization"] = 0.0
 
     sop = cashocs.ShapeOptimizationProblem(
         e, bcs, J, u, p, geometry.boundaries, config=config_sop

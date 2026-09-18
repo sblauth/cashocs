@@ -76,9 +76,9 @@ def J(y, y_d, u, geometry):
 
 
 def test_time_suffix(config_ocp, dir_path, F, bcs, J, y, u, p):
-    config_ocp.set("Output", "result_dir", f"{dir_path}/results")
-    config_ocp.set("Output", "time_suffix", "True")
-    config_ocp.set("Output", "save_txt", "True")
+    config_ocp["Output"]["result_dir"] = f"{dir_path}/results"
+    config_ocp["Output"]["time_suffix"] = True
+    config_ocp["Output"]["save_txt"] = True
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     ocp.solve()
     suffix = ocp.solver.output_manager.suffix
@@ -90,12 +90,12 @@ def test_time_suffix(config_ocp, dir_path, F, bcs, J, y, u, p):
 
 
 def test_save_xdmf_files_ocp(dir_path, F, bcs, J, y, u, p, config_ocp):
-    config_ocp.set("Output", "save_state", "True")
-    config_ocp.set("Output", "save_results", "True")
-    config_ocp.set("Output", "save_txt", "True")
-    config_ocp.set("Output", "save_adjoint", "True")
-    config_ocp.set("Output", "save_gradient", "True")
-    config_ocp.set("Output", "result_dir", dir_path + "/out")
+    config_ocp["Output"]["save_state"] = True
+    config_ocp["Output"]["save_results"] = True
+    config_ocp["Output"]["save_txt"] = True
+    config_ocp["Output"]["save_adjoint"] = True
+    config_ocp["Output"]["save_gradient"] = True
+    config_ocp["Output"]["result_dir"] = dir_path + "/out"
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
@@ -122,13 +122,13 @@ def test_save_xdmf_files_ocp(dir_path, F, bcs, J, y, u, p, config_ocp):
 
 
 def test_save_xdmf_single_file_ocp(dir_path, F, bcs, J, y, u, p, config_ocp):
-    config_ocp.set("Output", "save_state", "True")
-    config_ocp.set("Output", "save_results", "True")
-    config_ocp.set("Output", "save_txt", "True")
-    config_ocp.set("Output", "save_adjoint", "True")
-    config_ocp.set("Output", "save_gradient", "True")
-    config_ocp.set("Output", "single_file", "True")
-    config_ocp.set("Output", "result_dir", dir_path + "/out")
+    config_ocp["Output"]["save_state"] = True
+    config_ocp["Output"]["save_results"] = True
+    config_ocp["Output"]["save_txt"] = True
+    config_ocp["Output"]["save_adjoint"] = True
+    config_ocp["Output"]["save_gradient"] = True
+    config_ocp["Output"]["single_file"] = True
+    config_ocp["Output"]["result_dir"] = dir_path + "/out"
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
@@ -157,12 +157,12 @@ def test_save_xdmf_single_file_ocp(dir_path, F, bcs, J, y, u, p, config_ocp):
 
 
 def test_save_xdmf_files_mixed(dir_path, rng, config_ocp, geometry):
-    config_ocp.set("Output", "save_state", "True")
-    config_ocp.set("Output", "save_results", "True")
-    config_ocp.set("Output", "save_txt", "True")
-    config_ocp.set("Output", "save_adjoint", "True")
-    config_ocp.set("Output", "save_gradient", "True")
-    config_ocp.set("Output", "result_dir", dir_path + "/out")
+    config_ocp["Output"]["save_state"] = True
+    config_ocp["Output"]["save_results"] = True
+    config_ocp["Output"]["save_txt"] = True
+    config_ocp["Output"]["save_adjoint"] = True
+    config_ocp["Output"]["save_gradient"] = True
+    config_ocp["Output"]["result_dir"] = dir_path + "/out"
     elem1 = VectorElement("CG", geometry.mesh.ufl_cell(), 2)
     elem2 = FiniteElement("CG", geometry.mesh.ufl_cell(), 1)
     V = FunctionSpace(geometry.mesh, MixedElement([elem1, elem2]))
@@ -224,11 +224,11 @@ def test_save_xdmf_files_mixed(dir_path, rng, config_ocp, geometry):
 
 
 def test_extract_mesh_from_xdmf(dir_path, F, bcs, J, y, u, p, config_ocp):
-    config_ocp.set("Output", "save_state", "True")
+    config_ocp["Output"]["save_state"] = True
 
     mesh_initial = u.function_space().mesh()
     result_path = dir_path + "/out"
-    config_ocp.set("Output", "result_dir", result_path)
+    config_ocp["Output"]["result_dir"] = result_path
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)

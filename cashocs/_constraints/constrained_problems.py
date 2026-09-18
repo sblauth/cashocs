@@ -505,7 +505,7 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
 
         config = copy.deepcopy(self.config)
         output_path = pathlib.Path(self.config["Output"]["result_dir"])
-        config.set("Output", "result_dir", str(output_path / f"subproblem_{iteration}"))
+        config["Output"]["result_dir"] = str(output_path / f"subproblem_{iteration}")
 
         eftd = self.db.parameter_db.excluded_from_time_derivative
         optimal_control_problem = optimal_control.OptimalControlProblem(
@@ -549,9 +549,9 @@ class ConstrainedOptimalControlProblem(ConstrainedOptimizationProblem):
             self.initial_norm = optimal_control_problem.solver.gradient_norm_initial
 
         config = copy.deepcopy(self.config)
-        config.set("Output", "save_state", "False")
-        config.set("Output", "save_adjoint", "False")
-        config.set("Output", "save_gradient", "False")
+        config["Output"]["save_state"] = False
+        config["Output"]["save_adjoint"] = False
+        config["Output"]["save_gradient"] = False
 
         eftd = self.db.parameter_db.excluded_from_time_derivative
         temp_problem = optimal_control.OptimalControlProblem(
@@ -737,7 +737,7 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
 
         config = copy.deepcopy(self.config)
         output_path = pathlib.Path(self.config["Output"]["result_dir"])
-        config.set("Output", "result_dir", str(output_path / f"subproblem_{iteration}"))
+        config["Output"]["result_dir"] = str(output_path / f"subproblem_{iteration}")
 
         eftd = self.db.parameter_db.excluded_from_time_derivative
         shape_optimization_problem = shape_optimization.ShapeOptimizationProblem(
@@ -779,9 +779,9 @@ class ConstrainedShapeOptimizationProblem(ConstrainedOptimizationProblem):
             self.initial_norm = shape_optimization_problem.solver.gradient_norm_initial
 
         config = copy.deepcopy(self.config)
-        config.set("Output", "save_state", "False")
-        config.set("Output", "save_adjoint", "False")
-        config.set("Output", "save_gradient", "False")
+        config["Output"]["save_state"] = False
+        config["Output"]["save_adjoint"] = False
+        config["Output"]["save_gradient"] = False
 
         eftd = self.db.parameter_db.excluded_from_time_derivative
         temp_problem = shape_optimization.ShapeOptimizationProblem(

@@ -61,8 +61,8 @@ def test_incorrect_configs(dir_path):
 
 
 def test_incompatible_config(config_sop):
-    config_sop.set("MeshQuality", "tol_lower", "0.5")
-    config_sop.set("MeshQuality", "tol_upper", "0.1")
+    config_sop["MeshQuality"]["tol_lower"] = 0.5
+    config_sop["MeshQuality"]["tol_upper"] = 0.1
     with pytest.raises(ConfigError) as e_info:
         config_sop.validate_config()
 
@@ -73,7 +73,7 @@ def test_incompatible_config(config_sop):
 
 
 def test_larger_than_dependency_config(config_sop):
-    config_sop.set("ShapeGradient", "dist_max", "0.5")
+    config_sop["ShapeGradient"]["dist_max"] = 0.5
     with pytest.raises(ConfigError) as e_info:
         config_sop.validate_config()
 
@@ -84,7 +84,7 @@ def test_larger_than_dependency_config(config_sop):
 
 
 def test_larger_equal_than_dependency_config(config_sop):
-    config_sop.set("Regularization", "x_end", "-1.0")
+    config_sop["Regularization"]["x_end"] = -1.0
     with pytest.raises(ConfigError) as e_info:
         config_sop.validate_config()
 
@@ -95,7 +95,7 @@ def test_larger_equal_than_dependency_config(config_sop):
 
 
 def test_file_extension(config_sop):
-    config_sop.set("Mesh", "geo_file", "test.msh")
+    config_sop["Mesh"]["geo_file"] = "test.msh"
     with pytest.raises(ConfigError) as e_info:
         config_sop.validate_config()
 
@@ -106,7 +106,7 @@ def test_file_extension(config_sop):
 
 
 def test_non_negative_attribute(config_sop):
-    config_sop.set("MeshQuality", "tol_lower", "-1e-1")
+    config_sop["MeshQuality"]["tol_lower"] = -1e-1
     with pytest.raises(ConfigError) as e_info:
         config_sop.validate_config()
 
@@ -117,7 +117,7 @@ def test_non_negative_attribute(config_sop):
 
 
 def test_positive_attribute(config_sop):
-    config_sop.set("MeshQuality", "tol_upper", "0.0")
+    config_sop["MeshQuality"]["tol_upper"] = 0.0
     with pytest.raises(ConfigError) as e_info:
         config_sop.validate_config()
 
@@ -128,7 +128,7 @@ def test_positive_attribute(config_sop):
 
 
 def test_less_than_one_attribute(config_sop):
-    config_sop.set("MeshQuality", "tol_upper", "2.0")
+    config_sop["MeshQuality"]["tol_upper"] = 2.0
     with pytest.raises(ConfigError) as e_info:
         config_sop.validate_config()
 
@@ -139,7 +139,7 @@ def test_less_than_one_attribute(config_sop):
 
 
 def test_larger_than_one_attribute(config_sop):
-    config_sop.set("MeshQuality", "volume_change", "0.5")
+    config_sop["MeshQuality"]["volume_change"] = 0.5
     with pytest.raises(ConfigError) as e_info:
         config_sop.validate_config()
 
@@ -150,7 +150,7 @@ def test_larger_than_one_attribute(config_sop):
 
 
 def test_possible_options(config_sop):
-    config_sop.set("OptimizationRoutine", "gradient_method", "mymethod")
+    config_sop["OptimizationRoutine"]["gradient_method"] = "mymethod"
     with pytest.raises(ConfigError) as e_info:
         config_sop.validate_config()
 
@@ -162,7 +162,7 @@ def test_possible_options(config_sop):
 
 def test_incomplete_requirements_config(config_sop):
     with pytest.raises(ConfigError) as e_info:
-        config_sop.set("Output", "save_mesh", "True")
+        config_sop["Output"]["save_mesh"] = True
         config_sop.validate_config()
 
     assert (
