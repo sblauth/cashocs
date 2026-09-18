@@ -299,7 +299,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
         return surface_deformation
 
     def restrict_gradient_on_fixed_volumes(self) -> None:
-        shape_volume_fix = self.config.getlist("ShapeGradient", "shape_volume_fix")
+        shape_volume_fix = self.config["ShapeGradient"]["shape_volume_fix"]
         if len(shape_volume_fix) > 0:
             deformation_space = self.db.function_db.control_spaces[0]
             shape_gradient = self.db.function_db.gradient[0]

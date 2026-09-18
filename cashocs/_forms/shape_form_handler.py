@@ -145,7 +145,7 @@ class Stiffness:
                 dist_min = self.config["ShapeGradient"]["dist_min"]
                 dist_max = self.config["ShapeGradient"]["dist_max"]
 
-                self.bdry_idcs = self.config.getlist("ShapeGradient", "boundaries_dist")
+                self.bdry_idcs = self.config["ShapeGradient"]["boundaries_dist"]
 
                 smooth_mu = self.config["ShapeGradient"]["smooth_mu"]
 
@@ -275,12 +275,12 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.use_pull_back = self.config["ShapeGradient"]["use_pull_back"]
         self.update_inhomogeneous = self.config["ShapeGradient"]["update_inhomogeneous"]
 
-        self.shape_bdry_def = self.config.getlist("ShapeGradient", "shape_bdry_def")
-        self.shape_bdry_fix = self.config.getlist("ShapeGradient", "shape_bdry_fix")
+        self.shape_bdry_def = self.config["ShapeGradient"]["shape_bdry_def"]
+        self.shape_bdry_fix = self.config["ShapeGradient"]["shape_bdry_fix"]
 
-        self.shape_bdry_fix_x = self.config.getlist("ShapeGradient", "shape_bdry_fix_x")
-        self.shape_bdry_fix_y = self.config.getlist("ShapeGradient", "shape_bdry_fix_y")
-        self.shape_bdry_fix_z = self.config.getlist("ShapeGradient", "shape_bdry_fix_z")
+        self.shape_bdry_fix_x = self.config["ShapeGradient"]["shape_bdry_fix_x"]
+        self.shape_bdry_fix_y = self.config["ShapeGradient"]["shape_bdry_fix_y"]
+        self.shape_bdry_fix_z = self.config["ShapeGradient"]["shape_bdry_fix_z"]
 
         self.cg_function_space = fenics.FunctionSpace(self.db.geometry_db.mesh, "CG", 1)
         self.dg_function_space = fenics.FunctionSpace(self.db.geometry_db.mesh, "DG", 0)
@@ -304,7 +304,7 @@ class ShapeFormHandler(form_handler.FormHandler):
             regularization
         )
 
-        fixed_dimensions = self.config.getlist("ShapeGradient", "fixed_dimensions")
+        fixed_dimensions = self.config["ShapeGradient"]["fixed_dimensions"]
         self.use_fixed_dimensions = False
         if len(fixed_dimensions) > 0:
             self.use_fixed_dimensions = True
