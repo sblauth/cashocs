@@ -331,9 +331,7 @@ class BarycenterRegularization(ShapeRegularizationTerm):
         self.spatial_coordinate = fenics.SpatialCoordinate(self.mesh)
 
         self.mu = self.config["Regularization"]["factor_barycenter"]
-        self.target_barycenter_list = self.config.getlist(
-            "Regularization", "target_barycenter"
-        )
+        self.target_barycenter_list = self.config["Regularization"]["target_barycenter"]
         if self.geometric_dimension == 2 and len(self.target_barycenter_list) == 2:
             self.target_barycenter_list.append(0.0)
 
