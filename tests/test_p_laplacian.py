@@ -141,6 +141,30 @@ def test_p_laplacian(config_sop, geometry, e, bcs, J, u, p):
     assert sop.solver.relative_norm <= 1e-1
 
 
+@pytest.mark.parametrize("dim", [0, 1])
+def test_p_laplacian_fixed_dimensions(rng, config_sop, geometry, e, bcs, J, u, p, dim):
+    config_sop.set("ShapeGradient", "mu_def", "1.0")
+    config_sop.set("ShapeGradient", "mu_fix", "1.0")
+    config_sop.set("ShapeGradient", "damping_factor", "1.0")
+    config_sop.set("ShapeGradient", "use_p_laplacian", "True")
+    config_sop.set("ShapeGradient", "p_laplacian_power", "6")
+    config_sop.set("ShapeGradient", "p_laplacian_stabilization", "0.0")
+
+    config_sop.set("ShapeGradient", "fixed_dimensions", f"[{dim}]")
+
+    sop = cashocs.ShapeOptimizationProblem(
+        e, bcs, J, u, p, geometry.boundaries, config=config_sop
+    )
+    assert sop.gradient_problem.p_laplace_projector is not None
+
+    gradient = sop.compute_shape_gradient()
+    assert assemble(gradient[0][dim] * gradient[0][dim] * geometry.dx) == 0
+
+    assert sop.gradient_test(rng=rng) > 1.9
+    assert sop.gradient_test(rng=rng) > 1.9
+    assert sop.gradient_test(rng=rng) > 1.9
+
+
 def test_p_laplacian_iterative(rng, config_sop, e, bcs, J, u, p, geometry):
     config_sop["ShapeGradient"]["mu_def"] = 1.0
     config_sop["ShapeGradient"]["mu_fix"] = 1.0

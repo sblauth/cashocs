@@ -938,27 +938,17 @@ def test_angle_change():
     assert sop.solver.relative_norm < sop.solver.rtol
 
 
-def test_fixed_dimensions(rng):
+@pytest.mark.parametrize("dim", [0, 1])
+def test_fixed_dimensions(rng, dim):
     config = cashocs.load_config(dir_path + "/config_sop.ini")
 
-    config["ShapeGradient"]["fixed_dimensions"] = [0]
+    config["ShapeGradient"]["fixed_dimensions"] = [dim]
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
     grad_x = sop.compute_shape_gradient()
-    assert assemble(grad_x[0][0] * grad_x[0][0] * dx) == 0
-    assert sop.gradient_test(rng=rng) > 1.9
-    assert sop.gradient_test(rng=rng) > 1.9
-    assert sop.gradient_test(rng=rng) > 1.9
-
-    config["ShapeGradient"]["fixed_dimensions"] = [1]
-
-    mesh.coordinates()[:, :] = initial_coordinates
-    mesh.bounding_box_tree().build(mesh)
-    sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
-    grad_x = sop.compute_shape_gradient()
-    assert assemble(grad_x[0][1] * grad_x[0][1] * dx) == 0
+    assert assemble(grad_x[0][dim] * grad_x[0][dim] * dx) == 0
     assert sop.gradient_test(rng=rng) > 1.9
     assert sop.gradient_test(rng=rng) > 1.9
     assert sop.gradient_test(rng=rng) > 1.9
