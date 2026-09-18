@@ -67,9 +67,7 @@ class ControlGradientProblem(pde_problem.PDEProblem):
 
         self.gradient_norm_squared = 1.0
 
-        gradient_tol: float = self.config.getfloat(
-            "OptimizationRoutine", "gradient_tol"
-        )
+        gradient_tol: float = self.config["OptimizationRoutine"]["gradient_tol"]
 
         gradient_method: str = self.config.get("OptimizationRoutine", "gradient_method")
 

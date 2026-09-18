@@ -57,8 +57,8 @@ class PolynomialLineSearch(line_search.LineSearch):
         self.armijo_stepsize_initial = self.stepsize
         self.decrease_measure_w_o_step = 1.0
 
-        self.factor_low = self.config.getfloat("LineSearch", "factor_low")
-        self.factor_high = self.config.getfloat("LineSearch", "factor_high")
+        self.factor_low = self.config["LineSearch"]["factor_low"]
+        self.factor_high = self.config["LineSearch"]["factor_high"]
         self.polynomial_model = self.config.get(
             "LineSearch", "polynomial_model"
         ).casefold()

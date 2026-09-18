@@ -113,8 +113,8 @@ class OptimizationAlgorithm(abc.ABC):
                 max_iter=self.max_iter,
             )
         else:
-            self.rtol = self.config.getfloat("OptimizationRoutine", "rtol")
-            self.atol = self.config.getfloat("OptimizationRoutine", "atol")
+            self.rtol = self.config["OptimizationRoutine"]["rtol"]
+            self.atol = self.config["OptimizationRoutine"]["atol"]
             self.max_iter = self.config["OptimizationRoutine"]["max_iter"]
         self.soft_exit = self.config["OptimizationRoutine"]["soft_exit"]
 
@@ -300,7 +300,7 @@ class OptimizationAlgorithm(abc.ABC):
             return True
 
         if self.db.parameter_db.problem_type == "topology":
-            if self.angle <= self.config.getfloat("TopologyOptimization", "angle_tol"):
+            if self.angle <= self.config["TopologyOptimization"]["angle_tol"]:
                 self.converged = True
                 return True
 

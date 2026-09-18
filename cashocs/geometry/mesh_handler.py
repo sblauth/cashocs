@@ -115,19 +115,15 @@ class _MeshHandler:
         self._current_mesh_quality = 1.0
         self._gmsh_file = ""
         # setup from config
-        self.volume_change = self.config.getfloat("MeshQuality", "volume_change")
-        self.angle_change = self.config.getfloat("MeshQuality", "angle_change")
+        self.volume_change = self.config["MeshQuality"]["volume_change"]
+        self.angle_change = self.config["MeshQuality"]["angle_change"]
 
         self.test_for_intersections = self.config["ShapeGradient"][
             "test_for_intersections"
         ]
 
-        self.mesh_quality_tol_lower: float = self.config.getfloat(
-            "MeshQuality", "tol_lower"
-        )
-        self.mesh_quality_tol_upper: float = self.config.getfloat(
-            "MeshQuality", "tol_upper"
-        )
+        self.mesh_quality_tol_lower: float = self.config["MeshQuality"]["tol_lower"]
+        self.mesh_quality_tol_upper: float = self.config["MeshQuality"]["tol_upper"]
 
         if self.mesh_quality_tol_lower > 0.9 * self.mesh_quality_tol_upper:
             log.warning(
@@ -138,7 +134,7 @@ class _MeshHandler:
         self.mesh_quality_measure = self.config.get("MeshQuality", "measure")
 
         self.mesh_quality_type = self.config.get("MeshQuality", "type")
-        self.quality_quantile = self.config.getfloat("MeshQuality", "quantile")
+        self.quality_quantile = self.config["MeshQuality"]["quantile"]
 
         self.current_mesh_quality: float = quality.compute_mesh_quality(
             self.mesh,
@@ -364,7 +360,7 @@ class _MeshHandler:
             )
 
             frobenius_norm = self.norm_function.vector().vec().max()[1]
-            beta_armijo = self.config.getfloat("LineSearch", "beta_armijo")
+            beta_armijo = self.config["LineSearch"]["beta_armijo"]
 
             return int(
                 np.maximum(
@@ -532,12 +528,12 @@ class _MeshHandler:
             for key, value in solver.output_manager.output_dict.items():
                 self.db.parameter_db.temp_dict["output_dict"][key] = value
 
-            self.db.parameter_db.temp_dict["OptimizationRoutine"]["rtol"] = (
-                self.config.getfloat("OptimizationRoutine", "rtol")
-            )
-            self.db.parameter_db.temp_dict["OptimizationRoutine"]["atol"] = (
-                self.config.getfloat("OptimizationRoutine", "atol")
-            )
+            self.db.parameter_db.temp_dict["OptimizationRoutine"]["rtol"] = self.config[
+                "OptimizationRoutine"
+            ]["rtol"]
+            self.db.parameter_db.temp_dict["OptimizationRoutine"]["atol"] = self.config[
+                "OptimizationRoutine"
+            ]["atol"]
             self.db.parameter_db.temp_dict["OptimizationRoutine"]["max_iter"] = (
                 self.config["OptimizationRoutine"]["max_iter"]
             )
@@ -615,8 +611,8 @@ class _MeshHandler:
             solver: The solver instance carrying the new mesh
 
         """
-        mesh_quality_tol_lower = self.db.config.getfloat("MeshQuality", "tol_lower")
-        mesh_quality_tol_upper = self.db.config.getfloat("MeshQuality", "tol_upper")
+        mesh_quality_tol_lower = self.db.config["MeshQuality"]["tol_lower"]
+        mesh_quality_tol_upper = self.db.config["MeshQuality"]["tol_upper"]
 
         if mesh_quality_tol_lower > 0.9 * mesh_quality_tol_upper:
             log.warning(
@@ -627,7 +623,7 @@ class _MeshHandler:
 
         mesh_quality_measure = self.db.config.get("MeshQuality", "measure")
         mesh_quality_type = self.db.config.get("MeshQuality", "type")
-        quality_quantile = self.db.config.getfloat("MeshQuality", "quantile")
+        quality_quantile = self.db.config["MeshQuality"]["quantile"]
 
         mesh = solver.optimization_problem.states[0].function_space().mesh()
 

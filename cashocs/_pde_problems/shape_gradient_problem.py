@@ -78,7 +78,7 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
 
         self.gradient_norm_squared = 1.0
 
-        gradient_tol = self.config.getfloat("OptimizationRoutine", "gradient_tol")
+        gradient_tol = self.config["OptimizationRoutine"]["gradient_tol"]
 
         gradient_method = self.config.get("OptimizationRoutine", "gradient_method")
 
@@ -351,8 +351,8 @@ class _PLaplaceProjector:
         """
         self.db = db
         self.p_target = config["ShapeGradient"]["p_laplacian_power"]
-        delta = config.getfloat("ShapeGradient", "damping_factor")
-        eps = config.getfloat("ShapeGradient", "p_laplacian_stabilization")
+        delta = config["ShapeGradient"]["damping_factor"]
+        eps = config["ShapeGradient"]["p_laplacian_stabilization"]
         self.p_list = np.arange(2, self.p_target + 1, 1)
         self.solution = gradient[0]
         self.shape_derivative = shape_derivative
