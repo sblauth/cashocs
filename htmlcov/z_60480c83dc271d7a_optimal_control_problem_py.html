@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_b6bdd1693bb45e75___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.15.4">coverage.py v7.15.4</a>,
-            created at 2026-09-21 00:19 +0000
+            created at 2026-09-21 06:55 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -393,7 +393,7 @@
     <p class="run"><span class="n"><a id="t311" href="#t311">311</a></span><span class="t">                    <span class="nam">bc</span><span class="op">.</span><span class="nam">apply</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">db</span><span class="op">.</span><span class="nam">function_db</span><span class="op">.</span><span class="nam">controls</span><span class="op">[</span><span class="nam">i</span><span class="op">]</span><span class="op">.</span><span class="nam">vector</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t312" href="#t312">312</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t313" href="#t313">313</a></span><span class="t">    <span class="key">def</span> <span class="nam">_setup_solver</span><span class="op">(</span><span class="nam">self</span><span class="op">)</span> <span class="op">-&gt;</span> <span class="nam">optimization_algorithms</span><span class="op">.</span><span class="nam">OptimizationAlgorithm</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t314" href="#t314">314</a></span><span class="t">        <span class="nam">line_search_type</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">config</span><span class="op">.</span><span class="nam">get</span><span class="op">(</span><span class="str">&quot;LineSearch&quot;</span><span class="op">,</span> <span class="str">&quot;method&quot;</span><span class="op">)</span><span class="op">.</span><span class="nam">casefold</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t314" href="#t314">314</a></span><span class="t">        <span class="nam">line_search_type</span> <span class="op">=</span> <span class="nam">self</span><span class="op">.</span><span class="nam">config</span><span class="op">[</span><span class="str">&quot;LineSearch&quot;</span><span class="op">]</span><span class="op">[</span><span class="str">&quot;method&quot;</span><span class="op">]</span><span class="op">.</span><span class="nam">casefold</span><span class="op">(</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t315" href="#t315">315</a></span><span class="t">        <span class="key">if</span> <span class="nam">line_search_type</span> <span class="op">==</span> <span class="str">&quot;armijo&quot;</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t316" href="#t316">316</a></span><span class="t">            <span class="nam">line_search</span><span class="op">:</span> <span class="nam">ls</span><span class="op">.</span><span class="nam">LineSearch</span> <span class="op">=</span> <span class="nam">ls</span><span class="op">.</span><span class="nam">ArmijoLineSearch</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">db</span><span class="op">,</span> <span class="nam">self</span><span class="op">)</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t317" href="#t317">317</a></span><span class="t">        <span class="key">elif</span> <span class="nam">line_search_type</span> <span class="op">==</span> <span class="str">&quot;polynomial&quot;</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -632,7 +632,7 @@
             <a class="nav" href="z_b6bdd1693bb45e75___init___py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.15.4">coverage.py v7.15.4</a>,
-            created at 2026-09-21 00:19 +0000
+            created at 2026-09-21 06:55 +0000
         </p>
     </div>
 </footer>

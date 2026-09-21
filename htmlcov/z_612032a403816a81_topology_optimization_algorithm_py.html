@@ -65,7 +65,7 @@
             <a id="nextFileLink" class="nav" href="z_612032a403816a81_topology_optimization_problem_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.15.4">coverage.py v7.15.4</a>,
-            created at 2026-09-21 00:19 +0000
+            created at 2026-09-21 06:55 +0000
         </p>
         <aside class="hidden">
             <button type="button" class="button_next_chunk" data-shortcut="j"></button>
@@ -493,7 +493,7 @@
     <p class="run"><span class="n"><a id="t411" href="#t411">411</a></span><span class="t">        <span class="nam">self</span><span class="op">.</span><span class="nam">_cashocs_problem</span><span class="op">.</span><span class="nam">state_problem</span><span class="op">.</span><span class="nam">has_solution</span> <span class="op">=</span> <span class="key">False</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t412" href="#t412">412</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t413" href="#t413">413</a></span><span class="t">        <span class="nam">failed</span> <span class="op">=</span> <span class="key">False</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t414" href="#t414">414</a></span><span class="t">        <span class="key">for</span> <span class="nam">k</span> <span class="key">in</span> <span class="nam">range</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">config</span><span class="op">.</span><span class="nam">getint</span><span class="op">(</span><span class="str">&quot;OptimizationRoutine&quot;</span><span class="op">,</span> <span class="str">&quot;max_iter&quot;</span><span class="op">)</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t414" href="#t414">414</a></span><span class="t">        <span class="key">for</span> <span class="nam">k</span> <span class="key">in</span> <span class="nam">range</span><span class="op">(</span><span class="nam">self</span><span class="op">.</span><span class="nam">config</span><span class="op">[</span><span class="str">&quot;OptimizationRoutine&quot;</span><span class="op">]</span><span class="op">[</span><span class="str">&quot;max_iter&quot;</span><span class="op">]</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t415" href="#t415">415</a></span><span class="t">            <span class="key">if</span> <span class="nam">failed</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t416" href="#t416">416</a></span><span class="t">                <span class="key">break</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t417" href="#t417">417</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
@@ -549,7 +549,7 @@
     <p class="run"><span class="n"><a id="t467" href="#t467">467</a></span><span class="t">                    <span class="nam">self</span><span class="op">.</span><span class="nam">stepsize</span> <span class="op">*=</span> <span class="num">0.5</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t468" href="#t468">468</a></span><span class="t">&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t469" href="#t469">469</a></span><span class="t">                <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">stepsize</span> <span class="op">&lt;=</span> <span class="num">1e-10</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
-    <p class="run"><span class="n"><a id="t470" href="#t470">470</a></span><span class="t">                    <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">config</span><span class="op">.</span><span class="nam">getboolean</span><span class="op">(</span><span class="str">&quot;OptimizationRoutine&quot;</span><span class="op">,</span> <span class="str">&quot;soft_exit&quot;</span><span class="op">)</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
+    <p class="run"><span class="n"><a id="t470" href="#t470">470</a></span><span class="t">                    <span class="key">if</span> <span class="nam">self</span><span class="op">.</span><span class="nam">config</span><span class="op">[</span><span class="str">&quot;OptimizationRoutine&quot;</span><span class="op">]</span><span class="op">[</span><span class="str">&quot;soft_exit&quot;</span><span class="op">]</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t471" href="#t471">471</a></span><span class="t">                        <span class="nam">failed</span> <span class="op">=</span> <span class="key">True</span>&nbsp;</span><span class="r"></span></p>
     <p class="run"><span class="n"><a id="t472" href="#t472">472</a></span><span class="t">                        <span class="key">break</span>&nbsp;</span><span class="r"></span></p>
     <p class="pln"><span class="n"><a id="t473" href="#t473">473</a></span><span class="t">                    <span class="key">else</span><span class="op">:</span>&nbsp;</span><span class="r"></span></p>
@@ -631,7 +631,7 @@
             <a class="nav" href="z_612032a403816a81_topology_optimization_problem_py.html">&#xbb; next</a>
             &nbsp; &nbsp; &nbsp;
             <a class="nav" href="https://coverage.readthedocs.io/en/7.15.4">coverage.py v7.15.4</a>,
-            created at 2026-09-21 00:19 +0000
+            created at 2026-09-21 06:55 +0000
         </p>
     </div>
 </footer>
