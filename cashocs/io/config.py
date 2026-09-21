@@ -997,18 +997,20 @@ class ConfigValidator:
 
         """
         option_type = CONFIG_SCHEME[section][option]["type"]
-        try:
-            if option_type.casefold() == "str":
-                self.config.get(section, option)
-            elif option_type.casefold() == "bool":
-                self.config.getboolean(section, option)
-            elif option_type.casefold() == "int":
-                self.config.getint(section, option)
-            elif option_type.casefold() == "float":
-                self.config.getfloat(section, option)
-            elif option_type.casefold() == "list":
-                self.config.getlist(section, option)
-        except ValueError:
+        value = self.config[section][option]
+        has_wrong_type = False
+        if option_type.casefold() == "str" and not isinstance(value, str):
+            has_wrong_type = True
+        elif option_type.casefold() == "bool" and not isinstance(value, bool):
+            has_wrong_type = True
+        elif option_type.casefold() == "int" and not isinstance(value, int):
+            has_wrong_type = True
+        elif option_type.casefold() == "float" and not isinstance(value, float):
+            has_wrong_type = True
+        elif option_type.casefold() == "list" and not isinstance(value, list):
+            has_wrong_type = True
+
+        if has_wrong_type:
             self.config_errors.append(
                 f"Option {option} in section {section} has the wrong type. "
                 f"Required type is {option_type}.\n"
@@ -1066,9 +1068,9 @@ class ConfigValidator:
 
         """
         if "larger_than" in CONFIG_SCHEME[section][option].keys():
-            higher_value = self.config.getfloat(section, option)
+            higher_value = self.config[section][option]
             partner = CONFIG_SCHEME[section][option]["larger_than"]
-            lower_value = self.config.getfloat(partner[0], partner[1])
+            lower_value = self.config[partner[0]][partner[1]]
             if lower_value >= higher_value:
                 self.config_errors.append(
                     f"The value of option {option} in section {section} is smaller than"
@@ -1085,9 +1087,9 @@ class ConfigValidator:
 
         """
         if "larger_equal_than" in CONFIG_SCHEME[section][option].keys():
-            higher_value = self.config.getfloat(section, option)
+            higher_value = self.config[section][option]
             partner = CONFIG_SCHEME[section][option]["larger_equal_than"]
-            lower_value = self.config.getfloat(partner[0], partner[1])
+            lower_value = self.config[partner[0]][partner[1]]
             if lower_value > higher_value:
                 self.config_errors.append(
                     f"The value of option {option} in section {section} is smaller than"
@@ -1123,7 +1125,7 @@ class ConfigValidator:
 
         """
         if "file" in option_attributes:
-            file = pathlib.Path(self.config.get(section, option))
+            file = pathlib.Path(self.config[section][option])
             if not file.is_file():
                 self.config_errors.append(
                     f"Option {option} in section {section} should point to a file, "
@@ -1143,7 +1145,7 @@ class ConfigValidator:
             extension: The file extension.
 
         """
-        path_to_file = self.config.get(section, option)
+        path_to_file = self.config[section][option]
         if not path_to_file.split(".")[-1] == extension:
             self.config_errors.append(
                 f"Option {option} in section {section} has the wrong file extension, "
@@ -1162,7 +1164,7 @@ class ConfigValidator:
 
         """
         if "non_negative" in option_attributes:
-            if self.config.getfloat(section, option) < 0:
+            if self.config[section][option] < 0:
                 self.config_errors.append(
                     f"Option {option} in section {section} is negative, "
                     "but it must not be.\n"
@@ -1180,7 +1182,7 @@ class ConfigValidator:
 
         """
         if "positive" in option_attributes:
-            if self.config.getfloat(section, option) <= 0:
+            if self.config[section][option] <= 0:
                 self.config_errors.append(
                     f"Option {option} in section {section} is non-positive, "
                     f"but it most be positive.\n"
@@ -1198,7 +1200,7 @@ class ConfigValidator:
 
         """
         if "less_than_one" in option_attributes:
-            if self.config.getfloat(section, option) >= 1:
+            if self.config[section][option] >= 1:
                 self.config_errors.append(
                     f"Option {option} in section {section} is larger than one, "
                     f"but it must be smaller.\n"
@@ -1216,7 +1218,7 @@ class ConfigValidator:
 
         """
         if "larger_than_one" in option_attributes:
-            if self.config.getfloat(section, option) <= 1:
+            if self.config[section][option] <= 1:
                 self.config_errors.append(
                     f"Option {option} in section {section} is smaller than one, "
                     f"but it must be larger.\n"
