@@ -212,12 +212,6 @@ def shape_gradient_test(
         bc.apply(h[0].vector())
         h[0].vector().apply("")
 
-    if sop.form_handler.use_fixed_dimensions:
-        h[0].vector().vec()[sop.form_handler.fixed_indices] = np.array(
-            [0.0] * len(sop.form_handler.fixed_indices)
-        )
-        h[0].vector().apply("")
-
     transformation = fenics.Function(sop.db.function_db.control_spaces[0])
 
     # pylint: disable=protected-access
