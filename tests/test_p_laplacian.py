@@ -143,14 +143,14 @@ def test_p_laplacian(config_sop, geometry, e, bcs, J, u, p):
 
 @pytest.mark.parametrize("dim", [0, 1])
 def test_p_laplacian_fixed_dimensions(rng, config_sop, geometry, e, bcs, J, u, p, dim):
-    config_sop.set("ShapeGradient", "mu_def", "1.0")
-    config_sop.set("ShapeGradient", "mu_fix", "1.0")
-    config_sop.set("ShapeGradient", "damping_factor", "1.0")
-    config_sop.set("ShapeGradient", "use_p_laplacian", "True")
-    config_sop.set("ShapeGradient", "p_laplacian_power", "6")
-    config_sop.set("ShapeGradient", "p_laplacian_stabilization", "0.0")
+    config_sop["ShapeGradient"]["mu_def"] = 1.0
+    config_sop["ShapeGradient"]["mu_fix"] = 1.0
+    config_sop["ShapeGradient"]["damping_factor"] = 1.0
+    config_sop["ShapeGradient"]["use_p_laplacian"] = True
+    config_sop["ShapeGradient"]["p_laplacian_power"] = 6
+    config_sop["ShapeGradient"]["p_laplacian_stabilization"] = 0.0
 
-    config_sop.set("ShapeGradient", "fixed_dimensions", f"[{dim}]")
+    config_sop["ShapeGradient"]["fixed_dimensions"] = [dim]
 
     sop = cashocs.ShapeOptimizationProblem(
         e, bcs, J, u, p, geometry.boundaries, config=config_sop

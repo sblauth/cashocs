@@ -175,12 +175,6 @@ class ShapeGradientProblem(pde_problem.PDEProblem):
             self.form_handler.assembler_extension.assemble(
                 self.form_handler.fe_reextension_vector
             )
-            if self.form_handler.use_fixed_dimensions:
-                self.form_handler.fe_reextension_vector.vec().setValues(
-                    self.form_handler.fixed_indices,
-                    np.array([0.0] * len(self.form_handler.fixed_indices)),
-                )
-                self.form_handler.fe_reextension_vector.apply("")
 
             reextended_gradient = fenics.Function(self.db.function_db.control_spaces[0])
             self.form_handler.apply_reextension_bcs(  # Effect of DirichletBCs on KSP

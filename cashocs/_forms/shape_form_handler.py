@@ -19,7 +19,6 @@
 
 from __future__ import annotations
 
-import itertools
 from typing import TYPE_CHECKING
 
 import fenics
@@ -239,7 +238,6 @@ class ShapeFormHandler(form_handler.FormHandler):
     and the shape derivatives.
     """
 
-    use_fixed_dimensions: bool
     bcs_shape: list[fenics.DirichletBC]
     fe_shape_derivative_vector: fenics.PETScVector
     shape_derivative: ufl.Form
@@ -303,16 +301,7 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.shape_regularization: shape_regularization.ShapeRegularization = (
             regularization
         )
-
-        fixed_dimensions = self.config["ShapeGradient"]["fixed_dimensions"]
-        self.use_fixed_dimensions = False
-        if len(fixed_dimensions) > 0:
-            self.use_fixed_dimensions = True
-            unpack_list = [
-                self.db.function_db.control_spaces[0].sub(i).dofmap().dofs()
-                for i in fixed_dimensions
-            ]
-            self.fixed_indices = list(itertools.chain(*unpack_list))
+        self.fixed_dimensions = self.config["ShapeGradient"]["fixed_dimensions"]
 
         self.state_adjoint_ids: list[int] = []
         self.material_derivative_coeffs: list[ufl_expr.Expr] = []
@@ -577,14 +566,10 @@ class ShapeFormHandler(form_handler.FormHandler):
                 self.shape_bdry_fix_z,
             )
 
-        fixed_dimensions = self.config.getlist("ShapeGradient", "fixed_dimensions")
-        self.use_fixed_dimensions = False
-        if len(fixed_dimensions) > 0:
-            self.use_fixed_dimensions = True
-            for i in fixed_dimensions:
-                bcs_shape += _utils.create_fixed_volumetric_bcs(
-                    self.db.function_db.control_spaces[0].sub(i), fenics.Constant(0.0)
-                )
+        for i in self.fixed_dimensions:
+            bcs_shape += _utils.create_fixed_volumetric_bcs(
+                self.db.function_db.control_spaces[0].sub(i), fenics.Constant(0.0)
+            )
 
         return bcs_shape
 
@@ -608,6 +593,11 @@ class ShapeFormHandler(form_handler.FormHandler):
             self.boundaries,
             all_boundaries,
         )
+
+        for i in self.fixed_dimensions:
+            bcs_extension += _utils.create_fixed_volumetric_bcs(
+                self.db.function_db.control_spaces[0].sub(i), fenics.Constant(0.0)
+            )
 
         return bcs_extension
 
@@ -690,27 +680,6 @@ class ShapeFormHandler(form_handler.FormHandler):
             riesz_scalar_product = self.shape_scalar_product
 
         return riesz_scalar_product
-
-    def _project_scalar_product(self) -> None:
-        """Ensures, that only free dimensions can be deformed."""
-        if self.use_fixed_dimensions:
-            copy_mat = self.fe_scalar_product_matrix.copy()
-
-            copy_mat.ident(self.fixed_indices)
-            copy_mat.mat().transpose()
-            copy_mat.ident(self.fixed_indices)
-            copy_mat.mat().transpose()
-
-            self.fe_scalar_product_matrix.mat().aypx(0.0, copy_mat.mat())
-
-            if self.config["ShapeGradient"]["reextend_from_boundary"]:
-                copy_mat = self.fe_reextension_matrix.copy()
-                copy_mat.ident(self.fixed_indices)
-                copy_mat.mat().transpose()
-                copy_mat.ident(self.fixed_indices)
-                copy_mat.mat().transpose()
-
-                self.fe_reextension_matrix.mat().aypx(0.0, copy_mat.mat())
 
     def update_scalar_product(self) -> None:
         """Updates the linear elasticity equations to the current geometry.
@@ -843,10 +812,4 @@ class ShapeFormHandler(form_handler.FormHandler):
         """
         for bc in self.bcs_extension:
             bc.apply(function.vector())
-            function.vector().apply("")
-
-        if self.use_fixed_dimensions:
-            function.vector().vec()[self.fixed_indices] = np.array(
-                [0.0] * len(self.fixed_indices)
-            )
             function.vector().apply("")
