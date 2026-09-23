@@ -228,10 +228,11 @@ class ScalarTrackingFunctional(Functional):
         super().__init__()
         self.integrand = integrand
         self.tracking_goal = tracking_goal
+        self.tracking_goal_value = fenics.Constant(1.0)
         if not isinstance(self.tracking_goal, ctypes.c_float | ctypes.c_double):
-            self.tracking_goal_value = self.tracking_goal
+            self.tracking_goal_value.assign(self.tracking_goal)
         else:
-            self.tracking_goal_value = self.tracking_goal.value
+            self.tracking_goal_value.assign(self.tracking_goal.value)
 
         self.integrand_value = fenics.Constant(0.0)
         self.weight = fenics.Constant(weight)
@@ -244,14 +245,14 @@ class ScalarTrackingFunctional(Functional):
 
         """
         if isinstance(self.tracking_goal, ctypes.c_float | ctypes.c_double):
-            self.tracking_goal_value = self.tracking_goal.value
+            self.tracking_goal_value.assign(self.tracking_goal.value)
 
         scalar_integral_value = fenics.assemble(self.integrand)
         self.integrand_value.assign(scalar_integral_value)
         val: float = (
             self.weight.values()[0]
             / 2.0
-            * pow(scalar_integral_value - self.tracking_goal_value, 2)
+            * pow(scalar_integral_value - self.tracking_goal_value.values()[0], 2)
         )
         return val
 
@@ -269,11 +270,11 @@ class ScalarTrackingFunctional(Functional):
 
         """
         if isinstance(self.tracking_goal, ctypes.c_float | ctypes.c_double):
-            self.tracking_goal_value = self.tracking_goal.value
+            self.tracking_goal_value.assign(self.tracking_goal.value)
 
         derivative = fenics.derivative(
             self.weight
-            * (self.integrand_value - fenics.Constant(self.tracking_goal_value))
+            * (self.integrand_value - self.tracking_goal_value)
             * self.integrand,
             argument,
             direction,
@@ -303,6 +304,9 @@ class ScalarTrackingFunctional(Functional):
         """Updates the functional after solving the state equation."""
         scalar_integral_value = fenics.assemble(self.integrand)
         self.integrand_value.assign(scalar_integral_value)
+
+        if isinstance(self.tracking_goal, ctypes.c_float | ctypes.c_double):
+            self.tracking_goal_value.assign(self.tracking_goal.value)
 
 
 class MinMaxFunctional(Functional):
