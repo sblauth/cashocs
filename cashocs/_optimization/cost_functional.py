@@ -146,16 +146,18 @@ class Functional(abc.ABC):
 class IntegralFunctional(Functional):
     """A functional which is given by the integral of ``form``."""
 
-    def __init__(self, form: ufl.Form) -> None:
+    def __init__(self, form: ufl.Form, weight: float | int = 1.0) -> None:
         """Initializes self.
 
         Args:
             form: The form of the integrand, which is to be calculated for evaluating
                 the functional.
+            weight: A real number which gives the scaling factor for this functional
 
         """
         super().__init__()
         self.form = form
+        self.weight = fenics.Constant(weight)
 
     def evaluate(self) -> float:
         """Evaluates the functional.
@@ -164,7 +166,7 @@ class IntegralFunctional(Functional):
             The current value of the functional.
 
         """
-        val: float = fenics.assemble(self.form)
+        val: float = fenics.assemble(self.weight * self.form)
         return val
 
     def derivative(
@@ -180,7 +182,7 @@ class IntegralFunctional(Functional):
             A form of the resulting derivative
 
         """
-        return fenics.derivative(self.form, argument, direction)
+        return fenics.derivative(self.weight * self.form, argument, direction)
 
     def coefficients(self) -> tuple[fenics.Function]:
         """Computes the ufl coefficients which are used in the functional.
@@ -199,7 +201,7 @@ class IntegralFunctional(Functional):
             scaling_factor: The scaling factor used to scale the functional
 
         """
-        self.form = fenics.Constant(scaling_factor) * self.form
+        self.weight.assign(scaling_factor)
 
     def update(self) -> None:
         """Updates the functional after solving the state equation."""
