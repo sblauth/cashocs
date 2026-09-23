@@ -10,6 +10,7 @@ permissions: read-all
 
 env:
   OMP_NUM_THREADS: 1
+  CONDA_OVERRIDE_ARCHSPEC: x86_64_v3
 
 jobs:
   serial_tests:
