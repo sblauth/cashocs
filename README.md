@@ -27,7 +27,7 @@
 | cashocs/\_forms/shape\_form\_handler.py                                            |      249 |       19 |     92% |166, 204-205, 371, 393-399, 433-434, 439, 562, 598, 692-705 |
 | cashocs/\_forms/shape\_regularization.py                                           |      220 |       10 |     95% |202, 211, 297, 305, 397, 472, 480, 501, 629, 637 |
 | cashocs/\_optimization/\_\_init\_\_.py                                             |        0 |        0 |    100% |           |
-| cashocs/\_optimization/cost\_functional.py                                         |      160 |        7 |     96% |234, 247, 272, 432, 465-466, 521 |
+| cashocs/\_optimization/cost\_functional.py                                         |      163 |        8 |     95% |235, 248, 273, 309, 436, 469-470, 525 |
 | cashocs/\_optimization/line\_search/\_\_init\_\_.py                                |        5 |        0 |    100% |           |
 | cashocs/\_optimization/line\_search/armijo\_line\_search.py                        |       72 |        6 |     92% |223, 238-243 |
 | cashocs/\_optimization/line\_search/basic\_line\_search.py                         |       41 |       10 |     76% |111-116, 123-127, 147-152 |
@@ -95,7 +95,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      380 |       40 |     89% |172, 265, 345-350, 448, 547-548, 676-678, 685-687, 712-744, 929, 958-960, 970-972, 986-987 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      394 |       53 |     87% |174, 268, 342-343, 437, 526-527, 542-569, 690-691, 708-710, 716-718, 748-786, 958, 985-987, 997-999, 1013-1014 |
 | cashocs/verification.py                                                            |      128 |        3 |     98% |228-229, 261 |
-| **TOTAL**                                                                          | **8374** |  **775** | **91%** |           |
+| **TOTAL**                                                                          | **8377** |  **776** | **91%** |           |
 
 
 ## Setup coverage badge
