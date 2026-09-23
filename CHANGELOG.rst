@@ -21,6 +21,8 @@ of the maintenance releases, please take a look at
 
 * Toml Configuration files can now also be used by cashocs. The structure is, at the moment, identical to the .ini files. In the future, there will likely be a newer v2 configuration file format only supported by toml files, but at the moment both file types are supported.
 
+* Add a keyword argument `weight` to :py:class:`cashocs.IntegralFunctional`, which can be used to scale the cost functional.
+
 * New configuration file parameters:
 
   * Section LineSearch
