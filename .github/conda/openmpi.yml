@@ -11,3 +11,4 @@ dependencies:
   - scipy
   - openmpi
   - typer
+  - _x86_64-microarch-level=3
