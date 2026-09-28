@@ -6,8 +6,8 @@ here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
-2.11.0 (in development)
------------------------
+2.11.0 (September 28, 2026)
+---------------------------
 
 * Add :py:class:`BasicLineSearch`, which is a fixed stepsize line search. 
 
