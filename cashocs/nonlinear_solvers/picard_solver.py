@@ -180,6 +180,7 @@ def picard_iteration(
                 np.maximum(eta, 0.5 * tol / res),
             )
 
+            # pylint: disable=invalid-name
             ksp_option, A_tensor, b_tensor = _get_linear_solver_options(
                 j, ksp_options, A_tensors, b_tensors
             )
