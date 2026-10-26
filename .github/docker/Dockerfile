@@ -11,7 +11,7 @@ RUN conda create -y -n env \
       mpich \
       scipy \
       typer \
-      python=3.14 && \
+      python=3.15 && \
    conda clean --all --yes
 
 WORKDIR /opt/app
