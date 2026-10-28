@@ -9,6 +9,7 @@ of the maintenance releases, please take a look at
 2.12.0 (in development)
 -----------------------
 
+* Update the logging so that both cashocs' name and the log level are shown
 
 
 2.11.0 (September 28, 2026)
