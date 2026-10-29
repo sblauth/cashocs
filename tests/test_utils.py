@@ -277,7 +277,8 @@ def test_l2_projection():
     )
 
 
-def test_create_material_parameter(dir_path):
+@pytest.mark.parametrize("provide_space", [False, True])
+def test_create_material_parameter(dir_path, provide_space):
     mesh, _, _, dx, _, _ = cashocs.import_mesh(f"{dir_path}/mesh/square/square.xdmf")
 
     material_dict = {
@@ -286,13 +287,31 @@ def test_create_material_parameter(dir_path):
         "bottom_right": 3.4,
     }
 
-    V = FunctionSpace(mesh, "DG", 0)
+    V = FunctionSpace(mesh, "DG", 0) if provide_space else None
+    parameter = cashocs.create_material_parameter(material_dict, mesh, V)
 
-    u_cashocs = project(cashocs.create_material_parameter(material_dict, mesh), V)
-
-    error = assemble((u_cashocs - 1.0) ** 2 * dx(["top_left", "top_right"]))
-    error += assemble((u_cashocs - 2.0) ** 2 * dx("bottom_left"))
-    error += assemble((u_cashocs - 3.4) ** 2 * dx("bottom_right"))
+    error = assemble((parameter - 1.0) ** 2 * dx(["top_left", "top_right"]))
+    error += assemble((parameter - 2.0) ** 2 * dx("bottom_left"))
+    error += assemble((parameter - 3.4) ** 2 * dx("bottom_right"))
     error = np.sqrt(error)
 
     assert error == pytest.approx(0, rel=1e-15, abs=1e-15)
+
+
+@pytest.mark.parametrize("provide_space", [False, True])
+def test_create_boundary_parameter(dir_path, provide_space):
+    mesh, _, _, _, ds, _ = cashocs.import_mesh(f"{dir_path}/mesh/square/square.xdmf")
+
+    boundary_dict = {
+        ("left", "right"): 1.0,
+        "bottom": 2.0,
+        8: 3.4,
+    }
+    space = FunctionSpace(mesh, "DGT", 0) if provide_space else None
+    parameter = cashocs.create_boundary_parameter(boundary_dict, mesh, space)
+
+    error = assemble((parameter - 1.0) ** 2 * ds(["left", "right"]))
+    error += assemble((parameter - 2.0) ** 2 * ds("bottom"))
+    error += assemble((parameter - 3.4) ** 2 * ds("top"))
+
+    assert np.sqrt(error) == pytest.approx(0, rel=1e-15, abs=1e-15)

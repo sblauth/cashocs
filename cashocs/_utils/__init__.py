@@ -27,6 +27,7 @@ from cashocs._utils import helpers
 from cashocs._utils import interpolations
 from cashocs._utils import linalg
 from cashocs._utils.forms import bilinear_boundary_form_modification
+from cashocs._utils.forms import create_boundary_parameter
 from cashocs._utils.forms import create_dirichlet_bcs
 from cashocs._utils.forms import create_fixed_volumetric_bcs
 from cashocs._utils.forms import create_material_parameter
@@ -90,4 +91,5 @@ __all__ = [
     "split_linear_forms",
     "compute_equation_residuals",
     "create_material_parameter",
+    "create_boundary_parameter",
 ]

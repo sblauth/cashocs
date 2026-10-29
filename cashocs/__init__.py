@@ -50,6 +50,7 @@ from cashocs._optimization.shape_optimization.shape_optimization_problem import 
     ShapeOptimizationProblem,
 )
 from cashocs._optimization.topology_optimization import TopologyOptimizationProblem
+from cashocs._utils import create_boundary_parameter
 from cashocs._utils import create_dirichlet_bcs
 from cashocs._utils import create_material_parameter
 from cashocs._utils import interpolate_levelset_function_to_cells
@@ -159,6 +160,7 @@ __all__ = [
     "TopologyOptimizationProblem",
     "create_dirichlet_bcs",
     "create_material_parameter",
+    "create_boundary_parameter",
     "interpolate_levelset_function_to_cells",
     "Interpolator",
     "compute_mesh_quality",
