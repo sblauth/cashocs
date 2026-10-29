@@ -4,7 +4,7 @@
 
 | Name                                                                               |    Stmts |     Miss |   Cover |   Missing |
 |----------------------------------------------------------------------------------- | -------: | -------: | ------: | --------: |
-| cashocs/\_\_init\_\_.py                                                            |       41 |        0 |    100% |           |
+| cashocs/\_\_init\_\_.py                                                            |       42 |        0 |    100% |           |
 | cashocs/\_cli/\_\_init\_\_.py                                                      |        3 |        0 |    100% |           |
 | cashocs/\_cli/\_convert.py                                                         |       11 |        3 |     73% | 61-62, 66 |
 | cashocs/\_cli/\_extract\_mesh.py                                                   |        9 |        2 |     78% |    58, 68 |
@@ -29,7 +29,7 @@
 | cashocs/\_optimization/\_\_init\_\_.py                                             |        0 |        0 |    100% |           |
 | cashocs/\_optimization/cost\_functional.py                                         |      164 |        8 |     95% |237, 250, 275, 311, 438, 471-472, 527 |
 | cashocs/\_optimization/line\_search/\_\_init\_\_.py                                |        5 |        0 |    100% |           |
-| cashocs/\_optimization/line\_search/armijo\_line\_search.py                        |       72 |        9 |     88% |88-93, 223, 238-243 |
+| cashocs/\_optimization/line\_search/armijo\_line\_search.py                        |       72 |        6 |     92% |223, 238-243 |
 | cashocs/\_optimization/line\_search/basic\_line\_search.py                         |       41 |       10 |     76% |111-116, 123-127, 147-152 |
 | cashocs/\_optimization/line\_search/line\_search.py                                |       71 |        2 |     97% |   68, 140 |
 | cashocs/\_optimization/line\_search/polynomial\_line\_search.py                    |       96 |       18 |     81% |80, 83-89, 95-100, 142, 145, 181-191, 216, 251, 253, 348-351 |
@@ -63,8 +63,8 @@
 | cashocs/\_pde\_problems/shape\_gradient\_problem.py                                |      144 |        5 |     97% |86, 368, 371-373 |
 | cashocs/\_pde\_problems/state\_problem.py                                          |       88 |        8 |     91% |77, 82, 124, 161, 268-274 |
 | cashocs/\_typing.py                                                                |       21 |       21 |      0% |     20-64 |
-| cashocs/\_utils/\_\_init\_\_.py                                                    |       34 |        0 |    100% |           |
-| cashocs/\_utils/forms.py                                                           |       94 |        0 |    100% |           |
+| cashocs/\_utils/\_\_init\_\_.py                                                    |       35 |        0 |    100% |           |
+| cashocs/\_utils/forms.py                                                           |      114 |        0 |    100% |           |
 | cashocs/\_utils/helpers.py                                                         |       77 |        5 |     94% |71, 252, 259, 267-269 |
 | cashocs/\_utils/interpolations.py                                                  |       44 |       18 |     59% |27, 275-430 |
 | cashocs/\_utils/linalg.py                                                          |      224 |       27 |     88% |78, 140, 158, 301, 347-348, 405-408, 523-524, 614-620, 729-733, 753-765 |
@@ -95,7 +95,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      380 |       40 |     89% |172, 265, 345-350, 448, 547-548, 676-678, 685-687, 712-744, 929, 958-960, 970-972, 986-987 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      394 |       53 |     87% |174, 268, 342-343, 437, 526-527, 542-569, 690-691, 708-710, 716-718, 748-786, 958, 985-987, 997-999, 1013-1014 |
 | cashocs/verification.py                                                            |      128 |        3 |     98% |228-229, 261 |
-| **TOTAL**                                                                          | **8379** |  **779** | **91%** |           |
+| **TOTAL**                                                                          | **8401** |  **776** | **91%** |           |
 
 
 ## Setup coverage badge
