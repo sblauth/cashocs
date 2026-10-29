@@ -11,6 +11,8 @@ of the maintenance releases, please take a look at
 
 * Update the logging so that both cashocs' name and the log level are shown
 
+* Add :py:func:`cashocs.create_boundary_parameter`, which creates parameters or indicator functions on boundaries.
+
 
 2.11.0 (September 28, 2026)
 ---------------------------
