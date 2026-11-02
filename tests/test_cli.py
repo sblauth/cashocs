@@ -28,6 +28,7 @@ import cashocs
 from cashocs.io.mesh import gather_coordinates
 
 
+@pytest.mark.slow
 @pytest.mark.skipif(
     MPI.COMM_WORLD.size > 1,
     reason="This test cannot be run in parallel.",
@@ -211,6 +212,7 @@ def test_convert3D(dir_path):
     MPI.COMM_WORLD.barrier()
 
 
+@pytest.mark.slow
 def test_wrong_formats(dir_path):
     subprocess_env = {
         key: value
@@ -254,6 +256,7 @@ def test_wrong_formats(dir_path):
         assert "due to wrong format." in result.stderr
 
 
+@pytest.mark.slow
 @pytest.mark.skipif(
     MPI.COMM_WORLD.size > 1,
     reason="This test cannot be run in parallel.",
