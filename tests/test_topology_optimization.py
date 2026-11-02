@@ -445,6 +445,7 @@ def test_projection_method_for_topology_optimization(
     assert abs(projection_volume - target) < top.projection.tol_bisect
 
 
+@pytest.mark.slow
 def test_deflation(
     F,
     bcs,
