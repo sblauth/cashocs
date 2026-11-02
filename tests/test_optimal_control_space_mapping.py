@@ -27,6 +27,8 @@ import pytest
 import cashocs
 import cashocs.space_mapping.optimal_control as ocsm
 
+pytestmark = pytest.mark.slow
+
 nonlinearity_factor = 5e2
 
 

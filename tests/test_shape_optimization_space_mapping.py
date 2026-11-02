@@ -22,10 +22,14 @@ import subprocess
 
 from fenics import *
 import numpy as np
+import pytest
 
 import cashocs
 import cashocs._cli
 import cashocs.space_mapping.shape_optimization as sosm
+
+pytestmark = pytest.mark.slow
+
 
 dir_path = str(pathlib.Path(__file__).parent)
 
