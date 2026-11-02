@@ -49,7 +49,7 @@ jobs:
 
     - name: Run tests
       run: |
-        conda run --no-capture-output -n env python3 -m pytest -vv --cov=cashocs --cov-report=xml tests/
+        conda run --no-capture-output -n env python3 -m pytest -vv --cov=cashocs --cov-report=xml 
 
     - name: Coverage comment
       id: coverage_comment

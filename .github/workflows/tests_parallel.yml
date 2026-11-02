@@ -52,4 +52,4 @@ jobs:
     
     - name: Run tests in parallel
       run: |
-        mpirun -n 2 python3 -m pytest -vv --timeout=1800 -p no:cacheprovider --randomly-seed=${{ github.run_id }} tests/
+        mpirun -n 2 python3 -m pytest -vv --timeout=1800 -p no:cacheprovider --randomly-seed=${{ github.run_id }}

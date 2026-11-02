@@ -48,5 +48,5 @@ jobs:
 
     - name: Run tests
       run: |
-        python3 -m pytest -vv tests/
+        python3 -m pytest -vv
  

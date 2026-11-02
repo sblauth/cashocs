@@ -20,7 +20,7 @@ COPY . .
 
 RUN conda run --no-capture-output -n env pip install .[all]
 
-RUN conda run --no-capture-output -n env python -m pytest -vv tests/
+RUN conda run --no-capture-output -n env python -m pytest -vv
 
 ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "env"]
 CMD ["bash"]
