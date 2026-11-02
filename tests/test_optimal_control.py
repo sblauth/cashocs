@@ -291,6 +291,7 @@ def test_scalar_tracking_weight(rng, geometry, config_ocp, F, bcs, y, u, p):
     assert np.abs(val - weight) < 1e-15
 
 
+@pytest.mark.slow
 def test_scalar_multiple_norms(rng, config_ocp, geometry, F, bcs, y, u, p):
     config_ocp["OptimizationRoutine"]["algorithm"] = "bfgs"
     config_ocp["OptimizationRoutine"]["rtol"] = 1e-6
@@ -621,6 +622,7 @@ def test_damped_bfgs(geometry, y, p, bcs, config_ocp):
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
+@pytest.mark.slow
 def test_optimal_control_with_custom_preconditioner(geometry, config_ocp):
     mesh = geometry.mesh
     dx = geometry.dx
@@ -722,6 +724,7 @@ def test_pseudo_time_stepping(F, bcs, J, y, u, p, config_ocp):
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
+@pytest.mark.slow
 def test_adjoint_linearizations(geometry, config_ocp):
     mesh = geometry.mesh
     dx = geometry.dx
