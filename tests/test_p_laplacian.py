@@ -24,6 +24,8 @@ import pytest
 
 import cashocs
 
+pytestmark = pytest.mark.slow
+
 
 @pytest.fixture
 def geometry(dir_path):
