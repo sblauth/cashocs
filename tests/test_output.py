@@ -223,6 +223,7 @@ def test_save_xdmf_files_mixed(dir_path, rng, config_ocp, geometry):
     MPI.barrier(MPI.comm_world)
 
 
+@pytest.mark.slow
 def test_extract_mesh_from_xdmf(dir_path, F, bcs, J, y, u, p, config_ocp):
     config_ocp["Output"]["save_state"] = True
 
