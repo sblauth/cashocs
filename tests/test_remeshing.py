@@ -100,6 +100,7 @@ def test_verification_remeshing():
     MPI.barrier(MPI.comm_world)
 
 
+@pytest.mark.slow
 @pytest.mark.skipif(
     not has_gmsh,
     reason="This test requires Gmsh.",
@@ -164,6 +165,7 @@ def test_remeshing():
     MPI.barrier(MPI.comm_world)
 
 
+@pytest.mark.slow
 @pytest.mark.skipif(
     not has_gmsh,
     reason="This test requires Gmsh.",
