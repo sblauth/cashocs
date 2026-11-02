@@ -986,6 +986,7 @@ def test_check_config_list():
         )
 
 
+@pytest.mark.slow
 def test_stepsize2():
     config = cashocs.load_config(dir_path + "/config_sop.ini")
     config["LineSearch"]["initial_stepsize"] = 1e-3
