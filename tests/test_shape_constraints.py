@@ -20,6 +20,7 @@ import pathlib
 from fenics import *
 from mpi4py import MPI
 import numpy as np
+import pytest
 
 import cashocs
 
@@ -46,7 +47,8 @@ e = inner(grad(u), grad(p)) * dx - f * p * dx
 J = cashocs.IntegralFunctional(u * dx)
 
 
-def test_int_eq_constraints():
+@pytest.mark.parametrize("method", ["AL", "QP"])
+def test_int_eq_constraints(method):
     cfg = cashocs.load_config(dir_path + "/config_sop.ini")
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -54,16 +56,12 @@ def test_int_eq_constraints():
     problem = cashocs.ConstrainedShapeOptimizationProblem(
         e, bcs, J, u, p, boundaries, constraint, config=cfg
     )
-    problem.solve(method="AL", tol=1e-2)
-    assert constraint.constraint_violation() <= 1e-3
-
-    mesh.coordinates()[:, :] = initial_coordinates
-    mesh.bounding_box_tree().build(mesh)
-    problem.solve(method="QP", tol=1e-2)
+    problem.solve(method=method, tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3
 
 
-def test_int_ineq_constraints():
+@pytest.mark.parametrize("method", ["AL", "QP"])
+def test_int_ineq_constraints(method):
     cfg = cashocs.load_config(dir_path + "/config_sop.ini")
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -71,10 +69,5 @@ def test_int_ineq_constraints():
     problem = cashocs.ConstrainedShapeOptimizationProblem(
         e, bcs, J, u, p, boundaries, constraint, config=cfg
     )
-    problem.solve(method="AL", tol=1e-2, mu_0=1e-0)
-    assert constraint.constraint_violation() <= 1e-3
-
-    mesh.coordinates()[:, :] = initial_coordinates
-    mesh.bounding_box_tree().build(mesh)
-    problem.solve(method="QP", tol=1e-2)
+    problem.solve(method=method, tol=1e-2, mu_0=1e-0)
     assert constraint.constraint_violation() <= 1e-3
