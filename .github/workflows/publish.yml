@@ -35,7 +35,7 @@ jobs:
     - name: Run tests
       shell: bash
       run: |
-        conda run --no-capture-output -n env python3 -m pytest -vv tests/
+        conda run --no-capture-output -n env python3 -m pytest -vv
 
 
   release:
