@@ -9,9 +9,10 @@ cashocs is a Python library for PDE-constrained shape optimization and optimal c
 - Preserve public API behavior unless the task explicitly calls for an API change. Follow the existing package boundaries and nearby implementation patterns.
 - Configuration is accessed using section/key indexing, for example `config["Section"]["option"]`.
 
-## Validation
+## Validation and Workflow
 
-While developing, run focused tests as needed for the code being changed. For a quick, broader check, run the non-slow tests from the repository root in serial:
+While developing, run focused tests as needed for the code being changed by supplying the test files and tests directory. 
+For a quick, broader check, run the non-slow tests from the repository root in serial:
 
 ```bash
 pytest -m "not slow"
@@ -24,13 +25,17 @@ pytest
 mpirun -n 2 pytest --randomly-seed=0
 ```
 
-Run linting, type checking, and formatting through the configured pre-commit hooks:
+The non-slow check must run in serial; do not run it under MPI. Report focused or non-slow checks as such, not as full-suite validation.
+
+
+After you are done, you must always run the configured pre-commit hooks:
 
 ```bash
 pre-commit run --all-files
 ```
 
-The non-slow check must run in serial; do not run it under MPI. Report focused or non-slow checks as such, not as full-suite validation.
+and fix the issues and problems raised there.
+
 
 ## MPI and PETSc
 
