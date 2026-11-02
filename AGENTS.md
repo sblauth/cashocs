@@ -40,6 +40,7 @@ The non-slow check must run in serial; do not run it under MPI. Report focused o
 
 ## Documentation
 
+- If you implement a new feature, briefly document it in `CHANGELOG.rst` under the current "in development" section like the other features mentioned there.
 - Documentation sources are under `docs/source/`; the user-facing guides and examples are maintained there and in `demos/`.
 - Documentation builds may not have all runtime dependencies installed. Avoid importing optional runtime modules just to inspect their metadata.
 - The documentation can be built with
