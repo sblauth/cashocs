@@ -338,6 +338,7 @@ def test_picard_state_solver(
     )
 
 
+@pytest.mark.slow
 def test_picard_solver_for_optimization(ocp, ocp_mixed, u, v, CG1):
     u_picard = Function(CG1)
     v_picard = Function(CG1)
@@ -363,6 +364,7 @@ def test_picard_solver_for_optimization(ocp, ocp_mixed, u, v, CG1):
     )
 
 
+@pytest.mark.slow
 def test_picard_nonlinear(
     e_nonlinear, bcs, J, states, controls, adjoints, config_picard, rng
 ):
