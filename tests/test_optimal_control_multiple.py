@@ -157,58 +157,26 @@ def test_control_gd_multiple(ocp):
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
-def test_control_cg_fr_multiple(
-    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
+@pytest.mark.parametrize(
+    ("cg_method", "max_iter"),
+    [("FR", 21), ("PR", 36), ("HS", 30), ("DY", 13), ("HZ", 26)],
+)
+def test_control_cg_multiple(
+    state_forms,
+    bcs_list,
+    J,
+    states,
+    controls,
+    adjoints,
+    config_ocp,
+    cg_method,
+    max_iter,
 ):
-    config_ocp["AlgoCG"]["cg_method"] = "FR"
+    config_ocp["AlgoCG"]["cg_method"] = cg_method
     ocp = cashocs.OptimalControlProblem(
         state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
-    ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=21)
-    assert ocp.solver.relative_norm <= ocp.solver.rtol
-
-
-def test_control_cg_pr_multiple(
-    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
-):
-    config_ocp["AlgoCG"]["cg_method"] = "PR"
-    ocp = cashocs.OptimalControlProblem(
-        state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
-    )
-    ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=36)
-    assert ocp.solver.relative_norm <= ocp.solver.rtol
-
-
-def test_control_cg_hs_multiple(
-    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
-):
-    config_ocp["AlgoCG"]["cg_method"] = "HS"
-    ocp = cashocs.OptimalControlProblem(
-        state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
-    )
-    ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=30)
-    assert ocp.solver.relative_norm <= ocp.solver.rtol
-
-
-def test_control_cg_dy_multiple(
-    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
-):
-    config_ocp["AlgoCG"]["cg_method"] = "DY"
-    ocp = cashocs.OptimalControlProblem(
-        state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
-    )
-    ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=13)
-    assert ocp.solver.relative_norm <= ocp.solver.rtol
-
-
-def test_control_cg_hz_multiple(
-    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
-):
-    config_ocp["AlgoCG"]["cg_method"] = "HZ"
-    ocp = cashocs.OptimalControlProblem(
-        state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
-    )
-    ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=26)
+    ocp.solve(algorithm="ncg", rtol=1e-2, atol=0.0, max_iter=max_iter)
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
@@ -217,21 +185,11 @@ def test_control_bfgs_multiple(ocp):
     assert ocp.solver.relative_norm <= ocp.solver.rtol
 
 
+@pytest.mark.parametrize(("inner_newton",), [("cg",), ("cr",)])
 def test_control_newton_cg_multiple(
-    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
+    state_forms, bcs_list, J, states, controls, adjoints, config_ocp, inner_newton
 ):
-    config_ocp["AlgoTNM"]["inner_newton"] = "cg"
-    ocp = cashocs.OptimalControlProblem(
-        state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
-    )
-    ocp.solve(algorithm="newton", rtol=1e-2, atol=0.0, max_iter=2)
-    assert ocp.solver.relative_norm <= 1e-4
-
-
-def test_control_newton_cr_multiple(
-    state_forms, bcs_list, J, states, controls, adjoints, config_ocp
-):
-    config_ocp["AlgoTNM"]["inner_newton"] = "cr"
+    config_ocp["AlgoTNM"]["inner_newton"] = inner_newton
     ocp = cashocs.OptimalControlProblem(
         state_forms, bcs_list, J, states, controls, adjoints, config=config_ocp
     )
