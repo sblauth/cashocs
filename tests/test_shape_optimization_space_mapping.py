@@ -17,9 +17,6 @@
 
 """Test for the space mapping in the context of shpae optimization."""
 
-import pathlib
-import subprocess
-
 from fenics import *
 import numpy as np
 import pytest
@@ -31,34 +28,52 @@ import cashocs.space_mapping.shape_optimization as sosm
 pytestmark = pytest.mark.slow
 
 
-dir_path = str(pathlib.Path(__file__).parent)
-
 cashocs.set_log_level(cashocs.log.ERROR)
 
-cfg = cashocs.load_config(f"{dir_path}/config_sosm.ini")
-Re_f = 50.0
-mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-    f"{dir_path}/sm_mesh/mesh.xdmf"
-)
-initial_coordinates = mesh.coordinates().copy()
-
-u_in = Expression(("6.0*(0.0 - x[1])*(x[1] + 1.0)", "0.0"), degree=2)
-u_des = Expression(
-    (
-        "0.0",
-        "(x[0] >= 1.75 && x[0] <= 2.5) ? -C*6.0/pow(0.75, 2)*(x[0] - 1.75)*(2.5 - x[0]) : "
-        + "(x[0] >= 3.5 && x[0] <= 4.25) ? -C*6.0/pow(0.75, 2)*(x[0] - 3.5)*(4.25 - x[0]) : "
-        + "(x[0] >= 5.25 && x[0] <= 6) ? -C*6.0/pow(0.75, 2)*(x[0] - 5.25)*(6 - x[0]) : 0.0",
-    ),
-    degree=2,
-    C=1.0 / 3.0 / 0.75,
-    domain=mesh,
-)
-
-
-v_elem = VectorElement("CG", mesh.ufl_cell(), 2)
-p_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
-V = FunctionSpace(mesh, MixedElement([v_elem, p_elem]))
+@pytest.fixture(autouse=True)
+def initialize_module_state(request, tests_dir, copy_test_asset):
+    module = request.module
+    module.sm_mesh_dir = copy_test_asset("sm_mesh")
+    module.cfg = cashocs.load_config(str(tests_dir / "config_sosm.ini"))
+    module.Re_f = 50.0
+    module.mesh, module.subdomains, module.boundaries, module.dx, module.ds, module.dS = (
+        cashocs.import_mesh(str(module.sm_mesh_dir / "mesh.xdmf"))
+    )
+    module.initial_coordinates = module.mesh.coordinates().copy()
+    module.u_in = Expression(("6.0*(0.0 - x[1])*(x[1] + 1.0)", "0.0"), degree=2)
+    module.u_des = Expression(
+        (
+            "0.0",
+            "(x[0] >= 1.75 && x[0] <= 2.5) ? -C*6.0/pow(0.75, 2)*(x[0] - 1.75)*(2.5 - x[0]) : "
+            + "(x[0] >= 3.5 && x[0] <= 4.25) ? -C*6.0/pow(0.75, 2)*(x[0] - 3.5)*(4.25 - x[0]) : "
+            + "(x[0] >= 5.25 && x[0] <= 6) ? -C*6.0/pow(0.75, 2)*(x[0] - 5.25)*(6 - x[0]) : 0.0",
+        ),
+        degree=2,
+        C=1.0 / 3.0 / 0.75,
+        domain=module.mesh,
+    )
+    v_elem = VectorElement("CG", module.mesh.ufl_cell(), 2)
+    p_elem = FiniteElement("CG", module.mesh.ufl_cell(), 1)
+    module.V = FunctionSpace(module.mesh, MixedElement([v_elem, p_elem]))
+    module.up = Function(module.V)
+    module.u, module.p = split(module.up)
+    module.vq = Function(module.V)
+    module.v, module.q = split(module.vq)
+    module.F = (
+        inner(grad(module.u), grad(module.v)) * module.dx
+        - module.p * div(module.v) * module.dx
+        - module.q * div(module.u) * module.dx
+    )
+    bc_in = DirichletBC(module.V.sub(0), module.u_in, module.boundaries, 1)
+    bcs_wall = cashocs.create_dirichlet_bcs(
+        module.V.sub(0), Constant((0.0, 0.0)), module.boundaries, [2, 3, 4]
+    )
+    bc_out = DirichletBC(module.V.sub(0).sub(0), Constant(0.0), module.boundaries, 5)
+    bc_pressure = DirichletBC(module.V.sub(1), Constant(0.0), module.boundaries, 5)
+    module.bcs = [bc_in] + bcs_wall + [bc_out] + [bc_pressure]
+    module.J = cashocs.IntegralFunctional(
+        Constant(0.5) * dot(module.u - module.u_des, module.u - module.u_des) * module.ds(5)
+    )
 
 
 class FineModel(sosm.FineModel):
@@ -68,13 +83,15 @@ class FineModel(sosm.FineModel):
         self.u = Function(self.V_coarse.sub(0).collapse())
 
     def solve_and_evaluate(self):
+        fine_mesh_file = sm_mesh_dir / "fine.msh"
+        fine_xdmf_file = fine_mesh_file.with_suffix(".xdmf")
         cashocs.io.write_out_mesh(
-            self.mesh, f"{dir_path}/sm_mesh/mesh.msh", f"{dir_path}/sm_mesh/fine.msh"
+            self.mesh, str(sm_mesh_dir / "mesh.msh"), str(fine_mesh_file)
         )
-        cashocs.convert(f"{dir_path}/sm_mesh/fine.msh", f"{dir_path}/sm_mesh/fine.xdmf")
+        cashocs.convert(str(fine_mesh_file), str(fine_xdmf_file))
 
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-            f"{dir_path}/sm_mesh/fine.xdmf"
+            str(fine_xdmf_file)
         )
         v_elem = VectorElement("CG", mesh.ufl_cell(), 2)
         p_elem = FiniteElement("CG", mesh.ufl_cell(), 1)
@@ -113,34 +130,6 @@ class FineModel(sosm.FineModel):
         )
         self.u.vector().vec().aypx(0.0, interpolator.interpolate(u_temp).vector().vec())
         self.u.vector().apply("")
-
-        if MPI.rank(MPI.comm_world) == 0:
-            subprocess.run(["rm", f"{dir_path}/sm_mesh/fine.msh"], check=True)
-            subprocess.run(["rm", f"{dir_path}/sm_mesh/fine.xdmf"], check=True)
-            subprocess.run(["rm", f"{dir_path}/sm_mesh/fine.h5"], check=True)
-            subprocess.run(
-                ["rm", f"{dir_path}/sm_mesh/fine_boundaries.xdmf"], check=True
-            )
-            subprocess.run(["rm", f"{dir_path}/sm_mesh/fine_boundaries.h5"], check=True)
-
-
-up = Function(V)
-
-u, p = split(up)
-vq = Function(V)
-v, q = split(vq)
-
-F = inner(grad(u), grad(v)) * dx - p * div(v) * dx - q * div(u) * dx
-
-bc_in = DirichletBC(V.sub(0), u_in, boundaries, 1)
-bcs_wall = cashocs.create_dirichlet_bcs(
-    V.sub(0), Constant((0.0, 0.0)), boundaries, [2, 3, 4]
-)
-bc_out = DirichletBC(V.sub(0).sub(0), Constant(0.0), boundaries, 5)
-bc_pressure = DirichletBC(V.sub(1), Constant(0.0), boundaries, 5)
-bcs = [bc_in] + bcs_wall + [bc_out] + [bc_pressure]
-
-J = cashocs.IntegralFunctional(Constant(0.5) * dot(u - u_des, u - u_des) * ds(5))
 
 
 def test_sosm_broyden_good():
