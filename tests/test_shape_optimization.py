@@ -18,8 +18,6 @@
 """Tests for shape optimization problems."""
 
 from collections import namedtuple
-import pathlib
-import subprocess
 
 from fenics import *
 import numpy as np
@@ -84,36 +82,46 @@ def t_div(u, n):
 
 
 @pytest.fixture
-def geometry():
+def geometry(mesh_dir):
     Geometry = namedtuple("Geometry", "mesh boundaries dx ds")
     mesh, _, boundaries, dx, ds, _ = cashocs.import_mesh(
-        f"{dir_path}/mesh/unit_circle/mesh.xdmf"
+        str(mesh_dir / "unit_circle" / "mesh.xdmf")
     )
     geom = Geometry(mesh, boundaries, dx, ds)
 
     return geom
 
 
-dir_path = str(pathlib.Path(__file__).parent)
-
-mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-    f"{dir_path}/mesh/unit_circle/mesh.xdmf"
-)
-
-initial_coordinates = mesh.coordinates().copy()
-
-V = FunctionSpace(mesh, "CG", 1)
+@pytest.fixture(autouse=True)
+def initialize_module_state(request, mesh_dir, tests_dir):
+    module = request.module
+    module.tests_dir = tests_dir
+    module.mesh_dir = mesh_dir
+    (
+        module.mesh,
+        module.subdomains,
+        module.boundaries,
+        module.dx,
+        module.ds,
+        module.dS,
+    ) = cashocs.import_mesh(str(mesh_dir / "unit_circle" / "mesh.xdmf"))
+    module.initial_coordinates = module.mesh.coordinates().copy()
+    module.V = FunctionSpace(module.mesh, "CG", 1)
+    module.bcs = DirichletBC(module.V, Constant(0), module.boundaries, 1)
+    x = SpatialCoordinate(module.mesh)
+    module.f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+    module.u = Function(module.V)
+    module.p = Function(module.V)
+    module.e = (
+        inner(grad(module.u), grad(module.p)) * module.dx
+        - module.f * module.p * module.dx
+    )
+    module.J = cashocs.IntegralFunctional(module.u * module.dx)
 
 
 @pytest.fixture
 def bcs_list(CG1, geometry):
     return DirichletBC(CG1, Constant(0.0), geometry.boundaries, 1)
-
-
-bcs = DirichletBC(V, Constant(0), boundaries, 1)
-
-x = SpatialCoordinate(mesh)
-f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
 
 
 @pytest.fixture
@@ -137,10 +145,6 @@ def adjoint_function(CG1):
     return Function(CG1)
 
 
-u = Function(V)
-p = Function(V)
-
-
 @pytest.fixture
 def state_form(state_function, adjoint_function, rhs, geometry):
     return (
@@ -149,13 +153,8 @@ def state_form(state_function, adjoint_function, rhs, geometry):
     )
 
 
-e = inner(grad(u), grad(p)) * dx - f * p * dx
-
-J = cashocs.IntegralFunctional(u * dx)
-
-
 def test_move_mesh(rng):
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -231,7 +230,7 @@ def test_shape_derivative_constrained():
     No need to show a warning in pytest.
 
     """
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -308,7 +307,7 @@ def test_shape_gradient(config_sop, rng):
 
 
 def test_shape_gradient_iterative(rng):
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     config["OptimizationRoutine"]["gradient_method"] = "iterative"
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -319,7 +318,7 @@ def test_shape_gradient_iterative(rng):
 
 
 def test_shape_gd():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -333,7 +332,7 @@ def test_shape_gd():
     [("FR", 21), ("PR", 16), ("HS", 18), ("DY", 18), ("HZ", 18)],
 )
 def test_shape_cg(method, expected_iterations):
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     config["AlgoCG"]["cg_method"] = method
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -344,7 +343,7 @@ def test_shape_cg(method, expected_iterations):
 
 
 def test_shape_lbfgs():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -354,7 +353,7 @@ def test_shape_lbfgs():
 
 
 def test_shape_volume_regularization():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -379,7 +378,7 @@ def test_shape_volume_regularization():
 
 
 def test_shape_surface_regularization():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -404,7 +403,7 @@ def test_shape_surface_regularization():
 
 
 def test_shape_barycenter_regularization():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -435,7 +434,7 @@ def test_shape_barycenter_regularization():
 
 
 def test_custom_supply_shape(rng):
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -456,7 +455,7 @@ def test_custom_supply_shape(rng):
 
 
 def test_supply_from_custom_fspace(rng):
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -478,7 +477,7 @@ def test_supply_from_custom_fspace(rng):
 
 
 def test_custom_shape_scalar_product(rng):
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -526,7 +525,7 @@ def test_custom_shape_scalar_product(rng):
 
 
 def test_curvature_computation():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -547,7 +546,7 @@ def test_curvature_computation():
 
 
 def test_scalar_tracking_regularization():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -572,7 +571,7 @@ def test_scalar_tracking_regularization():
 
 def test_scalar_tracking_norm():
     rng = np.random.RandomState(300696)
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     config["OptimizationRoutine"]["algorithm"] = "bfgs"
     config["OptimizationRoutine"]["rtol"] = 1e-5
     config["OptimizationRoutine"]["max_iter"] = 50
@@ -592,7 +591,7 @@ def test_scalar_tracking_norm():
 
 def test_scalar_tracking_weight():
     rng = np.random.RandomState(300696)
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
 
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
@@ -620,7 +619,7 @@ def test_scalar_tracking_weight():
 
 
 def test_scalar_tracking_multiple():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -643,7 +642,7 @@ def test_scalar_tracking_multiple():
 
 
 def test_inhomogeneous_mu():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     config["ShapeGradient"]["shape_bdry_def"] = [1, 2]
     config["ShapeGradient"]["shape_bdry_fix"] = [3, 4]
     config["ShapeGradient"]["mu_fix"] = 1.0
@@ -670,15 +669,16 @@ def test_inhomogeneous_mu():
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
 
 
-def test_save_xdmf_files():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+def test_save_xdmf_files(work_dir, config_sop):
+    config = config_sop
 
     config["Output"]["save_state"] = True
     config["Output"]["save_results"] = True
     config["Output"]["save_txt"] = True
     config["Output"]["save_adjoint"] = True
     config["Output"]["save_gradient"] = True
-    config["Output"]["result_dir"] = dir_path + "/out"
+    output_dir = work_dir / "out"
+    config["Output"]["result_dir"] = str(output_dir)
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     sop = cashocs.ShapeOptimizationProblem(e, bcs, J, u, p, boundaries, config)
@@ -686,26 +686,24 @@ def test_save_xdmf_files():
 
     MPI.barrier(MPI.comm_world)
 
-    assert pathlib.Path(dir_path + "/out").is_dir()
-    assert pathlib.Path(dir_path + "/out/checkpoints").is_dir()
-    assert pathlib.Path(dir_path + "/out/history.txt").is_file()
-    assert pathlib.Path(dir_path + "/out/history.json").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/state_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/state_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/shape_gradient.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/shape_gradient.h5").is_file()
+    assert output_dir.is_dir()
+    assert (output_dir / "checkpoints").is_dir()
+    assert (output_dir / "history.txt").is_file()
+    assert (output_dir / "history.json").is_file()
+    assert (output_dir / "checkpoints/state_0.xdmf").is_file()
+    assert (output_dir / "checkpoints/state_0.h5").is_file()
+    assert (output_dir / "checkpoints/adjoint_0.xdmf").is_file()
+    assert (output_dir / "checkpoints/adjoint_0.h5").is_file()
+    assert (output_dir / "checkpoints/shape_gradient.xdmf").is_file()
+    assert (output_dir / "checkpoints/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
 
-    if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
     MPI.barrier(MPI.comm_world)
 
 
 def test_distance_mu():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     config["ShapeGradient"]["use_distance_mu"] = True
     config["ShapeGradient"]["dist_min"] = 0.1
     config["ShapeGradient"]["dist_max"] = 0.25
@@ -774,7 +772,7 @@ def test_distance_mu():
 
 
 def test_scaling_shape():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -798,7 +796,7 @@ def test_scaling_shape():
 
 
 def test_scaling_shape_regularization():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     rng = np.random.RandomState(300696)
 
     no_iterations = 5
@@ -828,7 +826,7 @@ def test_scaling_shape_regularization():
 
 
 def test_scaling_scalar_only():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -860,7 +858,7 @@ def test_scaling_scalar_only():
 
 
 def test_scaling_scalar_and_single_cost():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -893,7 +891,7 @@ def test_scaling_scalar_and_single_cost():
 
 
 def test_scaling_all():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     rng = np.random.RandomState(300696)
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -928,7 +926,7 @@ def test_scaling_all():
 
 
 def test_angle_change():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     config["MeshQuality"]["angle_change"] = 0.1
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -940,7 +938,7 @@ def test_angle_change():
 
 @pytest.mark.parametrize("dim", [0, 1])
 def test_fixed_dimensions(rng, dim):
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
 
     config["ShapeGradient"]["fixed_dimensions"] = [dim]
 
@@ -955,7 +953,7 @@ def test_fixed_dimensions(rng, dim):
 
 
 def test_check_config_list():
-    cfg = cashocs.load_config(f"{dir_path}/config_sop.ini")
+    cfg = cashocs.load_config(f"{tests_dir}/config_sop.ini")
     cfg["ShapeGradient"]["shape_bdry_def"] = [1, 2, 3]
     cfg.validate_config()
 
@@ -988,7 +986,7 @@ def test_check_config_list():
 
 @pytest.mark.slow
 def test_stepsize2():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     config["LineSearch"]["initial_stepsize"] = 1e-3
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -1000,7 +998,7 @@ def test_stepsize2():
 
 
 def test_global_deformation():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     config["ShapeGradient"]["global_deformation"] = True
 
     mesh.coordinates()[:, :] = initial_coordinates
@@ -1018,7 +1016,7 @@ def test_global_deformation():
 
 
 def test_snes():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     config["StateSystem"]["is_linear"] = False
     config["StateSystem"]["backend"] = "petsc"
 
@@ -1031,7 +1029,7 @@ def test_snes():
 
 
 def test_pseudo_time_stepping():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     config["StateSystem"]["is_linear"] = False
     config["StateSystem"]["backend"] = "petsc"
 
@@ -1057,7 +1055,7 @@ def test_pseudo_time_stepping():
 
 
 def test_reextension_surface():
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     config["ShapeGradient"]["reextend_from_boundary"] = True
     config["ShapeGradient"]["reextension_mode"] = "surface"
 
@@ -1071,7 +1069,7 @@ def test_reextension_surface():
 def test_reextension_normal():
     parameters["ghost_mode"] = "shared_facet"
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        f"{dir_path}/mesh/unit_circle/mesh.xdmf"
+        str(mesh_dir / "unit_circle" / "mesh.xdmf")
     )
 
     V = FunctionSpace(mesh, "CG", 1)
@@ -1086,7 +1084,7 @@ def test_reextension_normal():
     F = inner(grad(u), grad(p)) * dx - f * p * dx
     J = cashocs.IntegralFunctional(u * dx)
 
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     config["ShapeGradient"]["reextend_from_boundary"] = True
     config["ShapeGradient"]["reextension_mode"] = "normal"
 
@@ -1099,7 +1097,7 @@ def test_reextension_normal():
 
 def test_shape_volume_fix():
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        f"{dir_path}/mesh/square/square.xdmf"
+        str(mesh_dir / "square" / "square.xdmf")
     )
 
     V = FunctionSpace(mesh, "CG", 1)
@@ -1113,7 +1111,7 @@ def test_shape_volume_fix():
     F = inner(grad(u), grad(p)) * dx - Constant(1.0) * p * dx
     J = cashocs.ScalarTrackingFunctional(Constant(1.0) * dx, 0.75)
 
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
     config["ShapeGradient"]["shape_volume_fix"] = ["top_left", "bottom_right"]
     config["ShapeGradient"]["shape_bdry_fix"] = ["interior"]
     config["ShapeGradient"]["shape_bdry_def"] = []
@@ -1132,7 +1130,7 @@ def test_shape_volume_fix():
     [("gd", 0.25, 45), ("ncg", 0.25, 12), ("bfgs", 0.1, 33)],
 )
 def test_basic_stepsize(algorithm, step, iterations):
-    config = cashocs.load_config(dir_path + "/config_sop.ini")
+    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
 
     config["LineSearch"]["method"] = "basic"
     config["LineSearch"]["initial_stepsize"] = step

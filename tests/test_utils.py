@@ -18,7 +18,6 @@
 """Tests for the utils module."""
 
 import pathlib
-import subprocess
 
 from fenics import *
 import numpy as np
@@ -30,8 +29,6 @@ from cashocs._exceptions import InputError
 import cashocs._utils
 import cashocs._utils.linalg
 
-dir_path = str(pathlib.Path(__file__).parent)
-config = cashocs.load_config(dir_path + "/config_ocp.ini")
 rng = np.random.RandomState(300696)
 mesh, _, boundaries, dx, ds, _ = cashocs.regular_mesh(5)
 V = FunctionSpace(mesh, "CG", 1)
@@ -49,7 +46,9 @@ J = cashocs.IntegralFunctional(
     Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
 )
 
-ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config)
+@pytest.fixture
+def ocp(config_ocp):
+    return cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config_ocp)
 
 
 def evaluate_function(u, x):
@@ -180,15 +179,12 @@ def test_interpolator():
     assert np.allclose(fen_X.vector()[:], cas_X.vector()[:])
 
 
-def test_create_named_bcs():
-    dir_path = str(pathlib.Path(__file__).parent)
-    cashocs.convert(
-        f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"
-    )
+def test_create_named_bcs(copy_test_asset):
+    mesh_file = copy_test_asset("mesh/named_mesh.msh")
+    xdmf_file = mesh_file.with_suffix(".xdmf")
+    cashocs.convert(str(mesh_file), str(xdmf_file))
 
-    mesh_, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        f"{dir_path}/mesh/named_mesh.xdmf"
-    )
+    mesh_, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(xdmf_file))
     V_ = FunctionSpace(mesh_, "CG", 1)
 
     bcs_str = cashocs.create_dirichlet_bcs(
@@ -221,27 +217,15 @@ def test_create_named_bcs():
         assert np.max(np.abs(fun2.vector()[:] - fun3.vector()[:])) <= 1e-14
 
     MPI.barrier(MPI.comm_world)
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_boundaries.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_boundaries.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_physical_groups.json").is_file()
-    MPI.barrier(MPI.comm_world)
-
-    if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.h5"], check=True)
-        subprocess.run(
-            ["rm", f"{dir_path}/mesh/named_mesh_boundaries.xdmf"], check=True
-        )
-        subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_boundaries.h5"], check=True)
-        subprocess.run(
-            ["rm", f"{dir_path}/mesh/named_mesh_physical_groups.json"], check=True
-        )
+    assert xdmf_file.is_file()
+    assert xdmf_file.with_suffix(".h5").is_file()
+    assert xdmf_file.with_name("named_mesh_boundaries.xdmf").is_file()
+    assert xdmf_file.with_name("named_mesh_boundaries.h5").is_file()
+    assert xdmf_file.with_name("named_mesh_physical_groups.json").is_file()
     MPI.barrier(MPI.comm_world)
 
 
-def test_moreau_yosida_regularization():
+def test_moreau_yosida_regularization(ocp):
     u.vector().vec().set(1e3)
     u.vector().apply("")
     y_bar = 1e-1
@@ -278,8 +262,10 @@ def test_l2_projection():
 
 
 @pytest.mark.parametrize("provide_space", [False, True])
-def test_create_material_parameter(dir_path, provide_space):
-    mesh, _, _, dx, _, _ = cashocs.import_mesh(f"{dir_path}/mesh/square/square.xdmf")
+def test_create_material_parameter(mesh_dir, provide_space):
+    mesh, _, _, dx, _, _ = cashocs.import_mesh(
+        str(mesh_dir / "square" / "square.xdmf")
+    )
 
     material_dict = {
         ("top_left", "top_right"): 1.0,
@@ -299,8 +285,10 @@ def test_create_material_parameter(dir_path, provide_space):
 
 
 @pytest.mark.parametrize("provide_space", [False, True])
-def test_create_boundary_parameter(dir_path, provide_space):
-    mesh, _, _, _, ds, _ = cashocs.import_mesh(f"{dir_path}/mesh/square/square.xdmf")
+def test_create_boundary_parameter(mesh_dir, provide_space):
+    mesh, _, _, _, ds, _ = cashocs.import_mesh(
+        str(mesh_dir / "square" / "square.xdmf")
+    )
 
     boundary_dict = {
         ("left", "right"): 1.0,

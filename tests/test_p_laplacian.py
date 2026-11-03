@@ -16,7 +16,6 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 from collections import namedtuple
-import pathlib
 
 from fenics import *
 import numpy as np
@@ -28,10 +27,10 @@ pytestmark = pytest.mark.slow
 
 
 @pytest.fixture
-def geometry(dir_path):
+def geometry(mesh_dir):
     Geometry = namedtuple("Geometry", "mesh boundaries dx ds")
     mesh, _, boundaries, dx, ds, _ = cashocs.import_mesh(
-        f"{dir_path}/mesh/unit_circle/mesh.xdmf"
+        str(mesh_dir / "unit_circle" / "mesh.xdmf")
     )
     geom = Geometry(mesh, boundaries, dx, ds)
 

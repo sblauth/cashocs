@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-import pathlib
-
 from fenics import *
 from mpi4py import MPI
 import numpy as np
@@ -24,50 +22,46 @@ import pytest
 
 import cashocs
 
-rng = np.random.RandomState(300696)
-dir_path = str(pathlib.Path(__file__).parent)
 
-mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-    f"{dir_path}/mesh/unit_circle/mesh.xdmf"
-)
-initial_coordinates = mesh.coordinates().copy()
+@pytest.fixture
+def shape_problem_data(mesh_dir):
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
+        str(mesh_dir / "unit_circle" / "mesh.xdmf")
+    )
+    initial_coordinates = mesh.coordinates().copy()
+    V = FunctionSpace(mesh, "CG", 1)
+    bcs = DirichletBC(V, Constant(0), boundaries, 1)
+    x = SpatialCoordinate(mesh)
+    f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
+    u = Function(V)
+    p = Function(V)
+    e = inner(grad(u), grad(p)) * dx - f * p * dx
+    J = cashocs.IntegralFunctional(u * dx)
 
-V = FunctionSpace(mesh, "CG", 1)
-
-bcs = DirichletBC(V, Constant(0), boundaries, 1)
-
-x = SpatialCoordinate(mesh)
-f = 2.5 * pow(x[0] + 0.4 - pow(x[1], 2), 2) + pow(x[0], 2) + pow(x[1], 2) - 1
-
-u = Function(V)
-p = Function(V)
-
-e = inner(grad(u), grad(p)) * dx - f * p * dx
-
-J = cashocs.IntegralFunctional(u * dx)
+    return mesh, initial_coordinates, boundaries, dx, bcs, e, J, u, p
 
 
 @pytest.mark.parametrize("method", ["AL", "QP"])
-def test_int_eq_constraints(method):
-    cfg = cashocs.load_config(dir_path + "/config_sop.ini")
+def test_int_eq_constraints(method, shape_problem_data, config_sop):
+    mesh, initial_coordinates, boundaries, dx, bcs, e, J, u, p = shape_problem_data
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     constraint = cashocs.EqualityConstraint(1 * dx, 1.0)
     problem = cashocs.ConstrainedShapeOptimizationProblem(
-        e, bcs, J, u, p, boundaries, constraint, config=cfg
+        e, bcs, J, u, p, boundaries, constraint, config=config_sop
     )
     problem.solve(method=method, tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3
 
 
 @pytest.mark.parametrize("method", ["AL", "QP"])
-def test_int_ineq_constraints(method):
-    cfg = cashocs.load_config(dir_path + "/config_sop.ini")
+def test_int_ineq_constraints(method, shape_problem_data, config_sop):
+    mesh, initial_coordinates, boundaries, dx, bcs, e, J, u, p = shape_problem_data
     mesh.coordinates()[:, :] = initial_coordinates
     mesh.bounding_box_tree().build(mesh)
     constraint = cashocs.InequalityConstraint(1 * dx, upper_bound=1.5, lower_bound=0.0)
     problem = cashocs.ConstrainedShapeOptimizationProblem(
-        e, bcs, J, u, p, boundaries, constraint, config=cfg
+        e, bcs, J, u, p, boundaries, constraint, config=config_sop
     )
     problem.solve(method=method, tol=1e-2, mu_0=1e-0)
     assert constraint.constraint_violation() <= 1e-3

@@ -30,8 +30,8 @@ set_log_level(cashocs.log.CRITICAL)
 
 
 @pytest.fixture
-def config_picard(dir_path):
-    return cashocs.load_config(dir_path + "/config_picard.ini")
+def config_picard(tests_dir):
+    return cashocs.load_config(str(tests_dir / "config_picard.ini"))
 
 
 @pytest.fixture
