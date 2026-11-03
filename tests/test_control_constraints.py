@@ -203,14 +203,15 @@ def test_pw_ineq_constraint(rng, u, CG1, geometry):
 
 
 @pytest.mark.parametrize("method", ["AL", "QP"])
-def test_int_eq_constraints_only(tests_dir, u, y, geometry, F, bcs, J, p, method):
+def test_int_eq_constraints_only(
+    config_ocp, config_dir, u, y, geometry, F, bcs, J, p, method
+):
     u.vector().vec().set(1.0)
     u.vector().apply("")
     constraint = cashocs.EqualityConstraint(y * y * geometry.dx, 1.0)
-    cfg = cashocs.load_config(str(tests_dir / "config_ocp.ini"))
-    cfg["Output"]["verbose"] = False
+    config_ocp["Output"]["verbose"] = False
     problem = cashocs.ConstrainedOptimalControlProblem(
-        F, bcs, J, y, u, p, constraint, config=cfg
+        F, bcs, J, y, u, p, constraint, config=config_ocp
     )
     problem.solve(method=method, tol=1e-1)
     assert constraint.constraint_violation() < 1e-2
@@ -231,9 +232,7 @@ def test_pw_eq_constraints_only(geometry, F, bcs, J, y, u, p, config_ocp, method
 
 @pytest.mark.slow
 @pytest.mark.parametrize("method", ["AL", "QP"])
-def test_int_ineq_constraints_only(
-    tests_dir, config_ocp, geometry, F, bcs, y, u, p, method
-):
+def test_int_ineq_constraints_only(config_ocp, geometry, F, bcs, y, u, p, method):
     u.vector().vec().set(0.0)
     u.vector().apply("")
     J = cashocs.IntegralFunctional(pow(y - Constant(1.0), 2) * geometry.dx)
@@ -248,10 +247,9 @@ def test_int_ineq_constraints_only(
     u.vector().vec().set(0.0)
     u.vector().apply("")
     J = cashocs.IntegralFunctional(pow(y - Constant(0.1), 2) * geometry.dx)
-    cfg = cashocs.load_config(str(tests_dir / "config_ocp.ini"))
     constraint = cashocs.InequalityConstraint(y * y * geometry.dx, lower_bound=0.5)
     problem = cashocs.ConstrainedOptimalControlProblem(
-        F, bcs, J, y, u, p, constraint, config=cfg
+        F, bcs, J, y, u, p, constraint, config=config_ocp
     )
     problem.solve(method=method, tol=1e-2)
     assert constraint.constraint_violation() <= 1e-3

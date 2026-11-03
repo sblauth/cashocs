@@ -33,7 +33,7 @@ from cashocs.io.mesh import gather_coordinates
     reason="This test cannot be run in parallel.",
 )
 def test_convert_cli(copy_test_asset):
-    mesh_file = copy_test_asset("mesh/mesh.msh")
+    mesh_file = copy_test_asset("data/meshes/unit_square/mesh.msh")
     xdmf_file = mesh_file.with_suffix(".xdmf")
     subprocess.run(
         ["cashocs-convert", str(mesh_file)],
@@ -79,7 +79,7 @@ def test_convert_cli(copy_test_asset):
 
 def test_convert_output_arg(mesh_dir, work_dir):
     output_file = work_dir / "test.xdmf"
-    cashocs.convert(str(mesh_dir / "mesh.msh"), str(output_file))
+    cashocs.convert(str(mesh_dir / "unit_square" / "mesh.msh"), str(output_file))
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(output_file))
 
     gmsh_coords = np.array(
@@ -119,7 +119,7 @@ def test_convert_output_arg(mesh_dir, work_dir):
 
 
 def test_convert_wrapper(copy_test_asset):
-    mesh_file = copy_test_asset("mesh/mesh.msh")
+    mesh_file = copy_test_asset("data/meshes/unit_square/mesh.msh")
     xdmf_file = mesh_file.with_suffix(".xdmf")
     cashocs.convert(str(mesh_file))
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(xdmf_file))
@@ -162,7 +162,7 @@ def test_convert_wrapper(copy_test_asset):
 
 def test_convert3D(mesh_dir, work_dir):
     output_file = work_dir / "mesh3.xdmf"
-    cashocs.convert(str(mesh_dir / "mesh3.msh"), str(output_file))
+    cashocs.convert(str(mesh_dir / "unit_cube" / "mesh3.msh"), str(output_file))
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(output_file))
 
     assert fenics.assemble(1 * dx) == pytest.approx(1, rel=1e-14)
@@ -193,7 +193,7 @@ def test_wrong_formats(mesh_dir, work_dir):
         result = subprocess.run(
             [
                 "cashocs-convert",
-                str(mesh_dir / "mesh.mesh"),
+                str(mesh_dir / "unit_square" / "mesh.mesh"),
                 "-o",
                 str(work_dir / "mesh.xdmf"),
             ],
@@ -211,7 +211,7 @@ def test_wrong_formats(mesh_dir, work_dir):
         result = subprocess.run(
             [
                 "cashocs-convert",
-                str(mesh_dir / "mesh.msh"),
+                str(mesh_dir / "unit_square" / "mesh.msh"),
                 "-o",
                 str(work_dir / "mesh.test"),
             ],

@@ -34,18 +34,28 @@ def tests_dir():
 
 
 @pytest.fixture(scope="session")
-def mesh_dir(tests_dir):
-    return tests_dir / "mesh"
+def data_dir(tests_dir):
+    return pathlib.Path(tests_dir / "data")
 
 
 @pytest.fixture(scope="session")
-def sm_mesh_dir(tests_dir):
-    return tests_dir / "sm_mesh"
+def mesh_dir(data_dir):
+    return data_dir / "meshes"
 
 
 @pytest.fixture(scope="session")
-def xdmf_state_dir(tests_dir):
-    return tests_dir / "xdmf_state"
+def sm_mesh_dir(mesh_dir):
+    return mesh_dir / "sm_mesh"
+
+
+@pytest.fixture(scope="session")
+def xdmf_state_dir(data_dir):
+    return data_dir / "xdmf_state"
+
+
+@pytest.fixture(scope="session")
+def config_dir(data_dir):
+    return data_dir / "config"
 
 
 @pytest.fixture(scope="session")
@@ -127,18 +137,18 @@ def copy_test_asset(tests_dir, work_dir):
 
 
 @pytest.fixture
-def config_ocp(tests_dir):
-    return cashocs.load_config(str(tests_dir / "config_ocp.ini"))
+def config_ocp(config_dir):
+    return cashocs.load_config(str(config_dir / "config_ocp.ini"))
 
 
 @pytest.fixture
-def config_sop(tests_dir):
-    return cashocs.load_config(str(tests_dir / "config_sop.ini"))
+def config_sop(config_dir):
+    return cashocs.load_config(str(config_dir / "config_sop.ini"))
 
 
 @pytest.fixture
-def config_top(tests_dir):
-    return cashocs.load_config(str(tests_dir / "config_top.ini"))
+def config_top(config_dir):
+    return cashocs.load_config(str(config_dir / "config_top.ini"))
 
 
 @pytest.fixture
