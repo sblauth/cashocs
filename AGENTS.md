@@ -18,15 +18,14 @@ For a quick, broader check, run the non-slow tests from the repository root in s
 pytest -m "not slow"
 ```
 
-This check is faster and catches most issues directly. Run the full test suites only afterwards, for final verification:
+This check is faster and catches most issues directly. You must neither run the full test suite nor run tets in parallel with MPI.
+This will be done by your human partner or the CI, it is not your job. Only ever run focused tests in parallel with the command
 
 ```bash
-pytest
-mpirun -n 2 pytest --randomly-seed=0
+mpirun -n 2 pytest --randomly-seed=0 <selected_tests>
 ```
 
-The non-slow check must run in serial; do not run it under MPI. Report focused or non-slow checks as such, not as full-suite validation.
-
+where you specify the tests. Report the results of these tests as focused or non-slow checks, not as full-suite validation.
 
 After you are done, you must always run the configured pre-commit hooks:
 
