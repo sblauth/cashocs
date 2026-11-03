@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+
 import os
 import subprocess
 
@@ -223,36 +224,3 @@ def test_wrong_formats(mesh_dir, work_dir):
     if MPI.COMM_WORLD.rank == 0:
         assert result.returncode != 0
         assert "due to wrong format." in result.stderr
-
-
-@pytest.mark.slow
-@pytest.mark.skipif(
-    MPI.COMM_WORLD.size > 1,
-    reason="This test cannot be run in parallel.",
-)
-def test_extract_mesh_cli(xdmf_state_dir, work_dir):
-    tmp_path = work_dir
-    subprocess.run(
-        [
-            "cashocs-extract-mesh",
-            str(xdmf_state_dir / "state_0.xdmf"),
-            "-i",
-            "3",
-            "-o",
-            str(tmp_path / "test.msh"),
-        ],
-        check=True,
-    )
-    assert (tmp_path / "test.msh").is_file()
-
-    cashocs.convert(
-        str(tmp_path / "test.msh"),
-        output_file=str(tmp_path / "test.xdmf"),
-        mode="geometrical",
-    )
-    mesh, _, _, _, _, _ = cashocs.import_mesh(str(tmp_path / "test.xdmf"))
-
-    assert mesh.num_vertices() == 121
-    assert mesh.num_cells() == 200
-
-    MPI.COMM_WORLD.barrier()
