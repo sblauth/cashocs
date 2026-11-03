@@ -30,15 +30,21 @@ pytestmark = pytest.mark.slow
 
 cashocs.set_log_level(cashocs.log.ERROR)
 
+
 @pytest.fixture(autouse=True)
-def initialize_module_state(request, tests_dir, copy_test_asset):
+def initialize_module_state(request, config_dir, copy_test_asset):
     module = request.module
-    module.sm_mesh_dir = copy_test_asset("sm_mesh")
-    module.cfg = cashocs.load_config(str(tests_dir / "config_sosm.ini"))
+    module.sm_mesh_dir = copy_test_asset("data/meshes/sm_mesh")
+    module.cfg = cashocs.load_config(str(config_dir / "config_sosm.ini"))
     module.Re_f = 50.0
-    module.mesh, module.subdomains, module.boundaries, module.dx, module.ds, module.dS = (
-        cashocs.import_mesh(str(module.sm_mesh_dir / "mesh.xdmf"))
-    )
+    (
+        module.mesh,
+        module.subdomains,
+        module.boundaries,
+        module.dx,
+        module.ds,
+        module.dS,
+    ) = cashocs.import_mesh(str(module.sm_mesh_dir / "mesh.xdmf"))
     module.initial_coordinates = module.mesh.coordinates().copy()
     module.u_in = Expression(("6.0*(0.0 - x[1])*(x[1] + 1.0)", "0.0"), degree=2)
     module.u_des = Expression(
@@ -72,7 +78,9 @@ def initialize_module_state(request, tests_dir, copy_test_asset):
     bc_pressure = DirichletBC(module.V.sub(1), Constant(0.0), module.boundaries, 5)
     module.bcs = [bc_in] + bcs_wall + [bc_out] + [bc_pressure]
     module.J = cashocs.IntegralFunctional(
-        Constant(0.5) * dot(module.u - module.u_des, module.u - module.u_des) * module.ds(5)
+        Constant(0.5)
+        * dot(module.u - module.u_des, module.u - module.u_des)
+        * module.ds(5)
     )
 
 

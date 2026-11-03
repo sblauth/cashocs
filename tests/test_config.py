@@ -23,22 +23,22 @@ import cashocs
 from cashocs._exceptions import ConfigError
 
 
-def test_correct_config(tests_dir):
-    config = cashocs.load_config(str(tests_dir / "config_ocp.ini"))
+def test_correct_config(config_dir):
+    config = cashocs.load_config(str(config_dir / "config_ocp.ini"))
     config.validate_config()
 
-    config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
+    config = cashocs.load_config(str(config_dir / "config_sop.ini"))
     config.validate_config()
 
-    config = cashocs.load_config(str(tests_dir / "config_picard.ini"))
+    config = cashocs.load_config(str(config_dir / "config_picard.ini"))
     config.validate_config()
 
     assert 1 == 1
 
 
-def test_config_error(tests_dir):
+def test_config_error(config_dir):
     with pytest.raises(ConfigError) as e_info:
-        config = cashocs.load_config(str(tests_dir / "config_sop.ini"))
+        config = cashocs.load_config(str(config_dir / "config_sop.ini"))
         config["Mesh"]["remesh"] = "1.0"
         config.validate_config()
 
@@ -49,9 +49,9 @@ def test_config_error(tests_dir):
     )
 
 
-def test_incorrect_configs(tests_dir):
+def test_incorrect_configs(config_dir):
     with pytest.raises(ConfigError) as e_info:
-        config = cashocs.load_config(str(tests_dir / "test_config.ini"))
+        config = cashocs.load_config(str(config_dir / "test_config.ini"))
         config.validate_config()
 
     assert (

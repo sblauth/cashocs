@@ -33,8 +33,8 @@ nonlinearity_factor = 5e2
 
 
 @pytest.fixture
-def config_ocsm(tests_dir):
-    return cashocs.load_config(str(tests_dir / "config_ocsm.ini"))
+def config_ocsm(config_dir):
+    return cashocs.load_config(str(config_dir / "config_ocsm.ini"))
 
 
 @pytest.fixture

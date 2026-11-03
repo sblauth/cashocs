@@ -46,7 +46,7 @@ def interval_mesh():
 
 
 def test_mesh_import(copy_test_asset):
-    mesh_file = copy_test_asset("mesh/mesh.msh")
+    mesh_file = copy_test_asset("data/meshes/unit_square/mesh.msh")
     xdmf_file = mesh_file.with_suffix(".xdmf")
     cashocs.convert(str(mesh_file), str(xdmf_file))
 
@@ -282,7 +282,7 @@ def test_mesh_quality_3D():
 
 
 def test_write_mesh(copy_test_asset):
-    mesh_file = copy_test_asset("mesh/mesh.msh")
+    mesh_file = copy_test_asset("data/meshes/unit_square/mesh.msh")
     xdmf_file = mesh_file.with_suffix(".xdmf")
     cashocs.convert(str(mesh_file), str(xdmf_file))
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(xdmf_file))
@@ -442,7 +442,7 @@ def test_boundary_distance(method, expected_tolerance):
 
 
 def test_named_mesh_import(copy_test_asset):
-    mesh_file = copy_test_asset("mesh/named_mesh.msh")
+    mesh_file = copy_test_asset("data/meshes/unit_named/named_mesh.msh")
     xdmf_file = mesh_file.with_suffix(".xdmf")
     cashocs.convert(str(mesh_file), str(xdmf_file))
 

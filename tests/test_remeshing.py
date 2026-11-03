@@ -43,13 +43,13 @@ if MPI.comm_world.size > 1:
     is_parallel = True
 
 
-def test_verification_remeshing(copy_test_asset, tests_dir):
+def test_verification_remeshing(copy_test_asset, config_dir):
     MPI.barrier(MPI.comm_world)
-    remesh_dir = copy_test_asset("mesh/remesh")
+    remesh_dir = copy_test_asset("data/meshes/remesh")
     mesh_file = remesh_dir / "mesh.xdmf"
 
     def mesh_parametrization(mesh_file):
-        config = cashocs.load_config(str(tests_dir / "config_remesh.ini"))
+        config = cashocs.load_config(str(config_dir / "config_remesh.ini"))
         config["Mesh"]["gmsh_file"] = str(remesh_dir / "mesh.msh")
         config["Mesh"]["geo_file"] = str(remesh_dir / "mesh.geo")
 
@@ -88,21 +88,19 @@ def test_verification_remeshing(copy_test_asset, tests_dir):
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     MPI.barrier(MPI.comm_world)
 
-    MPI.barrier(MPI.comm_world)
-
 
 @pytest.mark.slow
 @pytest.mark.skipif(
     not has_gmsh,
     reason="This test requires Gmsh.",
 )
-def test_remeshing(copy_test_asset, tests_dir, work_dir):
-    remesh_dir = copy_test_asset("mesh/remesh")
+def test_remeshing(copy_test_asset, config_dir, work_dir):
+    remesh_dir = copy_test_asset("data/meshes/remesh")
     mesh_file = remesh_dir / "mesh.xdmf"
     result_dir = work_dir / "temp"
 
     def mesh_parametrization(mesh_file):
-        config = cashocs.load_config(str(tests_dir / "config_remesh.ini"))
+        config = cashocs.load_config(str(config_dir / "config_remesh.ini"))
         config["Mesh"]["gmsh_file"] = str(remesh_dir / "mesh.msh")
         config["Mesh"]["geo_file"] = str(remesh_dir / "mesh.geo")
         config["Output"]["result_dir"] = str(result_dir)
@@ -148,7 +146,6 @@ def test_remeshing(copy_test_asset, tests_dir, work_dir):
     assert (result_dir / "checkpoints/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
-    MPI.barrier(MPI.comm_world)
 
 
 @pytest.mark.slow
@@ -156,13 +153,13 @@ def test_remeshing(copy_test_asset, tests_dir, work_dir):
     not has_gmsh,
     reason="This test requires Gmsh.",
 )
-def test_remeshing_with_quantile_quality(copy_test_asset, tests_dir, work_dir):
-    remesh_dir = copy_test_asset("mesh/remesh")
+def test_remeshing_with_quantile_quality(copy_test_asset, config_dir, work_dir):
+    remesh_dir = copy_test_asset("data/meshes/remesh")
     mesh_file = remesh_dir / "mesh.xdmf"
     result_dir = work_dir / "temp"
 
     def mesh_parametrization(mesh_file):
-        config = cashocs.load_config(str(tests_dir / "config_remesh.ini"))
+        config = cashocs.load_config(str(config_dir / "config_remesh.ini"))
         config["Mesh"]["gmsh_file"] = str(remesh_dir / "mesh.msh")
         config["Mesh"]["geo_file"] = str(remesh_dir / "mesh.geo")
         config["Output"]["result_dir"] = str(result_dir)
@@ -212,18 +209,17 @@ def test_remeshing_with_quantile_quality(copy_test_asset, tests_dir, work_dir):
     assert (result_dir / "checkpoints/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
-    MPI.barrier(MPI.comm_world)
 
 
-def test_remesh_scaling(copy_test_asset, tests_dir, work_dir):
-    remesh_dir = copy_test_asset("mesh/remesh")
+def test_remesh_scaling(copy_test_asset, config_dir, work_dir):
+    remesh_dir = copy_test_asset("data/meshes/remesh")
     result_dir = work_dir / "temp"
     rng = np.random.RandomState(300696)
     w_des = rng.rand(1)[0]
     mesh_file = remesh_dir / "mesh.xdmf"
 
     def mesh_parametrization(mesh_file):
-        config = cashocs.load_config(str(tests_dir / "config_remesh.ini"))
+        config = cashocs.load_config(str(config_dir / "config_remesh.ini"))
 
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(mesh_file))
         config["Mesh"]["gmsh_file"] = str(remesh_dir / "mesh.msh")
@@ -255,11 +251,11 @@ def test_remesh_scaling(copy_test_asset, tests_dir, work_dir):
     MPI.barrier(MPI.comm_world)
 
 
-def test_remeshing_disabled(copy_test_asset, tests_dir):
-    remesh_dir = copy_test_asset("mesh/remesh")
+def test_remeshing_disabled(copy_test_asset, config_dir):
+    remesh_dir = copy_test_asset("data/meshes/remesh")
     mesh_file = remesh_dir / "mesh.xdmf"
 
-    config = cashocs.load_config(str(tests_dir / "config_remesh.ini"))
+    config = cashocs.load_config(str(config_dir / "config_remesh.ini"))
     config["Mesh"]["gmsh_file"] = str(remesh_dir / "mesh.msh")
     config["Mesh"]["geo_file"] = str(remesh_dir / "mesh.geo")
     config["Mesh"]["remesh"] = False

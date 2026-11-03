@@ -46,6 +46,7 @@ J = cashocs.IntegralFunctional(
     Constant(0.5) * (y - y_d) * (y - y_d) * dx + Constant(0.5 * alpha) * u * u * dx
 )
 
+
 @pytest.fixture
 def ocp(config_ocp):
     return cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config_ocp)
@@ -180,7 +181,7 @@ def test_interpolator():
 
 
 def test_create_named_bcs(copy_test_asset):
-    mesh_file = copy_test_asset("mesh/named_mesh.msh")
+    mesh_file = copy_test_asset("data/meshes/unit_named/named_mesh.msh")
     xdmf_file = mesh_file.with_suffix(".xdmf")
     cashocs.convert(str(mesh_file), str(xdmf_file))
 
@@ -263,9 +264,7 @@ def test_l2_projection():
 
 @pytest.mark.parametrize("provide_space", [False, True])
 def test_create_material_parameter(mesh_dir, provide_space):
-    mesh, _, _, dx, _, _ = cashocs.import_mesh(
-        str(mesh_dir / "square" / "square.xdmf")
-    )
+    mesh, _, _, dx, _, _ = cashocs.import_mesh(str(mesh_dir / "square" / "square.xdmf"))
 
     material_dict = {
         ("top_left", "top_right"): 1.0,
@@ -286,9 +285,7 @@ def test_create_material_parameter(mesh_dir, provide_space):
 
 @pytest.mark.parametrize("provide_space", [False, True])
 def test_create_boundary_parameter(mesh_dir, provide_space):
-    mesh, _, _, _, ds, _ = cashocs.import_mesh(
-        str(mesh_dir / "square" / "square.xdmf")
-    )
+    mesh, _, _, _, ds, _ = cashocs.import_mesh(str(mesh_dir / "square" / "square.xdmf"))
 
     boundary_dict = {
         ("left", "right"): 1.0,
