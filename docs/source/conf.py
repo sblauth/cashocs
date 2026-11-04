@@ -33,20 +33,16 @@ document_cli.process()
 document_demos.process()
 
 # -- Project information -----------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "cashocs"
 copyright = "2020-2026, Fraunhofer ITWM and Sebastian Blauth"
 author = "Sebastian Blauth"
-
-# The full version, including alpha/beta/rc tags
 release = "2.12.0-dev"
 
-
 # -- General configuration ---------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-# Add any Sphinx extension module names here, as strings. They can be
-# extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
-# ones.
 extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
@@ -59,71 +55,60 @@ extensions = [
     "sphinx_favicon",
 ]
 
-napoleon_google_docstring = True
-napoleon_numpy_docstring = False
-napoleon_include_init_with_doc = False
-napoleon_include_private_with_doc = False
-napoleon_include_special_with_doc = False
-napoleon_use_admonition_for_examples = False
-napoleon_use_admonition_for_notes = False
-napoleon_use_admonition_for_references = False
-napoleon_use_ivar = True
-napoleon_use_param = True
-napoleon_use_keyword = True
-napoleon_use_rtype = True
-
-autodoc_default_options = {
-    "member-order": "groupwise",
-    "undoc-members": False,
-    "show-inheritance": True,
-}
-autodoc_member_order = "alphabetical"
-autodoc_mock_imports = [
-    "fenics",
-    "petsc4py",
-    "mpi4py",
-    "ufl",
-    "ufl_legacy",
-    "meshio",
-    "dolfin",
-    "configparser",
-    "h5py",
-    "cashocs_extensions",
-    "numpy",
-    "scipy",
-    "matplotlib",
-]
-autodoc_typehints = "both"
-autoclass_content = "both"
-maximum_signature_line_length = 3
+# -- Options for highlighting ------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-highlighting
 
 highlight_language = "python"
+pygments_style = "sphinx"
+
+# -- Options for markup ------------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-markup
+
+
+rst_prolog = """
+.. role:: ini(code)
+    :language: ini
+    :class: highlight
+
+.. role:: python(code)
+    :language: python
+    :class: highlight
+
+.. role:: cpp(code)
+    :language: cpp
+    :class: highlight
+
+.. role:: bash(code)
+    :language: bash
+    :class: highlight
+"""
+
+# -- Options for object signatures -------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-object-signatures
+
+maximum_signature_line_length = 3
 toc_object_entries_show_parents = "hide"
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+# -- Options for source files ------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-source-files
 
+exclude_patterns = ["_build"]
 source_suffix = ".rst"
 
-# List of patterns, relative to source directory, that match files and
-# directories to ignore when looking for source files.
-# This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["_build"]
+# -- Options for templating --------------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-templating
 
-favicons = [
-    {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.jpg"},
-    {"rel": "icon", "sizes": "32x32", "href": "favicon/favicon-32x32.jpg"},
-]
+templates_path = ["_templates"]
+
+# -- Options for warning control ---------------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-warning-control
 
 suppress_warnings = [
     "autosummary.import_cycle",
 ]
 
 # -- Options for HTML output -------------------------------------------------
-
-# The theme to use for HTML and HTML Help pages.  See the documentation for
-# a list of builtin themes.
-#
+# https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 if "dev" in release:
     switcher_version = "dev"
@@ -157,37 +142,69 @@ html_theme_options = {
     "navbar_align": "content",
     "show_version_warning_banner": True,
 }
-
 html_sidebars = {"**": ["search-field.html", "sidebar-nav-bs", "sidebar-ethical-ads"]}
-
-# Add any paths that contain custom static files (such as style sheets) here,
-# relative to this directory. They are copied after the builtin static files,
-# so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_css_files = ["cashocs.css"]
 
-pygments_style = "sphinx"
+# -- Configuration for sphinx.ext.napoleon -----------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
+
+napoleon_google_docstring = True
+napoleon_numpy_docstring = False
+napoleon_include_init_with_doc = False
+napoleon_include_private_with_doc = False
+napoleon_include_special_with_doc = False
+napoleon_use_admonition_for_examples = False
+napoleon_use_admonition_for_notes = False
+napoleon_use_admonition_for_references = False
+napoleon_use_ivar = True
+napoleon_use_param = True
+napoleon_use_keyword = True
+napoleon_use_rtype = True
+
+# -- Configuration for sphinx.et.autodoc -------------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html
+
+autodoc_default_options = {
+    "member-order": "groupwise",
+    "undoc-members": False,
+    "show-inheritance": True,
+}
+autodoc_member_order = "alphabetical"
+autodoc_mock_imports = [
+    "fenics",
+    "petsc4py",
+    "mpi4py",
+    "ufl",
+    "ufl_legacy",
+    "meshio",
+    "dolfin",
+    "configparser",
+    "h5py",
+    "cashocs_extensions",
+    "numpy",
+    "scipy",
+    "matplotlib",
+]
+autodoc_typehints = "both"
+autoclass_content = "both"
+
+# -- Configuration for sphinx_favicon ----------------------------------------
+# https://sphinx-favicon.readthedocs.io/en/latest/configuration.html
+
+favicons = [
+    {"rel": "icon", "sizes": "16x16", "href": "favicon/favicon-16x16.jpg"},
+    {"rel": "icon", "sizes": "32x32", "href": "favicon/favicon-32x32.jpg"},
+]
+
+# -- Configuration for sphinx.ext.autosummary --------------------------------
+# https://www.sphinx-doc.org/en/master/usage/extensions/autosummary.html
 
 autosummary_generate = True
 autosummary_imported_members = False
 autosummary_ignore_module_all = False
 
+# -- Configuration for myst_parser -------------------------------------------
+# https://myst-parser.readthedocs.io/en/v0.15.1/sphinx/reference.html
+
 myst_enable_extensions = ["dollarmath", "colon_fence"]
-
-rst_prolog = """
-.. role:: ini(code)
-    :language: ini
-    :class: highlight
-
-.. role:: python(code)
-    :language: python
-    :class: highlight
-    
-.. role:: cpp(code)
-    :language: cpp
-    :class: highlight
-
-.. role:: bash(code)
-    :language: bash
-    :class: highlight
-"""
