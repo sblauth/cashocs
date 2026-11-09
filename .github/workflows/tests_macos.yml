@@ -9,8 +9,15 @@ permissions: read-all
 
 env:
   OMP_NUM_THREADS: 1
-  CONDA_OVERRIDE_ARCHSPEC: x86_64
-  
+  OMPI_MCA_op: "^avx"
+  OMPI_MCA_pml: "ob1"
+  OMPI_MCA_btl: "self,tcp"
+  OMPI_MCA_plm_ssh_agent: "false"
+  OMPI_MCA_mpi_yield_when_idle: "true"
+  OMPI_MCA_btl_base_warn_component_unused: "false"
+  OMPI_MCA_rmaps_base_oversubscribe: "true"
+  PRTE_MCA_rmaps_default_mapping_policy: ":oversubscribe"
+
 jobs:
   serial_tests:
     name: Test (py=${{ matrix.python-version}}, macos-15)
