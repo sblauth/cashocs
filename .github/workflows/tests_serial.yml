@@ -18,6 +18,13 @@ env:
   OMPI_MCA_btl_base_warn_component_unused: "false"
   OMPI_MCA_rmaps_base_oversubscribe: "true"
   PRTE_MCA_rmaps_default_mapping_policy: ":oversubscribe"
+  MPIR_CVAR_NOLOCAL: "1"
+  FI_PROVIDER: "tcp"
+  MPIR_CVAR_CH4_XPMEM_ENABLE: "0"
+  MPIR_CVAR_ENABLE_GPU: "0"
+  MPIR_CVAR_DEVICE_COLLECTIVES: "none"
+  HYDRA_LAUNCHER: "fork"
+
 
 jobs:
   serial_tests:
