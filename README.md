@@ -68,7 +68,7 @@
 | cashocs/\_utils/helpers.py                                                         |       77 |        5 |     94% |71, 252, 259, 267-269 |
 | cashocs/\_utils/interpolations.py                                                  |       44 |       18 |     59% |27, 275-430 |
 | cashocs/\_utils/linalg.py                                                          |      224 |       27 |     88% |78, 140, 158, 301, 347-348, 405-408, 523-524, 614-620, 729-733, 753-765 |
-| cashocs/\_utils/mesh.py                                                            |      167 |       33 |     80% |118, 122, 197, 230, 238, 243-247, 250-251, 323-348 |
+| cashocs/\_utils/mesh.py                                                            |      179 |       33 |     82% |119, 123, 215, 248, 256, 261-265, 268-269, 341-366 |
 | cashocs/geometry/\_\_init\_\_.py                                                   |       18 |        0 |    100% |           |
 | cashocs/geometry/boundary\_distance.py                                             |       63 |        1 |     98% |       154 |
 | cashocs/geometry/deformations.py                                                   |       64 |        4 |     94% |130, 139, 144, 203 |
@@ -95,7 +95,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      380 |       40 |     89% |172, 265, 345-350, 448, 547-548, 676-678, 685-687, 712-744, 929, 958-960, 970-972, 986-987 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      394 |       53 |     87% |174, 268, 342-343, 437, 526-527, 542-569, 690-691, 708-710, 716-718, 748-786, 958, 985-987, 997-999, 1013-1014 |
 | cashocs/verification.py                                                            |      128 |        3 |     98% |228-229, 261 |
-| **TOTAL**                                                                          | **8401** |  **776** | **91%** |           |
+| **TOTAL**                                                                          | **8413** |  **776** | **91%** |           |
 
 
 ## Setup coverage badge
