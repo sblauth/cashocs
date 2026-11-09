@@ -1,4 +1,4 @@
-FROM condaforge/miniforge3
+FROM docker.io/condaforge/miniforge3
 
 SHELL ["/bin/bash", "-lc"]
 
@@ -18,9 +18,18 @@ WORKDIR /opt/app
 
 COPY . .
 
-RUN conda run --no-capture-output -n env pip install .[all]
+RUN conda run --live-stream -n env pip install .[all]
 
-RUN conda run --no-capture-output -n env python -m pytest -vv
+RUN conda run --live-stream -n env python -m pytest -vv
 
-ENTRYPOINT ["conda", "run", "--no-capture-output", "-n", "env"]
+ARG CACHE_BUST=1
+RUN apt-get update && \
+    apt-get upgrade -y --no-install-recommends && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /usr/share/doc/ && \
+    rm -rf /usr/share/man/
+
+ENTRYPOINT ["conda", "run", "--live-stream", "-n", "env"]
 CMD ["bash"]

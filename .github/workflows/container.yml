@@ -1,4 +1,4 @@
-name: Docker images
+name: Container images
 
 on:
   workflow_dispatch:
@@ -59,6 +59,11 @@ jobs:
         with:
           context: .
           file: ./.github/docker/Dockerfile
+          pull: true
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            CACHE_BUST=$(date +%s)
