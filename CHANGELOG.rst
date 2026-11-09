@@ -11,6 +11,8 @@ of the maintenance releases, please take a look at
 
 * Update the logging so that both cashocs' name and the log level are shown
 
+* Improve the logging for importing a mesh. Both the mesh file and the physical groups present in the mesh are now logged.
+
 * Add :py:func:`cashocs.create_boundary_parameter`, which creates parameters or indicator functions on boundaries.
 
 
