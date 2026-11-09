@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 import functools
+import pathlib
 from typing import Any, Literal, TYPE_CHECKING
 
 import fenics
@@ -124,22 +125,39 @@ def _get_mesh_stats(
             if comm is None:
                 comm = mpi.COMM_WORLD
 
-            word = "importing" if mode.casefold() == "import" else "generating"
-            worded = "imported" if mode.casefold() == "import" else "generated"
+            is_importing = mode.casefold() == "import"
+
+            word = "importing" if is_importing else "generating"
+            worded = word[:-3] + "ed"
             mpi_size = comm.size
             log.begin(f"{word.capitalize()} mesh.", level=log.INFO)
 
             value = func(*args, **kwargs)
-            dim = value[0].geometry().dim()
+            mesh = value[0]
+            dim = mesh.geometry().dim()
 
             log.info(
                 f"Successfully {worded} {dim}-dimensional mesh on {mpi_size} CPU(s)."
             )
             log.info(
-                f"Mesh contains {value[0].num_entities_global(0):,} vertices and "
-                f"{value[0].num_entities_global(dim):,} cells of type "
-                f"{value[0].ufl_cell().cellname()}."
+                f"Mesh contains {mesh.num_entities_global(0):,} vertices and "
+                f"{mesh.num_entities_global(dim):,} cells of type "
+                f"{mesh.ufl_cell().cellname()}."
             )
+
+            if is_importing:
+                mesh_path = pathlib.Path(args[0])
+                log.info(f"Mesh file: {mesh_path.resolve()}")
+                log.begin(
+                    "The following physical groups were imported: ", level=log.INFO
+                )
+                for name, int_id in mesh.physical_groups["dx"].items():
+                    log.info(f"Volume {name} with ID {int_id}")
+
+                for name, int_id in mesh.physical_groups["ds"].items():
+                    log.info(f"Surface {name} with ID {int_id}")
+                log.end()
+
             log.end()
             return value
 
