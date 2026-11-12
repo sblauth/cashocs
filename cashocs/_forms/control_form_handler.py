@@ -124,17 +124,13 @@ class ControlFormHandler(form_handler.FormHandler):
 
         # Test for symmetry of the scalar products
         for matrix in self.riesz_projection_matrices:
-            if not matrix.isSymmetric():
-                if not matrix.isSymmetric(1e-15):
-                    if (
-                        not (matrix - matrix.copy().transpose()).norm() / matrix.norm()
-                        < 1e-15
-                    ):
-                        raise _exceptions.InputError(
-                            "cashocs._forms.ControlFormHandler",
-                            "riesz_scalar_products",
-                            "Supplied scalar product form is not symmetric.",
-                        )
+            tol = matrix.norm() * 1e-14
+            if not (matrix - matrix.copy().transpose()).norm() <= tol:
+                raise _exceptions.InputError(
+                    "cashocs._forms.ControlFormHandler",
+                    "riesz_scalar_products",
+                    "Supplied scalar product form is not symmetric.",
+                )
 
     def _setup_assembler_failsafe(
         self,

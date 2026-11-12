@@ -351,21 +351,19 @@ class ShapeFormHandler(form_handler.FormHandler):
         self.p_laplace_form = self._compute_p_laplacian_forms()
 
         # test for symmetry
-        if not self.scalar_product_matrix.isSymmetric():
-            if not self.scalar_product_matrix.isSymmetric(1e-15):
-                if (
-                    not (
-                        self.scalar_product_matrix
-                        - self.scalar_product_matrix.copy().transpose()
-                    ).norm()
-                    / self.scalar_product_matrix.norm()
-                    < 1e-15
-                ):
-                    raise _exceptions.InputError(
-                        "cashocs._forms.ShapeFormHandler",
-                        "shape_scalar_product",
-                        "Supplied scalar product form is not symmetric.",
-                    )
+        tol = self.scalar_product_matrix.norm() * 1e-14
+        if (
+            not (
+                self.scalar_product_matrix
+                - self.scalar_product_matrix.copy().transpose()
+            ).norm()
+            <= tol
+        ):
+            raise _exceptions.InputError(
+                "cashocs._forms.ShapeFormHandler",
+                "shape_scalar_product",
+                "Supplied scalar product form is not symmetric.",
+            )
 
         if self.opt_algo.casefold() == "newton":
             raise NotImplementedError(
