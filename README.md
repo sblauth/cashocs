@@ -21,15 +21,15 @@
 | cashocs/\_database/parameter\_database.py                                          |       31 |        0 |    100% |           |
 | cashocs/\_exceptions.py                                                            |       54 |        4 |     93% |150-151, 193-194 |
 | cashocs/\_forms/\_\_init\_\_.py                                                    |        8 |        0 |    100% |           |
-| cashocs/\_forms/control\_form\_handler.py                                          |      151 |       20 |     87% |30, 109-110, 128-129, 145-182, 230 |
+| cashocs/\_forms/control\_form\_handler.py                                          |      150 |       18 |     88% |30, 109-110, 141-178, 226 |
 | cashocs/\_forms/form\_handler.py                                                   |       28 |        8 |     71% |     55-63 |
 | cashocs/\_forms/general\_form\_handler.py                                          |       82 |       10 |     88% |49-55, 193, 198, 209-210 |
-| cashocs/\_forms/shape\_form\_handler.py                                            |      249 |       19 |     92% |166, 204-205, 371, 393-399, 433-434, 439, 562, 598, 692-705 |
+| cashocs/\_forms/shape\_form\_handler.py                                            |      248 |       19 |     92% |166, 204-205, 369, 391-397, 431-432, 437, 560, 596, 690-703 |
 | cashocs/\_forms/shape\_regularization.py                                           |      220 |       10 |     95% |202, 211, 297, 305, 397, 472, 480, 501, 629, 637 |
 | cashocs/\_optimization/\_\_init\_\_.py                                             |        0 |        0 |    100% |           |
 | cashocs/\_optimization/cost\_functional.py                                         |      164 |        8 |     95% |237, 250, 275, 311, 438, 471-472, 527 |
 | cashocs/\_optimization/line\_search/\_\_init\_\_.py                                |        5 |        0 |    100% |           |
-| cashocs/\_optimization/line\_search/armijo\_line\_search.py                        |       72 |        6 |     92% |223, 238-243 |
+| cashocs/\_optimization/line\_search/armijo\_line\_search.py                        |       72 |        9 |     88% |88-93, 223, 238-243 |
 | cashocs/\_optimization/line\_search/basic\_line\_search.py                         |       41 |       10 |     76% |111-116, 123-127, 147-152 |
 | cashocs/\_optimization/line\_search/line\_search.py                                |       71 |        2 |     97% |   68, 140 |
 | cashocs/\_optimization/line\_search/polynomial\_line\_search.py                    |       96 |       18 |     81% |80, 83-89, 95-100, 142, 145, 181-191, 216, 251, 253, 348-351 |
@@ -95,7 +95,7 @@
 | cashocs/space\_mapping/optimal\_control.py                                         |      380 |       40 |     89% |172, 265, 345-350, 448, 547-548, 676-678, 685-687, 712-744, 929, 958-960, 970-972, 986-987 |
 | cashocs/space\_mapping/shape\_optimization.py                                      |      394 |       53 |     87% |174, 268, 342-343, 437, 526-527, 542-569, 690-691, 708-710, 716-718, 748-786, 958, 985-987, 997-999, 1013-1014 |
 | cashocs/verification.py                                                            |      128 |        3 |     98% |228-229, 261 |
-| **TOTAL**                                                                          | **8413** |  **776** | **91%** |           |
+| **TOTAL**                                                                          | **8411** |  **777** | **91%** |           |
 
 
 ## Setup coverage badge
