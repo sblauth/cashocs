@@ -5,6 +5,10 @@
 # Its canonical open-source location is:
 #   https://google.github.io/styleguide/pylintrc
 
+[MAIN]
+
+py-version = 3.11
+
 [MASTER]
 
 # Files or directories to be skipped. They should be base names, not paths.
