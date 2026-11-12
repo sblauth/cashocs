@@ -104,7 +104,7 @@ class Logger:
 
         """
         if self.comm.rank == 0:
-            self._log.log(level, self._format(message))
+            self._log.log(level, self._format(message, level))
         self.comm.barrier()
 
     def trace(self, message: str) -> None:
@@ -269,11 +269,12 @@ class Logger:
         """
         return self._level_stack.pop()
 
-    def _format(self, message: str) -> str:
+    def _format(self, message: str, level: int) -> str:
         """Formats a message based on indent and time stamps for logging.
 
         Args:
             message (str): The input string which should be formatted.
+            level (int): The log level at which the message is emitted.
 
         Returns:
             The formatted string.
@@ -285,8 +286,14 @@ class Logger:
         else:
             timestamp = ""
 
+        level_name = logging.getLevelName(level)
         indent = 2 * self._indent_level * " "
-        return "\n".join([timestamp + indent + line for line in message.split("\n")])
+        return "\n".join(
+            [
+                timestamp + "cashocs | " + level_name + " | " + indent + line
+                for line in message.split("\n")
+            ]
+        )
 
     def add_logfile(
         self, filename: str, mode: str = "a", level: int = logging.DEBUG

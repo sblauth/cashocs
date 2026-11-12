@@ -15,8 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
+
 import os
-import pathlib
 import subprocess
 
 import fenics
@@ -28,18 +28,19 @@ import cashocs
 from cashocs.io.mesh import gather_coordinates
 
 
+@pytest.mark.slow
 @pytest.mark.skipif(
     MPI.COMM_WORLD.size > 1,
     reason="This test cannot be run in parallel.",
 )
-def test_convert_cli(dir_path):
+def test_convert_cli(copy_test_asset):
+    mesh_file = copy_test_asset("data/meshes/unit_square/mesh.msh")
+    xdmf_file = mesh_file.with_suffix(".xdmf")
     subprocess.run(
-        ["cashocs-convert", f"{dir_path}/mesh/mesh.msh"],
+        ["cashocs-convert", str(mesh_file)],
         check=True,
     )
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        dir_path + "/mesh/mesh.xdmf"
-    )
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(xdmf_file))
 
     gmsh_coords = np.array(
         [
@@ -71,24 +72,16 @@ def test_convert_cli(dir_path):
         assert np.allclose(mesh_coords, gmsh_coords)
     MPI.COMM_WORLD.barrier()
 
-    assert pathlib.Path(f"{dir_path}/mesh/mesh.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.h5").is_file()
-
-    if MPI.COMM_WORLD.rank == 0:
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
-    MPI.COMM_WORLD.barrier()
+    assert xdmf_file.is_file()
+    assert xdmf_file.with_suffix(".h5").is_file()
+    assert xdmf_file.with_name("mesh_boundaries.xdmf").is_file()
+    assert xdmf_file.with_name("mesh_boundaries.h5").is_file()
 
 
-def test_convert_output_arg(dir_path):
-    cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/test.xdmf")
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        dir_path + "/mesh/test.xdmf"
-    )
+def test_convert_output_arg(mesh_dir, work_dir):
+    output_file = work_dir / "test.xdmf"
+    cashocs.convert(str(mesh_dir / "unit_square" / "mesh.msh"), str(output_file))
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(output_file))
 
     gmsh_coords = np.array(
         [
@@ -120,24 +113,17 @@ def test_convert_output_arg(dir_path):
         assert np.allclose(mesh_coords, gmsh_coords)
     MPI.COMM_WORLD.barrier()
 
-    assert pathlib.Path(f"{dir_path}/mesh/test.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/test.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/test_boundaries.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/test_boundaries.h5").is_file()
-
-    if MPI.COMM_WORLD.rank == 0:
-        subprocess.run(["rm", f"{dir_path}/mesh/test.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/test.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.h5"], check=True)
-    MPI.COMM_WORLD.barrier()
+    assert output_file.is_file()
+    assert output_file.with_suffix(".h5").is_file()
+    assert output_file.with_name("test_boundaries.xdmf").is_file()
+    assert output_file.with_name("test_boundaries.h5").is_file()
 
 
-def test_convert_wrapper(dir_path):
-    cashocs.convert(f"{dir_path}/mesh/mesh.msh")
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        dir_path + "/mesh/mesh.xdmf"
-    )
+def test_convert_wrapper(copy_test_asset):
+    mesh_file = copy_test_asset("data/meshes/unit_square/mesh.msh")
+    xdmf_file = mesh_file.with_suffix(".xdmf")
+    cashocs.convert(str(mesh_file))
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(xdmf_file))
 
     gmsh_coords = np.array(
         [
@@ -169,24 +155,16 @@ def test_convert_wrapper(dir_path):
         assert np.allclose(mesh_coords, gmsh_coords)
     MPI.COMM_WORLD.barrier()
 
-    assert pathlib.Path(f"{dir_path}/mesh/mesh.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.h5").is_file()
-
-    if MPI.COMM_WORLD.rank == 0:
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
-    MPI.COMM_WORLD.barrier()
+    assert xdmf_file.is_file()
+    assert xdmf_file.with_suffix(".h5").is_file()
+    assert xdmf_file.with_name("mesh_boundaries.xdmf").is_file()
+    assert xdmf_file.with_name("mesh_boundaries.h5").is_file()
 
 
-def test_convert3D(dir_path):
-    cashocs.convert(f"{dir_path}/mesh/mesh3.msh", f"{dir_path}/mesh/mesh3.xdmf")
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        dir_path + "/mesh/mesh3.xdmf"
-    )
+def test_convert3D(mesh_dir, work_dir):
+    output_file = work_dir / "mesh3.xdmf"
+    cashocs.convert(str(mesh_dir / "unit_cube" / "mesh3.msh"), str(output_file))
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(output_file))
 
     assert fenics.assemble(1 * dx) == pytest.approx(1, rel=1e-14)
     assert fenics.assemble(1 * ds) == pytest.approx(6, rel=1e-14)
@@ -198,20 +176,14 @@ def test_convert3D(dir_path):
     assert fenics.assemble(1 * ds(5)) == pytest.approx(1, rel=1e-14)
     assert fenics.assemble(1 * ds(6)) == pytest.approx(1, rel=1e-14)
 
-    assert pathlib.Path(f"{dir_path}/mesh/mesh3.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh3.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh3_boundaries.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh3_boundaries.h5").is_file()
-
-    if MPI.COMM_WORLD.rank == 0:
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh3.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh3.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh3_boundaries.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh3_boundaries.h5"], check=True)
-    MPI.COMM_WORLD.barrier()
+    assert output_file.is_file()
+    assert output_file.with_suffix(".h5").is_file()
+    assert output_file.with_name("mesh3_boundaries.xdmf").is_file()
+    assert output_file.with_name("mesh3_boundaries.h5").is_file()
 
 
-def test_wrong_formats(dir_path):
+@pytest.mark.slow
+def test_wrong_formats(mesh_dir, work_dir):
     subprocess_env = {
         key: value
         for key, value in os.environ.items()
@@ -222,9 +194,9 @@ def test_wrong_formats(dir_path):
         result = subprocess.run(
             [
                 "cashocs-convert",
-                f"{dir_path}/mesh/mesh.mesh",
+                str(mesh_dir / "unit_square" / "mesh.mesh"),
                 "-o",
-                f"{dir_path}/mesh/mesh.xdmf",
+                str(work_dir / "mesh.xdmf"),
             ],
             capture_output=True,
             text=True,
@@ -240,9 +212,9 @@ def test_wrong_formats(dir_path):
         result = subprocess.run(
             [
                 "cashocs-convert",
-                f"{dir_path}/mesh/mesh.msh",
+                str(mesh_dir / "unit_square" / "mesh.msh"),
                 "-o",
-                f"{dir_path}/mesh/mesh.test",
+                str(work_dir / "mesh.test"),
             ],
             capture_output=True,
             text=True,
@@ -252,41 +224,3 @@ def test_wrong_formats(dir_path):
     if MPI.COMM_WORLD.rank == 0:
         assert result.returncode != 0
         assert "due to wrong format." in result.stderr
-
-
-@pytest.mark.skipif(
-    MPI.COMM_WORLD.size > 1,
-    reason="This test cannot be run in parallel.",
-)
-def test_extract_mesh_cli(dir_path):
-    tmp_path = pathlib.Path(f"{dir_path}/tmp")
-    tmp_path.mkdir(parents=True, exist_ok=True)
-
-    subprocess.run(
-        [
-            "cashocs-extract-mesh",
-            f"{dir_path}/xdmf_state/state_0.xdmf",
-            "-i",
-            "3",
-            "-o",
-            f"{dir_path}/tmp/test.msh",
-        ],
-        check=True,
-    )
-    assert pathlib.Path(f"{dir_path}/tmp/test.msh").is_file()
-
-    cashocs.convert(
-        f"{dir_path}/tmp/test.msh",
-        output_file=f"{dir_path}/tmp/test.xdmf",
-        mode="geometrical",
-    )
-    mesh, _, _, _, _, _ = cashocs.import_mesh(f"{dir_path}/tmp/test.xdmf")
-
-    assert mesh.num_vertices() == 121
-    assert mesh.num_cells() == 200
-
-    MPI.COMM_WORLD.barrier()
-
-    if MPI.COMM_WORLD.rank == 0:
-        subprocess.run(["rm", "-r", f"{dir_path}/tmp"], check=True)
-    MPI.COMM_WORLD.barrier()

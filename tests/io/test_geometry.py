@@ -17,10 +17,6 @@
 
 """Tests for the geometry module."""
 
-import pathlib
-import subprocess
-import sys
-
 import fenics
 from mpi4py import MPI
 import numpy as np
@@ -49,12 +45,12 @@ def interval_mesh():
     return fenics.UnitIntervalMesh(10)
 
 
-def test_mesh_import(dir_path):
-    cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
+def test_mesh_import(copy_test_asset):
+    mesh_file = copy_test_asset("data/meshes/unit_square/mesh.msh")
+    xdmf_file = mesh_file.with_suffix(".xdmf")
+    cashocs.convert(str(mesh_file), str(xdmf_file))
 
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        dir_path + "/mesh/mesh.xdmf"
-    )
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(xdmf_file))
 
     gmsh_coords = np.array(
         [
@@ -86,17 +82,10 @@ def test_mesh_import(dir_path):
         assert np.allclose(fe_coords, gmsh_coords)
     MPI.COMM_WORLD.barrier()
 
-    assert pathlib.Path(f"{dir_path}/mesh/mesh.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/mesh_boundaries.h5").is_file()
-    MPI.COMM_WORLD.barrier()
-
-    if MPI.COMM_WORLD.rank == 0:
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
+    assert xdmf_file.is_file()
+    assert xdmf_file.with_suffix(".h5").is_file()
+    assert xdmf_file.with_name("mesh_boundaries.xdmf").is_file()
+    assert xdmf_file.with_name("mesh_boundaries.h5").is_file()
     MPI.COMM_WORLD.barrier()
 
 
@@ -110,10 +99,9 @@ def test_update_mesh_tags_generated():
     assert not np.any(boundaries.array() == sentinel)
 
 
-def test_update_mesh_tags_imported():
-    dir_path = str(pathlib.Path(__file__).parent)
+def test_update_mesh_tags_imported(mesh_dir):
     mesh, subdomains, boundaries, _, _, _ = cashocs.import_mesh(
-        f"{dir_path}/mesh/physical_names_legacy/named_mesh.xdmf"
+        str(mesh_dir / "physical_names_legacy" / "named_mesh.xdmf")
     )
     sentinel = np.iinfo(boundaries.array().dtype).max
 
@@ -293,35 +281,23 @@ def test_mesh_quality_3D():
     assert abs(min_condition - 0.3162277660168379) < 1e-14
 
 
-def test_write_mesh():
-    dir_path = str(pathlib.Path(__file__).parent)
-    cashocs.convert(f"{dir_path}/mesh/mesh.msh", f"{dir_path}/mesh/mesh.xdmf")
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        dir_path + "/mesh/mesh.xdmf"
-    )
+def test_write_mesh(copy_test_asset):
+    mesh_file = copy_test_asset("data/meshes/unit_square/mesh.msh")
+    xdmf_file = mesh_file.with_suffix(".xdmf")
+    cashocs.convert(str(mesh_file), str(xdmf_file))
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(xdmf_file))
 
-    cashocs.io.write_out_mesh(
-        mesh, dir_path + "/mesh/mesh.msh", dir_path + "/mesh/test.msh"
-    )
+    output_mesh = mesh_file.with_name("test.msh")
+    cashocs.io.write_out_mesh(mesh, str(mesh_file), str(output_mesh))
 
-    cashocs.convert(f"{dir_path}/mesh/test.msh", f"{dir_path}/mesh/test.xdmf")
-    test, _, _, _, _, _ = cashocs.import_mesh(dir_path + "/mesh/test.xdmf")
+    output_xdmf = output_mesh.with_suffix(".xdmf")
+    cashocs.convert(str(output_mesh), str(output_xdmf))
+    test, _, _, _, _, _ = cashocs.import_mesh(str(output_xdmf))
 
     test_coords = gather_coordinates(test)
     mesh_coords = gather_coordinates(mesh)
     if MPI.COMM_WORLD.rank == 0:
         assert np.allclose(test_coords, mesh_coords)
-
-        subprocess.run(["rm", f"{dir_path}/mesh/test.msh"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/test.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/test.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/test_boundaries.h5"], check=True)
-
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh.h5"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/mesh_boundaries.h5"], check=True)
     MPI.COMM_WORLD.barrier()
 
 
@@ -465,15 +441,12 @@ def test_boundary_distance(method, expected_tolerance):
     assert np.abs(dist.vector().max() - 0.5) / 0.5 <= expected_tolerance
 
 
-def test_named_mesh_import():
-    dir_path = str(pathlib.Path(__file__).parent)
-    cashocs.convert(
-        f"{dir_path}/mesh/named_mesh.msh", f"{dir_path}/mesh/named_mesh.xdmf"
-    )
+def test_named_mesh_import(copy_test_asset):
+    mesh_file = copy_test_asset("data/meshes/unit_named/named_mesh.msh")
+    xdmf_file = mesh_file.with_suffix(".xdmf")
+    cashocs.convert(str(mesh_file), str(xdmf_file))
 
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        f"{dir_path}/mesh/named_mesh.xdmf"
-    )
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(xdmf_file))
 
     assert fenics.assemble(1 * dx("volume")) == fenics.assemble(1 * dx(1))
     assert fenics.assemble(1 * ds("inlet")) == fenics.assemble(1 * ds(1))
@@ -485,30 +458,17 @@ def test_named_mesh_import():
     assert ds("wall") == ds(2)
     assert ds("outlet") == ds(3)
 
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_boundaries.xdmf").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_boundaries.h5").is_file()
-    assert pathlib.Path(f"{dir_path}/mesh/named_mesh_physical_groups.json").is_file()
-
-    if MPI.COMM_WORLD.rank == 0:
-        subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.xdmf"], check=True)
-        subprocess.run(["rm", f"{dir_path}/mesh/named_mesh.h5"], check=True)
-        subprocess.run(
-            ["rm", f"{dir_path}/mesh/named_mesh_boundaries.xdmf"], check=True
-        )
-        subprocess.run(["rm", f"{dir_path}/mesh/named_mesh_boundaries.h5"], check=True)
-        subprocess.run(
-            ["rm", f"{dir_path}/mesh/named_mesh_physical_groups.json"], check=True
-        )
+    assert xdmf_file.is_file()
+    assert xdmf_file.with_suffix(".h5").is_file()
+    assert xdmf_file.with_name("named_mesh_boundaries.xdmf").is_file()
+    assert xdmf_file.with_name("named_mesh_boundaries.h5").is_file()
+    assert xdmf_file.with_name("named_mesh_physical_groups.json").is_file()
     MPI.COMM_WORLD.barrier()
 
 
-def test_legacy_mesh_import():
-    dir_path = str(pathlib.Path(__file__).parent)
-
+def test_legacy_mesh_import(mesh_dir):
     mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(
-        f"{dir_path}/mesh/physical_names_legacy/named_mesh.xdmf"
+        str(mesh_dir / "physical_names_legacy" / "named_mesh.xdmf")
     )
 
     assert fenics.assemble(1 * dx) == pytest.approx(1.0)

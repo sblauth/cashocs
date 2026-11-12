@@ -16,8 +16,6 @@
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
 from collections import namedtuple
-import pathlib
-import subprocess
 
 from fenics import *
 import pytest
@@ -75,94 +73,94 @@ def J(y, y_d, u, geometry):
     )
 
 
-def test_time_suffix(config_ocp, dir_path, F, bcs, J, y, u, p):
-    config_ocp["Output"]["result_dir"] = f"{dir_path}/results"
+def test_time_suffix(config_ocp, work_dir, F, bcs, J, y, u, p):
+    result_dir = work_dir / "results"
+    config_ocp["Output"]["result_dir"] = str(result_dir)
     config_ocp["Output"]["time_suffix"] = True
     config_ocp["Output"]["save_txt"] = True
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     ocp.solve()
     suffix = ocp.solver.output_manager.suffix
-    assert pathlib.Path(dir_path + f"/results_{suffix}").is_dir()
-    assert pathlib.Path(dir_path + f"/results_{suffix}/history.txt").is_file()
-    if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(["rm", "-r", f"{dir_path}/results_{suffix}"], check=True)
+    suffixed_result_dir = result_dir.with_name(f"results_{suffix}")
+    assert suffixed_result_dir.is_dir()
+    assert (suffixed_result_dir / "history.txt").is_file()
     MPI.barrier(MPI.comm_world)
 
 
-def test_save_xdmf_files_ocp(dir_path, F, bcs, J, y, u, p, config_ocp):
+def test_save_xdmf_files_ocp(work_dir, F, bcs, J, y, u, p, config_ocp):
     config_ocp["Output"]["save_state"] = True
     config_ocp["Output"]["save_results"] = True
     config_ocp["Output"]["save_txt"] = True
     config_ocp["Output"]["save_adjoint"] = True
     config_ocp["Output"]["save_gradient"] = True
-    config_ocp["Output"]["result_dir"] = dir_path + "/out"
+    output_dir = work_dir / "out"
+    config_ocp["Output"]["result_dir"] = str(output_dir)
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     ocp.solve(algorithm="bfgs", rtol=1e-1)
     MPI.barrier(MPI.comm_world)
-    assert pathlib.Path(dir_path + "/out").is_dir()
-    assert pathlib.Path(dir_path + "/out/checkpoints").is_dir()
-    assert pathlib.Path(dir_path + "/out/history.txt").is_file()
-    assert pathlib.Path(dir_path + "/out/history.json").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/state_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/state_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/control_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/control_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/gradient_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/gradient_0.h5").is_file()
+    assert output_dir.is_dir()
+    assert (output_dir / "checkpoints").is_dir()
+    assert (output_dir / "history.txt").is_file()
+    assert (output_dir / "history.json").is_file()
+    assert (output_dir / "checkpoints/state_0.xdmf").is_file()
+    assert (output_dir / "checkpoints/state_0.h5").is_file()
+    assert (output_dir / "checkpoints/control_0.xdmf").is_file()
+    assert (output_dir / "checkpoints/control_0.h5").is_file()
+    assert (output_dir / "checkpoints/adjoint_0.xdmf").is_file()
+    assert (output_dir / "checkpoints/adjoint_0.h5").is_file()
+    assert (output_dir / "checkpoints/gradient_0.xdmf").is_file()
+    assert (output_dir / "checkpoints/gradient_0.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
 
-    if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
     MPI.barrier(MPI.comm_world)
 
 
-def test_save_xdmf_single_file_ocp(dir_path, F, bcs, J, y, u, p, config_ocp):
+def test_save_xdmf_single_file_ocp(work_dir, F, bcs, J, y, u, p, config_ocp):
     config_ocp["Output"]["save_state"] = True
     config_ocp["Output"]["save_results"] = True
     config_ocp["Output"]["save_txt"] = True
     config_ocp["Output"]["save_adjoint"] = True
     config_ocp["Output"]["save_gradient"] = True
     config_ocp["Output"]["single_file"] = True
-    config_ocp["Output"]["result_dir"] = dir_path + "/out"
+    output_dir = work_dir / "out"
+    config_ocp["Output"]["result_dir"] = str(output_dir)
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     ocp.solve(algorithm="bfgs", rtol=1e-1)
     MPI.barrier(MPI.comm_world)
-    assert pathlib.Path(dir_path + "/out").is_dir()
-    assert pathlib.Path(dir_path + "/out/checkpoints").is_dir()
-    assert pathlib.Path(dir_path + "/out/history.txt").is_file()
-    assert pathlib.Path(dir_path + "/out/history.json").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/result.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/result.h5").is_file()
-    assert not pathlib.Path(dir_path + "/out/checkpoints/state_0.xdmf").is_file()
-    assert not pathlib.Path(dir_path + "/out/checkpoints/state_0.h5").is_file()
-    assert not pathlib.Path(dir_path + "/out/checkpoints/control_0.xdmf").is_file()
-    assert not pathlib.Path(dir_path + "/out/checkpoints/control_0.h5").is_file()
-    assert not pathlib.Path(dir_path + "/out/checkpoints/adjoint_0.xdmf").is_file()
-    assert not pathlib.Path(dir_path + "/out/checkpoints/adjoint_0.h5").is_file()
-    assert not pathlib.Path(dir_path + "/out/checkpoints/gradient_0.xdmf").is_file()
-    assert not pathlib.Path(dir_path + "/out/checkpoints/gradient_0.h5").is_file()
+    checkpoints_dir = output_dir / "checkpoints"
+    assert output_dir.is_dir()
+    assert checkpoints_dir.is_dir()
+    assert (output_dir / "history.txt").is_file()
+    assert (output_dir / "history.json").is_file()
+    assert (checkpoints_dir / "result.xdmf").is_file()
+    assert (checkpoints_dir / "result.h5").is_file()
+    assert not (checkpoints_dir / "state_0.xdmf").is_file()
+    assert not (checkpoints_dir / "state_0.h5").is_file()
+    assert not (checkpoints_dir / "control_0.xdmf").is_file()
+    assert not (checkpoints_dir / "control_0.h5").is_file()
+    assert not (checkpoints_dir / "adjoint_0.xdmf").is_file()
+    assert not (checkpoints_dir / "adjoint_0.h5").is_file()
+    assert not (checkpoints_dir / "gradient_0.xdmf").is_file()
+    assert not (checkpoints_dir / "gradient_0.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
 
-    if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
     MPI.barrier(MPI.comm_world)
 
 
-def test_save_xdmf_files_mixed(dir_path, rng, config_ocp, geometry):
+def test_save_xdmf_files_mixed(work_dir, rng, config_ocp, geometry):
     config_ocp["Output"]["save_state"] = True
     config_ocp["Output"]["save_results"] = True
     config_ocp["Output"]["save_txt"] = True
     config_ocp["Output"]["save_adjoint"] = True
     config_ocp["Output"]["save_gradient"] = True
-    config_ocp["Output"]["result_dir"] = dir_path + "/out"
+    output_dir = work_dir / "out"
+    config_ocp["Output"]["result_dir"] = str(output_dir)
     elem1 = VectorElement("CG", geometry.mesh.ufl_cell(), 2)
     elem2 = FiniteElement("CG", geometry.mesh.ufl_cell(), 1)
     V = FunctionSpace(geometry.mesh, MixedElement([elem1, elem2]))
@@ -199,67 +197,65 @@ def test_save_xdmf_files_mixed(dir_path, rng, config_ocp, geometry):
 
     MPI.barrier(MPI.comm_world)
 
-    assert pathlib.Path(dir_path + "/out").is_dir()
-    assert pathlib.Path(dir_path + "/out/checkpoints").is_dir()
-    assert pathlib.Path(dir_path + "/out/history.txt").is_file()
-    assert pathlib.Path(dir_path + "/out/history.json").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/state_0_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/state_0_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/state_0_1.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/state_0_1.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/control_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/control_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0_1.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/adjoint_0_1.h5").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/gradient_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/out/checkpoints/gradient_0.h5").is_file()
+    checkpoints_dir = output_dir / "checkpoints"
+    assert output_dir.is_dir()
+    assert checkpoints_dir.is_dir()
+    assert (output_dir / "history.txt").is_file()
+    assert (output_dir / "history.json").is_file()
+    assert (checkpoints_dir / "state_0_0.xdmf").is_file()
+    assert (checkpoints_dir / "state_0_0.h5").is_file()
+    assert (checkpoints_dir / "state_0_1.xdmf").is_file()
+    assert (checkpoints_dir / "state_0_1.h5").is_file()
+    assert (checkpoints_dir / "control_0.xdmf").is_file()
+    assert (checkpoints_dir / "control_0.h5").is_file()
+    assert (checkpoints_dir / "adjoint_0_0.xdmf").is_file()
+    assert (checkpoints_dir / "adjoint_0_0.h5").is_file()
+    assert (checkpoints_dir / "adjoint_0_1.xdmf").is_file()
+    assert (checkpoints_dir / "adjoint_0_1.h5").is_file()
+    assert (checkpoints_dir / "gradient_0.xdmf").is_file()
+    assert (checkpoints_dir / "gradient_0.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
 
-    if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
     MPI.barrier(MPI.comm_world)
 
 
-def test_extract_mesh_from_xdmf(dir_path, F, bcs, J, y, u, p, config_ocp):
+@pytest.mark.slow
+def test_extract_mesh_from_xdmf(work_dir, F, bcs, J, y, u, p, config_ocp):
     config_ocp["Output"]["save_state"] = True
 
     mesh_initial = u.function_space().mesh()
-    result_path = dir_path + "/out"
-    config_ocp["Output"]["result_dir"] = result_path
+    result_path = work_dir / "out"
+    config_ocp["Output"]["result_dir"] = str(result_path)
     u.vector().vec().set(0.0)
     u.vector().apply("")
     ocp = cashocs.OptimalControlProblem(F, bcs, J, y, u, p, config=config_ocp)
     ocp.solve(algorithm="bfgs", rtol=1e-1)
     MPI.barrier(MPI.comm_world)
-    assert pathlib.Path(dir_path + "/out").is_dir()
+    assert result_path.is_dir()
 
     cashocs.io.extract_mesh_from_xdmf(
-        f"{result_path}/checkpoints/state_0.xdmf", iteration=3
+        str(result_path / "checkpoints/state_0.xdmf"), iteration=3
     )
-    assert pathlib.Path(f"{result_path}/checkpoints/state_0.msh").is_file()
+    assert (result_path / "checkpoints/state_0.msh").is_file()
 
     cashocs.io.extract_mesh_from_xdmf(
-        f"{result_path}/checkpoints/state_0.xdmf",
+        str(result_path / "checkpoints/state_0.xdmf"),
         iteration=3,
-        outputfile=f"{result_path}/test.msh",
+        outputfile=str(result_path / "test.msh"),
     )
-    assert pathlib.Path(f"{result_path}/test.msh").is_file()
+    assert (result_path / "test.msh").is_file()
 
     cashocs.convert(
-        f"{result_path}/test.msh",
-        output_file=f"{result_path}/test.xdmf",
+        str(result_path / "test.msh"),
+        output_file=str(result_path / "test.xdmf"),
         mode="geometrical",
     )
-    mesh, _, _, _, _, _ = cashocs.import_mesh(f"{result_path}/test.xdmf")
+    mesh, _, _, _, _, _ = cashocs.import_mesh(str(result_path / "test.xdmf"))
 
     assert mesh.num_entities_global(0) == mesh_initial.num_entities_global(0)
     assert mesh.num_entities_global(2) == mesh_initial.num_entities_global(2)
 
     MPI.barrier(MPI.comm_world)
 
-    if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(["rm", "-r", f"{dir_path}/out"], check=True)
     MPI.barrier(MPI.comm_world)

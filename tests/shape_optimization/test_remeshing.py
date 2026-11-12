@@ -15,11 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with cashocs.  If not, see <https://www.gnu.org/licenses/>.
 
-import pathlib
 import shutil
-import subprocess
-import sys
-from unittest.mock import patch
 
 from fenics import Constant
 from fenics import DirichletBC
@@ -33,7 +29,6 @@ import numpy as np
 import pytest
 
 import cashocs
-from cashocs._exceptions import CashocsDebugException
 
 rng = np.random.RandomState(300696)
 has_gmsh = False
@@ -48,15 +43,15 @@ if MPI.comm_world.size > 1:
     is_parallel = True
 
 
-def test_verification_remeshing():
+def test_verification_remeshing(copy_test_asset, config_dir):
     MPI.barrier(MPI.comm_world)
-    dir_path = str(pathlib.Path(__file__).parent)
-    mesh_file = f"{dir_path}/mesh/remesh/mesh.xdmf"
+    remesh_dir = copy_test_asset("data/meshes/remesh")
+    mesh_file = remesh_dir / "mesh.xdmf"
 
     def mesh_parametrization(mesh_file):
-        config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-        config["Mesh"]["gmsh_file"] = dir_path + "/mesh/remesh/mesh.msh"
-        config["Mesh"]["geo_file"] = dir_path + "/mesh/remesh/mesh.geo"
+        config = cashocs.load_config(str(config_dir / "config_remesh.ini"))
+        config["Mesh"]["gmsh_file"] = str(remesh_dir / "mesh.msh")
+        config["Mesh"]["geo_file"] = str(remesh_dir / "mesh.geo")
 
         config["Output"]["save_results"] = False
         config["Output"]["save_txt"] = False
@@ -84,7 +79,7 @@ def test_verification_remeshing():
 
         return args, kwargs
 
-    sop = cashocs.ShapeOptimizationProblem(mesh_parametrization, mesh_file)
+    sop = cashocs.ShapeOptimizationProblem(mesh_parametrization, str(mesh_file))
     MPI.barrier(MPI.comm_world)
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     MPI.barrier(MPI.comm_world)
@@ -93,26 +88,22 @@ def test_verification_remeshing():
     assert cashocs.verification.shape_gradient_test(sop, rng=rng) > 1.9
     MPI.barrier(MPI.comm_world)
 
-    if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(
-            [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
-        )
-    MPI.barrier(MPI.comm_world)
 
-
+@pytest.mark.slow
 @pytest.mark.skipif(
     not has_gmsh,
     reason="This test requires Gmsh.",
 )
-def test_remeshing():
-    dir_path = str(pathlib.Path(__file__).parent)
-    mesh_file = f"{dir_path}/mesh/remesh/mesh.xdmf"
+def test_remeshing(copy_test_asset, config_dir, work_dir):
+    remesh_dir = copy_test_asset("data/meshes/remesh")
+    mesh_file = remesh_dir / "mesh.xdmf"
+    result_dir = work_dir / "temp"
 
     def mesh_parametrization(mesh_file):
-        config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-        config["Mesh"]["gmsh_file"] = dir_path + "/mesh/remesh/mesh.msh"
-        config["Mesh"]["geo_file"] = dir_path + "/mesh/remesh/mesh.geo"
-        config["Output"]["result_dir"] = dir_path + "/temp/"
+        config = cashocs.load_config(str(config_dir / "config_remesh.ini"))
+        config["Mesh"]["gmsh_file"] = str(remesh_dir / "mesh.msh")
+        config["Mesh"]["geo_file"] = str(remesh_dir / "mesh.geo")
+        config["Output"]["result_dir"] = str(result_dir)
         config["Debug"]["remeshing"] = True
 
         mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
@@ -134,49 +125,44 @@ def test_remeshing():
 
         return args, kwargs
 
-    sop = cashocs.ShapeOptimizationProblem(mesh_parametrization, mesh_file)
+    sop = cashocs.ShapeOptimizationProblem(mesh_parametrization, str(mesh_file))
     sop.solve()
 
     MPI.barrier(MPI.comm_world)
     assert any(
-        folder.name.startswith("cashocs_remesh_")
-        for folder in pathlib.Path(f"{dir_path}/mesh/remesh").iterdir()
+        folder.name.startswith("cashocs_remesh_") for folder in remesh_dir.iterdir()
     )
 
-    assert pathlib.Path(dir_path + "/temp").is_dir()
-    assert pathlib.Path(dir_path + "/temp/checkpoints").is_dir()
-    assert pathlib.Path(dir_path + "/temp/history.txt").is_file()
-    assert pathlib.Path(dir_path + "/temp/history.json").is_file()
-    assert pathlib.Path(dir_path + "/temp/optimized_mesh.msh").is_file()
-    assert pathlib.Path(dir_path + "/temp/checkpoints/adjoint_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/temp/checkpoints/adjoint_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/temp/checkpoints/state_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/temp/checkpoints/state_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/temp/checkpoints/shape_gradient.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/temp/checkpoints/shape_gradient.h5").is_file()
+    assert result_dir.is_dir()
+    assert (result_dir / "checkpoints").is_dir()
+    assert (result_dir / "history.txt").is_file()
+    assert (result_dir / "history.json").is_file()
+    assert (result_dir / "optimized_mesh.msh").is_file()
+    assert (result_dir / "checkpoints/adjoint_0.xdmf").is_file()
+    assert (result_dir / "checkpoints/adjoint_0.h5").is_file()
+    assert (result_dir / "checkpoints/state_0.xdmf").is_file()
+    assert (result_dir / "checkpoints/state_0.h5").is_file()
+    assert (result_dir / "checkpoints/shape_gradient.xdmf").is_file()
+    assert (result_dir / "checkpoints/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
-    if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(
-            [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
-        )
-        subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
-    MPI.barrier(MPI.comm_world)
 
 
+@pytest.mark.slow
 @pytest.mark.skipif(
     not has_gmsh,
     reason="This test requires Gmsh.",
 )
-def test_remeshing_with_quantile_quality():
-    dir_path = str(pathlib.Path(__file__).parent)
-    mesh_file = f"{dir_path}/mesh/remesh/mesh.xdmf"
+def test_remeshing_with_quantile_quality(copy_test_asset, config_dir, work_dir):
+    remesh_dir = copy_test_asset("data/meshes/remesh")
+    mesh_file = remesh_dir / "mesh.xdmf"
+    result_dir = work_dir / "temp"
 
     def mesh_parametrization(mesh_file):
-        config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-        config["Mesh"]["gmsh_file"] = dir_path + "/mesh/remesh/mesh.msh"
-        config["Mesh"]["geo_file"] = dir_path + "/mesh/remesh/mesh.geo"
-        config["Output"]["result_dir"] = dir_path + "/temp/"
+        config = cashocs.load_config(str(config_dir / "config_remesh.ini"))
+        config["Mesh"]["gmsh_file"] = str(remesh_dir / "mesh.msh")
+        config["Mesh"]["geo_file"] = str(remesh_dir / "mesh.geo")
+        config["Output"]["result_dir"] = str(result_dir)
         config["MeshQuality"]["type"] = "quantile"
         config["MeshQuality"]["quantile"] = 0.05
         config["MeshQuality"]["tol_lower"] = 0.4
@@ -202,49 +188,43 @@ def test_remeshing_with_quantile_quality():
 
         return args, kwargs
 
-    sop = cashocs.ShapeOptimizationProblem(mesh_parametrization, mesh_file)
+    sop = cashocs.ShapeOptimizationProblem(mesh_parametrization, str(mesh_file))
     sop.solve()
 
     MPI.barrier(MPI.comm_world)
     assert any(
-        folder.name.startswith("cashocs_remesh_")
-        for folder in pathlib.Path(f"{dir_path}/mesh/remesh").iterdir()
+        folder.name.startswith("cashocs_remesh_") for folder in remesh_dir.iterdir()
     )
 
-    assert pathlib.Path(dir_path + "/temp").is_dir()
-    assert pathlib.Path(dir_path + "/temp/checkpoints").is_dir()
-    assert pathlib.Path(dir_path + "/temp/history.txt").is_file()
-    assert pathlib.Path(dir_path + "/temp/history.json").is_file()
-    assert pathlib.Path(dir_path + "/temp/optimized_mesh.msh").is_file()
-    assert pathlib.Path(dir_path + "/temp/checkpoints/adjoint_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/temp/checkpoints/adjoint_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/temp/checkpoints/state_0.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/temp/checkpoints/state_0.h5").is_file()
-    assert pathlib.Path(dir_path + "/temp/checkpoints/shape_gradient.xdmf").is_file()
-    assert pathlib.Path(dir_path + "/temp/checkpoints/shape_gradient.h5").is_file()
+    assert result_dir.is_dir()
+    assert (result_dir / "checkpoints").is_dir()
+    assert (result_dir / "history.txt").is_file()
+    assert (result_dir / "history.json").is_file()
+    assert (result_dir / "optimized_mesh.msh").is_file()
+    assert (result_dir / "checkpoints/adjoint_0.xdmf").is_file()
+    assert (result_dir / "checkpoints/adjoint_0.h5").is_file()
+    assert (result_dir / "checkpoints/state_0.xdmf").is_file()
+    assert (result_dir / "checkpoints/state_0.h5").is_file()
+    assert (result_dir / "checkpoints/shape_gradient.xdmf").is_file()
+    assert (result_dir / "checkpoints/shape_gradient.h5").is_file()
 
     MPI.barrier(MPI.comm_world)
-    if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(
-            [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
-        )
-        subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
-    MPI.barrier(MPI.comm_world)
 
 
-def test_remesh_scaling():
-    dir_path = str(pathlib.Path(__file__).parent)
+def test_remesh_scaling(copy_test_asset, config_dir, work_dir):
+    remesh_dir = copy_test_asset("data/meshes/remesh")
+    result_dir = work_dir / "temp"
     rng = np.random.RandomState(300696)
     w_des = rng.rand(1)[0]
-    mesh_file = f"{dir_path}/mesh/remesh/mesh.xdmf"
+    mesh_file = remesh_dir / "mesh.xdmf"
 
     def mesh_parametrization(mesh_file):
-        config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
+        config = cashocs.load_config(str(config_dir / "config_remesh.ini"))
 
-        mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
-        config["Mesh"]["gmsh_file"] = dir_path + "/mesh/remesh/mesh.msh"
-        config["Mesh"]["geo_file"] = dir_path + "/mesh/remesh/mesh.geo"
-        config["Output"]["result_dir"] = dir_path + "/temp/"
+        mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(mesh_file))
+        config["Mesh"]["gmsh_file"] = str(remesh_dir / "mesh.msh")
+        config["Mesh"]["geo_file"] = str(remesh_dir / "mesh.geo")
+        config["Output"]["result_dir"] = str(result_dir)
 
         V = FunctionSpace(mesh, "CG", 1)
         u = Function(V)
@@ -263,26 +243,21 @@ def test_remesh_scaling():
 
         return args, kwargs
 
-    sop = cashocs.ShapeOptimizationProblem(mesh_parametrization, mesh_file)
+    sop = cashocs.ShapeOptimizationProblem(mesh_parametrization, str(mesh_file))
     val = sop.reduced_cost_functional.evaluate()
     assert np.abs(np.abs(val) - w_des) < 1e-14
 
     MPI.barrier(MPI.comm_world)
-    if MPI.rank(MPI.comm_world) == 0:
-        subprocess.run(
-            [f"rm -r {dir_path}/mesh/remesh/cashocs_remesh_*"], shell=True, check=True
-        )
-        subprocess.run(["rm", "-r", f"{dir_path}/temp"], check=True)
     MPI.barrier(MPI.comm_world)
 
 
-def test_remeshing_disabled():
-    dir_path = str(pathlib.Path(__file__).parent)
-    mesh_file = f"{dir_path}/mesh/remesh/mesh.xdmf"
+def test_remeshing_disabled(copy_test_asset, config_dir):
+    remesh_dir = copy_test_asset("data/meshes/remesh")
+    mesh_file = remesh_dir / "mesh.xdmf"
 
-    config = cashocs.load_config(f"{dir_path}/config_remesh.ini")
-    config["Mesh"]["gmsh_file"] = dir_path + "/mesh/remesh/mesh.msh"
-    config["Mesh"]["geo_file"] = dir_path + "/mesh/remesh/mesh.geo"
+    config = cashocs.load_config(str(config_dir / "config_remesh.ini"))
+    config["Mesh"]["gmsh_file"] = str(remesh_dir / "mesh.msh")
+    config["Mesh"]["geo_file"] = str(remesh_dir / "mesh.geo")
     config["Mesh"]["remesh"] = False
     config["Output"]["save_state"] = False
     config["Output"]["save_adjoint"] = False
@@ -292,7 +267,7 @@ def test_remeshing_disabled():
     config["Output"]["save_txt"] = False
     config["OptimizationRoutine"]["soft_exit"] = False
 
-    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(mesh_file)
+    mesh, subdomains, boundaries, dx, ds, dS = cashocs.import_mesh(str(mesh_file))
 
     V = FunctionSpace(mesh, "CG", 1)
     u = Function(V)

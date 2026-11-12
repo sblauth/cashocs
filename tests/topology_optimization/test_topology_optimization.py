@@ -445,6 +445,7 @@ def test_projection_method_for_topology_optimization(
     assert abs(projection_volume - target) < top.projection.tol_bisect
 
 
+@pytest.mark.slow
 def test_deflation(
     F,
     bcs,
@@ -458,16 +459,16 @@ def test_deflation(
     config_top,
     geometry,
     DG0,
+    xdmf_state_dir,
 ):
     config_top["OptimizationRoutine"]["soft_exit"] = True
     config_top["OptimizationRoutine"]["algorithm"] = "sphere_combination"
 
-    dir_path = pathlib.Path(__file__).parent
     char_function_0 = cashocs.io.import_function(
-        str(dir_path / "xdmf_state" / "deflation_0.xdmf"), DG0
+        str(xdmf_state_dir / "deflation_0.xdmf"), DG0
     )
     char_function_1 = cashocs.io.import_function(
-        str(dir_path / "xdmf_state" / "deflation_1.xdmf"), DG0
+        str(xdmf_state_dir / "deflation_1.xdmf"), DG0
     )
 
     dtop = cashocs.DeflatedTopologyOptimizationProblem(

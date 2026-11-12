@@ -30,8 +30,8 @@ set_log_level(cashocs.log.CRITICAL)
 
 
 @pytest.fixture
-def config_picard(dir_path):
-    return cashocs.load_config(dir_path + "/config_picard.ini")
+def config_picard(config_dir):
+    return cashocs.load_config(str(config_dir / "config_picard.ini"))
 
 
 @pytest.fixture
@@ -338,6 +338,7 @@ def test_picard_state_solver(
     )
 
 
+@pytest.mark.slow
 def test_picard_solver_for_optimization(ocp, ocp_mixed, u, v, CG1):
     u_picard = Function(CG1)
     v_picard = Function(CG1)
@@ -363,6 +364,7 @@ def test_picard_solver_for_optimization(ocp, ocp_mixed, u, v, CG1):
     )
 
 
+@pytest.mark.slow
 def test_picard_nonlinear(
     e_nonlinear, bcs, J, states, controls, adjoints, config_picard, rng
 ):

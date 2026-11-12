@@ -312,18 +312,18 @@ def bilinear_boundary_form_modification(forms: list[ufl.Form]) -> list[ufl.Form]
     return mod_forms
 
 
-def _get_subdomain_ids_from_tag(
-    tag: tuple[str | int] | str | int, physical_groups: dict
+def _get_ids_from_tag(
+    tag: tuple[str | int] | str | int, physical_groups: dict, measure_key: str
 ) -> list[int]:
     if isinstance(tag, tuple):
         subdomain_idx = []
 
         for t in tag:
-            tag_int = _utils.tag_to_int(physical_groups, t, "dx")
+            tag_int = _utils.tag_to_int(physical_groups, t, measure_key)
             if tag_int is not None:
                 subdomain_idx.append(tag_int)
     else:
-        tag_int = _utils.tag_to_int(physical_groups, tag, "dx")
+        tag_int = _utils.tag_to_int(physical_groups, tag, measure_key)
         subdomain_idx = []
         if tag_int is not None:
             subdomain_idx.append(tag_int)
@@ -380,9 +380,11 @@ def create_material_parameter(
 
     for subdomain_tag in material_dict.keys():
         indicator_function = fenics.Function(dg0_space)
-        subdomain_ids = _get_subdomain_ids_from_tag(subdomain_tag, mesh.physical_groups)
+        local_size = indicator_function.vector().local_size()
+
+        subdomain_ids = _get_ids_from_tag(subdomain_tag, mesh.physical_groups, "dx")
         dg0_idx = np.flatnonzero(np.isin(mesh.subdomains.array(), subdomain_ids))
-        dg0_idx = dg0_idx[dg0_idx < indicator_function.vector().local_size()]
+        dg0_idx = dg0_idx[dg0_idx < local_size]
 
         indicator_function.vector()[dg0_idx] = 1.0
         indicator_function.vector().apply("")
@@ -393,3 +395,54 @@ def create_material_parameter(
     )
 
     return material_parameter
+
+
+def create_boundary_parameter(
+    boundary_dict: dict,
+    mesh: CashocsMesh,
+    dgt0_space: fenics.FunctionSpace | None = None,
+) -> ufl.core.expr.Expr:
+    """Creates a parameter that is piecewise constant on (tagged) facets.
+
+    Args:
+        boundary_dict: The dictionary containing the boundary parameters.
+            The keys are the indices of the subdomains (as generated with Gmsh) and
+            the values are the values of the material parameter on the respective
+            subdomain. If multiple subdomains share the same value, they can also
+            be put inside a tuple and used as a single key for the dictionary.
+        mesh: The finite element mesh.
+        dgt0_space: The space of DGT0 elements on the mesh. If this is None, then the
+            space is created internally.
+
+    Returns:
+        A UFL expression that can be used as material parameter.
+    """
+    if dgt0_space is None:
+        dgt0_space = fenics.FunctionSpace(mesh, "DGT", 0)
+
+    tdim = mesh.topology().dim()
+    mesh.init(tdim - 1)
+
+    facet_to_dof = np.asarray(
+        dgt0_space.dofmap().entity_dofs(mesh, tdim - 1), dtype=np.int64
+    )
+
+    indicator_dict = {}
+    for boundary_tag in boundary_dict.keys():
+        indicator_function = fenics.Function(dgt0_space)
+        local_size = indicator_function.vector().local_size()
+
+        boundary_ids = _get_ids_from_tag(boundary_tag, mesh.physical_groups, "ds")
+        facets = np.flatnonzero(np.isin(mesh.boundaries.array(), boundary_ids))
+        dgt0_idx = facet_to_dof[facets]
+        dgt0_idx = dgt0_idx[dgt0_idx < local_size]
+
+        indicator_function.vector()[dgt0_idx] = 1.0
+        indicator_function.vector().apply("")
+        indicator_dict[boundary_tag] = indicator_function
+
+    boundary_parameter = _utils.summation(
+        [indicator_dict[key] * boundary_dict[key] for key in boundary_dict.keys()]
+    )
+
+    return boundary_parameter

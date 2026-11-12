@@ -6,6 +6,16 @@ here as they add new functionality or might change the API. For a documentation
 of the maintenance releases, please take a look at
 `<https://github.com/sblauth/cashocs/releases>`_.
 
+2.12.0 (in development)
+-----------------------
+
+* Update the logging so that both cashocs' name and the log level are shown
+
+* Improve the logging for importing a mesh. Both the mesh file and the physical groups present in the mesh are now logged.
+
+* Add :py:func:`cashocs.create_boundary_parameter`, which creates parameters or indicator functions on boundaries.
+
+
 2.11.0 (September 28, 2026)
 ---------------------------
 
