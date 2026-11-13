@@ -212,6 +212,7 @@ class TSPseudoSolver:
 
         self.has_monitor_output = "ts_monitor" in self.petsc_options
         self.ts_converged_its = "ts_converged_its" in self.petsc_options
+        self._dtol_reached = False
 
     def _setup_mass_matrix(self) -> None:
         """Sets up the mass matrix for the time derivative."""
@@ -475,7 +476,10 @@ class TSPseudoSolver:
             max_time = ts.getMaxTime()
             ts.setTime(max_time)
         elif self.res_current > self.dtol * self.res_initial:
-            raise _exceptions.PETScTSError(-5)
+            self._dtol_reached = True
+            ts.setConvergedReason(PETSc.TS.ConvergedReason.CONVERGED_USER)
+            max_time = ts.getMaxTime()
+            ts.setTime(max_time)
 
     def _destroy_petsc_objects(self) -> None:
         self.residual_convergence.vec().destroy()
@@ -581,6 +585,9 @@ class TSPseudoSolver:
         elif converged_reason == PETSc.TS.ConvergedReason.CONVERGED_ITS:
             if not self.ts_converged_its:
                 raise _exceptions.PETScTSError(converged_reason)
+
+        if self._dtol_reached:
+            raise _exceptions.PETScTSError(-5)
 
         return self.u
 
