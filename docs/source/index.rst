@@ -40,57 +40,57 @@ cashocs is a finite element software for the automated solution of shape optimiz
       
       Here, you can find information on how to get started with cashocs.
       
-      +++ 
+      .. card-footer::
 
-      .. button-ref:: about/nutshell
-         :ref-type: doc
-         :expand:
-         :color: secondary
-         :click-parent:
+         .. button-ref:: about/nutshell
+            :ref-type: doc
+            :expand:
+            :color: secondary
+            :click-parent:
 
-         cashocs in a nutshell
+            cashocs in a nutshell
 
    .. grid-item-card:: User Guide
       :img-top: icons/user_guide.svg
 
       The user guide explains cashocs' features and background detailedly.
 
-      +++
+      .. card-footer::
 
-      .. button-ref:: user/index
-         :ref-type: doc
-         :expand:
-         :color: secondary
-         :click-parent:
+         .. button-ref:: user/index
+            :ref-type: doc
+            :expand:
+            :color: secondary
+            :click-parent:
 
-         To the user guide
+            To the user guide
 
    .. grid-item-card:: API Reference
       :img-top: icons/api.svg
       
       The reference guide documents the public API of cashocs.
 
-      +++
+      .. card-footer::
 
-      .. button-ref:: api/index
-         :ref-type: doc
-         :expand:
-         :color: secondary
-         :click-parent:
+         .. button-ref:: api/index
+            :ref-type: doc
+            :expand:
+            :color: secondary
+            :click-parent:
 
-         To the reference guide
+            To the reference guide
 
    .. grid-item-card:: Contributor's Guide
       :img-top: icons/development.svg
 
       If you want to contribute to cashocs, best start here.
 
-      +++
+      .. card-footer::
 
-      .. button-ref:: development/index
-         :ref-type: doc
-         :expand:
-         :color: secondary
-         :click-parent:
+         .. button-ref:: development/index
+            :ref-type: doc
+            :expand:
+            :color: secondary
+            :click-parent:
 
-         To the contributor's guide
+            To the contributor's guide
