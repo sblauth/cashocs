@@ -290,7 +290,7 @@ def setup_fieldsplit_preconditioner(
                 section.setUp()
 
                 dm = PETSc.DMShell().create(comm)
-                dm.setDefaultSection(section)
+                dm.setLocalSection(section)
                 dm.setUp()
 
                 ksp.setDM(dm)
