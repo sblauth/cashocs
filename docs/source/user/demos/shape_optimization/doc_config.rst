@@ -381,6 +381,8 @@ Output
       - number of significant digits to be printed
     * - :ini:`time_suffix = False`
       - Boolean flag, which adds a suffix to :ini:`result_dir` based on the current time
+    * - :ini:`write_checkpoints = True`
+      - Boolean flag which indicates whether checkpointing files should be written by cashocs
     * - :ini:`write_visualization = False`
       - Boolean flag, which determines whether a visualization file should be written  by cashocs.
 
