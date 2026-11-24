@@ -22,6 +22,7 @@ from __future__ import annotations
 import abc
 import json
 import os
+import pathlib
 import shutil
 import subprocess
 from typing import cast, TYPE_CHECKING
@@ -433,8 +434,11 @@ class XDMFFileManager(IOManager):
         self.save_gradient = self.config["Output"]["save_gradient"]
         self.single_file = self.config["Output"]["single_file"]
 
+        self.visualization_file_path = pathlib.Path(
+            f"{self.result_dir}/visualization.xdmf"
+        )
         self.visualization_file = fenics.XDMFFile(
-            self.comm, f"{self.result_dir}/visualization.xdmf"
+            self.comm, str(self.visualization_file_path)
         )
         self.visualization_file.parameters["flush_output"] = True
         self.visualization_file.parameters["functions_share_mesh"] = True
@@ -705,6 +709,9 @@ class XDMFFileManager(IOManager):
                         shutil.rmtree(path)
                     except OSError:
                         os.remove(path)
+
+                if self.visualization_file_path.is_file():
+                    self.visualization_file_path.unlink()
 
             self.comm.barrier()
 
