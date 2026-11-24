@@ -118,13 +118,13 @@ def test_save_xdmf_files_ocp(work_dir, F, bcs, J, y, u, p, config_ocp):
     MPI.barrier(MPI.comm_world)
 
 
-def test_save_xdmf_single_file_ocp(work_dir, F, bcs, J, y, u, p, config_ocp):
+def test_save_xdmf_visualization_file_ocp(work_dir, F, bcs, J, y, u, p, config_ocp):
     config_ocp["Output"]["save_state"] = True
     config_ocp["Output"]["save_results"] = True
     config_ocp["Output"]["save_txt"] = True
     config_ocp["Output"]["save_adjoint"] = True
     config_ocp["Output"]["save_gradient"] = True
-    config_ocp["Output"]["single_file"] = True
+    config_ocp["Output"]["write_visualization"] = True
     output_dir = work_dir / "out"
     config_ocp["Output"]["result_dir"] = str(output_dir)
     u.vector().vec().set(0.0)
@@ -137,8 +137,8 @@ def test_save_xdmf_single_file_ocp(work_dir, F, bcs, J, y, u, p, config_ocp):
     assert checkpoints_dir.is_dir()
     assert (output_dir / "history.txt").is_file()
     assert (output_dir / "history.json").is_file()
-    assert (checkpoints_dir / "result.xdmf").is_file()
-    assert (checkpoints_dir / "result.h5").is_file()
+    assert (output_dir / "visualization.xdmf").is_file()
+    assert (output_dir / "visualization.h5").is_file()
     assert not (checkpoints_dir / "state_0.xdmf").is_file()
     assert not (checkpoints_dir / "state_0.h5").is_file()
     assert not (checkpoints_dir / "control_0.xdmf").is_file()

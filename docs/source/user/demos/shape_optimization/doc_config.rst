@@ -381,9 +381,8 @@ Output
       - number of significant digits to be printed
     * - :ini:`time_suffix = False`
       - Boolean flag, which adds a suffix to :ini:`result_dir` based on the current time
-    * - :ini:`single_file = False`
-      - Boolean flag, which determines whether the output should be written to multiple 
-        files (if `False`) or a single file (if `True`).
+    * - :ini:`write_visualization = False`
+      - Boolean flag, which determines whether a visualization file should be written  by cashocs.
 
 .. _config_shape_detailed:
 
@@ -1551,11 +1550,22 @@ Moreover, we have the parameter :ini:`time_suffix`, which adds a suffix to the r
 	time_suffix = False
 
 
-The parameter :ini:`single_file` is specified as
+The parameter :ini:`write_checkpoints` is specified as
 
 .. code-block:: ini
 
-  single_file = False
+  write_checkpoints = True
 
-It determines, whether a single file should be used to write all output into (if `True`)
-or if multiple files should be used per variable (if `False`).
+It determines, whether checkpoint files are written by cashocs. If this is enabled,
+cashocs writes one checkpointing file for each selected output (state, gradient, 
+adjoint). In contrast to visualization files (see below), these can be used to re-load
+the functions into Python and FEniCS.
+
+The parameter :ini:`write_visualization` is specified as
+
+.. code-block:: ini
+
+  write_visualization = False
+
+It determines, whether a single visualization file should be written by cashocs, where 
+all selected outputs (states, adjoints, gradients) should be exported into. 

@@ -432,7 +432,8 @@ class XDMFFileManager(IOManager):
         self.save_state = self.config["Output"]["save_state"]
         self.save_adjoint = self.config["Output"]["save_adjoint"]
         self.save_gradient = self.config["Output"]["save_gradient"]
-        self.single_file = self.config["Output"]["single_file"]
+        self.write_checkpoints = self.config["Output"]["write_checkpoints"]
+        self.write_visualization = self.config["Output"]["write_visualization"]
 
         self.visualization_file_path = pathlib.Path(
             f"{self.result_dir}/visualization.xdmf"
@@ -667,27 +668,28 @@ class XDMFFileManager(IOManager):
             iteration: The current iteration counter.
 
         """
-        if iteration == 0:
-            append = False
-        else:
-            append = True
+        if self.write_checkpoints:
+            if iteration == 0:
+                append = False
+            else:
+                append = True
 
-        with fenics.XDMFFile(self.comm, filename) as file:
-            file.parameters["flush_output"] = True
-            file.parameters["functions_share_mesh"] = True
-            file.parameters["rewrite_function_mesh"] = True
-            file.write_checkpoint(
-                function,
-                function_name,
-                iteration,
-                fenics.XDMFFile.Encoding.HDF5,
-                append,
-            )
+            with fenics.XDMFFile(self.comm, filename) as file:
+                file.parameters["flush_output"] = True
+                file.parameters["functions_share_mesh"] = True
+                file.parameters["rewrite_function_mesh"] = True
+                file.write_checkpoint(
+                    function,
+                    function_name,
+                    iteration,
+                    fenics.XDMFFile.Encoding.HDF5,
+                    append,
+                )
 
     def _write_xdmf_visualization(
         self, function: fenics.Function, iteration: int
     ) -> None:
-        if self.single_file:
+        if self.write_visualization:
             self.visualization_file.write(
                 function,
                 float(iteration),

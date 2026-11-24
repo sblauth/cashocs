@@ -15,6 +15,14 @@ of the maintenance releases, please take a look at
 
 * Add :py:func:`cashocs.create_boundary_parameter`, which creates parameters or indicator functions on boundaries.
 
+* New configuration file parameters:
+
+  * Section Output
+
+    * :ini:`write_visualization` is a new parameter which replaces :ini:`single_file`. If this is enabled, a single XDMF visualization file is written to the result directory, and contains all states / adjoints / controls / gradients that have been selected for saving.
+
+    * :ini:`write_checkpoints` is a new parameter which can be used to turn on or off the behavior of writing checkpoints, which was the default behavior when saving information. Checkpoints differ from visualization files in that they can be used to re-load data into python, which is not possible with visualization files.
+
 
 2.11.0 (September 28, 2026)
 ---------------------------

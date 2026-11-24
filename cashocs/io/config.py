@@ -522,7 +522,10 @@ CONFIG_SCHEME: dict[str, dict[str, dict[str, Any]]] = {
         "time_suffix": {
             "type": "bool",
         },
-        "single_file": {
+        "write_checkpoints": {
+            "type": "bool",
+        },
+        "write_visualization": {
             "type": "bool",
         },
     },
@@ -679,7 +682,8 @@ DEFAULT_CONFIG = {
         "result_dir": "./results",
         "precision": 3,
         "time_suffix": False,
-        "single_file": False,
+        "write_checkpoints": True,
+        "write_visualization": False,
     },
     "Debug": {
         "remeshing": False,
