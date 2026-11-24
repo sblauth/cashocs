@@ -125,6 +125,7 @@ def test_save_xdmf_visualization_file_ocp(work_dir, F, bcs, J, y, u, p, config_o
     config_ocp["Output"]["save_adjoint"] = True
     config_ocp["Output"]["save_gradient"] = True
     config_ocp["Output"]["write_visualization"] = True
+    config_ocp["Output"]["write_checkpoints"] = False
     output_dir = work_dir / "out"
     config_ocp["Output"]["result_dir"] = str(output_dir)
     u.vector().vec().set(0.0)
