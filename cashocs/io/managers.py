@@ -433,13 +433,18 @@ class XDMFFileManager(IOManager):
         self.save_gradient = self.config["Output"]["save_gradient"]
         self.single_file = self.config["Output"]["single_file"]
 
+        self.visualization_file = fenics.XDMFFile(
+            self.comm, f"{self.result_dir}/visualization.xdmf"
+        )
+        self.visualization_file.parameters["flush_output"] = True
+        self.visualization_file.parameters["functions_share_mesh"] = True
+        self.visualization_file.parameters["rewrite_function_mesh"] = True
         self.is_initialized = False
 
         self.state_xdmf_list: list[str | list[str]] = []
         self.control_xdmf_list: list[str | list[str]] = []
         self.adjoint_xdmf_list: list[str | list[str]] = []
         self.gradient_xdmf_list: list[str | list[str]] = []
-        self.single_file_initialized = False
 
     def _initialize_states_xdmf(self) -> None:
         """Initializes the list of xdmf files for the state variables."""
@@ -512,16 +517,11 @@ class XDMFFileManager(IOManager):
 
         """
         file = f"{self.result_dir}/checkpoints/{name}.xdmf"
-        if self.single_file:
-            file = f"{self.result_dir}/checkpoints/result.xdmf"
 
         if space.num_sub_spaces() > 0 and space.ufl_element().family() == "Mixed":
             lst = []
             for j in range(space.num_sub_spaces()):
-                if self.single_file:
-                    lst.append(file)
-                else:
-                    lst.append(f"{self.result_dir}/checkpoints/{name}_{j:d}.xdmf")
+                lst.append(f"{self.result_dir}/checkpoints/{name}_{j:d}.xdmf")
             return lst
         else:
             return file
@@ -537,14 +537,14 @@ class XDMFFileManager(IOManager):
             for i in range(self.db.parameter_db.state_dim):
                 if isinstance(self.state_xdmf_list[i], list):
                     for j in range(len(self.state_xdmf_list[i])):
-                        self._write_xdmf_step(
+                        self._write_xdmf(
                             self.state_xdmf_list[i][j],
                             self.db.function_db.states[i].sub(j, True),
                             f"state_{i}_sub_{j}",
                             iteration,
                         )
                 else:
-                    self._write_xdmf_step(
+                    self._write_xdmf(
                         cast(str, self.state_xdmf_list[i]),
                         self.db.function_db.states[i],
                         f"state_{i}",
@@ -563,7 +563,7 @@ class XDMFFileManager(IOManager):
             "topology",
         ]:
             for i in range(len(self.db.function_db.controls)):
-                self._write_xdmf_step(
+                self._write_xdmf(
                     cast(str, self.control_xdmf_list[i]),
                     self.db.function_db.controls[i],
                     f"control_{i}",
@@ -581,14 +581,14 @@ class XDMFFileManager(IOManager):
             for i in range(self.db.parameter_db.state_dim):
                 if isinstance(self.adjoint_xdmf_list[i], list):
                     for j in range(len(self.adjoint_xdmf_list[i])):
-                        self._write_xdmf_step(
+                        self._write_xdmf(
                             self.adjoint_xdmf_list[i][j],
                             self.db.function_db.adjoints[i].sub(j, True),
                             f"adjoint_{i}_sub_{j}",
                             iteration,
                         )
                 else:
-                    self._write_xdmf_step(
+                    self._write_xdmf(
                         cast(str, self.adjoint_xdmf_list[i]),
                         self.db.function_db.adjoints[i],
                         f"adjoint_{i}",
@@ -604,36 +604,20 @@ class XDMFFileManager(IOManager):
         """
         if self.save_gradient:
             for i in range(self.db.parameter_db.control_dim):
-                self._write_xdmf_step(
+                self._write_xdmf(
                     cast(str, self.gradient_xdmf_list[i]),
                     self.db.function_db.gradient[i],
                     f"gradient_{i}",
                     iteration,
                 )
 
-    def _write_xdmf_step(
+    def _write_xdmf(
         self,
         filename: str,
         function: fenics.Function,
         function_name: str,
         iteration: int,
     ) -> None:
-        """Write the current function to the corresponding xdmf file for visualization.
-
-        Args:
-            filename: The path to the xdmf file.
-            function: The function which is to be stored.
-            function_name: The label of the function in the xdmf file.
-            iteration: The current iteration counter.
-
-        """
-        if self.single_file:
-            append = self.single_file_initialized
-        elif iteration == 0:
-            append = False
-        else:
-            append = True
-
         mesh = function.function_space().mesh()
 
         if function.function_space().ufl_element().family() in [
@@ -660,6 +644,30 @@ class XDMFFileManager(IOManager):
 
         function.rename(function_name, function_name)
 
+        self._write_xdmf_checkpoint(filename, function, function_name, iteration)
+        self._write_xdmf_visualization(function, iteration)
+
+    def _write_xdmf_checkpoint(
+        self,
+        filename: str,
+        function: fenics.Function,
+        function_name: str,
+        iteration: int,
+    ) -> None:
+        """Write the current function to the corresponding xdmf file for visualization.
+
+        Args:
+            filename: The path to the xdmf file.
+            function: The function which is to be stored.
+            function_name: The label of the function in the xdmf file.
+            iteration: The current iteration counter.
+
+        """
+        if iteration == 0:
+            append = False
+        else:
+            append = True
+
         with fenics.XDMFFile(self.comm, filename) as file:
             file.parameters["flush_output"] = True
             file.parameters["functions_share_mesh"] = True
@@ -671,8 +679,16 @@ class XDMFFileManager(IOManager):
                 fenics.XDMFFile.Encoding.HDF5,
                 append,
             )
+
+    def _write_xdmf_visualization(
+        self, function: fenics.Function, iteration: int
+    ) -> None:
         if self.single_file:
-            self.single_file_initialized = True
+            self.visualization_file.write(
+                function,
+                float(iteration),
+                fenics.XDMFFile.Encoding.HDF5,
+            )
 
     def output(self) -> None:
         """Saves the variables to xdmf files."""
@@ -713,4 +729,4 @@ class XDMFFileManager(IOManager):
             solver: The optimization algorithm.
 
         """
-        pass
+        self.visualization_file.close()
